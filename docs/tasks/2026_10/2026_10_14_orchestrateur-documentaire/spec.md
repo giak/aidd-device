@@ -127,7 +127,8 @@ une ligne de dérivation qui porte la commande exacte et l'instant :
 ```
 
 - **`index.md`** : chaque document de `docs/`, une ligne par document, avec son type, son statut, sa
-  date et un lien relatif. Les documents générés y figurent sous leur propre type.
+  date et un lien relatif. Les documents générés y figurent sous leur propre type, avec une date
+  d'une autre nature — voir « La date d'un fichier généré ».
 - **`dashboard.md`** : le compte par statut, puis les documents groupés par statut, dans l'ordre des
   colonnes de `kanban` (`todo`, `in-progress`, `done`, `blocked`, `unknown`). C'est le regroupement de
   ce lecteur, dans son ordre de colonnes, écrit dans un fichier pour être lisible dans la pull
@@ -135,11 +136,43 @@ une ligne de dérivation qui porte la commande exacte et l'instant :
   trois fichiers générés sont exclus de ces comptes** (mon choix) : sinon l'état dépendrait de sa
   propre sortie, et un fichier de plus ferait bouger un total qui le mentionne.
 - **`trace.md`** : une ligne par document, du plus récent au plus ancien, avec sa date et son lien.
-  Un `run.md` y apparaît une fois, comme n'importe quel document — il est indexé une seule fois et
-  n'a pas de traitement séparé. **Limite dite à voix haute dans le fichier lui-même** : cette trace
+  L'ordre suit exactement la date affichée, jamais un autre critère. Un `run.md` y apparaît une fois,
+  comme n'importe quel document — il est indexé une seule fois et n'a pas de traitement séparé. **Limite dite à voix haute dans le fichier lui-même** : cette trace
   ne rapporte que ce que les documents déclarent et que git a commité. Une modification faite sans
   document, ou un document non commité, ne laisse aucune trace, et le fichier doit le dire plutôt
   que de laisser croire à une exhaustivité.
+
+## La date d'un fichier généré
+
+Mesuré le 2026-10-14 dans un dépôt jetable, commits espacés de deux secondes : un fichier généré qui
+affiche la date de son propre dernier commit est **en retard d'un commit, toujours**. Le commit qui
+l'enregistre devient son dernier commit, donc la valeur qu'il devrait afficher change à l'instant où
+il est commité ; la régénération suivante le réécrit, et un portier qui refuse sur « la régénération
+a réécrit un fichier » refuse alors **chaque** commit, indéfiniment.
+
+Mon premier essai de mesure avait conclu l'inverse — « ça converge » — parce que trois commits
+tenaient dans la même seconde et que les dates s'y confondaient. La mesure était fausse ; le défaut,
+lui, était réel.
+
+Règle retenue, écrite dans `index.md` et `trace.md` eux-mêmes et pas seulement dans le code : **les
+trois fichiers générés portent la date de leur premier commit**, seul repère qu'un nouveau commit ne
+déplace pas. Les documents écrits gardent la date de leur dernier commit.
+
+**Limite assumée, et je préfère l'écrire que la laisser découvrir** : la date d'un document qui
+change dans le commit courant n'existe qu'après ce commit. Les fichiers d'état enregistrés avec lui
+portent donc, pour ce seul document, la date du commit précédent, et l'arbre est de nouveau sale en
+sortie de commit ; la régénération suivante le rattrape, et le crochet la réclame. L'invariant
+tenable est « régénérer avant chaque commit », pas « l'arbre est propre après chaque commit ». Le
+corollaire est que le crochet ne peut pas voir ce retard : il compare la copie de travail à une
+génération fraîche, et les deux sont calculées sur la même histoire. Il attrape « tu n'as pas
+régénéré » et « tu as édité à la main », pas « cette ligne va dater d'un commit ».
+
+Mesuré dans un dépôt jetable, crochet armé : après le commit qui fait entrer les trois fichiers dans
+l'historique, une seconde régénération les réécrit (leurs lignes passent de `unknown` à la date de
+leur premier commit), puis **plus rien ne bouge** — `0 fichier(s) réécrit(s)`, arbre propre, y compris
+après un commit sans rapport. Un commit qui change un document, lui, laisse deux fichiers à
+régénérer ; le rattrapage committé, la régénération suivante rend `0 fichier(s) réécrit(s)`, et la
+date affichée coïncide alors avec `git log -1 --format=%cI -- <chemin>`.
 
 ## Le générateur
 
@@ -202,6 +235,11 @@ vérifie rien.
 6. Avec le crochet installé, un commit dont le tableau de bord ne correspond plus aux documents est
    **refusé**, et la sortie nomme les fichiers concernés.
 7. Le même commit passe après `git add docs/`, et un commit sans rien de périmé ne dit pas un mot.
+8. Une fois les trois fichiers dans l'historique, une régénération à froid ne les réécrit plus **pour
+eux-mêmes** : leurs lignes portent la date de leur premier commit, et un commit sans rapport ne
+réveille rien. Mesuré : `0 fichier(s) réécrit(s)`, `git status` vide.
+9. Une fois la régénération committée, la date affichée pour un document écrit coïncide avec
+`git log -1 --format=%cI -- <chemin>`. Mesuré sur `spec.md` : `18:17:57` des deux côtés.
 
 ## Ce qui reste au constructeur
 
@@ -227,6 +265,7 @@ maison », que ce dépôt tient déjà.
   `aidd_docs/` ; la prose en français ; le script sans dépendance ; `scripts/docs-index.mjs` ;
   `date` et `updated` lus dans git ; les trois fichiers générés exclus des comptes du tableau de
   bord ; `status` hors vocabulaire signalé sans faire échouer, `--strict` pour l'inverse ;
-  idempotence ligne de dérivation comprise.
+  idempotence ligne de dérivation comprise ; la date d'un fichier généré est celle de son premier
+  commit, pas celle de son dernier — l'auto-référence ne converge pas.
 - **Du relecteur humain**, après le contrôle constructeur : une spec a **une seule maison**, la
   tâche ; `docs/specs/` n'existe pas.

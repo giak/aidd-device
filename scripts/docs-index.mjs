@@ -35,7 +35,7 @@ const GENERATED_DOCUMENTS = [
   {
     path: `${DOCS}/index.md`,
     name: "Index des documents",
-    description: "Chaque document de docs/, avec son type, son statut et la date de son dernier commit",
+    description: "Chaque document de docs/, avec son type, son statut et sa date de commit",
     type: "index",
   },
   {
@@ -52,6 +52,22 @@ const GENERATED_DOCUMENTS = [
   },
 ];
 const GENERATED = new Set(GENERATED_DOCUMENTS.map((document) => document.path));
+
+// A generated file cannot report its own last commit: that value would be the
+// date of the commit shipping it, so each run would rewrite the file and no
+// commit would ever be consistent — measured over four spaced commits in a
+// throwaway repository, where index.md and trace.md stayed one commit behind
+// forever. The first commit is the only stable fact about them.
+function tableDate(document) {
+  return GENERATED.has(document.path) ? document.date : document.updated;
+}
+
+// Said inside the files, not only here: a date a reader cannot interpret is a
+// date that will be misread.
+const DATE_NOTE =
+  "Date : dernier commit pour un document écrit, premier commit pour les trois fichiers " +
+  "générés. Un fichier généré ne peut pas porter la date de son propre dernier commit, " +
+  "puisque ce serait celle du commit qui le contient.";
 
 function fieldsOf(documentPath) {
   const descriptor = GENERATED_DOCUMENTS.find((document) => document.path === documentPath);
@@ -184,8 +200,8 @@ function byPath(left, right) {
 }
 
 function byRecency(left, right) {
-  const leftDate = left.updated === "unknown" ? "" : left.updated;
-  const rightDate = right.updated === "unknown" ? "" : right.updated;
+  const leftDate = tableDate(left) === "unknown" ? "" : tableDate(left);
+  const rightDate = tableDate(right) === "unknown" ? "" : tableDate(right);
   if (leftDate !== rightDate) return rightDate.localeCompare(leftDate);
   return left.path.localeCompare(right.path);
 }
@@ -193,14 +209,16 @@ function byRecency(left, right) {
 function buildIndex(documents) {
   const rows = [...documents].sort(byPath).map(
     (document) =>
-      `| ${document.name} | ${document.type} | ${document.status} | ${document.updated} | ${relativeLink(document.path)} |`,
+      `| ${document.name} | ${document.type} | ${document.status} | ${tableDate(document)} | ${relativeLink(document.path)} |`,
   );
   const body = [
-    "| Document | Type | Statut | Dernier commit | Chemin |",
+    "| Document | Type | Statut | Date | Chemin |",
     "| --- | --- | --- | --- | --- |",
     ...rows,
     "",
     `${documents.length} document(s).`,
+    "",
+    DATE_NOTE,
   ].join("\n");
   return [fieldsOf(`${DOCS}/index.md`), body];
 }
@@ -228,11 +246,13 @@ function buildDashboard(documents) {
 function buildTrace(documents) {
   const rows = [...documents].sort(byRecency).map(
     (document) =>
-      `| ${document.updated} | ${relativeLink(document.path)} | ${document.type} | ${document.status} |`,
+      `| ${tableDate(document)} | ${relativeLink(document.path)} | ${document.type} | ${document.status} |`,
   );
   const body = [
     "> Cette trace ne rapporte que ce que les documents déclarent et que git a commité.",
     "> Un document non commité, ou une modification faite sans document, n'y laisse aucune trace.",
+    ">",
+    `> ${DATE_NOTE}`,
     "",
     "| Date | Document | Type | Statut |",
     "| --- | --- | --- | --- |",

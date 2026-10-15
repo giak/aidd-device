@@ -740,6 +740,14 @@ Ce que le contrôle **ne** couvre pas : un opérateur qui recollerait à la main
 coup — le reçu relit alors les mêmes pièces que lui, et rien ne distingue un manifeste réécrit d'un
 manifeste né ainsi. Rien n'est commité par ce tour.
 
+**Mise à jour.** Les trois tours restés dans l'arbre de travail — la porte, la racine déclarée et
+l'origine du produit — sont commités ensemble, sur arbitrage du relecteur : ils sont mêlés dans neuf
+fichiers, et les séparer aurait demandé de reconstruire des états jamais mesurés. Commit `6789bec`,
+14 fichiers, +677/−110. La branche est poussée dans la foulée (`41f531c..6789bec  main -> main`), donc
+le distant porte le gel `0d9a2180`, la porte et ses deux suites. Deux conséquences nommées : le §3 du
+[REPLAY](device/REPLAY.md) décrit encore un gel poussé antérieur à l'ADR-016, et les 71 lignes d'un
+autre fil que l'arbre portait dans ce journal entrent dans le même commit, à sa demande.
+
 > Rattaché à la Séance 2, et posé après la Séance 3 : celle-ci s'est écrite entre mes deux ajouts au
 > même fichier, et cet ajout est tombé à sa suite. Il appartient à la Séance 2.
 
@@ -826,3 +834,74 @@ la clôture.
 l'architecture source + quatre artefacts.
 
 **Mémoire.** `9ee8717a`.
+
+**Clôture exécutée, sur arbitrage (fin de la Séance 2).**
+
+**Fait.** Commit **`12ad625`**, 2026-10-15T22:19:24+02:00, « Appliquer la compression v13 au
+contrat, ses quatre artefacts et sa consigne de vérification » : 33 fichiers, +4354/−86.
+`git add AGENTS.md .agents docs/contracts docs/trace.md` puis `git commit -F -`, rien d'autre
+stagé. Il emporte `AGENTS.md`, les trois `.agents/skills/*/SKILL.md`, tout `docs/contracts/` (source,
+`README.md`, les trois candidats, leurs trois analyses, la veille datée, la relecture datée,
+`archive/`), et le journal, dont le bloc « Tour suivant » écrit par l'autre fil : sur un même
+fichier, un commit par auteur aurait exigé `git add -p`.
+
+**Vérifié.** `git show --stat HEAD` : 33 fichiers. `git status --porcelain` après le commit : 13
+entrées, toutes des modifications d'un autre auteur (`README.md`, `docs/DASHBOARD.md`,
+`docs/DECISIONS.md`, `docs/EXPLICATION.md`, `docs/device/*`, `docs/tasks/*`), aucune d'entre elles
+stagée. La checklist de `docs/contracts/README.md` n'a pas été relancée : le commit ne touche aucun
+fichier du contrat, ses quatre contrôles restent ceux de 22:0x.
+
+**Reste ouvert, nommé.** `ADR-012` attend son acte daté : `docs/DECISIONS.md` n'entre pas dans ce
+commit, le registre contredit donc encore l'arbre. Et le commit est **local** : aucun push n'a été
+demandé.
+
+**Mémoire.** `9ee8717a` (mise à jour : le commit, qui était proposé, est exécuté).
+
+### Coût du contrat par session, mesuré (suite de la Séance 2, 2026-10-15 22:2x)
+
+**La question.** Ce que le noyau coûte *réellement* par session, et ce que cela représente face à la
+fenêtre de contexte du client. La campagne au jeton n'avait mesuré que la taille du texte (3 302 →
+3 197, noyau 1 835 → 1 768) ; elle n'avait jamais mesuré la dépense d'une session.
+
+**La source.** Pas une estimation : la base du client Freebuff pour ce projet,
+`~/.config/freebuff-desktop/projects/<id>/desktop-v2.db`, ouverte en lecture seule (`sqlite3` avec
+`mode=ro`, jamais écrite). Les jetons y sont déclarés par le client lui-même, dans le `metrics_json`
+de chaque message : `usage.inputTokens`, `cachedInputTokens`, et `context.usedTokens`,
+`context.windowTokens`, `context.compactionThresholdTokens`.
+
+**Ce que le client déclare.** Fenêtre 1 048 576 jetons ; seuil de compaction 320 000.
+
+**Le fil de cette session**, identifié en y retrouvant les quatre demandes de la soirée verbatim
+(les demandes sont des données privées : elles ne sont pas recopiées ici) : 3 tours, 109 appels
+d'outil, entrée 18 173 845 jetons dont 17 806 208 en cache, soit 98,0 % ; contexte maximal observé
+298 481. L'autre fil du même projet, celui du travail de run : 8 tours, 99 appels, entrée 9 480 609
+dont 96,5 % en cache, contexte maximal 256 030.
+
+**Le coût du noyau.** Par appel de modèle : 1 768 jetons, soit **0,169 % de la fenêtre**, 0,552 % du
+seuil de compaction, 0,592 % du contexte maximal observé. Sur cette session : 1 768 × 109 =
+192 712 jetons d'entrée, **1,06 % de l'entrée facturée** ; 367 744 sur les deux fils, 1,33 %.
+
+**Correction de la formule « noyau × tours ».** Un tour n'est pas un appel de modèle : mesuré, ici,
+109 appels pour 3 tours, soit 36 appels par tour en moyenne. Compter le noyau une fois par tour le
+sous-estime donc d'un facteur 36. Ce qui est repayé à chaque appel est le préfixe stable, noyau
+inclus ; et 98 % de l'entrée mesurée est un cache hit, donc la part *en jetons* du noyau surestime
+son poids dans le coût réel, que la politique de prix du client ne permet pas de mesurer.
+
+**Le gain du jour, replacé.** Dans cette session, la compression v13 a économisé 67 jetons par appel.
+Bornage bas : les deux tours postérieurs à l'application (22:03:19, 22:13:45, 22:21:04 ; 30 et 21
+appels d'outil) donnent 67 × 51 = 3 417 jetons, 0,019 % de l'entrée ; une part des 58 appels du
+premier tour, clos à 22:03:19 bien après l'application de 22:00:38, s'y ajoute sans être séparable.
+Le levier structurel encore ouvert (différer `AUDIT` + `RECOVERY` + `STOP`, 182 jetons par appel)
+vaudrait 182 × 109 = 19 838 jetons ici, 0,11 % de l'entrée.
+
+**Conséquence pour l'arbitrage.** Face à une fenêtre de 1 Mi et à un contexte observé à 93 % du seuil
+de compaction, ce qui coûte dans une session est la conversation et les sorties d'outils, pas le
+contrat. Le levier à grand chiffre de la campagne (charger moins) est donc un gain de coût marginal
+en session par rapport à ce que la campagne espérait : il reste fondé pour gagner de la place dans
+le préfixe stable, pas comme économie de session.
+
+**Limite.** Le tokenizer du modèle servi n'est pas accessible ; les jetons du noyau sont mesurés avec
+`o200k_base` (tiktoken), l'ordre de grandeur est donc fiable, la valeur exacte non. Aucune mesure en
+argent : seuls des jetons.
+
+**Mémoire.** `899bfa71`, relue après écriture.

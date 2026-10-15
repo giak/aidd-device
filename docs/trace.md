@@ -212,8 +212,9 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   éprouvées sur un banc jetable sous `/tmp` : `collect` ok, second `collect` refusé, `receipt`
   `non concluant` (condition 3 mordante sur un faux produit), `compare` ok, `receipt --verdict ecart`
   refusé. Le banc n'est pas un run, et la conduite le dit. La page entre au dépôt au septième
-  commit, « Consigner la conduite du run du premier cas » — le cas, son gel et le harnais y étaient
-  déjà (`ffbdee4`, `1362837`) et rien d'eux n'est repris.
+  commit `5cd0233`, « Consigner la conduite du run du premier cas » — le cas, son gel et le harnais
+  y étaient déjà (`ffbdee4`, `1362837`) et rien d'eux n'est repris, ce que `git diff --stat HEAD~1
+  HEAD -- docs/device/` confirme en ne rendant rien.
 - **Un point laissé `OPEN` par cette conduite**, nommé plutôt que tranché : le §5 de la demande exige
   que le texte remis à la session soit les deux lignes entre gardes *et rien d'autre*, alors que le
   §7 lui interdit quatre choses. Comment les interdits atteignent la session sans ajouter de texte
@@ -395,4 +396,7 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   `6c040683` — les six commits de la séance et le dépôt public ouvert, sans push. Du tour suivant :
   `0aeef2f8` — la conduite du run écrite (`2026-10-15-154303-run.md`), le gel revalidé sur disque
   (10 `sha256` et l'empreinte `1b9a8434`), les quatre arbres inchangés, les commandes du §3 éprouvées
-  sur un banc jetable, et les deux points laissés ouverts (les interdits du §7, le verdict).
+  sur un banc jetable, et les deux points laissés ouverts (les interdits du §7, le verdict). Du tour
+  suivant : `191bbf9b` — la prémisse de l'ordre corrigée par mesure (le cas, son gel et le harnais
+  étaient déjà au dépôt : `ffbdee4`, `1362837`) et le commit `5cd0233`, qui n'ajoute que la conduite
+  et l'entrée du journal, jamais un message qui nommerait ce que son diff ne porte pas.

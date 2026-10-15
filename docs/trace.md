@@ -199,6 +199,26 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   `d02b750`, le sommet d'avant la séance ; le sixième commit, « Faire suivre la révision citée aux
   commits », leur fait porter `39750fe`, relevé du 2026-10-15, et `BOUNDARY.md` dit en plus l'état
   d'après les commits (18 fichiers suivis, `status --porcelain` vide).
+- **La conduite du run du premier cas est écrite**, sur l'ordre « Prépare la conduite du run du
+  premier cas : ce qu'il faut relever avant d'ouvrir la session, ce qui se remet mot pour mot, et ce
+  qui doit revenir après » (mémoire `0aeef2f8`).
+  `docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md`, né à
+  15:43:03 (`stat -c %w`), type `run`, `status: pending`, 2 093 mots. Il dit l'ordre des quatre
+  commandes du harnais, ce que le reçu exigera sans pouvoir le lire (`faits.json`, la trace machine),
+  le texte remis mot pour mot et les deux réponses figées, puis ce qui doit revenir. Avant de
+  l'écrire, le gel a été revalidé sur disque — formule du §5.3 recalculée : les 10 `sha256` (2
+  fichiers du cas, 8 références) et l'empreinte `1b9a8434` concordent, les 4 arbres rendent leurs
+  `HEAD` et `porcelain` gelés, `docs/device/runs/` n'existe pas — et les commandes du §3 ont été
+  éprouvées sur un banc jetable sous `/tmp` : `collect` ok, second `collect` refusé, `receipt`
+  `non concluant` (condition 3 mordante sur un faux produit), `compare` ok, `receipt --verdict ecart`
+  refusé. Le banc n'est pas un run, et la conduite le dit. La page entre au dépôt au septième
+  commit, « Consigner la conduite du run du premier cas » — le cas, son gel et le harnais y étaient
+  déjà (`ffbdee4`, `1362837`) et rien d'eux n'est repris.
+- **Un point laissé `OPEN` par cette conduite**, nommé plutôt que tranché : le §5 de la demande exige
+  que le texte remis à la session soit les deux lignes entre gardes *et rien d'autre*, alors que le
+  §7 lui interdit quatre choses. Comment les interdits atteignent la session sans ajouter de texte
+  au §5 n'est pas décidé : la conduite dit que les énoncer serait un écart à consigner dans le reçu,
+  jamais ajouté en silence. Arbitrage du relecteur.
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;
@@ -277,6 +297,9 @@ correction d'agent sur une section vivante.
    dispositif. Cette ligne disait « que le v6 veut à la racine » : c'était mon inférence, rectifiée
    à l'arbitrage (rectification 5 ci-dessous). Le foyer est tranché : `docs/device/` (ADR-013,
    mémoire `e185e4da`).
+7. **Conduire le run** : la conduite est écrite (`2026-10-15-154303-run.md`), le gel tient, les
+   commandes sont éprouvées. Reste le geste humain — ouvrir la session neuve, remettre le texte du
+   §5, tenir le budget de trois échanges — puis `collect`, `receipt`, et le `compare` du juge.
 
 - Audit externe d'`AGENTS.md` (un autre LLM) vérifié point par point le 2026-10-15 (mémoire
   `312c1c32`) : confirmés — le worktree `.kilo/worktrees/polished-climb` dans l'arbre du terrain
@@ -369,4 +392,7 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   jetable à 36/36, et la tension nommée avec l'invariant « pas de script ». Du tour d'après :
   `ba4885cf` — le premier cas écrit et gelé (attendu, 8 falsificateurs du run, 4 de l'attendu, 7
   attendus écartés, `gele_le` `15:29:49`), la demande rectifiée, l'état B intact. Du tour suivant :
-  `6c040683` — les quatre commits de la séance et le dépôt public ouvert, sans push.
+  `6c040683` — les six commits de la séance et le dépôt public ouvert, sans push. Du tour suivant :
+  `0aeef2f8` — la conduite du run écrite (`2026-10-15-154303-run.md`), le gel revalidé sur disque
+  (10 `sha256` et l'empreinte `1b9a8434`), les quatre arbres inchangés, les commandes du §3 éprouvées
+  sur un banc jetable, et les deux points laissés ouverts (les interdits du §7, le verdict).

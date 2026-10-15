@@ -73,8 +73,9 @@ git clone /home/giak/projects/aidd-device
 git -C aidd-device rev-parse --short HEAD   → 39750fe   (branche main, relevé du 2026-10-15)
 ```
 
-D'une autre machine : pas encore — `github.com/giak/aidd-device` est public mais vide, et `origin`
-le vise ; la question 1 du §11 se répond « non » jusqu'au premier push, « oui » après lui.
+D'une autre machine : oui depuis le push du 2026-10-15.
+La question 1 du §11 demande aussi de le faire tourner et de lire l'écart : « non », aucun run
+n'a eu lieu (§3 de [BOUNDARY.md](BOUNDARY.md)).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. La séquence d'un run :

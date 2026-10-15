@@ -41,4 +41,4 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 | État d'avancement | `DASHBOARD.md`, titre de vérité pour « où en est le projet ? » | 🟢 |
 | Boucle 2 : unité de travail | critère falsifiable AVANT, dossier de tâche, clôture | 🟨 la spec en itération |
 | Boucle 2 : commit de clôture | debout / ponctuel — à décider | 🟨 |
-| Boucle 2 : remote | décision externe, jamais côté agent | 🟨 |
+| Boucle 2 : remote | décision externe, jamais côté agent | 🟢 public, `origin`, poussé le 2026-10-15 |

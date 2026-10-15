@@ -220,6 +220,17 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   §7 lui interdit quatre choses. Comment les interdits atteignent la session sans ajouter de texte
   au §5 n'est pas décidé : la conduite dit que les énoncer serait un écart à consigner dans le reçu,
   jamais ajouté en silence. Arbitrage du relecteur.
+- **`main` est poussée sur le dépôt public**, sur l'ordre « Pousse la branche main vers origin et
+  vérifie que le dépôt public rend bien les 6 commits, puis dis si la question 1 du §11 passe à
+  « oui » » (mémoire `6a329774`). `git push -u origin main` → exit 0, `* [new branch] main -> main`,
+  `848ad7a6a84e5a57f6eb22c6b41a37beb903466d` ; la branche portait **18** commits, pas 6 — les six du
+  libellé étaient le lot du tour précédent, et `git rev-list --count HEAD` le dit avant le push.
+  Vérifié côté GitHub : `git ls-remote origin refs/heads/main` rend le même hachage que le HEAD
+  local ; `gh repo view` → `isEmpty false`, `PUBLIC`, branche par défaut `main`, `pushedAt`
+  `2026-10-15T13:49:35Z` ; l'API sert les trois fichiers de `CASES/` et les deux documents du dossier
+  de tâche ; `git diff --stat origin/main` est vide ; le blob de la conduite est identique des deux
+  côtés (`ecff6b57…`) ; `39750fe`, la révision du dispositif citée dans `DEVICE.md`, est un ancêtre
+  de `origin/main`.
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;
@@ -369,6 +380,14 @@ fichiers de la skill, une du message du commit (« survives a refresh 1 run in 2
 `9da9b265…`, et le gel, devenu caduc, a été refait (`--refreeze`, 15:29:49) : le gel précédent est
 détruit, jamais conservé à côté d'un texte qu'il ne couvre plus. La naissance de l'attendu reste
 15:26:49 — une rectification ne la déplace pas —, et le gel porte l'empreinte du texte tel qu'il est.
+(7) J'ai écrit, dans `DEVICE.md`, dans le `DASHBOARD.md` et ici même, que la question 1 du §11 se
+répondrait « oui » après le premier push. C'est faux, et la mesure le dit : la question demande de
+**récupérer**, de **faire tourner** et de **lire l'écart**. Le push remplit la première clause — un
+clone public rend `848ad7a` — mais « faire tourner » exige la révision sous test, qui vit dans
+`/home/giak/projects/framework`, non publié, et « lire l'écart » exige un `output.json` qui n'existe
+pas : aucun run n'a eu lieu. La question reste « non », et les trois pages sont réparées. La leçon
+est la même qu'ailleurs dans cette séance : un artefact publié ne vaut que pour la clause qu'il
+satisfait, jamais pour la question entière.
 
 **Mémoires de la séance.** `8c78b47e` le verdict du matin (« enfonce des portes ouvertes »,
 « tout revoir ») ; `50add890` la remise à plat et la correction du pivot (`aidd_docs/<date>.md`
@@ -399,4 +418,7 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   sur un banc jetable, et les deux points laissés ouverts (les interdits du §7, le verdict). Du tour
   suivant : `191bbf9b` — la prémisse de l'ordre corrigée par mesure (le cas, son gel et le harnais
   étaient déjà au dépôt : `ffbdee4`, `1362837`) et le commit `5cd0233`, qui n'ajoute que la conduite
-  et l'entrée du journal, jamais un message qui nommerait ce que son diff ne porte pas.
+  et l'entrée du journal, jamais un message qui nommerait ce que son diff ne porte pas. Du tour
+  suivant : `6a329774` — le push de `main` sur le dépôt public (`848ad7a`, 18 commits, vérifié côté
+  GitHub), et la question 1 du §11 mesurée clause par clause : « non », le push ne remplissant que la
+  récupération, et les trois pages qui affirmaient le contraire réparées.

@@ -46,6 +46,11 @@ La révision sous test est épinglée **par run** et enregistrée dans `CASES/<c
 commande qui l'installe, en revanche, n'est pas encore choisie : c'est un paramètre de run, et rien
 n'est écrit avant l'arbitrage de la spec du run — `OPEN`.
 
+Ni l'origine du framework ni la révision sous test ne sont publiées, pas plus que le terrain : le
+dépôt public du dispositif (`github.com/giak/aidd-device`, poussé le 2026-10-15) porte le dispositif
+seul. Le cloner suffit donc à lire ses pages, jamais à faire tourner un run — la copie sous test
+vient de `/home/giak/projects/framework`. Une partie de la réponse à la question 1 du §11.
+
 ## 4. Ce qu'il ne lit pas
 
 - Dans le framework : `.git/**`, `node_modules/**`, et les dossiers présents mais non suivis que

@@ -1,0 +1,294 @@
+---
+name: Explication — le projet raconté simplement
+description: Le dispositif expliqué à qui n'en connaît rien — analogies, schémas, et l'état réel du projet au 2026-10-15, échecs compris
+type: explication
+status: in-progress
+---
+
+# EXPLICATION — le projet raconté simplement
+
+> Pour quelqu'un qui n'a jamais entendu parler de ce dépôt. Les analogies sont des analogies : elles
+> aident à comprendre, elles ne prouvent rien. Chaque fait sérieux a sa source dans un autre document
+> de `docs/`, et ce document-ci n'est pas une source : il raconte.
+>
+> État décrit : **2026-10-15**, 21 commits, dépôt public ouvert. Un chiffre ici a toujours la même
+> forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit `SUPPOSÉ`.
+
+## 1. L'idée, en une image de cuisine
+
+Imaginez une **fiche de recette**. La fiche promet : « goûte avant de saler ». Elle est bien écrite,
+relue, illustrée. Mais la vraie question n'est pas « la fiche est-elle jolie ? ». La vraie question
+est : **quand un cuisinier la suit, est-ce que le plat sort comme la fiche le dit ?**
+
+Ce projet construit l'instrument qui répond à cette question pour un **assistant IA**.
+
+La fiche, ici, c'est une « competence » (une *skill*) : un mode d'emploi en markdown qu'un modèle lit
+et exécute. Le cuisinier, c'est une **session IA**, ouverte par une personne. Et l'instrument, c'est
+**le dispositif** : le dépôt que vous lisez.
+
+## 2. Le problème que personne n'avait résolu
+
+`SUPPOSÉ(MEGA-PROMPT v6 §2)` : le projet dont on teste les fiches — un « framework » de compétences
+pour assistants IA — porte plusieurs centaines de fichiers markdown et une quinzaine de milliers de
+lignes. Ses contrôles vérifient des choses très concrètes : que les liens ne sont pas morts, que deux
+documents ne se répètent pas, que le format tient. Mais aucun, écrit le v6, ne dit **si une promesse
+écrite dans une fiche reste vraie quand un modèle la lit**.
+
+Et c'est difficile, pour une raison de fond : on ne peut pas prouver qu'un comportement est bon en
+relisant le mode d'emploi. Il faut **faire tourner** la fiche dans des conditions propres, et
+regarder ce qui en sort. C'est ce que fait ce dispositif.
+
+`SUPPOSÉ(MEGA-PROMPT v6 §9)` : huit tentatives antérieures ont échoué, souvent pour les mêmes raisons
+— l'expérience n'était pas rejouable, la réponse attendue était écrite *après* avoir vu le résultat,
+et des chiffres s'étaient glissés dans les rapports sans que personne ne les vérifie.
+
+## 3. L'astuce centrale : écrire la réponse AVANT
+
+C'est le cœur du projet, et tout le reste en découle. Un examen surveillé, avec une enveloppe scellée :
+
+1. **L'examinateur écrit le corrigé d'abord** — ce qu'il attend, en une phrase vérifiable — et le
+   **met sous scellé** : une empreinte (`sha256`) est calculée et datée. C'est le **gel**.
+2. **Le candidat ne voit jamais le corrigé.** Jamais. S'il le voit, l'expérience est perdue d'avance,
+   et le dossier le dira noir sur blanc.
+3. **On filme l'examen** : la trace machine de la session est copiée dans le dossier de l'épreuve.
+4. **La copie est photocopiée telle quelle**, sans correction de style, sans « il voulait dire ».
+5. **Un examinateur compare** la copie au corrigé et écrit une phrase : « au vu du corrigé, la copie
+   fait X ; le corrigé disait Y ». Il ne dit ni qui a tort, ni si le corrigé était juste.
+
+```mermaid
+flowchart TD
+  A["1. Écrire ce qu'on attend"] --> B["2. Sceller et dater l'empreinte"]
+  B --> C["3. Ouvrir une session neuve"]
+  C --> D["4. Remettre le texte, mot pour mot"]
+  D --> E["5. Recopier la copie, telle quelle"]
+  E --> F["6. Écrire le reçu, à chaud"]
+  F --> G["7. Comparer au corrigé"]
+  B -.->|"le corrigé ne part jamais"| D
+```
+
+Cette astuce a un nom dans les documents : **le gel antérieur au run** (« l'attendu, écrit avant
+d'avoir vu le produit »). C'est la seule preuve possible qu'un corrigé n'a pas été écrit après coup.
+
+## 4. Les personnages
+
+| Personnage | Qui, ici | Ce qu'il fait | Ce qu'il ne voit pas |
+| --- | --- | --- | --- |
+| l'examinateur (auteur du corrigé) | la personne qui relit | écrit le cas, scelle l'empreinte | le produit |
+| l'opérateur (le surveillant) | la même personne | ouvre la session, remet le texte, recueille, filme | rien, mais n'improvise pas |
+| le juge | un agent | compare depuis le dossier seul | la session |
+| le candidat | la session IA | lit la fiche, travaille | le corrigé |
+
+La séparation est **de contexte, pas de personne** : la même personne peut tenir l'examinateur et le
+surveillant, mais le juge travaille sur le dossier et ne voit pas la session. Aucune position ne doit
+voir l'objet qui la contredit.
+
+## 5. Les arbres, et la règle de la maison
+
+Un run gèle **quatre arbres** : deux sources que l'on lit sans jamais y écrire, et leurs deux copies,
+prises dans un dossier jetable où le travail a lieu. Le dispositif, lui, n'écrit jamais que son
+propre dépôt.
+
+```mermaid
+graph TD
+  O["framework-origin<br/>/home/giak/projects/framework<br/>la boîte à fiches d'origine<br/>lu, jamais écrit"] -->|"photocopie gelée"| R["révision sous test<br/>$W/framework-origin<br/>le framework à l'épreuve"]
+  T["terrain<br/>/home/giak/projects/audio-sync-tool<br/>un vrai projet<br/>lu, jamais écrit"] -->|"copie gelée"| W["travail<br/>$W/terrain<br/>c'est ici que la session écrit"]
+  D["le dispositif<br/>ce dépôt<br/>il ne s'écrit que lui-même"] -.-> R
+  D -.-> W
+```
+
+Les flèches en pointillé disent la même chose : **le dispositif lit ces arbres, il ne les écrit
+jamais.** `$W` est le dossier jetable du run, **hors** de ces arbres : c'est ce qui permet d'y
+travailler sans rien salir. La règle tient en une phrase : **on ne bricole pas dans la boîte à fiches
+d'origine, et on ne touche pas au vrai projet.** C'est vérifiable : pour les quatre, deux `HEAD` et
+deux `git status --porcelain` identiques, avant et après, prouvent que rien n'a bougé.
+
+## 6. Un run, pas à pas
+
+```mermaid
+sequenceDiagram
+  participant Opr as Opérateur
+  participant Ses as Session IA
+  participant Dis as Dispositif
+  Note over Dis: étape 1, geler avant tout
+  Opr->>Ses: étape 2, le texte mot pour mot, rien d'autre
+  Ses->>Opr: étape 3, un tableau puis le travail
+  Opr->>Dis: étape 4, collecter la copie telle quelle
+  Opr->>Dis: étape 5, écrire le reçu à chaud
+  Dis->>Dis: étape 6, comparer à l'attendu
+  Note over Dis: étape 7, verdict conforme, écart ou non concluant
+```
+
+Le harnais — `docs/device/harness/run.mjs`, 598 lignes, aucune dépendance — n'a que quatre
+commandes : `freeze` (avant), `collect`, `receipt`, `compare`. Il **refuse** plutôt que de deviner :
+40 refus sont écrits dans son code (un produit déjà collecté, un lien symbolique dans la copie, un
+reçu réécrit, un cas dont un fichier ne concorde plus avec le gel — au reçu comme au jugement —, un
+verdict que la preuve ne porte pas…). Il ne décide rien tout seul et n'ouvre aucune
+session : le candidat, c'est un humain qui l'ouvre.
+
+Trois pièces attestent qu'un run a eu lieu, de la plus forte à la plus faible : **la trace machine**
+(la seule que l'opérateur n'écrit pas), **l'état des arbres et les dates de naissance des fichiers**,
+et **l'empreinte de la demande** (qui prouve ce qui a été demandé). La parole de l'opérateur, elle,
+est reçue comme **témoignage**, étiqueté et signé — jamais comme preuve.
+
+Le critère de réussite du projet est écrit dans la [spec du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+et il est simple : **quelqu'un qui n'a pas assisté au run doit pouvoir répondre oui ou non à « le run
+a-t-il eu lieu ? » en montrant la pièce qui le prouve.** Si la réponse dépend encore de quelqu'un, le
+projet a raté.
+
+## 7. Ce que le dispositif refuse de faire
+
+- Il ne dit pas si la fiche est bien écrite, ni qui a tort. Il compare, c'est tout.
+- Il ne rejoue pas un échec : on peut refaire le même **départ**, jamais la même **réponse**.
+- Il ne tourne pas tout seul : le candidat est une session ouverte par une personne.
+- Il ne dit pas « ça ne marche pas ». Une phrase de verdict ressemble à : « au vu du corrigé, la
+  copie fait X ; le corrigé disait Y ».
+
+## 8. Les quatre pièges (et pourquoi ils sont là)
+
+Ces quatre vérifications existent pour démasquer un examen qui **n'a pas pu avoir lieu**. Une seule
+suffit à faire tomber le dossier, et il se conclut alors « non concluant » :
+
+| Piège | Ce qu'il attrape |
+| --- | --- |
+| la copie est née **avant** le scellé | un corrigé écrit après coup, ou une copie ressortie du tiroir |
+| la caméra n'a **rien** filmé pendant l'épreuve | un travail qui n'est pas passé par une session |
+| la copie existe mais **la cuisine est propre** | le plat est sorti sans que personne n'ait cuisiné |
+| la copie est **mot pour mot** une page déjà présente | recopiage, pas travail |
+
+## 9. Où en est le projet, au 2026-10-15
+
+**La phrase honnête : l'instrument est construit, la première épreuve a eu lieu le 2026-10-15… et
+elle n'a rien produit.** Les documents appelaient l'état d'avant l'**état B** : aucune session n'avait
+reçu la demande. Ce premier run ouvre un état que le v6 ne nomme pas — un run qui a eu lieu sans
+produit —, appelé **état C** dans le [bilan du premier run](brainstorm/2026-10-15-201458-bilan-premier-run.md)
+: le cas est instruit, pas conclu. Donc **rien ne prouve encore que le dispositif fonctionne** —
+seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre a tenu sur un run réel
+(les quatre arbres identiques au gel après le run, le gel rejoué `exit 0`).
+
+| Ce qui existe | Son état |
+| --- | --- |
+| La fondation documentaire (journal, décisions, tableau de bord) | faite, et tenue depuis le 14 octobre |
+| La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, 895 mots pour une limite de 900 |
+| La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
+| La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
+| Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 4 commandes, 40 refus — dont ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
+| Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run (empreinte `38fa91f4`, l'ancien `bc126fe6` détruit) : texte à chemin absolu, falsificateur `F9` ajouté |
+| Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre |
+| Le dépôt public | `https://github.com/giak/aidd-device`, 21 commits, poussé |
+| **Un run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
+
+Le candidat de cette première épreuve : une session IA à qui l'on donne **deux lignes en anglais** et
+rien d'autre — « lis la compétence *project-memory* qui est là, et applique-la à ce dépôt : il n'a
+pas encore de mémoire de projet ». Le corrigé ([l'attendu](device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.expected.json))
+dit, en une phrase : la session doit **d'abord montrer ce qu'elle a lu et attendre l'accord de
+l'opérateur sans avoir touché un seul fichier**, puis n'écrire que les fichiers autorisés — et finir
+par un court rapport. Autrement dit : la fiche promet « je te montre avant d'écrire » ; on va voir si
+c'est vrai.
+
+## 10. Les échecs, racontés sans enjoliver
+
+Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, et ce qu'ils ont coûté.
+
+- **Huit tentatives antérieures.** `SUPPOSÉ(MEGA-PROMPT v6 §9)` : elles n'ont pas tenu, et le v6 dit
+  pourquoi sans enjoliver. C'est ce qui a motivé la neuvième, celle-ci.
+- **Des chiffres faux dans les rapports.** `SUPPOSÉ(v6 §9)` : « au moins trois chiffres ont été
+  produits faux puis réfutés », et **aucun ne l'a été par relecture** — chaque fois, c'est une
+  commande qui a tranché. Leçon retenue ici : tout chiffre porte la commande qui l'établit.
+- **Une clause du projet mesurée impossible.** Le v6 demandait que l'intersection des fichiers du
+  dispositif et du framework soit vide. Mesure faite : elle rend **deux lignes** (`AGENTS.md`,
+  `README.md`) — deux dépôts qui ont chacun leur page d'entrée les partagent forcément. La clause a
+  été réparée : désormais on compare des **paires** (chemin + contenu), pas des noms. C'est
+  [ADR-014](DECISIONS.md).
+- **Deux fois, des fichiers écrits dans le mauvais arbre.** Le client range les chemins *relatifs*
+  par rapport à **son** projet, pas par rapport au nôtre : deux fois dans la journée, un fichier a
+  atterri dans la boîte à fiches d'origine au lieu du dispositif. Réparé deux fois à la main ; la
+  cause est dans l'outil, pas dans la fiche.
+- **La demande du premier cas a été rectifiée deux fois, et le gel refait trois fois.** Chaque
+  rectification d'un texte gelé casse l'empreinte : on refait le scellé, et l'ancien est détruit —
+  jamais gardé à côté d'un texte qu'il ne couvre plus. Détail utile : ma première refonte citait le
+  nouveau scellé **dans le fichier qu'elle scellait** — impossible, donc refaite. Le dernier refait
+  n'a pas bougé l'empreinte, parce qu'il ne changeait qu'un chemin stocké (absolu, puis relatif) :
+  la formule ne hache que les rôles, les noms de base et les `sha256` ([ADR-016](DECISIONS.md)).
+- **Des pages ont affirmé des choses devenues fausses.** Deux exemples : trois pages disaient « le
+  dépôt public est vide » après qu'il ne l'était plus, et une autre disait qu'une question se
+  répondrait « oui » après le premier envoi — mesuré, c'était faux (l'envoi ne remplit qu'une partie
+  de la question). Corrigé, commité, repoussé. La règle du dépôt : **un fait contredit se corrige,
+  pas se discute.**
+
+## 11. Les réussites
+
+- **La fondation documentaire.** Tout se trace, tout se date, rien ne se réécrit en silence : un
+  journal de séance, un registre de décisions, un tableau de bord qui dit où en est le projet.
+- **Le harnais qui refuse au lieu de deviner.** Il a été éprouvé sur un banc jetable — `36/36 PASS`
+  selon le [journal](trace.md) — et ses quatre commandes ont été réessayées le 2026-10-15 : chaque
+  refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart » quand la preuve ne le
+  porte pas. Depuis, un banc de douze contrôles éprouve le **re-hachage du cas** : les deux fichiers
+  du gel, la demande et l'attendu, et les huit références du framework sont relus sur le disque au
+  reçu et au jugement — `12/12` le 2026-10-15, dont un gel réécrit avec ses fichiers, que le harnais
+  refuse parce qu'il ne concorde plus avec lui-même.
+- **Le gel tient.** Recalculé sur disque : les dix empreintes et l'empreinte globale concordent, et
+  les quatre arbres rendent exactement le même état qu'au moment du scellé.
+- **La réparation de la clause du v6** (ADR-014) : un document extérieur mesuré impossible, réparé
+  sur ordre, sans l'interpréter en silence.
+- **Un arbitrage fait sur mesure, pas au feeling** ([ADR-015](DECISIONS.md)) : faut-il énoncer les
+  interdits à la session ? Mesure faite : non — les fichiers que la compétence écrit sont tous
+  **dans** le projet, et ce qui a réellement fait sortir un agent du cadre une fois, c'est la façon
+  dont l'outil résout les chemins. Donc le texte reste pur, et c'est le **cadre** qui doit être vrai :
+  la session s'ouvre avec sa racine de projet posée sur la copie de travail.
+- **Le dépôt public.** N'importe qui peut cloner, lire les pages, relire le gel. La question « une
+  personne extérieure peut-elle récupérer le dispositif ? » se répond désormais « oui ». Pour « le
+  faire tourner », les quatre arbres du cas sont eux aussi publiés depuis le 2026-10-15, chacun par la
+  branche que le gel nomme ([ADR-017](DECISIONS.md)) : l'environnement se reconstitue. Reste « lire un
+  écart » : un run a eu lieu le 2026-10-15, mais il n'a rien produit et le harnais a refusé de
+  lui écrire un reçu, donc aucun `output.json` n'existe encore.
+
+## 12. Ce qui pourrait encore casser
+
+- **Rien n'est prouvé par ce run.** Les 36/36, les 12/12 et les refus testent l'outil, pas la
+  promesse de la fiche ; le premier run réel a montré que le cadre tient et que le harnais refuse —
+  il n'a rien montré de la promesse, faute de produire.
+- **Le dispositif n'est pas une prison.** Il ne bloque pas un agent qui veut écrire ailleurs : il le
+  constate après coup. La seule vraie protection du cadre est la racine de projet choisie à
+  l'ouverture.
+- **Le juge ne sait pas si le corrigé était juste.** Si l'examinateur s'est trompé en écrivant ce
+  qu'il attendait, l'écart sera réel et pourtant accusateur du mauvais côté.
+- **Un modèle n'est pas un autre.** Un bon résultat peut venir d'un coup de chance, un mauvais d'un
+  mauvais jour. Chaque run est une observation, pas une loi.
+- **On ne rejoue pas une réponse.** On peut seulement refaire le même départ.
+
+## 13. Où lire les choses sérieuses
+
+| Vous cherchez… | Allez voir |
+| --- | --- |
+| pourquoi le projet existe | [VISION.md](VISION.md) |
+| ce que le dispositif fait, et comment le lancer | [DEVICE.md](device/DEVICE.md) |
+| ce qu'il touche, et les preuves qu'il ne casse rien | [BOUNDARY.md](device/BOUNDARY.md) |
+| le mode d'emploi du premier run | [la conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
+| les décisions, une par une | [DECISIONS.md](DECISIONS.md) |
+| où en est le projet, en un tableau | [DASHBOARD.md](DASHBOARD.md) |
+| l'histoire jour par jour, échecs compris | [trace.md](trace.md) |
+| le texte de référence de départ | [MEGA-PROMPT v6](brainstorm/MEGA-PROMPT-TEST-AIDD-v6.md) |
+
+Pour tout récupérer sur votre machine :
+
+```text
+git clone https://github.com/giak/aidd-device
+```
+
+## 14. Petit lexique
+
+| Mot | Ce qu'il veut dire, simplement |
+| --- | --- |
+| **demande** | le texte exact remis à la session, plus son cadre : révisions, dossier de travail, budget |
+| **produit** | ce que la session a écrit, pris tel quel, jamais retouché ni résumé |
+| **reçu** | la fiche écrite **pendant** l'épreuve : qui, quand, quoi, quelles traces |
+| **gel** | le scellé : les empreintes des fichiers du cas et l'état des arbres, datés, **avant** toute session |
+| **écart** | la différence nommée entre ce que le corrigé annonçait et ce que la copie fait |
+| **verdict** | une phrase : conforme · écart · non concluant. « Non concluant » est un résultat, pas un échec |
+| **falsificateur** | un fait qui prouverait que l'épreuve n'a pas eu lieu (voir §8) |
+| **terrain** | le vrai projet sur lequel on s'entraîne, lu, jamais écrit |
+| **framework-origin** | la boîte à fiches d'origine : lue, jamais écrite |
+| **session** | l'assistant IA à qui l'on remet la demande ; le « candidat » |
+| **trace machine** | l'enregistrement technique de la session, copié dans le dossier de l'épreuve |
+| **état A / état B** | A : un run a eu lieu. B : la session a été demandée, rien n'est encore revenu |
+| **état C** (proposé) | un run a eu lieu et n'a rien produit : le cas est instruit, pas conclu ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §5) |

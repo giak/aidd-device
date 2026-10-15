@@ -231,6 +231,23 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   de tâche ; `git diff --stat origin/main` est vide ; le blob de la conduite est identique des deux
   côtés (`ecff6b57…`) ; `39750fe`, la révision du dispositif citée dans `DEVICE.md`, est un ancêtre
   de `origin/main`.
+- **Le point `OPEN` de la conduite est arbitré — ADR-015**, sur l'ordre « mesure si une session tient
+  le cadre du §7 sans qu'on énonce les interdits, et tranche en conséquence » (mémoire `691e913c`).
+  Mesures à la révision sous test `4c39e5c5` : `references/tools.md` et `hooks/update_memory.js`
+  visent `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.github/copilot-instructions.md` et
+  `aidd_docs/**` — des chemins **relatifs au projet** ; le `git add` du script ne tourne que pour le
+  hook automatique, jamais quand la skill l'appelle ; l'étape 3 de `actions/04-sync.md` attend le
+  choix de l'utilisateur avant d'écrire. Aucune étape de la skill n'écrit donc hors du projet. En
+  face, ce qui a réellement fait sortir un agent du cadre ce jour-là n'est pas un manque de paroles
+  mais la résolution d'un chemin relatif par le client contre **sa** racine de projet — les deux
+  incidents de 13:0x et 13:34. Décision (ADR-015) : le §5 garde sa lettre, les interdits ne se disent
+  pas, la session s'ouvre avec sa **racine de projet** posée sur `$W/terrain` ; l'ADR porte ce qui le
+  rendrait faux (une session quittant le cadre par ses propres décisions au premier run). Le §7 de la
+  demande justifiait le retrait du câblage par « des fichiers hors du répertoire de travail » : faux à
+  cette révision, la raison est remplacée par la mesure et la prohibition demeure (seconde note de
+  rectification en tête du fichier). Le gel est refait avant toute ouverture de session : `1b9a8434`
+  détruit, `bc126fe6` au `2026-10-15T15:59:39.604335300+0200`, empreinte recalculée sur disque =
+  gelée ; le reste du cas est inchangé (attendu `d9b4ee01`, 8 références, 4 arbres).
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;
@@ -421,4 +438,7 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   et l'entrée du journal, jamais un message qui nommerait ce que son diff ne porte pas. Du tour
   suivant : `6a329774` — le push de `main` sur le dépôt public (`848ad7a`, 18 commits, vérifié côté
   GitHub), et la question 1 du §11 mesurée clause par clause : « non », le push ne remplissant que la
-  récupération, et les trois pages qui affirmaient le contraire réparées.
+  récupération, et les trois pages qui affirmaient le contraire réparées. Du tour suivant :
+  `691e913c` — l'arbitrage du cadre (ADR-015) sur mesures de `tools.md`, `update_memory.js` et
+  `04-sync.md`, la rectification du §7 de la demande, et le gel refait (`bc126fe6`, `1b9a8434`
+  détruit).

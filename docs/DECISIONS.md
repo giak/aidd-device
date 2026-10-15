@@ -375,3 +375,38 @@ restée chez l'origine ne sont pas touchés : l'un est un enregistrement daté, 
 portée. Réparation faite aussi d'une dérive du tour, nommée dans `BOUNDARY.md` §8 : la demande du
 premier cas avait atterri dans `framework-origin` (chemin relatif résolu contre la racine du client),
 remise dans `docs/device/CASES/` — porcelain de l'origine revenu à ses 2 lignes documentées.
+
+## ADR-015 — Les interdits du run ne se disent pas, ils sont structurels (2026-10-15)
+
+**Contexte** : la conduite du premier cas a laissé un point `OPEN` (mémoire `0aeef2f8`) : le §5 de la
+demande exige que le texte remis à la session soit les deux lignes entre gardes « et rien d'autre »,
+alors que son §7 lui interdit quatre choses. L'ordre du relecteur : « mesure si une session tient le
+cadre du §7 sans qu'on énonce les interdits, et tranche en conséquence » (mémoire `691e913c`).
+
+**Mesures** (2026-10-15, révision sous test `4c39e5c5`) : `references/tools.md` vise `CLAUDE.md`,
+`AGENTS.md`, `.cursorrules`, `.github/copilot-instructions.md` — tous **relatifs au projet** — et
+`hooks/update_memory.js` écrit les mêmes plus `aidd_docs/memory/README.md` ; il ne stage rien quand la
+skill l'appelle (le `git add` n'appartient qu'au hook automatique), et l'étape 3 de
+`actions/04-sync.md` attend le choix de l'utilisateur avant d'écrire quoi que ce soit. Aucune étape de
+la skill n'écrit donc hors du projet. En face, la seule chose qui a réellement fait sortir un agent du
+cadre ce jour-là n'est pas un manque de paroles mais la résolution d'un chemin relatif par le client
+contre **sa** racine de projet : deux incidents (13:0x, 13:34), deux fois réparés.
+
+**Options** : (a) énoncer les interdits à la session — le texte remis cesse d'être les deux lignes du
+§5, la demande gagne une variable et le gel doit être refait ; (b) ne rien changer — un run consommé
+pour une réponse qui se lit déjà dans le code de la skill ; (c) garder le §5 pur et rendre le cadre
+**structurellement** vrai à l'ouverture.
+
+**Choix** : (c). Le texte remis reste les deux lignes ; les interdits ne sont pas dits. La session
+s'ouvre avec sa **racine de projet** posée sur `$W/terrain`, parce que c'est elle — pas le répertoire
+courant, pas la bonne volonté — qui décide où tombent les chemins relatifs de la skill. Le seul
+interdit qui reste non structurel est « ne pas lire `CASES/` » : rien dans la demande ne l'y invite, et
+le reçu le mesure (`cloisonnement.attendu_vu`).
+
+**Conséquences** : la conduite porte la conséquence à l'ouverture et garde le contrôle d'après-run
+(paire de `porcelain`, `find -newer`), qui constate sans prévenir. La justification du §7 de la
+demande, fausse à cette révision (« il vise des fichiers hors du répertoire de travail »), est
+remplacée par la mesure ; la prohibition demeure et le gel du cas est refait avant toute ouverture de
+session — `1b9a8434` détruit, `bc126fe6` au `2026-10-15T15:59:39.604335300+0200`. Cet arbitrage est
+**faux** si le premier run montre une session quittant le cadre par ses propres décisions : les
+interdits devraient alors être dits, et le §5 amendé.

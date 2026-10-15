@@ -16,6 +16,14 @@ status: pending
 > **Rectifié le 2026-10-15**, l'état ayant contredit deux lignes de ce bloc : `status` valait `frozen`,
 > hors de l'ensemble autorisé (`pending`·`in-progress`·`done`·`blocked`), et le gel n'existait pas
 > encore. Le texte verbatim du §5 et les deux réponses figées du §8 n'ont pas bougé.
+>
+> **Rectifié une seconde fois le 2026-10-15**, sur mesure : le §7 justifiait le retrait du câblage
+> par « des fichiers hors du répertoire de travail ». Faux à la révision sous test — `references/tools.md`
+> et `hooks/update_memory.js` écrivent tous deux des chemins **relatifs au projet**
+> (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`), donc dans le répertoire de travail
+> quand la racine du projet y est. La prohibition demeure, sa raison est remplacée par la mesure. Le
+> §5, le §6 et le §8 n'ont pas bougé ; le gel a été refait le même jour, l'ancien (`1b9a8434`) détruit :
+> il ne couvrait plus ce texte.
 > Champs imposés par la [spec du run](../../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §3 ;
 > l'attendu vit à côté, dans `.expected.json`, et ne part jamais.
 
@@ -128,9 +136,10 @@ aucun fichier hors de cette table n'est un produit.
 - écrire dans `/home/giak/projects/audio-sync-tool` — l'original du terrain ;
 - lire quoi que ce soit sous `/home/giak/projects/aidd-device/docs/device/CASES/` — l'attendu y vit ;
 - sortir du répertoire de travail (§4) : ni dans le reste de `$HOME`, ni dans `/tmp` ;
-- toute écriture git (`commit`, `push`, `checkout` d'une autre révision) et tout appel réseau ;
-- écrire dans les configurations d'outils IA du poste : le câblage est une autre action de la skill,
-  il vise des fichiers hors du répertoire de travail et il est hors de ce cas.
+- toute écriture git (`commit`, `push`, `checkout` d'une autre révision) et tout appel réseau ;- écrire les fichiers de contexte d'outils IA, ceux du projet comme ceux du poste : le câblage est une
+  autre action de la skill (mesuré à la révision sous test : `references/tools.md` et
+  `hooks/update_memory.js` écrivent `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`), il
+  porte sur des fichiers hors de la table `Write to` du §6 et reste hors de ce cas.
 
 ## 8. Budget, et les deux textes figés de l'opérateur
 

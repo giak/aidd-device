@@ -1,9 +1,9 @@
 {
   "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
-  "gele_le": "2026-10-15T15:29:49.581938260+0200",
-  "gele_le_epoch": 1792070989,
+  "gele_le": "2026-10-15T15:59:39.604335300+0200",
+  "gele_le_epoch": 1792072779,
   "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-15-133423-promesse-memoire-avant-ecriture --refreeze --arbre framework-origin=/home/giak/projects/framework --arbre terrain=/home/giak/projects/audio-sync-tool --arbre revision-sous-test=/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin --arbre travail=/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain --ref-root /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin --ref plugins/aidd-context/skills/02-project-memory/SKILL.md --ref plugins/aidd-context/skills/02-project-memory/actions/01-scan.md --ref plugins/aidd-context/skills/02-project-memory/actions/02-write.md --ref plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md --ref plugins/aidd-context/skills/02-project-memory/references/structure.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-rules.md --ref plugins/aidd-context/skills/02-project-memory/references/reading-sources.md",
-  "empreinte": "1b9a8434a1d446cc3fca8baee8eeebb351e715ccceed20c3fc84722ef97ecdd6",
+  "empreinte": "bc126fe613529a045338d1b519d03eaef04ad631fcbcbcb10de0bc12870cef97",
   "fichiers": [
     {
       "role": "attendu",
@@ -16,8 +16,8 @@
     {
       "role": "demande",
       "chemin": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
-      "sha256": "5506d293ee0945b4d4faabc916dbe5f8da7b8aaca950d6d4a3459401ad836923",
-      "taille": 8583,
+      "sha256": "4f7c189cb28dfc678a7bba92e44538cf7bce6893a7ec63d4760226527e3e0143",
+      "taille": 9431,
       "birth": "2026-10-15 13:34:50.011401680 +0200",
       "birth_epoch": 1792064090
     }

@@ -46,3 +46,5 @@ status: in-progress
 | Commit | Contenu |
 | --- | --- |
 | `1bbb9d2` | fondation documentaire B1–B6, journal recréé, phrase corrigée, appareil du 14 retiré |
+| `326a5be` | structure deuteros : VISION, PFD, DECISIONS, DASHBOARD, spec boucle 2 |
+| `9768b4c` | `AGENTS.md` contrat autonome (audit de pollution) et cadre d'output implémenté |

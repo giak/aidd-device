@@ -58,6 +58,9 @@ la gestion documentaire — comment on trace tout, on note tout — avant toute 
   est autonome) ; la spec passe à `status: done` ; le
   DASHBOARD gagne sa ligne d'état. Toute itération ultérieure du cadre s'ouvrira par un document
   daté neuf, jamais par réécriture de la spec (immuabilité B4).
+- Sur ordre « commit » (mémoire `15a1923b`), la salve entière est commitée : `9768b4c`, 6 fichiers,
++601/−65 — contrat autonome, cadre d'output, charte KERNEL, registre, état, journal. L'arbre est
+redevenu propre après ce commit.
 - L'`AGENTS.md` est jugé pollué (« ce n'est pas le but d'agents.md », mémoire `fc902198`) et
 audité section par section : le renvoi à la spec, la date d'approbation et l'id de mémoire du
 bloc `CONSIGN`, le récit de rétrospection et l'anecdote datée des parts d'outils, l'anecdote de

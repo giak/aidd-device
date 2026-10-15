@@ -250,3 +250,46 @@ n'existe, c'est-à-dire la règle non spécifiée que l'ADR-010 efface.
 réel est nommé et non corrigé : `?? .freebuff/` (37 octets, 2026-10-14 15:49), écrit par le client
 dans un arbre read-only, non ignoré ; laissé en place, le supprimer étant une écriture de plus dans
 les données de quelqu'un d'autre.
+
+## ADR-012 — Un seul contrat : `AGENTS.md`, sans skills, sans copie, sans contrôle mécanique (2026-10-15)
+
+**Contexte** : à 12:56-12:57, un auteur tiers (non consigné, non commité) a découpé le contrat —
+`AGENTS.md` réduit à un noyau de 9 sections plus une phrase de renvoi, quatre sections déplacées
+(`TERRITORY`, `MEMORY`, `CONSIGN`, `NAMING`) dans `.agents/skills/` — et déposé deux pièces de
+plus : `docs/contracts/2026-10-15-125647-agents-reference.md` (la recopie du contrat d'avant la
+découpe) et `tools/guard-agents.mjs` (le contrôle de la découpe). `AGENTS-compact.md`, une seconde
+recopie du contrat, avait déjà disparu de l'arbre. L'ordre : « Tranche la coexistence d'AGENTS.md,
+d'AGENTS-compact.md et des cinq skills de .agents/ en un seul contrat, et supprime ce qui fait
+doublon. »
+
+**Mesures** : `AGENTS.md` → 82 lignes, 9 sections, 6448 caractères ; `ls -1 .agents/skills | wc -l`
+→ **3** (01-consign, 02-memory, 03-boundaries), pas cinq — le chiffre de cinq venait de ma propre
+note, pas d'un comptage, et la carte de suite portait cette erreur ; `AGENTS-compact.md` → absent
+de l'arbre, présent dans `.local/share/Trash/files/` (`DeletionDate=2026-10-15T12:58:07`) ;
+`node tools/guard-agents.mjs <référence>` → `ok — 13 sections, 72 regles, noyau 6448 o, 3 skills`.
+
+**Décision** : le contrat est **un seul fichier**, `AGENTS.md`, autonome et stand alone (exigence
+déjà consignée, `fc902198`) ; les quatre sections déplacées reviennent à leur place d'origine et la
+phrase de renvoi disparaît. Sont supprimés comme doublons : `.agents/` (un second foyer pour des
+règles du contrat, et un arbre parallèle à la racine — deux interdits du §`CONSIGN`), la copie de
+référence (« A document restating another is a duplicate; the copy loses »), et le guard (contrôle
+mécanique non mérité par une dérive démontrée — ADR-004 —, dont l'unique référence disparaît avec
+la copie). `AGENTS-compact.md` n'était plus à supprimer.
+
+**Preuve que rien n'est perdu** : le repli rend `AGENTS.md` identique **octet pour octet** à la
+copie de référence (`cmp` → exit 0) ; le diff section par section ne montre, sur TERRITORY, MEMORY
+et NAMING, qu'une ligne vide finale de différence, et CONSIGN aucune. Avant sa suppression, le
+guard désigne exactement les doublons à retirer — `REFUS — 4 derive(s) : section a deux maisons :
+TERRITORY / MEMORY / CONSIGN / NAMING`, exit 1 ; `.agents/` retiré, il rend
+`ok — 13 sections, 72 regles, noyau 11374 o, 0 skills`, exit 0. Contre le dépôt : `AGENTS.md` n'est
+plus modifié aux yeux de git, donc le contrat restauré est celui que le commit porte déjà
+(13 sections, 124 lignes). Après suppression : racine = `AGENTS.md docs .git README.md`,
+`liens_morts=0` sur les 12 markdown, aucun renvoi résiduel aux chemins retirés. Empreintes des
+pièces détruites (aucune n'était suivie par git) : référence `030506ef…`, guard `94ee38ee…`,
+01-consign `c56a217d…`, 02-memory `ba85b4ad…`, 03-boundaries `2fa3041d…`.
+
+**Conséquences** : une règle, une maison — le contrat entier se lit dans `AGENTS.md`, rien ne le
+complète, rien ne le duplique, et la racine n'a plus d'arbre parallèle ni de script. Perte assumée
+et nommée : les `description` de déclenchement des skills (quand les lire, quand ne pas les lire)
+ne sont pas reportées, faute de chargeur on-demand dans ce dépôt. Une tentative de re-découpe devra
+venir avec sa dérive mesurée, pas avec un contrôle promis.

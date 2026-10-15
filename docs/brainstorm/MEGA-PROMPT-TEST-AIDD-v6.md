@@ -268,10 +268,10 @@ projet, mêmes fichiers. C'est ce départ que la rejouabilité du §5 couvre.
 antérieures. Ne les confonds pas avec des invariants du produit, et ne les recopie pas sans les
 mesurer.
 
-## 7. Préconditions à constater, et ce que tu rends quand elles manquent
+## 7. Le runner : une session d'opérateur, et ce que tu rends quand elle manque
 
-**Un runner est une précondition, pas un acquis.** Elle décide de tout ce qui suit. État mesuré un
-jour donné, sur une machine donnée, non remesuré depuis :
+**Le runner est une session ouverte par l'opérateur, pas un binaire à trouver.** C'est la décision
+qui gouverne ce paragraphe. État mesuré un jour donné, sur une machine donnée, non remesuré depuis :
 
 ```text
 claude -p "PONG"                        → « Not logged in · Please run /login »
@@ -280,15 +280,25 @@ avec un modèle distant gratuit          → « TPM: Limit 8000, Requested 9168 
 ```
 
 Reprends ces trois lignes à ton compte, avec leurs commandes, avant de construire quoi que ce soit.
+Elles ne sont pas là pour te faire renoncer : elles établissent qu'aucun runner sans interaction ne
+répond ici, donc qu'il n'y a pas de commande à brancher. **Le runner, c'est la session que
+l'opérateur ouvre** : elle reçoit la demande, lit le skill, et produit. L'indépendance des rôles ne
+dépend donc d'aucune capacité de spawn — c'est l'opérateur qui ouvre, et c'est lui qui sépare
+l'auteur de l'attendu du juge (§11, question 4).
 
-**État A — un runner fonctionne.** Tu peux produire une démonstration qui a tourné. Déclare avant de
-lancer : la commande exacte du runner, la preuve qu'il répond, le nombre de cas, et le nombre
-d'appels modèle que ça consomme. Un chiffre qui décide de quelque chose se mesure avant la décision.
+**État A — une session d'opérateur est disponible.** Tu peux produire une démonstration qui a
+tourné. Déclare avant de lancer : quelle session joue le runner et qui l'ouvre, **la demande exacte**
+qui lui est remise (le texte, tel quel), la preuve que la session a répondu, le nombre de cas, le
+nombre d'échanges que ça consomme, et où le produit brut de chaque cas est conservé. Un chiffre qui
+décide de quelque chose se mesure avant la décision. Ce qui est rejouable est le **départ** : la même
+demande remise à une autre session, ou à la même dans un contexte neuf. La réponse, elle, ne se
+rejoue pas (§8).
 
-**État B — aucun runner ne fonctionne.** C'est un résultat recevable, pas un échec, et il n'autorise
-pas à inventer une sortie. Tu rends alors, en plus de ce qui ne dépend pas d'un run : la
-précondition mesurée (commande et sortie brute), la spécification de ce qui aurait été exécuté, et
-la liste de ce qui reste à faire pour passer en état A. **Ne fabrique jamais un produit observé.**
+**État B — aucune session d'opérateur n'est disponible.** C'est un résultat recevable, pas un échec,
+et il n'autorise pas à inventer une sortie. Tu rends alors, en plus de ce qui ne dépend pas d'un
+run : la précondition mesurée (la session demandée, qui devait l'ouvrir, et la réponse obtenue ou
+son absence), la spécification de ce qui aurait été exécuté, et la liste de ce qui reste à faire
+pour passer en état A. **Ne fabrique jamais un produit observé.**
 
 Dis dans les deux cas lequel des deux états tu as atteint, et pourquoi.
 
@@ -296,7 +306,8 @@ Dis dans les deux cas lequel des deux états tu as atteint, et pourquoi.
 
 Trois choses. Chacune doit apparaître dans la sortie du dispositif, **à l'endroit du rapport où
 elle s'applique** (§10), pas dans une note de bas de page. Les écrire est une exigence, pas une
-excuse.
+excuse. Le dernier paragraphe de ce chapitre n'est pas une quatrième limite : c'est ce que les trois
+imposent à la forme de la phrase de verdict.
 
 **Il ne sait pas si l'attendu était juste.** Quelqu'un peut écrire « cette lacune doit être classée
 `blocker` » alors que `blocker` n'est pas la bonne sévérité. Le dispositif comparera, trouvera un
@@ -310,6 +321,14 @@ la bonne raison.
 
 **Il ne rejoue pas un échec.** On peut repartir du même point ; on ne peut pas rejouer la même
 réponse. Un échec observé n'est pas archivé comme l'est un test dans un script classique.
+
+**Ce que la phrase de verdict a le droit d'affirmer.** Ces trois limites ont une conséquence sur la
+forme de la sortie, et elle est contraignante : la phrase de verdict (§10, `output.json`) énonce
+qu'un produit observé **s'écarte ou non de l'attendu écrit**, et rien de plus. Elle ne dit ni que la
+modification est fautive, ni que l'attendu était juste, ni que l'effet vient du skill plutôt que des
+circonstances. « Au vu de l'attendu écrit, le produit fait X ; l'attendu disait Y » est une réponse ;
+« la modification ne marche pas » n'en est pas une. C'est cette forme que lit la question 2 du §11 :
+elle demande une comparaison, pas une attribution — l'attribution reste à la personne qui relit.
 
 ## 9. Ce qui a déjà été tenté, et ce qu'on en sait
 
@@ -344,7 +363,8 @@ jointe à la pull request — sans quoi la question 1 du §11 se répond « non 
 **Ce que tu rends, avec sa forme :**
 
 - **`DEVICE.md`** — le dispositif tenant sur une page : au plus 900 mots. Ce qu'il fait, ce qu'il ne
-  fait pas, qui fait quoi, la commande exacte qui le lance, et **la commande qui le clone**. La
+  fait pas, qui fait quoi, la commande exacte qui le lance, **la demande exacte remise à la session
+  d'opérateur qui joue le runner** (§7) et ce qui en revient, et **la commande qui le clone**. La
   personne qui relit doit pouvoir lancer le dispositif et lire un écart sans avoir rien écrit, et
   la personne qui doute doit pouvoir récupérer la révision exacte qui a produit la sortie.
 - **`BOUNDARY.md`** — la frontière : les chemins du framework que le dispositif lit, la révision
@@ -369,14 +389,17 @@ jointe à la pull request — sans quoi la question 1 du §11 se répond « non 
   dossier porte les deux révisions, sans quoi la sortie ne dit pas ce qui l'a produite.
 - **`NEGATIVE.md`** — le contrôle négatif : la casse volontaire que tu as introduite (une phrase de
   skill retournée, par exemple), le cas qui doit la signaler, la sortie brute qui la signale — ou la
-  raison documentée pour laquelle ce contrôle ne peut pas être construit. Un dispositif qui n'a
-  jamais été vu en train de signaler une casse connue n'a rien prouvé.
+  raison documentée pour laquelle ce contrôle ne peut pas être construit. **Une raison documentée
+  n'est pas un contrôle fait** : elle se rend, elle s'écrit, et elle laisse la question 6 du §11 sans
+  réponse — donc, en état A, le travail n'est pas fini. Un dispositif qui n'a jamais été vu en train
+  de signaler une casse connue n'a rien prouvé.
 - **`REFUSED.md`** — ce que tu as refusé de construire, et pourquoi. Aussi utile que le reste.
 - **`LIMITS.md`** — les limites rencontrées, nommées, pas contournées en silence, et pour chaque
   trace de tentative antérieure trouvée dans le dépôt : lue ou non, réutilisée, étendue ou déclarée
   obsolète.
-- **`ATTEMPT.md`** — en état B seulement : la précondition mesurée, la sortie brute, ce qui aurait
-  été exécuté, et ce qui manque pour passer en état A.
+- **`ATTEMPT.md`** — en état B seulement : la précondition mesurée (la session demandée, qui devait
+  l'ouvrir, la réponse obtenue ou son absence), ce qui aurait été exécuté, et ce qui manque pour
+  passer en état A.
 
 **Et, côté framework, dans la pull request — ce que lit la personne qui relit :**
 
@@ -397,8 +420,9 @@ compte-rendu rangé sous `aidd_docs/tasks` peut donc nommer des chemins qui n'ex
 dispositif, et citer le présent document, sans faire rougir personne.
 
 **Ce que la sortie ne fait jamais** : écrire un produit observé qui n'a pas été produit ; noter à la
-place de nommer ; laisser un cas se déclarer vert alors qu'aucun contrôle n'a eu lieu. Si un
-contrôle n'a pas été fait, le verdict est `non concluant`, et il compte comme tel.
+place de nommer ; laisser un cas se déclarer vert alors qu'aucun contrôle n'a eu lieu ; faire passer
+une raison documentée pour un contrôle fait. Si un contrôle n'a pas été fait, le verdict est `non
+concluant`, et il compte comme tel.
 
 ## 11. Les questions de fin
 
@@ -411,7 +435,8 @@ compte-rendu se rend quand même.
    l'écart ?** → `DEVICE.md` : la commande qui clone, la révision, la commande qui lance, et un run
    refait depuis zéro par quelqu'un d'autre, ou par toi dans un contexte neuf.
 2. **La sortie répond-elle en une phrase à « cette modification fait-elle ce qu'elle annonce ? »**
-   → `runs/*/output.json` : le champ de phrase de verdict de chaque exécution.
+   → `runs/*/output.json` : le champ de phrase de verdict de chaque exécution — une comparaison
+   entre l'attendu écrit et le produit observé, jamais une attribution de faute (§8).
 3. **Quel attendu a été écrit avant de voir le produit, et qu'est-ce qui le prouve ?**
    → `CASES/` et l'empreinte antérieure au premier run.
 4. **Qui a joué l'auteur de l'attendu et qui a joué le juge, et quelle séparation a été réellement
@@ -420,7 +445,8 @@ compte-rendu se rend quand même.
 5. **Où as-tu tracé la frontière du testable, et quels attendus as-tu écartés ?**
    → `CASES/` : le champ des attendus écartés et le critère du refus.
 6. **Le dispositif a-t-il signalé une casse volontaire, et comment le sait-on ?**
-   → `NEGATIVE.md` et sa sortie brute.
+   → `NEGATIVE.md` et sa sortie brute ; une raison documentée à la place du contrôle laisse cette
+   question sans réponse, et la réponse est alors « non ».
 7. **Aucun fichier du dispositif n'appartient au framework, et le framework est-il intact ?**
    → `BOUNDARY.md` : l'intersection vide, les deux `git status --porcelain`.
 8. **Le compte-rendu tient-il dans la pull request, et suffit-il à contester le verdict sans

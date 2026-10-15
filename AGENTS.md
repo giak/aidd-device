@@ -16,6 +16,7 @@ evidence, source, tool result, execution or verification.
 * `FACT != EVIDENCE != INFERENCE != HYPOTHESIS != SPECULATION != UNKNOWN`.
 * `CORRELATION != CAUSATION`·`ASSOCIATION != COORDINATION`·`BENEFIT != INTENT`·`ROLE != RESPONSIBILITY`.
 * State uncertainty, contradiction, material limits explicitly. `OPEN`·`UNKNOWN`·`INCONCLUSIVE`·`GAP` = valid results.
+* A rule stated in this file that is neither clear nor specific is deleted, never interpreted.
 
 ## SCOPE
 
@@ -29,8 +30,8 @@ evidence, source, tool result, execution or verification.
 Four things stay distinct here, and are never merged:
 
 * **framework-origin** — `/home/giak/projects/framework`. Never modified in place, never written into.
-  Evidence of intactness: two identical `git -C <origin> status --porcelain`, before and after.
-* **revision-under-test** — a revision of origin (typically a PR head), checked out into a throwaway
+  Evidence that origin is unchanged: two identical `git -C <origin> status --porcelain`, before and after.
+* **revision-under-test** — a revision of origin, checked out into a throwaway
   directory outside every tree below; a per-run parameter, never a constant of this file.
 * **terrain** — `/home/giak/projects/audio-sync-tool`, read-only, at the revision each run records.
 * **this-repo** — the device and its documents, nothing else.
@@ -85,16 +86,16 @@ Four things stay distinct here, and are never merged:
 * Every repository claim carries the command establishing it, or `SUPPOSÉ(<source>)`.
   A figure copied from a document, journal or memory is not evidence.
   `UNKNOWN` is a knowledge level, never a source, never replacing `SUPPOSÉ`.
-* When relevant: assess evidence by quality, directness, independence, freshness.
+* When evidence quality could change the conclusion: assess it by quality, directness, independence, freshness.
   Repetition or derivative sources ≠ independent confirmation.
 * Distinguish source existence, claim presence, claim verification.
 * If verification is unavailable or insufficient: state the limitation and downgrade the conclusion.
 
 ## AUDIT
 
-* Audit when the result is: high-impact | contested | hard to verify | weak-evidence-based | exposed to meaningful alternative explanations.
+* Audit when the conclusion could change a decision, is contested, is hard to verify, or rests on evidence weaker than the claim.
 * Use orthogonal perspectives when real and available.
-* Preserve substantive disagreement until evidence resolves it.
+* Preserve a disagreement that could change the result until evidence resolves it.
 * Criticism volume ≠ evidence of quality.
 
 ## CHANGE
@@ -107,11 +108,11 @@ Four things stay distinct here, and are never merged:
 
 * `FAIL → DIAGNOSE → NEW_INFORMATION → RETRY`. Never repeat a failed strategy without a changed premise.
 * Missing data, capability or unresolved conflict → best effort + explicit limits. Never invent missing information.
-* `NO_PROGRESS → STOP`.
+* `NO_PROGRESS → STOP`: a stall without a changed premise is the third condition of `STOP`.
 
 ## STOP
 
-* Stop only when all three: success criteria met · no critical unresolved issue remains · further work unlikely to materially change the result.
+* Stop only when all three: success criteria met · no unresolved issue remains that could change the result · further work unlikely to materially change the result.
 * Never continue merely because further analysis is possible.
 
 ## OUTPUT

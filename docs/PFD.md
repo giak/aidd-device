@@ -36,7 +36,7 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 | Système | Contenu | Statut |
 | --- | --- | --- |
 | Fondation B1–B6 | échange-mémoire, section-par-séance, preuve, immuabilité, zéro dérive | 🟢 |
-| Journal | `TRACE.md` recréé, une section numérotée par séance | 🟢 |
+| Journal | `trace.md` recréé, une section numérotée par séance | 🟢 |
 | Registre ADR | `DECISIONS.md`, léger, Contexte/Options/Choix/Conséquences | 🟢 |
 | État d'avancement | `DASHBOARD.md`, titre de vérité pour « où en est le projet ? » | 🟢 |
 | Boucle 2 : unité de travail | critère falsifiable AVANT, dossier de tâche, clôture | 🟨 la spec en itération |

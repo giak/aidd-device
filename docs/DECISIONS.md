@@ -24,7 +24,7 @@ sans script (choisi) · CI.
 
 **Choix** : deux canaux (mémoire par échange écrite immédiatement ; section de séance numérotée,
 append-only), un foyer par nature, chaque fait porte sa preuve, deux niveaux d'immuabilité, zéro
-dérive. Décision portée mémoire `e5411d2e` ; format courant et sed de l'entrée dans TRACE.md.
+dérive. Décision portée mémoire `e5411d2e` ; le squelette d'une entrée est celui de `docs/trace.md`.
 
 **Conséquences** : sans script ni hook ni CI ; toute vérification mécanique sera méritée, pas
 promis.
@@ -147,9 +147,9 @@ comme les documents.
 
 ## ADR-008 — La charte KERNEL du relecteur : adoptée amputée de ce qui n'est pas exécutable (proposée 2026-10-15)
 
-**Contexte** : le relecteur a remis verbatim un « COGNITIVE CONTROL KERNEL » (texte conservé
-intégralement en `docs/brainstorm/2026-10-15-083943-kernel-charte-relecteur.md`, mémoire
-`09faccc1`) : priorité, invariants, échelle épistémique, neuf penseurs, pipeline en treize étapes,
+**Contexte** : le relecteur a remis verbatim un « COGNITIVE CONTROL KERNEL » (mémoire `09faccc1` ;
+le relevé qui le conservait a été effacé le 2026-10-15, cet ADR garde seul ce qui en est adopté) :
+priorité, invariants, échelle épistémique, neuf penseurs, pipeline en treize étapes,
 revues indépendantes à lancer, table de sélection, blocs de sortie. Il recoupe en partie
 `AGENTS.md` et l'ADR-007 — ce qui est redondant se référence, ne se recopie pas.
 
@@ -186,8 +186,8 @@ non-régression, pas de fabrication), l'anti-complaisance, l'échelle
 `EVIDENCE ≠ VERIFICATION` — déjà dans `AGENTS.md` (§`INVARIANTS`, §`VERIFY`).
 
 **Conséquences** : l'application à la section `OUTPUT` d'`AGENTS.md` (ADR-007 + ces cinq points)
-attend la validation du relecteur ; son texte verbatim reste la source, et une divergence se
-tranche devant lui, jamais par ma réécriture silencieuse.
+attend la validation du relecteur ; le texte verbatim de la charte n'étant plus au dépôt (effacé le
+2026-10-15), une divergence se tranche devant le relecteur, jamais par ma réécriture silencieuse.
 
 ## ADR-009 — Le cadre d'output devient une spec normative (2026-10-15)
 
@@ -196,12 +196,57 @@ tranche devant lui, jamais par ma réécriture silencieuse.
 aurait obligé à les réécrire à chaque itération, ce que l'immutabilité refuse, et à répéter la
 même matière dans le registre.
 
-**Décision** : la norme d'output vit dans une spec datée,
-`docs/brainstorm/2026-10-15-084346-cadre-output-llm.md` (`status: pending`), qui reprend les deux
-ADR et les organise (trois niveaux proportionnés N1/N2/N3, onze règles R1–R11, refus explicites,
-limites). Les ADR-007 et ADR-008 restent des relevés datés : ni réécrits ni recopiés. Quand la
-spec sera approuvée puis appliquée, la section `OUTPUT` d'`AGENTS.md` la citera par son chemin.
+**Décision** : la norme d'output vit dans une spec datée (`status: pending` à la décision), qui
+reprend les deux ADR et les organise (trois niveaux proportionnés N1/N2/N3, onze règles R1–R11,
+refus explicites, limites). Les ADR-007 et ADR-008 restent des relevés datés : ni réécrits ni
+recopiés. La section `OUTPUT` d'`AGENTS.md` porte la norme depuis le 2026-10-15 ; cette spec ayant
+été effacée le jour même, le contrat autonome en reste le seul texte en vigueur.
 
-**Conséquences** : une itération sur le cadre d'output se fait désormais dans un seul fichier ;
-la portée de l'adoption (ce dépôt ou tout le parc) reste à arbitrer, et elle est écrite dans la
-spec §« Décisions à arbitrer », pas décidée en silence.
+**Conséquences** : une itération sur le cadre d'output se fait dans un seul document — `AGENTS.md`
+depuis l'effacement de la spec ; la portée de l'adoption (ce dépôt ou tout le parc) reste à
+arbitrer, et elle était écrite dans la spec, pas décidée en silence.
+
+## ADR-010 — Une règle ni claire ni spécifiée est effacée, jamais interprétée (2026-10-15)
+
+**Contexte** : l'audit externe d'`AGENTS.md` avait relevé les marqueurs de degré ; j'en avais
+motivé un (« typically a PR head » décrit sans décider, donc conservé). Le relecteur tranche
+autrement : « si ce n'est pas clair ou spécifié, on efface » (mémoire `24db199c`).
+
+**Décision** : le contrat porte la règle (§`INVARIANTS` : « A rule stated in this file that is
+neither clear nor specific is deleted, never interpreted »), appliquée le jour même à trois
+endroits : le marqueur retiré (`TERRITORY`), les déclencheurs d'`AUDIT` reformulés en critères
+opératoires (`high-impact` non mesurable, `meaningful` non spécifié), `substantive` remplacé par
+« could change the result ».
+
+**Conséquences** : un défaut de précision se répare par suppression ou par un critère mesurable,
+jamais par une glose ; l'audit d'un document suit la règle de l'audit d'un résultat.
+
+## ADR-011 — Le worktree tiers dans le terrain est constaté, jamais corrigé (2026-10-15)
+
+**Contexte** : l'audit externe relève `.kilo/worktrees/polished-climb` (5,7 M) dans l'arbre du
+terrain, là où le contrat veut que tout ce qui exécute vive dans un dossier jetable hors des
+arbres. Le relecteur demande de trancher : tolérer par exception écrite, déplacer, ou supprimer.
+
+**Mesures** (`git -C /home/giak/projects/audio-sync-tool …`) : le terrain enregistre lui-même ce
+worktree, détaché sur `416ec1f`, exactement son HEAD (`416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde`,
+commit du 2026-09-23) ; mtime du dossier 2026-09-25 20:21 ; son arbre de travail est propre ;
+`.kilo/worktrees/` figure dans `.git/info/exclude` du terrain (ligne 9), donc `git status` n'en
+dit rien ; aucun run du dispositif n'a eu lieu (`docs/tasks` est absent du dépôt device).
+
+**Décision** : constaté, conservé tel quel, **aucune clause ajoutée**. La règle existante oblige
+l'appareil (« Anything that executes runs in a throwaway directory outside these trees ») et
+n'interdit rien à un outil tiers déjà présent. Supprimer serait écrire dans un arbre déclaré
+read-only, détruire 5,7 M de données tierces et désenregistrer le worktree de Kilo ; déplacer
+ecrirait autant dans le terrain et rendrait le registre du dépôt principal caduc. Mécanisme, rectifié
+après double-check : le `.git` du worktree contient le chemin **absolu**
+(`gitdir: /home/giak/projects/audio-sync-tool/.git/worktrees/polished-climb`), il resterait donc
+valide ; c'est l'autre sens qui casse — `audio-sync-tool/.git/worktrees/polished-climb/gitdir`
+contient l'ancien chemin du worktree, que seul un `git worktree repair` répare. Ma première phrase
+(« casserait le lien `gitdir` ») nommait le mauvais lien. Les deux pour un gain mesuré nul : le
+terrain reste propre. Une exception écrite inventerait une permission là où aucune interdiction
+n'existe, c'est-à-dire la règle non spécifiée que l'ADR-010 efface.
+
+**Conséquences** : le terrain se juge sur son HEAD, pas sur ses dossiers ignorés. Le seul écart
+réel est nommé et non corrigé : `?? .freebuff/` (37 octets, 2026-10-14 15:49), écrit par le client
+dans un arbre read-only, non ignoré ; laissé en place, le supprimer étant une écriture de plus dans
+les données de quelqu'un d'autre.

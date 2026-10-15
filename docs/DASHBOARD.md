@@ -18,7 +18,7 @@ status: in-progress
 |---|---|
 | Fondation documentaire B1–B6 | 🟢 approuvée, appliquée ([ADR-001](DECISIONS.md), commit `1bbb9d2`) |
 | Phrase fausse dans `AGENTS.md` | 🟢 corrigée sur place (659 parts d'outils ; [ADR-006](DECISIONS.md)) |
-| Journal des séances | 🟢 recréé ([TRACE.md](TRACE.md), Séance 1) |
+| Journal des séances | 🟢 recréé ([trace.md](trace.md), Séance 1) |
 | Boucle 2 : gestion de projet | 🟨 spec écrite, en itération ([ADR-005](DECISIONS.md)) |
 | Cadre d'output de l'agent | 🟢 appliqué à `AGENTS.md` §OUTPUT ([ADR-009](DECISIONS.md)) |
 | Le protocole de test (MEGA-PROMPT v6) | 🔲 rien construit — le vrai travail |
@@ -33,7 +33,7 @@ status: in-progress
 | Dashboard | `docs/DASHBOARD.md` | 🟢 ce fichier |
 | Fondation documentaire | `docs/brainstorm/2026-10-15-080225-fondation-documentaire.md` | 🟢 appliquée |
 | Boucle 2 | `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` | 🟨 en itération |
-| Journal | `docs/TRACE.md` | 🟢 vivant |
+| Journal | `docs/trace.md` | 🟢 vivant |
 
 ## 3. Prochains pas (TODO court terme)
 

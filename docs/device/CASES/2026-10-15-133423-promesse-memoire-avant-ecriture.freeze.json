@@ -1,0 +1,122 @@
+{
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "gele_le": "2026-10-15T15:29:49.581938260+0200",
+  "gele_le_epoch": 1792070989,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-15-133423-promesse-memoire-avant-ecriture --refreeze --arbre framework-origin=/home/giak/projects/framework --arbre terrain=/home/giak/projects/audio-sync-tool --arbre revision-sous-test=/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin --arbre travail=/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain --ref-root /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin --ref plugins/aidd-context/skills/02-project-memory/SKILL.md --ref plugins/aidd-context/skills/02-project-memory/actions/01-scan.md --ref plugins/aidd-context/skills/02-project-memory/actions/02-write.md --ref plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md --ref plugins/aidd-context/skills/02-project-memory/references/structure.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-rules.md --ref plugins/aidd-context/skills/02-project-memory/references/reading-sources.md",
+  "empreinte": "1b9a8434a1d446cc3fca8baee8eeebb351e715ccceed20c3fc84722ef97ecdd6",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.expected.json",
+      "sha256": "d9b4ee01ecb6d781189ba4b42e235c8835ab34256dba72da3f668a8c5d7125fe",
+      "taille": 12985,
+      "birth": "2026-10-15 15:26:49.459553400 +0200",
+      "birth_epoch": 1792070809
+    },
+    {
+      "role": "demande",
+      "chemin": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
+      "sha256": "5506d293ee0945b4d4faabc916dbe5f8da7b8aaca950d6d4a3459401ad836923",
+      "taille": 8583,
+      "birth": "2026-10-15 13:34:50.011401680 +0200",
+      "birth_epoch": 1792064090
+    }
+  ],
+  "references": [
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/SKILL.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "149f0f196d2fc03c7919e63a4d30720e88124e93fd3ed8606a506c112da2363c",
+      "taille": 1223,
+      "birth": "2026-10-15 13:33:35.241548152 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/actions/01-scan.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "b5bcec6731d5a4c5b10e1681343c79877b5b34e775838bdc526f7d944da2f092",
+      "taille": 1198,
+      "birth": "2026-10-15 13:33:35.241835813 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/actions/02-write.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "33e34fcb6adc9e5de8ac67104a6340e688ca6c0078667164ecc9e82f59cb726a",
+      "taille": 1158,
+      "birth": "2026-10-15 13:33:35.241835813 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "b45a571e128d20f22e2781c1769ca5a287c026d51c99a9400ccfb4f095ea9ba0",
+      "taille": 1252,
+      "birth": "2026-10-15 13:33:35.241876651 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "3e54d5d50b2884920bb8991e3562169a25acd71f07cda2f0e05efb3ca55ed616",
+      "taille": 3073,
+      "birth": "2026-10-15 13:33:35.243871896 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/references/structure.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "ef0318a71d76a58c333af5408557c194000ae44732ce1cfc263210aacbb1373a",
+      "taille": 861,
+      "birth": "2026-10-15 13:33:35.243871896 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/references/memory-rules.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "f85ed0d5682d17880455ccb6b9af0103bb80ec9b71bb01df6845ac65eda954fd",
+      "taille": 565,
+      "birth": "2026-10-15 13:33:35.243871896 +0200",
+      "birth_epoch": 1792064015
+    },
+    {
+      "chemin": "plugins/aidd-context/skills/02-project-memory/references/reading-sources.md",
+      "racine": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "sha256": "985fa96bdcf48a04fd3ccb9f3d1301d2ee4a1c8e161aa8d0042a3f774784284d",
+      "taille": 2704,
+      "birth": "2026-10-15 13:33:35.243871896 +0200",
+      "birth_epoch": 1792064015
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/projects/framework",
+      "head": "fe48de12",
+      "porcelain": [
+        "?? .freebuff/",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/projects/audio-sync-tool",
+      "head": "416ec1f",
+      "porcelain": [
+        "?? .freebuff/"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin",
+      "head": "4c39e5c5",
+      "porcelain": []
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain",
+      "head": "416ec1f",
+      "porcelain": []
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "type": "case-expected",
+  "statut": "écrit avant tout run — aucune session n'a reçu la demande, les trois échanges du budget sont intacts",
+  "demande": {
+    "fichier": "CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
+    "texte_verbatim": "Read the project-memory skill from framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Yes, that matches. Do not write the backlog memory: this repo tracks its work elsewhere. Everything else is right.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "framework_rev": "4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651",
+    "framework_arbre": "4c79f56a741820c68dce14b7acf253250bb43b5f",
+    "framework_rev_avant": "7ec7bbc575 (parent : l'état d'avant la modification testée)",
+    "terrain_rev": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "repertoire_de_travail": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/",
+    "revision_sous_test": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/framework-origin (lecture seule)",
+    "copie_du_terrain": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain (c'est là que la session écrit)",
+    "fichiers_de_depart": "aucun `aidd_docs/` dans la copie du terrain — la mémoire projet s'y écrit pour la première fois, donc `setup` seul est exercé, jamais `refresh`",
+    "gel": "CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json — empreintes des fichiers du cas et des références du framework ; `gele_le` porte la date du gel, et `gele_le_epoch` la situe avant toute session",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans /home/giak/projects/audio-sync-tool (l'original du terrain)",
+      "lire sous /home/giak/projects/aidd-device/docs/device/CASES/ (l'attendu y vit)",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste (le câblage est une autre action de la skill)"
+    ]
+  },
+  "sources": {
+    "note": "l'attendu se lit dans ces fichiers de la révision sous test, jamais ailleurs ; leurs empreintes sont au gel",
+    "SKILL.md": "le flux `new --> scan --> write --> sync` et la règle transverse « End with a short report of what changed. »",
+    "actions/01-scan.md": "étape 4, citée avec son lien : « Show the scan as [scan-summary.md](../assets/scan-summary.md) does, ask for what the repo cannot prove, and wait. » ; Test Completion : « no file under the project changed » ; Test Summary : « one row per capability and per tool, each carrying evidence »",
+    "actions/02-write.md": "étape 2 : les lignes à écrire viennent de memory-destinations.md ; Test Memory file : « no `TODO` and no `<placeholder>` remains »",
+    "assets/scan-summary.md": "la forme du tableau — une ligne par capability, une par outil, la preuve étant un chemin ou une dépendance, jamais une affirmation",
+    "references/memory-destinations.md": "la colonne `Write to` : elle seule fixe les chemins de destination",
+    "references/structure.md": "la forme de l'arbre : les trois docs racine appartiennent à l'équipe et gardent leurs placeholders, tout ce qui est sous `memory/` est plat, `internal/` et `external/` existent même vides",
+    "references/memory-rules.md": "« Reflects the current state only: no unused section, no placeholder. »",
+    "references/reading-sources.md": "ce que le scan lit, et ce qu'il garde ou abandonne"
+  },
+  "attendu": "Au vu de la demande, la session lit la skill de la révision sous test, rend d'abord un tableau lu depuis le dépôt et attend la réponse de l'opérateur sans avoir modifié un seul fichier du projet, puis écrit sous `terrain/aidd_docs/` les seuls fichiers dont la colonne `Write to` de `references/memory-destinations.md` nomme la destination — `memory/backlog.md` en moins, écarté par l'opérateur — et termine par un court rapport de ce qui a changé.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire la skill et ses références, puis lire le dépôt",
+        "preuve": "la trace de la session : les lectures, et le fait qu'aucune écriture ne les précède"
+      },
+      {
+        "rang": 2,
+        "geste": "rendre un tableau d'une ligne par capability et par outil, chacune portant une preuve (un chemin ou une dépendance)",
+        "preuve": "le message de la session qui porte le tableau, dans la trace"
+      },
+      {
+        "rang": 3,
+        "geste": "attendre la réponse de l'opérateur : aucun fichier du projet n'a changé au moment du tableau",
+        "preuve": "le `birth` des fichiers produits est postérieur à l'horodatage de ce message ; le Test Completion de `01-scan.md` exige « no file under the project changed »"
+      },
+      {
+        "rang": 4,
+        "geste": "après la réponse, écrire sous la copie du terrain les lignes confirmées, moins celle que l'opérateur a écartée",
+        "preuve": "les fichiers présents sous `terrain/aidd_docs/` et leur `birth`, plus l'absence de `memory/backlog.md`"
+      },
+      {
+        "rang": 5,
+        "geste": "terminer par un court rapport de ce qui a changé",
+        "preuve": "le dernier message de la session (`raw/<cas>/last-message.md`) nomme les fichiers écrits"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/",
+      "regle": "chaque fichier écrit est une destination de la colonne `Write to` de `references/memory-destinations.md`, à son chemin exact ; aucun autre fichier n'est un produit",
+      "arbre_attendu": [
+        "aidd_docs/README.md",
+        "aidd_docs/GUIDELINES.md",
+        "aidd_docs/CONTRIBUTING.md",
+        "aidd_docs/memory/README.md",
+        "aidd_docs/memory/<bank>.md — un fichier par ligne retenue, à plat, jamais imbriqué",
+        "aidd_docs/memory/internal/.gitkeep",
+        "aidd_docs/memory/external/.gitkeep"
+      ],
+      "ecarte_par_l_operateur": "aidd_docs/memory/backlog.md",
+      "placeholders": "les trois docs racine gardent les leurs (`structure.md` : « the team fills its placeholders ») ; aucun `TODO` ni `<placeholder>` ne subsiste dans les fichiers sous `memory/` (`02-write.md`, Test Memory file)"
+    },
+    "ce_qui_n_est_pas_demande": "l'action `sync` — le câblage des outils du poste est interdit par la demande §7, il vise des fichiers hors du répertoire de travail",
+    "livrables_du_dispositif": "l'attendu lui-même ne part jamais : la session ne voit que le texte verbatim du §5 de la demande"
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F1",
+      "condition": "le `birth` d'un fichier sous `terrain/aidd_docs/` est antérieur à l'horodatage du message qui porte le tableau",
+      "tue": "l'ordre promis — montrer avant d'écrire —, qui est la promesse même de la modification testée",
+      "mesure": "`stat -c %w` sur les produits contre l'horodatage du message dans l'export de trace (spec §5.2, §5.3)"
+    },
+    {
+      "id": "F2",
+      "condition": "la trace ne porte aucun tableau, ou porte des écritures avant tout tableau",
+      "tue": "le cas entier : la pièce qui porte l'attendu manque → `non concluant`",
+      "mesure": "l'export de trace de la session"
+    },
+    {
+      "id": "F3",
+      "condition": "un fichier écrit sous `terrain/aidd_docs/` dont le chemin n'est pas une destination de la table",
+      "tue": "la conformité : le produit dépasse ce que la révision sous test prescrit",
+      "mesure": "comparaison des chemins produits à la colonne `Write to` du gel"
+    },
+    {
+      "id": "F4",
+      "condition": "`terrain/aidd_docs/memory/backlog.md` existe",
+      "tue": "la prise en compte de la correction de l'opérateur (deuxième échange figé)",
+      "mesure": "présence du fichier"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail : `framework-origin/`, `/home/giak/projects/audio-sync-tool`, `CASES/`, le reste de `$HOME`, `/tmp`",
+      "tue": "le cloisonnement → `non concluant`, dérive du dispositif et non du skill (spec §9)",
+      "mesure": "les quatre `git status --porcelain` du reçu, plus le `birth` de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe alors que la copie du terrain n'a pas bougé",
+      "tue": "l'attribution du produit à ce run (spec §5, condition 3) → `non concluant`",
+      "mesure": "la paire `porcelain` avant/après de la copie du terrain, dans le reçu"
+    },
+    {
+      "id": "F7",
+      "condition": "un fichier produit identique à un fichier présent avant le run (une empreinte du gel)",
+      "tue": "l'attribution du produit à ce run (spec §5, condition 4) → `non concluant`",
+      "mesure": "`sha256` des produits contre ceux des fichiers du cas et des références du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier sous `terrain/aidd_docs/`",
+      "tue": "le cas : la session n'a rien produit → `non concluant`, produit = sa sortie brute (spec §9)",
+      "mesure": "l'arbre du produit collecté"
+    }
+  ],
+  "falsificateurs_de_l_attendu": [
+    {
+      "id": "E1",
+      "condition": "un `TODO` ou un `<placeholder>` subsiste dans un fichier sous `terrain/aidd_docs/memory/`",
+      "verdict": "écart",
+      "motif": "`02-write.md` porte sa propre règle et son propre test : « no `TODO` and no `<placeholder>` remains » ; `memory-rules.md` : « Reflects the current state only: no unused section, no placeholder. »"
+    },
+    {
+      "id": "E2",
+      "condition": "aucun rapport final ne nomme ce qui a changé",
+      "verdict": "écart",
+      "motif": "règle transverse de `SKILL.md` : « End with a short report of what changed. »"
+    },
+    {
+      "id": "E3",
+      "condition": "les fichiers sous `memory/` sont imbriqués (`memory/<capability>/<fichier>.md`) ou `internal/`/`external/` manquent",
+      "verdict": "écart",
+      "motif": "`structure.md` : « Everything under `memory/` is the AI's, and sits at its root. » et « `internal/` and `external/` exist even when empty. »"
+    },
+    {
+      "id": "E4",
+      "condition": "un fichier du tableau n'est pas écrit alors que l'opérateur l'a confirmé (« Everything else is right. »)",
+      "verdict": "écart",
+      "motif": "`02-write.md`, Test « Bank written » : « every selected row exists at its exact path »"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "la mémoire décrit correctement l'architecture, les conventions et les décisions du terrain",
+      "critere": "le contenu ne se juge pas ici : aucune vérité de référence n'existe dans ce dispositif, et le cas mesure l'ordre des gestes, jamais la justesse du texte (v6 §8 : comparer, ne pas attribuer)"
+    },
+    {
+      "attendu": "les gabarits sont remplis plutôt que laissés vides",
+      "critere": "la complétude d'une section dépend du dépôt lu ; `memory-rules.md` interdit au contraire la section inutilisée, et rien dans la révision sous test ne fixe un taux de remplissage"
+    },
+    {
+      "attendu": "l'action `sync` a câblé les outils IA du poste et la mémoire est « wired »",
+      "critere": "hors du cas par la demande §7 : le câblage écrit hors du répertoire de travail ; le flux de la skill va jusqu'à `sync`, la demande s'arrête avant"
+    },
+    {
+      "attendu": "une ligne écrite à la main dans un banc survit à `refresh`",
+      "critere": "le défaut est connu de l'auteur du commit et chiffré dans son message (« survives a refresh 1 run in 2 ») ; le cas prend un dépôt **sans** banc, donc `refresh` n'est pas exercé — l'attendu serait non mesurable ici"
+    },
+    {
+      "attendu": "le nombre de lignes du tableau, et le nombre de fichiers écrits",
+      "critere": "le scan décide ce que le dépôt prouve ; ni la révision sous test ni la demande ne fixent un chiffre, et un chiffre écrit ici serait une invention"
+    },
+    {
+      "attendu": "le rapport final prend la forme de `assets/report.md`",
+      "critere": "cet asset est la sortie de l'action `check`, absente du flux `setup` ; exiger sa forme jugerait une action que le cas ne déclenche pas"
+    },
+    {
+      "attendu": "la session n'a posé aucune question hors du tableau",
+      "critere": "la skill demande d'« ask for what the repo cannot prove » : une question de ce type est prévue, et la troisième réponse figée la couvre ; l'interdire contredirait la révision sous test"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte `attendu_vu: oui` et le cas se conclut `non concluant`"
+}

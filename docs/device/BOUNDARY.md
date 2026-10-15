@@ -125,11 +125,12 @@ du dispositif vivent tous sous `/home/giak/projects/aidd-device`, aucun sous l'o
 ## 7. La révision du dispositif
 
 ```text
-git -C /home/giak/projects/aidd-device rev-parse --short HEAD   → d02b750   (branche main)
-git -C /home/giak/projects/aidd-device ls-files | wc -l         → 11
+git -C /home/giak/projects/aidd-device rev-parse --short HEAD   → 39750fe   (branche main, relevé du 2026-10-15)
+git -C /home/giak/projects/aidd-device ls-files | wc -l         → 18
 ```
 
-11 fichiers suivis. Relevé du 2026-10-15, 15:13, après la réparation de la clause (§6) :
+Relevé du 2026-10-15, 15:13, après la réparation de la clause (§6) ; 11 fichiers suivis alors, et
+l'arbre modifié :
 
 ```text
 git -C /home/giak/projects/aidd-device status --porcelain              → 8 lignes
@@ -141,8 +142,9 @@ find docs/device docs/tasks -type f                                    → 4 fic
    docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/…-spec.md
 ```
 
-Les trois pages de `docs/device/` sont écrites mais pas commitées : elles porteront le compte à
-**14**. Le terrain, relevé le même jour à 13:18 : HEAD `416ec1f`, `ls-files` 307, porcelain 1
+Les trois pages de `docs/device/` étaient alors écrites mais pas commitées : elles porteront le compte à
+**14**. La séance a été commitée depuis : le compte est passé à **18** et `status --porcelain` ne rend
+plus rien (relevé du même jour, `39750fe`). Le terrain, relevé le même jour à 13:18 : HEAD `416ec1f`, `ls-files` 307, porcelain 1
 ligne — `?? .freebuff/`, écrit par le client dans un arbre déclaré read-only, laissé en place
 (ADR-011).
 

@@ -117,7 +117,8 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   `DEVICE.md` porte ce que le dispositif fait et ne fait pas, les trois rôles et la séparation
   réellement tenue (« de contexte, pas de personne » — question 4 du §11), l'état (**état B** :
   aucune session n'a reçu de demande), les huit champs de la demande, ce qui revient, la commande de
-  clonage et la révision `d02b750`, la séquence d'un run dont seule la première ligne existe, et la
+  clonage et la révision `d02b750` (le sommet d'alors), la séquence d'un run dont seule la première
+  ligne existe, et la
   correspondance nom du v6 §10 → foyer. `BOUNDARY.md` porte les quatre arbres, les chemins lus
   (2 599 fichiers suivis, 51 `SKILL.md`, 400 fichiers `cli/src`, 17 `scripts/*.mjs|js` — tous
   revérifiés), la révision installée `fe48de12`, ce qui n'est pas lu, et les deux preuves :
@@ -182,17 +183,22 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   d'un gel « pris au même moment » → « pris à l'étape 2, avant toute ouverture de session », le gel
   existant désormais. Le texte verbatim du §5 et les deux réponses figées du §8 n'ont pas bougé ; la
   rectification est écrite dans le fichier, et le gel qui suit porte les empreintes du texte rectifié.
-- **La séance est commitée en quatre commits et le dépôt public est ouvert**, sur l'ordre « commit
+- **La séance est commitée en cinq commits et le dépôt public est ouvert**, sur l'ordre « commit
   tout, en plusieurs commits ; puis créer un dépôt public sur GitHub, on va push après » (mémoire
   `6c040683`). Les commits suivent l'ordre où les choses ont été faites : `81f8ca4` (la spec du run et
   les deux pages du dispositif, 3 fichiers, +451), `1362837` (le harnais, +448), `ffbdee4` (le
   premier cas gelé, 3 fichiers, +478), `f90851d` (le foyer, la clause du §10 réparée, l'état et le
-  journal, 6 fichiers, +274/−17) — l'arbre est propre après le quatrième. Puis
+  journal, 6 fichiers, +274/−17), puis « Dire l'état vrai du remote » (`DEVICE.md`, `DASHBOARD.md`,
+  cette page, +17/−5) — l'arbre est propre après le cinquième. Puis
   `gh repo create aidd-device --public --source=. --remote=origin` : **aucun push**, `git ls-remote
   origin` vide et `gh repo view --json isEmpty` à `true`, le dépôt public
   (`https://github.com/giak/aidd-device`, créé le 2026-10-15T13:32:20Z) existe et ne porte rien
   encore. La conséquence est dite là où elle compte : `DEVICE.md`, le `DASHBOARD.md` et cette page ne
   disent plus « aucun remote », et la question 1 du §11 ne se répond « oui » qu'après le premier push.
+  Commiter a aussi déplacé la révision que deux pages citent : `DEVICE.md` et `BOUNDARY.md` disaient
+  `d02b750`, le sommet d'avant la séance ; le sixième commit, « Faire suivre la révision citée aux
+  commits », leur fait porter `39750fe`, relevé du 2026-10-15, et `BOUNDARY.md` dit en plus l'état
+  d'après les commits (18 fichiers suivis, `status --porcelain` vide).
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;

@@ -70,7 +70,7 @@ Sous `runs/<horodatage>-<framework@rev>-<dispositif@rev>/` : `raw/<cas>/` et son
 
 ```text
 git clone /home/giak/projects/aidd-device
-git -C aidd-device rev-parse --short HEAD   → d02b750
+git -C aidd-device rev-parse --short HEAD   → 39750fe   (branche main, relevé du 2026-10-15)
 ```
 
 D'une autre machine : pas encore — `github.com/giak/aidd-device` est public mais vide, et `origin`

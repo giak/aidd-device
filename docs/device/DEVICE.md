@@ -73,8 +73,8 @@ git clone /home/giak/projects/aidd-device
 git -C aidd-device rev-parse --short HEAD   → d02b750
 ```
 
-D'une autre machine : impossible — aucun remote, donc la question 1 du §11 se répond « non » ;
-« oui » par un remote ou par l'archive des sources jointe à la pull request.
+D'une autre machine : pas encore — `github.com/giak/aidd-device` est public mais vide, et `origin`
+le vise ; la question 1 du §11 se répond « non » jusqu'au premier push, « oui » après lui.
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. La séquence d'un run :

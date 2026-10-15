@@ -182,6 +182,17 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   d'un gel « pris au même moment » → « pris à l'étape 2, avant toute ouverture de session », le gel
   existant désormais. Le texte verbatim du §5 et les deux réponses figées du §8 n'ont pas bougé ; la
   rectification est écrite dans le fichier, et le gel qui suit porte les empreintes du texte rectifié.
+- **La séance est commitée en quatre commits et le dépôt public est ouvert**, sur l'ordre « commit
+  tout, en plusieurs commits ; puis créer un dépôt public sur GitHub, on va push après » (mémoire
+  `6c040683`). Les commits suivent l'ordre où les choses ont été faites : `81f8ca4` (la spec du run et
+  les deux pages du dispositif, 3 fichiers, +451), `1362837` (le harnais, +448), `ffbdee4` (le
+  premier cas gelé, 3 fichiers, +478), `f90851d` (le foyer, la clause du §10 réparée, l'état et le
+  journal, 6 fichiers, +274/−17) — l'arbre est propre après le quatrième. Puis
+  `gh repo create aidd-device --public --source=. --remote=origin` : **aucun push**, `git ls-remote
+  origin` vide et `gh repo view --json isEmpty` à `true`, le dépôt public
+  (`https://github.com/giak/aidd-device`, créé le 2026-10-15T13:32:20Z) existe et ne porte rien
+  encore. La conséquence est dite là où elle compte : `DEVICE.md`, le `DASHBOARD.md` et cette page ne
+  disent plus « aucun remote », et la question 1 du §11 ne se répond « oui » qu'après le premier push.
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;
@@ -351,4 +362,5 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   suivant : `9f15f4d7` — le harnais minimal du run, ses quatre commandes, ses onze refus, le banc
   jetable à 36/36, et la tension nommée avec l'invariant « pas de script ». Du tour d'après :
   `ba4885cf` — le premier cas écrit et gelé (attendu, 8 falsificateurs du run, 4 de l'attendu, 7
-  attendus écartés, `gele_le` `15:29:49`), la demande rectifiée, l'état B intact.
+  attendus écartés, `gele_le` `15:29:49`), la demande rectifiée, l'état B intact. Du tour suivant :
+  `6c040683` — les quatre commits de la séance et le dépôt public ouvert, sans push.

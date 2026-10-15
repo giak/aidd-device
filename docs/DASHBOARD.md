@@ -52,8 +52,8 @@ status: in-progress
    [BOUNDARY.md](device/BOUNDARY.md) §6.
 3. Arbitrer la boucle 2 : commit de clôture (P5), remote (P6).
 4. Après approbation : ouvrir la boucle 3, le protocole de test du framework (MEGA-PROMPT v6).
-5. Créer le remote git, décision externe au relecteur (toute preuve hors machine en dépend, et sans
-   lui la question 1 du §11 se répond « non »).
+5. **Fait ce jour** : le remote public existe (`github.com/giak/aidd-device`, vide, `origin` posé) ;
+   le push reste à faire, et la question 1 du §11 ne se répond « oui » qu'après lui.
 
 ## 4. Commits d'avancement
 

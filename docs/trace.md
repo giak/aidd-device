@@ -658,3 +658,145 @@ rectifications ci-dessus attendent le commit du relecteur.
 
 **Mémoires.** Aucune : cette séance n'a fait aucun appel Mnemolite (rangement de fichiers et mesures
 locales, rien à vérifier auprès d'une source).
+
+**Tour suivant : la porte d'avant la session.** Demande du relecteur : faire refuser l'ouverture d'un
+run dont le dossier de travail n'est pas l'espace gelé du cas. Le trou a d'abord été **mesuré**, pas
+supposé : sur banc, un `faits.json` déclarant `/home/giak/projects/audio-sync-tool` — le terrain
+**original**, celui que l'interdit du §7 promet de ne pas écrire — écrivait un `receipt.json` et
+sortait en `0`, parce que `receipt` acceptait alors **n'importe lequel** des quatre arbres gelés comme
+répertoire de travail. Cinquième commande, `preflight` : le cas est re-haché comme au reçu, puis le
+dossier examiné (`--repertoire`, sinon le répertoire courant) doit être **exactement** le chemin gelé
+sous le label `travail`, exister, être un répertoire, ne pas vivre dans le dépôt du dispositif, et être
+encore dans l'état gelé — `HEAD` **et** `porcelain`. `receipt` est resserré sur le même label, en second
+filet : une porte peut être sautée.
+Banc jetable `/tmp/banc-porte.sh`, chaque contrôle comparant le code de sortie observé à celui attendu :
+**20/20 PASS**, dont **13 contrôles pour la porte** — **9 refus** (terrain original, `$W/framework-origin`,
+ancien foyer `~/runs/…`, répertoire courant resté dans le dépôt, cas sans gel, arbre `travail` gelé dans
+le dépôt, arbre qui n'est plus un dépôt git, arbre à la bonne révision et au mauvais `porcelain`, cas
+dont un fichier a bougé) et **4 ouvertures** (dossier gelé par `--repertoire`, par le répertoire courant,
+et deux gels rejoués depuis un banc `--cases`) — et **7 de non-régression** : `collect --sans-produit` ;
+`receipt` refusant un autre arbre gelé ; `receipt` acceptant le dossier gelé ; `compare` ; second
+`collect` refusé ; verdict `conforme` refusé ; `--help`. Le banc a d'abord rendu **19/20**, et le contrôle en échec était le
+banc lui-même : le gel patché du contrôle précédent n'avait pas été reposé. Corrigé, rejoué, 20/20. Le harnais passe de 598 à **677 lignes**, de 40 à **47
+refus**, de 4 à **5 commandes** ; l'[ADR-018](DECISIONS.md) porte la décision, la [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+§3 l'exigence, la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
+§1.0 la porte et §5 le banc, et son §1.4 est rectifié — sa ligne disait « un autre chemin fait refuser
+`receipt` », ce qui était faux tant que n'importe quel arbre passait.
+Deux choses laissées telles quelles, nommées : `collect` accepte toujours un `--from` venu d'ailleurs,
+dont le manifeste garde la source absolue (ce que la porte ne couvre pas, et l'ADR le dit) ; et le refus
+du re-hachage écrit « le demande a changé depuis le gel », faute d'accord — défaut d'origine, non corrigé
+ici pour ne pas réécrire une phrase que des pièces citent. Le cas gelé n'a pas bougé : ses deux fichiers
+rendent `e32e420c` et `dce9e131`, et le gel `07246039` tient. Rien n'est commité par ce tour.
+
+**Tour d'après : la racine déclarée.** Le re-gel du déplacement avait montré le défaut sans le nommer :
+déplacer l'espace de travail avait coûté une réécriture du **cas gelé**, parce que la machine y était
+écrite en clair, à trois endroits — demande §2, §4 et §5, plus trois champs de contexte de l'attendu.
+`freeze` prend désormais `--racine` (obligatoire), l'enregistre une fois (`racine_espace_de_travail`) et
+en **dérive** les deux copies du cas : `--arbre travail=…` et `--arbre revision-sous-test=…` sont
+refusés, un espace de travail déclaré deux fois finissant par se contredire. Le cas écrit `$RACINE`, et
+le harnais **refuse** un gel dont un fichier de cas écrit cette racine en clair — ce refus est ce qui a
+empêché le re-gel tant que les deux fichiers portaient encore le chemin.
+Mesuré : sixième re-gel du jour, `07246039` → **`0d9a2180`**, `gele_le` `22:11:24`, les deux arbres
+dérivés relus au bon `HEAD` et au bon `porcelain` ; rejeu du §1.1 : 10/10 `True`, `exit 0`. Le **texte
+remis** ne bouge pas d'un octet (`832036f7…`, 254 octets) : la substitution redonne exactement l'ancien
+chemin, ce qui est la preuve que le cas dit la même chose qu'avant, sans la machine.
+`preflight` gagne `--texte <fichier>` : le §5 du cas, `$RACINE` substitué par la racine du gel, sans
+variable et sans saut de ligne final. Banc étendu de 20 à **31 contrôles, 31/31 PASS** : quatre refus de
+`freeze` (cas qui nomme la racine, `--arbre` sur un label dérivé, racine dans le dépôt, racine
+inexistante), la dérivation vérifiée dans le gel écrit, et cinq contrôles du texte — substitution juste
+acceptée, saut de ligne final, chemin d'un autre foyer, fichier absent et gel sans racine déclarée
+refusés. Le harnais passe de 677 à **773 lignes** et de 47 à **56 refus** ; l'[ADR-019](DECISIONS.md)
+porte la décision, la [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+§3 le champ 4 et le figement, la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
+§1.0 (la recette de substitution), §1.3, §2.1 et §5, et [REPLAY](device/REPLAY.md) §4 et §5.
+Ce qui reste attaché à la machine, et qu'il faut dire : le **gel** garde les chemins absolus des arbres
+et la racine — c'est un relevé de cette machine, pas une propriété du cas, ce que l'ADR-016 disait déjà
+des arbres ; deux machines font deux gels. Et rien ne force l'opérateur à passer `--texte` : le contrôle
+du texte n'existe que si on le lui donne. Rien n'est commité par ce tour.
+
+> Rattaché à la Séance 2, et posé après la Séance 3 : celle-ci s'est écrite entre mes deux ajouts au
+> même fichier, et cet ajout est tombé à sa suite. Il appartient à la Séance 2.
+
+**Application, suite de la Séance 2, sur arbitrage du relecteur.**
+
+**Fait.** Le relecteur tranche « v13 seul ». `cp docs/contracts/candidat/v13.md
+docs/contracts/AGENTS-source.md` ; `cmp` des deux rend identiques, octet pour octet. Les quatre
+artefacts sont réécrits depuis la nouvelle source par un rendu transitoire (`/tmp/render.py`, hors
+du dépôt, non commité) : `AGENTS.md` reçoit le noyau, chaque `.agents/skills/<id>/SKILL.md` reçoit
+son bloc et garde son frontmatter. Ce rendu a été validé **avant** d'appliquer : lancé sur l'ancienne
+source, il reproduisait les quatre anciens artefacts à l'octet. `docs/contracts/README.md` nomme
+désormais v13 comme texte appliqué, v11 et v12 comme étapes de la campagne, et référence la veille.
+
+**Vérifié.** Après application, re-rendu de la source contre les artefacts en place : les quatre
+`cmp` sortent 0, source et artefacts sont en phase. Mesures `o200k` après : source 13 742 car. /
+**3 197 j** (avant 14 181 / 3 302, −3,2 %) ; `AGENTS.md` 7 592 / **1 768 j** (avant 7 915 / 1 835,
+−67 j, −3,7 %) ; skills 802 + 294 + 293 j contre 1 427. Les trois descriptions de frontmatter sont
+identiques aux phrases de tête des blocs de v13 : aucun déclencheur de skill n'a bougé. Aucune règle
+perdue, la source livrée étant le fichier exact que le contrôle de couverture de cette séance a
+mesuré, à l'octet près.
+
+**Mémoire.** `c4800bff`.
+
+**Relecture du contrat appliqué, énoncé par énoncé (suite de la Séance 2).**
+
+**Fait.** Audit demandé : les 82 énoncés d'avant application ont-ils tous une destination dans le
+texte appliqué ? Le texte d'avant n'existe plus dans le dépôt, il a donc été reconstruit et la
+reconstruction prouvée : noyau depuis la partition du texte d'alors, blocs depuis les artefacts
+d'alors, et `cmp` du rendu de la reconstruction contre les quatre artefacts d'avant → identiques
+(exit 0 pour les quatre), reconstruction à 14 181 caractères, la taille mesurée de la source avant
+application. Surface : `diff -u` des deux textes, 229 lignes, lues en entier ; 82 puces avant,
+83 après, dont 30 à suite de mots identique et 52 remaniées.
+
+**Vérifié.** Aucun devoir perdu : 8 fusions, 6 déplacements, 4 suppressions justifiées dans le texte,
+6 réparations, 1 index ajouté. Trois écarts qu'aucune des trois analyses n'avait vus, tous dans le
+rapport `docs/contracts/candidat/2026-10-15-220849-relecture-contrat-applique.md` :
+`F2` « Never invent missing information » retiré par v11 en silence, puis justifié par
+`v12-analyse.md` §2 par une prémisse **fausse** (l'en-tête ¶1 est une énumération fermée qui ne
+contient pas une information) ; son domicile n'est plus qu'indirect, via `OUTPUT` `R11` « no
+fabrication ». `F1` « merely » retiré par v12 sans être consigné. `F3` « available » devenu « exists »
+par v11, alors que `v11-analyse.md` §1 revendique avoir rendu la condition.
+
+**Limites.** Revue **interne** : le même agent a appliqué v13 et écrit cette relecture, aucun second
+relecteur n'existe ici. Aucune mesure d'application, c'est un audit de conservation de texte. Et
+`F2` appelle une décision du relecteur : rendre la phrase (+7 jetons), laisser `R11` la porter en le
+disant, ou écrire la règle ailleurs.
+
+**Mémoire.** `5883a9be`.
+
+**Préparation de la clôture : quel commit, quelle checklist (suite de la Séance 2).**
+
+**Fait.** État mesuré avant clôture : `HEAD` = `d0d894b` « Ranger les espaces de travail sous
+`~/projects/`, et re-geler le cas » (2026-10-15T22:01:06+02:00), branche `main`, remote
+`github.com/giak/aidd-device`. Un autre fil a déjà committé la séance 3 (28 fichiers, +4231/−125,
+dont `docs/trace.md` +218). `git status --porcelain` rend 14 entrées `M` et 2 entrées `??`
+(`.agents/`, `docs/contracts/`), soit 31 fichiers non suivis dans `docs/contracts/` (28, 364 Ko) et
+`.agents/` (3, 32 Ko).
+
+**Commit proposé, un seul, 33 fichiers** : `AGENTS.md` (le noyau appliqué), les trois
+`.agents/skills/*/SKILL.md`, tout `docs/contracts/` (source, `README.md`, `candidat/` avec v11, v12,
+v13, leurs trois analyses et les deux rapports datés, `archive/` v0 à v9) et `docs/trace.md`.
+
+**Reste hors du commit, 13 fichiers d'un autre auteur** : `README.md`, `docs/DASHBOARD.md`,
+`docs/DECISIONS.md`, `docs/EXPLICATION.md`, `docs/device/` (BOUNDARY, DEVICE, REPLAY, harness/run.mjs
+et les trois pièces du cas), `docs/tasks/2026_10/` (spec et run). Rien de cela n'est stagé.
+
+**Point délicat, mesuré et non contourné** : `docs/trace.md` porte 78 lignes ajoutées non committées,
+dont les blocs de cette séance 2 et un bloc « Tour suivant : la porte d'avant la session » écrit par
+l'autre fil. Un `git add docs/trace.md` stage les deux ; un commit par auteur exigerait `git add -p`.
+
+**Checklist écrite et lancée**, dans `docs/contracts/README.md` section « Ce qu'un tiers peut
+vérifier lui-même » : noyau contre `AGENTS.md`, chaque bloc contre son `SKILL.md` (frontmatter et
+niveau de titre exclus), `description` du frontmatter contre la phrase de tête du bloc, et le compte
+de jetons en facultatif. Les quatre passent : trois `diff` vides et trois « identique », capturés ce
+soir. Aucune commande n'est committée comme script, hook ou CI, ADR-004 tient ; deux pièges ont été
+corrigés à l'essai, un bloc de source finissant par une ligne vide sauf le dernier, et `head -n -2`
+étant GNU.
+
+**Dérive signalée, non corrigée.** `ADR-012` n'est toujours pas révisé par un acte daté, et le commit
+proposé ne contient pas `docs/DECISIONS.md` : le registre continuera donc de contredire l'arbre après
+la clôture.
+
+**Prochaines étapes.** Le mot du relecteur pour lancer le commit, puis l'ADR qui tranche
+l'architecture source + quatre artefacts.
+
+**Mémoire.** `9ee8717a`.

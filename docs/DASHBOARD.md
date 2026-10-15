@@ -20,6 +20,7 @@ status: in-progress
 | Phrase fausse dans `AGENTS.md` | 🟢 corrigée sur place (659 parts d'outils ; [ADR-006](DECISIONS.md)) |
 | Journal des séances | 🟢 recréé ([TRACE.md](TRACE.md), Séance 1) |
 | Boucle 2 : gestion de projet | 🟨 spec écrite, en itération ([ADR-005](DECISIONS.md)) |
+| Cadre d'output de l'agent | 🟢 appliqué à `AGENTS.md` §OUTPUT ([ADR-009](DECISIONS.md)) |
 | Le protocole de test (MEGA-PROMPT v6) | 🔲 rien construit — le vrai travail |
 
 ## 2. Documents produits

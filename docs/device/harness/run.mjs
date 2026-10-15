@@ -1,14 +1,24 @@
 #!/usr/bin/env node
 // run.mjs — the minimal harness of a run.
 //
-// It opens no session and decides nothing by itself. Four commands, one per moment
+// It opens no session and decides nothing by itself. Five commands, one per moment
 // of the run, each carrying the spec paragraph that demands it
 // (docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md):
 //
 //   freeze   before the session opens — the case files and the framework references
-//            hashed, and the trees' state recorded (§3 "Figement", §5.2 "avant")
+//            hashed, and the trees' state recorded (§3 "Figement", §5.2 "avant").
+//            The workspace root is declared once (--racine), recorded in the freeze, and
+//            the case's two copies are derived from it: a case that names the machine's
+//            root cannot survive a move, and rewriting a frozen case costs a re-freeze.
+//   preflight the gate, between the freeze and the session — the directory the session
+//            opens in must be the one the freeze names for the tree « travail », still
+//            in the state the freeze recorded (§3 "Ouverture dans le répertoire
+//            déclaré"). Without it, nothing before the run says where the run happens.
 //   collect  once the product is back — verbatim copy under runs/<id>/raw/<case>/,
-//            with sha256, size and birth per file (§4)
+//            with sha256, size and birth per file (§4). The product is what the session
+//            wrote in the frozen workspace, so a --from that resolves outside it is
+//            refused: a product from elsewhere would make the receipt read an origin
+//            the freeze does not cover (§4 "Ce qui revient")
 //   receipt  at run time, hot — receipt.json (§6), the four falsifiers of §5 checked,
 //            the verdict ceiling of §7 enforced, the case re-hashed against the freeze
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
@@ -31,7 +41,7 @@
 // judgment: the receipt's only proof of « écrit avant d'avoir vu le produit » is the
 // fingerprint §3 records, and a fingerprint whose files have moved on proves nothing.
 
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
@@ -39,22 +49,44 @@ import { fileURLToPath } from "node:url";
 
 const USAGE = `usage: run.mjs <commande> [options]
 
-  freeze   --case <id> --arbre <label>=<chemin> [--arbre ...] [--cases <dir>]
-           [--ref <chemin-relatif> ...] [--ref-root <chemin>] [--refreeze]
-           chemins gelés relatifs, références nommées par leur arbre : un tiers
-           rejoue la formule sur son clone sans réécrire un chemin (--ref-root doit
-           être l'un des --arbre) ; seul le chemin d'un arbre reste absolu, parce que
-           « où cette machine a lu cet arbre » est un fait, pas un paramètre
+  freeze   --case <id> --racine <chemin> --arbre <label>=<chemin> [--arbre ...]
+           [--cases <dir>] [--ref <chemin-relatif> ...] [--ref-root <chemin>] [--refreeze]
+           --racine est la racine des espaces de travail, déclarée une seule fois : le gel
+           l'enregistre (racine_espace_de_travail) et en dérive les deux copies du cas,
+           <racine>/<cas>/framework-origin et <racine>/<cas>/terrain ; les deux autres arbres
+           restent donnés (ce sont les arbres de la machine), et --arbre sur un label dérivé
+           est refusé. Un cas qui écrirait cette racine dans ses propres fichiers est refusé :
+           un cas qui nomme la machine ne survit pas à un déplacement sans être réécrit, et
+           réécrire un cas gelé coûte un re-gel. chemins gelés relatifs, références nommées
+           par leur arbre : un tiers rejoue la formule sur son clone sans réécrire un chemin
+           (--ref-root doit être l'un des --arbre) ; seul le chemin d'un arbre reste absolu,
+           parce que « où cette machine a lu cet arbre » est un fait, pas un paramètre
+  preflight --case <id> [--repertoire <chemin>] [--cases <dir>] [--texte <fichier>]
+           la porte d'avant la session : refuse d'autoriser l'ouverture si le dossier
+           n'est pas celui que le gel nomme « travail », ou si cet arbre n'est plus dans
+           l'état gelé (§3). Sans --repertoire, le dossier examiné est le répertoire
+           courant — celui où l'opérateur se trouve avant d'ouvrir. Le cas est re-haché
+           comme au reçu : autoriser sur un cas qui a bougé n'autoriserait rien. Avec
+           --texte, elle refuse aussi un texte qui n'est pas le §5 du cas, $RACINE
+           substitué par la racine du gel : c'est le texte qui part vers la session, et
+           une substitution ratée donnerait à lire un chemin qui n'existe pas
   collect  --run <dir> --case <id> --from <fichier|dir>   (copie verbatim le contenu
            de --from sous raw/<case>/ : l'arbre du produit s'y reflète à l'identique,
            la source absolue de chaque fichier est dans le manifeste)
+           --from doit tomber DANS l'espace de travail gelé (l'arbre « travail » du
+           gel, liens résolus) : le produit d'un run est ce que la session y a écrit,
+           et rien d'ailleurs — un produit venu d'un autre arbre ferait lire au reçu
+           une provenance que le gel ne couvre pas. Exige donc le gel, comme receipt
   collect  --run <dir> --case <id> --sans-produit          (run sans produit, spec §9 :
            le manifeste est écrit avec fichiers: [] et produit_absent: true, sans
            --from ; sans lui, un run qui ne produit rien ne laissait aucun reçu)
   receipt  --run <dir> --case <id> --faits <faits.json> [--verdict conforme|ecart|non concluant]
            [--limite <texte> ...] [--cases <dir>]
            refuse si un fichier du cas ou une référence du gel a changé depuis le gel
-           (re-hachage, §3) : le gel est relu sur le disque, jamais cru sur parole
+           (re-hachage, §3) : le gel est relu sur le disque, jamais cru sur parole. Refait
+           aussi le contrôle d'origine du produit, sur le manifeste : toute source
+           déclarée hors de l'arbre « travail » du gel est un refus — la porte de
+           collect peut être contournée, le reçu relit les pièces
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
@@ -84,6 +116,10 @@ const VERDICTS = new Set(["conforme", "ecart", "non concluant"]);
 const LIMITES = new Set(["mord", "ne mord pas", "non évaluable"]);
 // Labels whose revision the receipt names as its own fields (§6 `framework_rev`, `terrain_rev`).
 const LABEL_TO_FIELD = { "framework-origin": "framework_rev", terrain: "terrain_rev" };
+// The case's two copies are derived from the declared root: one label, one subdirectory, and
+// nothing to keep in sync by hand.
+const LABELS_DERIVES = { "revision-sous-test": "framework-origin", travail: "terrain" };
+const cheminDerive = (racine, cas, label) => join(racine, cas, LABELS_DERIVES[label]);
 
 function refuse(message) {
   console.error("REFUS — " + message);
@@ -131,6 +167,20 @@ function nowStamp() {
 const sha256File = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
 const sha256Text = (t) => createHash("sha256").update(t).digest("hex");
 const display = (p) => (p.startsWith(REPO + sep) ? relative(REPO, p) : p);
+const estDans = (p, racine) => p === racine || p.startsWith(racine + sep);
+// A path compared against the frozen trees is compared after its links are resolved: a symlink
+// left in the workspace is how a product written elsewhere would look like a product written
+// here. null when the path does not resolve — the caller decides what that costs.
+const resolu = (p) => {
+  try {
+    return realpathSync(p);
+  } catch {
+    return null;
+  }
+};
+// The tree the freeze names « travail » — the only place a run may write, and therefore the only
+// place a product may come from. Both moments that copy or read a product ask this one question.
+const arbreTravail = (gel) => (gel.arbres ?? []).find((t) => t.label === "travail");
 // A frozen path is never absolute, so a third party replays the formula on its own
 // clone without rewriting anything it reads here. Inside the repository the path names
 // the file from the repository root; outside it (a throwaway bench) the freeze sits
@@ -274,10 +324,39 @@ const casesDirOf = (a) => resolve(a.one("cases") ?? CASES_DEFAULT);
 function cmdFreeze(a) {
   const cas = a.required("case");
   const casesDir = casesDirOf(a);
-  const arbres = a.all("arbre").map((v) => parsePaire(v, "--arbre"));
-  if (arbres.length === 0) {
-    refuse("freeze : --arbre <label>=<chemin> requis — l'état des arbres avant fait partie du gel (§5.2)");
+  const racineEspace = resolve(a.required("racine"));
+  if (!existsSync(racineEspace)) {
+    refuse(
+      `freeze : --racine ${racineEspace} n'existe pas — la racine des espaces de travail se déclare une seule fois, ` +
+        `et c'est elle qui situe les deux copies du cas`,
+    );
   }
+  if (!statSync(racineEspace).isDirectory()) refuse(`freeze : --racine ${racineEspace} n'est pas un répertoire`);
+  if (estDans(racineEspace, REPO)) {
+    refuse(
+      `freeze : --racine ${racineEspace} est dans le dépôt du dispositif (${REPO}) — l'espace de travail vit hors des ` +
+        `quatre arbres (BOUNDARY §1), et un cas gelé sur un dossier du dépôt ferait écrire la session dans les preuves`,
+    );
+  }
+  const declares = a.all("arbre").map((v) => parsePaire(v, "--arbre"));
+  for (const label of Object.keys(LABELS_DERIVES)) {
+    if (declares.some((t) => t.label === label)) {
+      refuse(
+        `freeze : --arbre ${label}=… n'a plus lieu : cet arbre est dérivé de --racine ` +
+          `(${cheminDerive(racineEspace, cas, label)}) — un espace de travail déclaré deux fois finit par se contredire`,
+      );
+    }
+  }
+  for (const label of Object.keys(LABELS_DERIVES)) {
+    const chemin = cheminDerive(racineEspace, cas, label);
+    if (!existsSync(chemin)) {
+      refuse(
+        `freeze : ${chemin} n'existe pas — sous cette racine, le cas ${cas} n'a pas ses deux copies ` +
+          `(framework-origin et terrain) ; les faire, ou déclarer la bonne racine`,
+      );
+    }
+  }
+  const arbres = [...declares, ...Object.keys(LABELS_DERIVES).map((label) => ({ label, chemin: cheminDerive(racineEspace, cas, label) }))];
   for (const champ of Object.keys(LABEL_TO_FIELD)) {
     if (!arbres.some((t) => t.label === champ)) {
       refuse(`freeze : aucun arbre étiqueté « ${champ} » — le reçu du §6 porte ${LABEL_TO_FIELD[champ]}, et un gel qui ne mesure pas cet arbre ne le lui donne pas`);
@@ -298,6 +377,20 @@ function cmdFreeze(a) {
   }
   if (existsSync(gel) && !a.has("refreeze")) {
     refuse(`freeze : ${display(gel)} existe déjà — --refreeze pour le refaire, le gel précédent est alors perdu`);
+  }
+
+  // The declared root is a fact of this machine, and it stays in the freeze — never in the case.
+  // A case that spells it out cannot be moved, re-rooted or replayed elsewhere without being
+  // rewritten, and rewriting a frozen case costs a re-freeze of the very artifact that proves
+  // when the case was written. The check runs on the bytes about to be hashed, so a gel cannot
+  // be taken over a case that names this machine.
+  for (const n of noms.filter((x) => !x.endsWith(".freeze.json"))) {
+    if (readFileSync(join(casesDir, n), "utf8").includes(racineEspace)) {
+      refuse(
+        `freeze : ${n} écrit la racine des espaces de travail en clair (${racineEspace}) — le cas nomme $RACINE, ` +
+          `et le gel dit ce que $RACINE vaut ici ; un cas qui nomme la machine ne se rejoue plus ailleurs sans être réécrit`,
+      );
+    }
   }
 
   const fichiers = noms
@@ -324,6 +417,9 @@ function cmdFreeze(a) {
   const empreinte = empreinteDeGel(fichiers, references);
   const objet = {
     cas,
+    // Declared once, and recorded here like the trees' paths: where this machine keeps the
+    // workspaces of its cases is a fact, not a parameter — but a fact said once.
+    racine_espace_de_travail: racineEspace,
     ...nowStamp(), // taken once the case files are hashed: the freeze marks the fingerprint, not its beginning
     commande: process.argv.slice(1).map((v) => (v.includes(" ") ? JSON.stringify(v) : v)).join(" "),
     empreinte,
@@ -335,8 +431,102 @@ function cmdFreeze(a) {
   if (existsSync(gel)) rmSync(gel);
   writeJson(gel, objet);
   console.log(
-    `freeze ok — ${cas} : ${fichiers.length} fichiers du cas, ${references.length} reference(s) du framework, ` +
-      `${objet.arbres.length} arbre(s) ; empreinte ${empreinte.slice(0, 8)} : ${display(gel)}`,
+    `freeze ok — ${cas} : racine ${racineEspace}, ${fichiers.length} fichiers du cas, ` +
+      `${references.length} reference(s) du framework, ${objet.arbres.length} arbre(s) ; ` +
+      `empreinte ${empreinte.slice(0, 8)} : ${display(gel)}`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// preflight — the gate before the session opens
+// ---------------------------------------------------------------------------
+// The premise of a run is not only that the case was frozen before a session opened: it is
+// that the session opened *in the frozen workspace*. Nothing measured that until now, and
+// the receipt accepted any of the four trees as the working directory — the original terrain
+// included, where a session writes into the project the case means to leave untouched. This
+// is the only command that answers before the fact instead of after it.
+function cmdPreflight(a) {
+  const cas = a.required("case");
+  const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "preflight");
+  if (!gel) {
+    refuse(`preflight : aucun gel ${display(gelPath)} — rien n'autorise l'ouverture d'une session sur un cas qui n'est pas gelé (§3)`);
+  }
+  const gelVerifie = verifierLeGel(gel, casesDir, "preflight");
+
+  const gele = (gel.arbres ?? []).find((t) => t.label === "travail");
+  if (!gele) {
+    refuse(
+      "preflight : le gel ne décrit aucun arbre étiqueté « travail » — le dossier où la session s'ouvre serait " +
+        "alors un paramètre que rien ne contraint (§4 de la demande)",
+    );
+  }
+  const attendu = resolve(gele.chemin);
+  const declare = resolve(a.one("repertoire") ?? process.cwd());
+  if (declare !== attendu) {
+    refuse(
+      `preflight : ouverture refusée dans ${declare} — le gel de ce cas ouvre la session dans ${attendu} ` +
+        `(§4 de la demande) ; écrire ailleurs ferait du produit l'écrit d'un autre dossier, et la paire avant/après du §5.2 ne le mesurerait pas`,
+    );
+  }
+  if (!existsSync(declare)) {
+    refuse(
+      `preflight : ${declare} n'existe pas — le gel le nomme comme espace de travail, donc le cas a été déplacé ou ` +
+        `perdu ; refaire le cas, jamais ouvrir ailleurs`,
+    );
+  }
+  if (!statSync(declare).isDirectory()) refuse(`preflight : ${declare} n'est pas un répertoire`);
+  if (estDans(declare, REPO)) {
+    refuse(
+      `preflight : ${declare} est dans le dépôt du dispositif (${REPO}) — la session écrirait dans l'arbre qui porte ` +
+        `les preuves du cas, dont l'attendu qu'elle ne doit pas lire (§7) ; l'espace de travail vit hors des quatre arbres (BOUNDARY §1)`,
+    );
+  }
+  const mesure = gitTree({ label: gele.label, chemin: declare });
+  if (!memeArbre(gele, mesure)) {
+    refuse(
+      `preflight : l'espace de travail n'est plus celui du gel — HEAD ${mesure.head ?? "(illisible)"} contre ${gele.head} gelé, ` +
+        `porcelain ${JSON.stringify(mesure.porcelain)} contre ${JSON.stringify(gele.porcelain)} ; la paire avant/après du §5.2 ne se lirait pas, ` +
+        `et refaire le gel avant d'ouvrir est le seul remède (§3)`,
+    );
+  }
+
+  // The text handed to the session is the case's §5 with $RACINE substituted: the case stays
+  // portable, the session still receives an absolute path — the one lesson of the first run. It is
+  // checked here, at the same moment as the folder, because both are what the operator does just
+  // before the session opens.
+  let texte = null;
+  if (a.has("texte")) {
+    const racineEspace = gel.racine_espace_de_travail;
+    if (!racineEspace) {
+      refuse("preflight : le gel ne déclare aucune racine des espaces de travail (racine_espace_de_travail) — un gel d'avant la racine déclarée ne peut pas substituer $RACINE ; le refaire");
+    }
+    const cheminTexte = resolve(a.one("texte"));
+    if (!existsSync(cheminTexte)) refuse(`preflight : --texte ${cheminTexte} n'existe pas`);
+    const cheminDemande = cheminDuCas(gel.fichiers.find((f) => f.role === "demande").chemin, casesDir);
+    const lignes = readFileSync(cheminDemande, "utf8").split("\n");
+    const debut = lignes.findIndex((l) => l.trim() === "<<<DEMANDE");
+    const fin = lignes.findIndex((l) => l.trim() === ">>>DEMANDE");
+    if (debut < 0 || fin <= debut) {
+      refuse(`preflight : ${display(cheminDemande)} ne porte pas de bloc §5 (« <<<DEMANDE » puis « >>>DEMANDE ») — il n'y a pas de texte à remettre`);
+    }
+    const attendu = lignes.slice(debut + 1, fin).join("\n").split("$RACINE").join(racineEspace);
+    const recu = readFileSync(cheminTexte, "utf8");
+    if (recu !== attendu) {
+      const octets = (t) => Buffer.byteLength(t, "utf8");
+      refuse(
+        `preflight : --texte n'est pas le §5 du cas, $RACINE substitué — ${sha256Text(recu).slice(0, 8)} reçu (${octets(recu)} octets), ` +
+          `${sha256Text(attendu).slice(0, 8)} attendu (${octets(attendu)} octets) ; la session lirait un chemin qui n'est pas celui du gel`,
+      );
+    }
+    texte = { chemin: display(cheminTexte), sha256: sha256Text(recu), octets: Buffer.byteLength(recu, "utf8") };
+  }
+
+  console.log(
+    `preflight ok — ${cas} : ouverture autorisée dans ${declare} (HEAD ${mesure.head}, porcelain ${mesure.porcelain.length} ligne(s)) ; ` +
+      `gel ${String(gel.empreinte).slice(0, 8)} re-haché, ${gelVerifie.fichiers} fichier(s) du cas et ${gelVerifie.references} référence(s)` +
+      (texte ? ` ; texte ${texte.sha256.slice(0, 8)} (${texte.octets} octets) conforme au §5 substitué` : ""),
   );
 }
 
@@ -364,6 +554,41 @@ function cmdCollect(a) {
     return;
   }
 
+  // A product is what the session wrote in the frozen workspace. The freeze is read here — not
+  // asked of the operator — so the origin of the product is established at the moment it is
+  // copied, and not only at the receipt, where the copy is already the record.
+  const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "collect");
+  if (!gel) {
+    refuse(
+      `collect : aucun gel ${display(gelPath)} — rien ne dit quel espace de travail est celui du cas, donc d'où le ` +
+        `produit peut venir ; lancer freeze d'abord`,
+    );
+  }
+  const geleTravail = arbreTravail(gel);
+  if (!geleTravail) {
+    refuse(
+      "collect : le gel ne décrit aucun arbre « travail » — l'espace de travail du cas est introuvable, et un produit " +
+        "dont la provenance n'est pas gelée n'entre pas au reçu",
+    );
+  }
+  const racineTravail = resolu(geleTravail.chemin);
+  const fromResolu = resolu(from);
+  if (racineTravail === null || fromResolu === null) {
+    refuse(
+      `collect : --from ${from} ou l'espace de travail gelé (${geleTravail.chemin}) n'est pas résolvable — un produit ` +
+        `dont le chemin ne se résout pas ne peut pas être rapporté à l'espace du cas (lien mort, dossier déplacé)`,
+    );
+  }
+  if (!estDans(fromResolu, racineTravail)) {
+    refuse(
+      `collect : --from ${from} est hors de l'espace de travail gelé (${geleTravail.chemin}) — le produit d'un run est ` +
+        `ce que la session a écrit là (§4), et un produit venu d'ailleurs ferait lire au reçu une provenance que le gel ` +
+        `ne couvre pas ; collecter le dossier gelé, ou refaire le run là où le gel l'ouvre`,
+    );
+  }
+
   mkdirSync(dest, { recursive: true });
 
   const fichiers = [];
@@ -387,9 +612,18 @@ function cmdCollect(a) {
   }
   if (fichiers.length === 0) refuse(`collect : rien à collecter sous ${from}`);
 
-  const manifeste = { cas, run: runDir, source: from, collecte_le: localIso(), fichiers };
+  // Where the product was copied from, said against the tree the freeze names: the receipt can
+  // then re-read the origin without asking collect what it did.
+  const manifeste = {
+    cas,
+    run: runDir,
+    source: from,
+    arbre_de_travail: { label: geleTravail.label, chemin: geleTravail.chemin },
+    collecte_le: localIso(),
+    fichiers,
+  };
   writeJson(join(dest, "manifest.json"), manifeste);
-  console.log(`collect ok — ${cas} : ${fichiers.length} fichier(s) verbatim sous ${display(dest)}, source ${from}`);
+  console.log(`collect ok — ${cas} : ${fichiers.length} fichier(s) verbatim sous ${display(dest)}, source ${from} (arbre « travail » ${geleTravail.chemin})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -455,13 +689,57 @@ function cmdReceipt(a) {
   };
 
   const apres = gel.arbres.map(gitTree);
-  const avantTravail = gel.arbres.find((t) => t.chemin === travail);
+  // The working directory is the tree the freeze names « travail », not any tree it happens
+  // to describe: the original terrain is one of the four, and a run opened there would write
+  // into the project the case means to leave untouched. Checked again at the receipt because
+  // the gate can be skipped, and a receipt stands on the gel alone.
+  const geleTravail = gel.arbres.find((t) => t.label === "travail");
+  const avantTravail = geleTravail && geleTravail.chemin === travail ? geleTravail : null;
   const apresTravail = apres.find((t) => t.chemin === travail);
   if (!avantTravail) {
-    refuse(`receipt : le répertoire de travail ${travail} n'est pas dans l'état des arbres gelé — la condition 3 du §5 ne peut pas être établie`);
+    refuse(
+      `receipt : le répertoire de travail déclaré (${travail}) n'est pas celui que le gel nomme « travail » ` +
+        `(${geleTravail?.chemin ?? "aucun arbre « travail » au gel"}) — la condition 3 du §5 se lirait sur un autre arbre que celui du run`,
+    );
   }
   if (avantTravail.porcelain === null || apresTravail.porcelain === null) {
     refuse(`receipt : ${travail} n'est pas un dépôt git lisible — la condition 3 du §5 ne peut pas être établie`);
+  }
+
+  // The product's origin, re-read from the pieces rather than from collect's word: a source that
+  // resolves outside the frozen workspace means the run copied what it did not write there, and
+  // the receipt is the piece that would have carried that provenance on. The gate can be skipped;
+  // a receipt stands on the gel and the manifest alone.
+  const sourcesHorsEspace = [];
+  const sourcesNonVerifiables = [];
+  const racineTravail = resolu(avantTravail.chemin);
+  if (racineTravail === null) {
+    refuse(
+      `receipt : l'espace de travail gelé (${avantTravail.chemin}) n'est pas résolvable — le produit ne peut pas être ` +
+        `rapporté à l'arbre du run (§4), et un reçu dont la provenance ne se résout pas n'atteste rien`,
+    );
+  }
+  if (manifeste.arbre_de_travail) {
+    const declareTravail = resolu(resolve(manifeste.arbre_de_travail.chemin));
+    if (declareTravail === null || declareTravail !== racineTravail) {
+      refuse(
+        `receipt : le manifeste dit le produit collecté depuis ${manifeste.arbre_de_travail.chemin}, le gel nomme ` +
+          `« travail » ${avantTravail.chemin} — le produit vient d'un autre arbre que celui du run (§4), ou de l'arbre ` +
+          `du run tel qu'un autre gel le nommait`,
+      );
+    }
+  }
+  for (const f of manifeste.fichiers) {
+    const source = f.source == null ? null : resolu(resolve(f.source));
+    if (source === null) sourcesNonVerifiables.push({ chemin: f.chemin, source: f.source ?? "(non nommée)" });
+    else if (!estDans(source, racineTravail)) sourcesHorsEspace.push({ chemin: f.chemin, source: f.source });
+  }
+  if (sourcesHorsEspace.length) {
+    refuse(
+      `receipt : le produit a été collecté hors de l'espace de travail gelé (${avantTravail.chemin}) — ` +
+        sourcesHorsEspace.map((f) => `${f.chemin} ← ${f.source}`).join(", ") +
+        ` ; le §4 ne connaît qu'un produit : ce que la session a écrit dans l'arbre du run`,
+    );
   }
 
   const demande = gel.fichiers.find((f) => f.role === "demande");
@@ -493,6 +771,12 @@ function cmdReceipt(a) {
     limites.push(`naissance à une seconde du gel (résolution du birth) : ${ambigus.map((f) => f.chemin).join(", ")} — la condition 1 du §5 ne les distingue pas`);
   }
   if (!existsSync(trace.chemin_exporte)) limites.push("trace machine introuvable au chemin exporté — pièce (1) absente (§7 : verdict possible, limite dite)");
+  if (sourcesNonVerifiables.length) {
+    limites.push(
+      `source du produit non résolvable au reçu : ${sourcesNonVerifiables.map((f) => `${f.chemin} ← ${f.source}`).join(", ")} — ` +
+        "l'origine de ce fichier ne se vérifie plus sur le disque (§4)",
+    );
+  }
   if (falsificateurs.trace_non_lue_par_le_harnais) limites.push("le harnais ne lit aucune des trois sources du §5.1 : la pièce (1) est attestée par l'export, pas par ce script");
   for (const m of motifRefus) limites.push(m);
 
@@ -587,7 +871,7 @@ function cmdCompare(a) {
   console.log(`compare ok — ${cas} : verdict ${verdict}, limites « ${limites} » ; ${display(outPath)}`);
 }
 
-const COMMANDS = { freeze: cmdFreeze, collect: cmdCollect, receipt: cmdReceipt, compare: cmdCompare };
+const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, receipt: cmdReceipt, compare: cmdCompare };
 const a = parseArgs(process.argv.slice(2));
 if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
   console.log(USAGE);

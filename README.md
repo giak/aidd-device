@@ -25,10 +25,14 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 Un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, session `opencode`) et s'est conclu
 **`non concluant`** : la session n'a rendu aucun tableau et n'a rien écrit. Le harnais est écrit
-([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 598 lignes, quatre commandes : `freeze`,
-`collect` — dont `collect --sans-produit`, pour un run qui ne rend rien —, `receipt`, `compare`), le
-premier cas est **re-gelé** après le run, puis après le déplacement de l'espace de travail
-(empreinte `07246039`, [docs/device/CASES/](docs/device/CASES/)) et
+([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 882 lignes, cinq commandes : `freeze`
+— qui déclare une seule fois la racine des espaces de travail, dont dérivent les deux copies du cas —,
+`preflight` — la porte qui refuse d'ouvrir une session ailleurs que dans l'espace de travail gelé, et
+vérifie le texte remis —, `collect` — qui ne prend pour produit que ce que la session a écrit dans cet
+espace, et dont `collect --sans-produit` pour un run qui ne rend rien —,
+`receipt`, `compare`), le premier cas est **re-gelé** après le run, après le déplacement de l'espace de
+travail, puis après le passage à la racine déclarée (empreinte `0d9a2180`,
+[docs/device/CASES/](docs/device/CASES/)) et
 la conduite du run est écrite
 ([2026-10-15-154303-run.md](docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)).
 Le compte-rendu du run est dans

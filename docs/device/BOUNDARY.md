@@ -17,16 +17,18 @@ status: in-progress
 | Arbre | Chemin | Ce qu'on y fait |
 | --- | --- | --- |
 | framework-origin | `/home/giak/projects/framework` | lu, **jamais** écrit ni installé ici |
-| révision sous test | `~/projects/aidd-device-work/<cas>/framework-origin` — un espace de travail par cas, hors des quatre arbres | copie d'une révision de l'origine ; paramètre de run, jamais une constante |
+| révision sous test | `$RACINE/<cas>/framework-origin` — un espace de travail par cas, hors des quatre arbres ; la copie est **dérivée** de `--racine` au gel | copie d'une révision de l'origine ; paramètre de run, jamais une constante |
 | terrain | `/home/giak/projects/audio-sync-tool` | lu, **jamais** écrit ; copie de travail par run |
 | le dispositif | `/home/giak/projects/aidd-device` | le seul arbre que le dispositif écrit |
 
 Tout ce qui exécute tourne dans un répertoire jetable, hors de ces arbres. Le foyer, arrêté le
-2026-10-15 : `~/projects/aidd-device-work/<identifiant-du-cas>/`, qui porte `terrain/` — où la session
-écrit — et `framework-origin/`, lu seul. Rangé sous `~/projects/` **avec** le projet et **hors** de
-lui : le dépôt du dispositif porte les preuves, dont le corrigé du cas en cours. **Un espace par cas,
-jamais par run** : le §5 de la demande et le gel y portent des chemins absolus ; deux runs du même cas
-se distinguent par leurs pièces, sous `docs/device/runs/`.
+2026-10-15 : `<racine>/<identifiant-du-cas>/`, qui porte `terrain/` — où la session écrit — et
+`framework-origin/`, lu seul. La **racine** se déclare une seule fois, au gel
+(`racine_espace_de_travail`) : le cas l'écrit `$RACINE` et ne nomme aucun chemin de machine, sinon un
+déplacement obligerait à réécrire le cas gelé ([ADR-019](../DECISIONS.md)). Rangé sous `~/projects/`
+**avec** le projet et **hors** de lui : le dépôt du dispositif porte les preuves, dont le corrigé du cas
+en cours. **Un espace par cas, jamais par run** : le texte remis et le gel y portent des chemins
+absolus ; deux runs du même cas se distinguent par leurs pièces, sous `docs/device/runs/`.
 
 ## 2. Les chemins du framework que le dispositif lit
 

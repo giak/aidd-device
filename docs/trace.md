@@ -714,6 +714,32 @@ et la racine — c'est un relevé de cette machine, pas une propriété du cas, 
 des arbres ; deux machines font deux gels. Et rien ne force l'opérateur à passer `--texte` : le contrôle
 du texte n'existe que si on le lui donne. Rien n'est commité par ce tour.
 
+**Tour d'après : l'origine du produit.** Le tour de la porte avait laissé un trou **nommé**, écrit noir
+sur blanc dans l'ADR-018 : « `collect` accepte toujours un `--from` venu d'ailleurs ». Mesuré avant d'y
+toucher : trois sources passaient — le terrain **original** (celui que le cas promet de ne pas écrire),
+la copie `framework-origin`, un dossier de `/tmp`. Un produit rapporté d'un autre dossier donnait donc
+un `raw/<cas>/` indiscernable de celui d'un run ouvert au bon endroit, alors que la paire avant/après du
+§5.2 mesurait un arbre où rien n'avait été écrit. `collect` lit désormais le gel, prend l'arbre
+`travail`, et refuse toute source dont le chemin **résolu** n'y tombe pas — dont un **lien** posé dans
+l'espace de travail qui pointe dehors, que seul le `realpath` attrape ; le manifeste écrit l'arbre de la
+copie (`arbre_de_travail`). Le reçu refait le contrôle sur le manifeste **seul**, une porte pouvant être
+sautée : un autre arbre, ou une source de fichier hors de l'arbre du run, sont des refus ; une source qui
+ne se résout plus devient une **limite** écrite, le produit étant déjà copié et haché quand le reçu
+s'écrit.
+Mesuré : banc étendu de 31 à **46 contrôles, 46/46 PASS**, dont quinze pour l'origine — `collect` accepté
+depuis l'espace gelé, refusé depuis le terrain original, `framework-origin`, un dossier hors des quatre
+arbres, une source absente, un cas sans gel, un gel sans arbre `travail`, et le lien qui sort — puis le
+reçu : refus sur un manifeste d'un autre arbre et sur une source hors de l'espace, accepté sur une source
+dans l'espace, accepté avec sa limite sur une source disparue ; et l'espace de travail relu propre après
+le lien. Le harnais passe de 773 à **882 lignes** et de 56 à **63 refus** ; l'[ADR-020](DECISIONS.md)
+porte la décision et l'ADR-018 cesse de compter ce trou parmi les siens, la
+[spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §4 l'exige,
+la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) §3.1
+l'énonce et son §5 porte le banc.
+Ce que le contrôle **ne** couvre pas : un opérateur qui recollerait à la main un manifeste cohérent après
+coup — le reçu relit alors les mêmes pièces que lui, et rien ne distingue un manifeste réécrit d'un
+manifeste né ainsi. Rien n'est commité par ce tour.
+
 > Rattaché à la Séance 2, et posé après la Séance 3 : celle-ci s'est écrite entre mes deux ajouts au
 > même fichier, et cet ajout est tombé à sa suite. Il appartient à la Séance 2.
 

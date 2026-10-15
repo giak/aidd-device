@@ -18,7 +18,8 @@ refaire le départ, jamais la réponse.
 
 - Il gèle les attendus **avant** tout run : `CASES/` haché, empreinte enregistrée.
 - Il remet à la session une demande écrite verbatim, et rien de plus : l'attendu ne part jamais.
-- Il conserve le produit tel quel — copie verbatim, manifeste `sha256`/taille/`birth`.
+- Il conserve le produit tel quel, et seulement s'il vient de l'espace de travail gelé (ADR-020) —
+  copie verbatim, manifeste `sha256`/taille/`birth`.
 - Il rend un écart nommé et une phrase de verdict qui compare, sans attribuer de faute (v6 §8).
 - Il emporte la trace machine du run, sans laquelle « le run a eu lieu » n'est qu'une parole.
 
@@ -26,8 +27,7 @@ refaire le départ, jamais la réponse.
 
 - Pas une refonte : il lit le framework, ne le modifie pas ([BOUNDARY.md](BOUNDARY.md)).
 - Pas un harnais de régression : il rejoue un **départ**, jamais une réponse.
-- Pas un runner automatique : aucun runner sans interaction ne répond ici — le runner est la session
-  que l'opérateur ouvre (v6 §7).
+- Pas un runner automatique : le runner, c'est la session que l'opérateur ouvre (v6 §7).
 - Pas un juge : il ne sait pas si l'attendu était juste, et il le dit (v6 §8).
 
 ## Qui fait quoi
@@ -54,11 +54,11 @@ l'objet qui la contredit le plus.
 
 `CASES/<cas>.request.md`, huit champs : identifiant ; révision du framework sous test et commande
 d'installation en répertoire jetable ; révision du terrain et commande de copie de travail ; chemin
-absolu du répertoire de travail, hors des quatre arbres — foyer arrêté : `~/projects/aidd-device-work/<cas>/` ; **le texte remis à la session, verbatim,
+du répertoire de travail, hors des quatre arbres, situé par la racine déclarée au gel (`$RACINE/<cas>/`, ADR-019) ; **le texte remis à la session, verbatim,
 entre deux lignes de garde** ; ce qu'elle doit produire, chemin et nom exacts ; les interdits
 (écrire dans `framework-origin`, écrire dans le terrain, lire `CASES/`, sortir du répertoire de
-travail) ; le budget d'échanges. L'attendu reste ici : s'il est relayé, le reçu porte
-`attendu_vu: oui` et le cas se conclut `non concluant`.
+travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans le reçu
+(`attendu_vu: oui`).
 
 ## Ce qui revient
 
@@ -72,19 +72,21 @@ git clone https://github.com/giak/aidd-device.git
 git -C aidd-device rev-parse --short HEAD   → 1d471a5   (branche main, relevé du 2026-10-15)
 ```
 
-D'une autre machine : oui, les quatre arbres du cas publiés (§3 de [BOUNDARY.md](BOUNDARY.md) ; le
-rejeu du gel, [REPLAY.md](REPLAY.md)). La question 1 du §11 reste « non », mais pour sa seule
-dernière clause : un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, `non concluant`, aucun
-produit) et rien n'a été publié qui permette d'en lire l'écart, faute de reçu ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
+D'une autre machine : oui — les quatre arbres du cas sont publiés (§3 de [BOUNDARY.md](BOUNDARY.md)), le
+gel se rejoue ([REPLAY.md](REPLAY.md)), et le cas ne nomme plus aucun chemin de machine : la racine se
+redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
-2. écrire la demande, puis `freeze` — l'empreinte de `CASES/` et l'état des arbres avant ;
-3. l'opérateur ouvre une session neuve et lui remet le texte verbatim — geste humain, sans commande ;
-4. `collect` puis `receipt` — produit verbatim, manifeste, reçu écrit à chaud ;
-5. `compare` — l'écart et la phrase de verdict, depuis le reçu seul.
+2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
+de travail déclarée une seule fois, et l'état des arbres avant ;
+3. `preflight` — la porte : elle refuse d'autoriser l'ouverture si le dossier n'est pas l'espace de
+   travail que le gel nomme `travail`, encore dans l'état gelé (ADR-018) ;
+4. l'opérateur ouvre une session neuve et lui remet le texte verbatim — geste humain, sans commande ;
+5. `collect` puis `receipt` — produit verbatim, manifeste, reçu écrit à chaud ;
+6. `compare` — l'écart et la phrase de verdict, depuis le reçu seul.
 
 ## Lire un écart
 
@@ -103,5 +105,4 @@ Le contrat range tout sous `docs/` (ADR-002) ; les noms du v6 §10 sont conserv�
 | `DEVICE.md` (cette page), `BOUNDARY.md`, `CASES/`, `runs/`, `NEGATIVE.md`, `REFUSED.md`, `LIMITS.md`, `ATTEMPT.md` | `docs/device/` |
 | `ECART.md` | chez le framework, `aidd_docs/tasks/<année_mois>/<date_slug>/` |
 
-Nom prescrit, sans préfixe daté : le préfixe rend l'ordre alphabétique chronologique entre documents
-d'une même nature ; ces pages sont des singletons nommés par le v6.
+Nom prescrit, sans préfixe daté : ces pages sont des singletons du v6, que rien n'ordonne.

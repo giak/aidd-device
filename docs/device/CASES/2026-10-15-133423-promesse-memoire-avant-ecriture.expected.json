@@ -1,11 +1,11 @@
 {
   "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
   "type": "case-expected",
-  "statut": "écrit avant tout run — aucune session n'a reçu la demande, les trois échanges du budget sont intacts. RECTIFIÉ le 2026-10-15 après le premier run (non concluant, aucun produit) : le texte du §5 porte désormais un chemin absolu, parce que le chemin relatif ne résolvait pas depuis la racine de projet de la session (mesuré), et le falsificateur F9 mesure la lecture de la révision sous test. L'attendu ci-dessous — l'ordre des gestes, les destinations, les réponses figées — n'a pas bougé depuis l'écriture d'avant le run. DÉPLACÉ le 2026-10-15 : l'espace de travail est passé de `~/runs/aidd-device/<horodatage>-<cas>/` à `~/projects/aidd-device-work/<cas>/`, dans `~/projects/` mais hors du dépôt, comme le §4 de la demande l'exige ; le texte du §5 et les trois chemins du contexte suivent, et le gel est refait — l'ancien détruit, le nouveau seul fait foi.",
+  "statut": "écrit avant tout run — aucune session n'a reçu la demande, les trois échanges du budget sont intacts. RECTIFIÉ le 2026-10-15 après le premier run (non concluant, aucun produit) : le texte du §5 porte désormais un chemin absolu, parce que le chemin relatif ne résolvait pas depuis la racine de projet de la session (mesuré), et le falsificateur F9 mesure la lecture de la révision sous test. L'attendu ci-dessous — l'ordre des gestes, les destinations, les réponses figées — n'a pas bougé depuis l'écriture d'avant le run. DÉPLACÉ le 2026-10-15 : l'espace de travail est passé de `~/runs/aidd-device/<horodatage>-<cas>/` à `~/projects/aidd-device-work/<cas>/`, dans `~/projects/` mais hors du dépôt, comme le §4 de la demande l'exige ; le texte du §5 et les trois chemins du contexte suivent, et le gel est refait — l'ancien détruit, le nouveau seul fait foi. RACINE DÉCLARÉE le 2026-10-15 : le cas ne nomme plus aucun chemin d'espace de travail en clair — `$RACINE` se déclare une seule fois, au gel (`racine_espace_de_travail`), et `preflight --texte` vérifie le texte substitué avant l'ouverture.",
   "demande": {
     "fichier": "CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
-    "texte_verbatim": "Read the project-memory skill from /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.",
-    "texte_verbatim_note": "chemin absolu depuis la rectification du 2026-10-15 après le premier run : le texte d'avant portait un chemin relatif qui ne résolvait pas depuis la racine de projet de la session, et la session est allée lire une copie installée de la skill (mesuré, F9 ajouté pour ça).",
+    "texte_verbatim": "Read the project-memory skill from $RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.",
+    "texte_verbatim_note": "MODÈLE : ce qui part vers la session est ce texte, `$RACINE` substitué par `racine_espace_de_travail` du gel, sans aucune variable — `preflight --texte` refuse un texte remis qui n'est pas cette substitution. Le chemin reste absolu depuis la rectification du 2026-10-15 après le premier run : un chemin relatif ne résolvait pas depuis la racine de projet de la session, et la session est allée lire une copie installée de la skill (mesuré, F9 ajouté pour ça).",
     "budget_echanges": 3,
     "reponses_figees": [
       "Yes, that matches. Do not write the backlog memory: this repo tracks its work elsewhere. Everything else is right.",
@@ -17,11 +17,11 @@
     "framework_arbre": "4c79f56a741820c68dce14b7acf253250bb43b5f",
     "framework_rev_avant": "7ec7bbc575 (parent : l'état d'avant la modification testée)",
     "terrain_rev": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
-    "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/",
-    "revision_sous_test": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin (lecture seule)",
-    "copie_du_terrain": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain (c'est là que la session écrit)",
+    "repertoire_de_travail": "$RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/ — la valeur de la racine est celle que le gel déclare (`racine_espace_de_travail`)",
+    "revision_sous_test": "$RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin (lecture seule)",
+    "copie_du_terrain": "$RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain (c'est là que la session écrit)",
     "fichiers_de_depart": "aucun `aidd_docs/` dans la copie du terrain — la mémoire projet s'y écrit pour la première fois, donc `setup` seul est exercé, jamais `refresh`",
-    "gel": "CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json — empreintes des fichiers du cas et des références du framework ; `gele_le` porte la date du gel, et `gele_le_epoch` la situe avant toute session",
+    "gel": "CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json — empreintes des fichiers du cas et des références du framework ; `gele_le` porte la date du gel, et `gele_le_epoch` la situe avant toute session ; `racine_espace_de_travail` dit ce que `$RACINE` vaut ici — la seule déclaration du chemin, à côté des arbres que le gel nomme",
     "interdits": [
       "écrire dans framework-origin/ (la révision sous test s'y lit)",
       "écrire dans /home/giak/projects/audio-sync-tool (l'original du terrain)",

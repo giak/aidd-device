@@ -468,3 +468,110 @@ BOUNDARY §3, pas cachée. Le gel est refait le `2026-10-15T16:43:17.693147522+0
 au `HEAD` gelé, `receipt` et `compare` inchangés. Un tiers refait donc son propre gel sans réécrire un
 chemin — mais il refait, il ne rejoue pas celui-ci : le gel du dispositif porte les chemins de cette
 machine.
+
+## ADR-018 — La session s'ouvre dans l'espace de travail gelé, ou elle ne s'ouvre pas (2026-10-15)
+
+**Contexte** : trois faits mesurés le même jour. (1) Le premier run a montré qu'une session résout ses
+chemins relatifs contre **sa** racine de projet, et qu'une session ouverte au mauvais endroit lit une
+copie installée de la révision au lieu de la révision sous test ; l'ADR-015 a rendu la conséquence
+obligatoire sans que le geste d'ouverture soit mesuré nulle part. (2) `receipt` acceptait comme
+répertoire de travail **n'importe lequel** des quatre arbres gelés : banc du 2026-10-15, un `faits.json`
+déclarant `/home/giak/projects/audio-sync-tool` — le terrain **original**, celui que le cas promet de ne
+pas toucher — a écrit un `receipt.json` et sorti en `0`. (3) L'espace de travail a été déplacé le même
+jour (`~/runs/aidd-device/` → `~/projects/aidd-device-work/<cas>/`) : le dossier gelé peut désormais ne
+plus exister, et rien ne le disait avant d'ouvrir.
+
+**Options** : (a) garder le contrôle après coup et l'écrire comme limite ; (b) resserrer `receipt` sur
+le seul label `travail` ; (c) ajouter au harnais une porte qui refuse **avant** l'ouverture, et
+resserrer `receipt` en second filet.
+
+**Choix** : (c). Cinquième commande, `preflight` : le cas est re-haché comme au reçu, puis le dossier
+examiné — `--repertoire`, ou le répertoire courant quand l'opérateur se tient dans le dossier qu'il va
+ouvrir — doit être **exactement** le chemin gelé sous le label `travail`, exister, être un répertoire, ne
+pas vivre dans le dépôt du dispositif, et être encore dans l'état gelé (`HEAD` **et** `porcelain`).
+`receipt` refuse en plus tout `repertoire_de_travail` qui n'est pas le label `travail` du gel.
+
+**Conséquences** : vingt contrôles de banc sous `/tmp`, **20/20** en code de sortie attendu — treize pour
+la porte : neuf refus (terrain original, révision sous test, ancien foyer disparu, répertoire courant
+resté dans le dépôt, cas sans gel, arbre `travail` gelé dans le dépôt, arbre `travail` qui n'est plus un
+dépôt git, arbre à la bonne révision mais au `porcelain` d'un autre état, cas dont un fichier a bougé
+depuis le gel) et quatre ouvertures autorisées (dossier gelé par `--repertoire`, par le répertoire
+courant, deux gels rejoués depuis un banc) — et sept de non-régression : les refus d'origine de
+`freeze`, `collect`, `receipt` et `compare` tombent toujours, et `receipt` gagne le sien (un autre arbre
+que le `travail` gelé). Le harnais passe de 4
+commandes, 40 refus et 598 lignes à **5 commandes, 47 refus et 677 lignes**. Ce que la porte **ne** couvre
+pas : ce que la session fait une fois ouverte — sortir du cadre reste constaté au reçu (condition 3 du
+§5) ; et `collect` acceptait tout `--from`, que le manifeste nommait — trou nommé ici, fermé depuis par
+l'ADR-020.
+
+## ADR-019 — L'espace de travail se nomme par une racine déclarée, jamais par la machine (2026-10-15)
+
+**Contexte** : le déplacement de l'espace de travail du même jour a coûté un re-gel entier —
+`38fa91f4` → `07246039` — parce que le chemin de cette machine était écrit **dans** les deux fichiers
+gelés, à trois endroits (demande §2, §4, §5 ; attendu, trois champs de contexte). Récrire un cas gelé
+est le geste que l'ADR-016 a rendu inutile pour les **références**, et l'ADR-017 pour la **publication**
+des arbres ; le cas, lui, restait attaché à la machine, et l'[REPLAY](device/REPLAY.md) le disait comme
+une limite (« un tiers qui rejoue substitue ses propres chemins »). Second fait, plus grave : rien ne
+vérifiait que le texte remis à la session était bien le §5 du cas — l'opérateur le recopiait, le
+`sha256` du texte était cité dans la conduite, et aucune commande ne le comparait.
+
+**Options** : (a) garder le chemin absolu et documenter la substitution à la main, comme le fait
+REPLAY ; (b) déclarer la racine une fois par machine (variable d'environnement, fichier d'à côté) et
+laisser le harnais deviner le reste ; (c) en faire un **paramètre de gel**, `--racine`, enregistré dans
+le gel et dont les deux copies du cas sont dérivées.
+
+**Choix** : (c). `freeze --racine <chemin>` devient obligatoire ; le gel enregistre
+`racine_espace_de_travail` (à côté des arbres, même doctrine : où cette machine garde ses espaces de
+travail est un fait) et en dérive `<racine>/<cas>/framework-origin` et `<racine>/<cas>/terrain` ; les
+deux autres arbres (`framework-origin`, `terrain`) restent donnés, et `--arbre` sur un label dérivé est
+refusé. Le cas nomme `$RACINE`, et le harnais **refuse** un gel dont un fichier de cas écrit la racine
+en clair. `preflight --texte <fichier>` reçoit le texte à remettre et refuse tout ce qui n'est pas le
+§5 du cas, `$RACINE` substitué par la racine du gel — donc sans variable et sans saut de ligne final.
+
+**Conséquences** : le cas n'est plus attaché à la machine. Un déplacement, une autre machine ou un
+rejeu tiers ne réécrivent plus le cas gelé : ils redéclarent la racine, et le **texte remis** aux mêmes
+valeurs (mesuré : `832036f7…`, 254 octets, identique à celui du gel précédent — la substitution
+redonne exactement l'ancien chemin). Sixième re-gel du même jour, empreinte `07246039` → `0d9a2180`,
+`gele_le` `2026-10-15T22:11:24.782242943+0200` ; demande `5aac04fb…` (13 413 o), attendu `ae4914c5…`
+(15 423 o). Banc `/tmp/banc-porte.sh` étendu à **31/31 PASS**, dont onze contrôles pour la racine
+(dé) : quatre refus de `freeze`, la dérivation vérifiée dans le gel écrit, et cinq contrôles du texte
+substitué. Le harnais passe de 677 à **773 lignes**, de 47 à **56 refus**, toujours 5 commandes. Ce que
+le nouveau contrôle **ne** couvre pas : qu'un opérateur substitue à la main un autre chemin — c'est
+`preflight --texte`, pas la porte du §1.0, qui l'attrape, et il faut la lui donner ; et la racine reste
+un fait **par gel**, pas une propriété du cas : deux machines font deux gels, ce que le projet dit déjà
+des arbres.
+
+## ADR-020 — Le produit ne vient que de l'arbre « travail », ou il n'entre pas (2026-10-15)
+
+**Contexte** : l'ADR-018 a resserré l'ouverture — la session s'ouvre dans l'espace gelé, ou elle ne
+s'ouvre pas — et a nommé ce qu'elle laissait ouvert : « `collect` accepte toujours un `--from` venu
+d'ailleurs ». C'est le même trou d'un cran plus loin : `collect` copiait ce qu'on lui donnait, où qu'il
+soit, et le reçu lisait ensuite le manifeste comme la provenance du produit. Un `--from` déplacé — le
+terrain **original**, la copie `framework-origin`, un dossier de `/tmp` — écrivait donc un `raw/<cas>/`
+indiscernable de celui d'un run ouvert au bon endroit, alors que la paire avant/après du §5.2 mesurait un
+arbre où rien n'avait été écrit. Mesuré sur banc : les trois sources ci-dessus passaient avant ce tour.
+
+**Options** : (a) garder la limite, le manifeste nommant la source ; (b) refuser seulement au reçu,
+quand les empreintes sont déjà recopiées ; (c) refuser au **collect**, là où l'opérateur déclare la
+provenance, et refaire le contrôle au reçu, qui relit les pièces au lieu de croire le geste.
+
+**Choix** : (c). `collect --from` exige le gel du cas, lit l'arbre que le gel nomme `travail`, et refuse
+toute source dont le chemin **résolu** (`realpathSync` : un lien posé dans l'espace de travail ne compte
+pas pour l'espace de travail) ne tombe pas dans cet arbre. Le manifeste enregistre l'arbre d'où la copie
+vient (`arbre_de_travail`). `receipt` refait le contrôle sur le manifeste seul — une porte peut être
+sautée : un `arbre_de_travail` qui n'est pas celui du gel, ou une source de fichier hors de l'arbre
+`travail`, sont des refus ; une source qui ne se résout plus au reçu devient une **limite** écrite, pas
+un refus, parce que le produit est déjà copié et haché quand le reçu s'écrit.
+
+**Conséquences** : le harnais passe de 773 à **882 lignes**, de 56 à **63 refus**, toujours 5 commandes.
+Banc `/tmp/banc-porte.sh` étendu de 31 à **46 contrôles, 46/46 PASS** : quinze pour l'origine — deux
+d'acceptation (`collect` depuis l'espace gelé, et son manifeste nommant l'arbre du gel), sept refus de
+`collect` (terrain original, `framework-origin`, dossier hors des quatre arbres, source absente, cas sans
+gel, gel sans arbre `travail`, et un **lien** posé dans l'espace de travail qui pointe ailleurs — c'est le
+`realpath` qui le refuse), l'espace de travail relu propre après le lien, puis quatre contrôles du reçu
+(manifeste d'un autre arbre et source hors de l'espace : refus ; source dans l'espace : accepté ; source
+disparue : accepté) et la limite de cette dernière relue dans le reçu écrit. Ce que le nouveau contrôle
+**ne** couvre pas : un opérateur qui recollerait à la main un manifeste cohérent après coup — le reçu
+relit alors les mêmes pièces que lui, et rien ne distingue un manifeste réécrit d'un manifeste né ainsi ;
+et `collect` ne vérifie pas que l'arbre `travail` est encore dans l'état gelé, ce que la porte (ADR-018)
+puis le reçu mesurent.

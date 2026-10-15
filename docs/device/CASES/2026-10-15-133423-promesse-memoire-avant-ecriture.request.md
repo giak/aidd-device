@@ -44,6 +44,12 @@ status: in-progress
 > projet, et toujours **hors du dépôt** (§4). Rien d'autre n'a bougé — ni le §5, ni le §7, ni le §8,
 > ni l'attendu. Les §2, §4 et §5 portent le nouveau chemin, et le gel est **refait** : ses fichiers
 > ayant changé, l'ancien ne valait plus rien (conduite §1.1).
+>
+> **Rectifié une cinquième fois le 2026-10-15 (la racine déclarée).** Ce re-gel a montré le défaut :
+> déplacer l'espace de travail a obligé à réécrire le cas gelé, parce que la machine y était écrite en
+> clair, à trois endroits. Les §2, §4 et §5 nomment désormais `$RACINE`, déclarée **une seule fois**,
+> au gel (`racine_espace_de_travail`), et le harnais refuse un gel pris sur un cas qui l'écrit en clair.
+> L'attendu, le §7 et le §8 n'ont pas bougé ; le gel est refait pour la sixième fois du même jour.
 > Champs imposés par la [spec du run](../../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §3 ;
 > l'attendu vit à côté, dans `.expected.json`, et ne part jamais.
 
@@ -89,18 +95,24 @@ until this is fixed. » Ce cas-ci prend donc un dépôt **sans** banc de mémoir
 **Commande d'installation dans un répertoire jetable** (exécutée, sortie recopiée) :
 
 ```text
-W=/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture
+CAS=2026-10-15-133423-promesse-memoire-avant-ecriture
+W="$RACINE/$CAS"
 git clone --local /home/giak/projects/framework "$W/framework-origin"
 git -C "$W/framework-origin" checkout --detach 4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651
 ```
 
+`$RACINE` est la racine des espaces de travail, **déclarée une seule fois**, au gel : le champ
+`racine_espace_de_travail` du `.freeze.json` dit ce qu'elle vaut sur cette machine. L'opérateur
+l'exporte avant de rejouer ces lignes, et rien d'autre de ce fichier ne la nomme.
+
 État obtenu : `HEAD=4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651`, `git status --porcelain` vide, 60 Mo.
 
-> **Déplacé le 2026-10-15.** Les deux copies ont d'abord été faites sous `~/runs/aidd-device/<horodatage>-<cas>/`,
-> puis déplacées — sous leur ancien nom — vers `~/projects/aidd-device-work/<cas>/`, pour que l'espace de
-> travail vive dans `~/projects/` sans être **dans** le dépôt (§4). C'est le même objet déplacé : mêmes
-> `HEAD`, même `porcelain`, même remote. Les deux blocs ci-dessus reproduisent l'état à la nouvelle
-> destination, et l'ancien foyer a été supprimé.
+> **La racine déclarée, 2026-10-15.** Ce §2, le §4 et le §5 portaient un chemin absolu en clair.
+> L'espace de travail a d'abord vécu sous `~/runs/aidd-device/<horodatage>-<cas>/`, puis sous
+> `~/projects/aidd-device-work/<cas>/`, et ce déplacement a coûté un re-gel : les deux fichiers du cas
+> avaient changé. Ils nomment désormais `$RACINE`, que le gel déclare une fois — un déplacement, une
+> autre machine ou un rejeu tiers ne réécrivent plus le cas gelé, ils redéclarent la racine. Le
+> harnais **refuse** un gel dont un fichier de cas écrit cette racine en clair.
 
 ## 3. Révision du terrain, et sa copie de travail
 
@@ -124,7 +136,8 @@ elle est propre par construction, ce qui rend le `git status` avant/après lisib
 
 ## 4. Répertoire de travail
 
-`/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/`
+`$RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/` — soit `$RACINE/<cas>/`, avec `$RACINE`
+déclarée une fois au gel et nulle part ailleurs dans ce cas.
 
 - **hors des quatre arbres** : le framework, la révision sous test, le terrain, ce dépôt. Un
   répertoire sous `$HOME` et non sous `/tmp` : il survit à un redémarrage, donc le départ reste
@@ -138,15 +151,17 @@ Entre les deux lignes de garde, et rien d'autre :
 
 ```text
 <<<DEMANDE
-Read the project-memory skill from /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.
+Read the project-memory skill from $RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.
 >>>DEMANDE
 ```
 
-Ce chemin est **absolu**, et c'est une décision, pas une commodité : le premier run a montré qu'un
-chemin relatif se résout contre la racine de projet de la session (`$W/terrain`), où
-`framework-origin/` n'existe pas. Le §4 de cette demande porte déjà un chemin absolu de répertoire de
-travail ; le texte du §5 en porte un pour la même raison — un tiers qui rejoue sur sa machine
-substitue ses propres chemins, comme le dit [REPLAY.md](../REPLAY.md).
+Ce chemin part **absolu** vers la session, et c'est une décision, pas une commodité : le premier run a
+montré qu'un chemin relatif se résout contre la racine de projet de la session (`$W/terrain`), où
+`framework-origin/` n'existe pas. Le §4 porte déjà le répertoire de travail ; le texte du §5 en porte
+un pour la même raison. Ce qui est écrit ici n'est pas ce qui part : l'opérateur **substitue** `$RACINE`
+par ce que le gel déclare, écrit le résultat dans `texte-a-remettre.txt`, et la porte le vérifie
+(`preflight --texte`) avant l'ouverture. Le cas reste déplaçable ; le texte remis, lui, ne porte plus
+aucune variable — c'est la seule chose que la session lit.
 
 La demande est en anglais comme la skill, ses gabarits et le banc qu'ils produisent : l'attendu
 porte sur l'**ordre** des gestes, pas sur la langue, et une demande française ajouterait une seconde

@@ -129,8 +129,10 @@ l'ADR-016 a réparé. Le dispositif n'a pas encore poussé le gel refait.
 
 C'est un résultat, pas une panne : la recette **dit** qu'elle ne peut pas rejouer ce gel-là, au lieu
 de rendre deux `False` qui accuseraient les mauvais fichiers. Le gel refait est sur disque
-(`gele_le` `2026-10-15T21:57:31.349243146+0200`, empreinte `07246039`, après le re-gel du soir puis
-celui du déplacement de l'espace de travail), il attend un commit et un push.
+(`gele_le` `2026-10-15T22:11:24.782242943+0200`, empreinte `0d9a2180`, après les re-gels du soir, celui
+du déplacement de l'espace de travail puis celui de la racine déclarée), il attend un commit et un push.
+Ce gel-ci porte un champ de plus, `racine_espace_de_travail` : la recette l'ignore, elle n'en a pas
+besoin pour rejouer les empreintes.
 
 **Avec le gel refait** — le même bloc, plus une ligne qui dépose le gel refait dans le clone
 (`cp <dispositif>/docs/device/CASES/<cas>.freeze.json dispositif/docs/device/CASES/`, ce que le push
@@ -169,8 +171,8 @@ panne de la recette : voir §4.
 | --- | --- | --- | --- |
 | `framework-origin` | `fe48de12` | `github.com/giak/framework`, branche `gel/2026-10-15-fe48de12` ([ADR-017](../DECISIONS.md)) | oui, par `ls-remote` sur le ref que le gel nomme |
 | `terrain` | `416ec1f` | `github.com/giak/audio-sync-tool`, `main` | oui, de même |
-| `revision-sous-test` | `4c39e5c5` | `github.com/ai-driven-dev/framework`, où l'étape 2 le prend : il n'est la pointe d'aucune branche, mais 83 la contiennent | oui, par le checkout de l'étape 2 — mais pas par `ls-remote` : ses `remotes` dans le gel pointent un chemin **local** |
-| `travail` | `416ec1f` | même commit que `terrain` ; ses `remotes` dans le gel sont locaux eux aussi | non : ni par le gel, ni par un clone |
+| `revision-sous-test` | `4c39e5c5` | `github.com/ai-driven-dev/framework`, où l'étape 2 le prend : il n'est la pointe d'aucune branche, mais 83 la contiennent ; le **chemin** de la copie est dérivé de `racine_espace_de_travail` (ADR-019) | oui, par le checkout de l'étape 2 — mais pas par `ls-remote` : ses `remotes` dans le gel pointent un chemin **local** |
+| `travail` | `416ec1f` | même commit que `terrain` ; ses `remotes` dans le gel sont locaux eux aussi, et son chemin est dérivé de la même racine | non : ni par le gel, ni par un clone |
 
 ## 5. Les limites, nommées
 
@@ -183,6 +185,10 @@ panne de la recette : voir §4.
   plutôt que de faire semblant.
 - **`gele_le` est déclaré.** Le gel porte l'instant du scellé ; ce qu'un tiers peut opposer, c'est la
   date d'entrée au dépôt (`git log --format=%cI` sur le `.freeze.json`), qui la borne.
+- **La racine est un fait de la machine qui gèle.** `racine_espace_de_travail` dit où cette machine
+garde ses espaces de travail, et les deux copies du cas en sont dérivées ; le **cas**, lui, ne nomme
+plus aucun chemin de machine ([ADR-019](../DECISIONS.md)) : un tiers déclare la sienne au gel suivant,
+sans réécrire un octet du cas gelé.
 - **La recette ne juge pas la qualité du cas.** Elle dit que le texte scellé est intact, jamais qu'il
   est bien écrit, ni que l'attendu est juste.
 - **Rien de ceci n'atteste un run.** Aucun run n'a eu lieu : il n'y a ni produit, ni reçu, ni trace.

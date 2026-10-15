@@ -2,13 +2,14 @@
 name: Demande — la promesse « montrer avant d'écrire »
 description: Les huit champs remis à la session qui joue le runner — révision sous test, terrain, répertoire de travail, texte verbatim, attendus de production, interdits, budget
 type: case-request
-status: pending
+status: in-progress
 ---
 
 # Demande — la promesse « montrer avant d'écrire »
 
 > V0.1 — 2026-10-15, nommé par sa naissance mesurée. Écrit **avant tout run** : aucune session n'a
-> encore reçu ce texte. L'empreinte des fichiers du cas et des références du framework est dans
+> encore reçu ce texte. *(Périmé depuis : un run a eu lieu le 2026-10-15, `non concluant`, aucun
+> produit — voir la troisième rectification.)* L'empreinte des fichiers du cas et des références du framework est dans
 > `2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json`, prise à l'étape 2 de la séquence,
 > **avant toute ouverture de session** : `gele_le` en porte la date, et ses `sha256` ceux des fichiers
 > tels qu'ils sont ici.
@@ -24,6 +25,25 @@ status: pending
 > quand la racine du projet y est. La prohibition demeure, sa raison est remplacée par la mesure. Le
 > §5, le §6 et le §8 n'ont pas bougé ; le gel a été refait le même jour, l'ancien (`1b9a8434`) détruit :
 > il ne couvrait plus ce texte.
+>
+> **Rectifié une troisième fois le 2026-10-15, après le premier run** (session `opencode`
+> `ses_ebfdd6595ffentQru7gA9UPLSc`, `17:16:12`–`17:29:51`, verdict `non concluant`, aucun produit).
+> Deux mesures l'ont imposée, rapportées au [PV du run](../runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)
+> et au [bilan du premier run](../../brainstorm/2026-10-15-201458-bilan-premier-run.md) §4 :
+> (1) **le chemin relatif du §5 ne résout pas** depuis la racine de projet de la session — elle l'a
+> mesuré (`Glob "**/framework-origin/**"` → 0) et est allée lire une **copie installée** de la skill,
+> donc le cas n'a pas mesuré la révision sous test ; (2) **rien ne mesurait la lecture** : le
+> falsificateur `F9` est ajouté à l'attendu pour ça. Le texte du §5 porte désormais un **chemin
+> absolu** : la variable « découvrir la skill » sort du cas, qui mesure l'ordre des gestes et non la
+> résolution d'un chemin. **L'attendu lui-même n'a pas bougé** — l'ordre des gestes, les destinations
+> et les deux réponses figées sont ceux écrits avant le premier run. Le gel est refait, l'ancien
+> (`bc126fe6`) détruit.
+>
+> **Rectifié une quatrième fois le 2026-10-15 (le déplacement).** L'espace de travail a quitté
+> `~/runs/aidd-device/<horodatage>-<cas>/` pour `~/projects/aidd-device-work/<cas>/` : rangé avec le
+> projet, et toujours **hors du dépôt** (§4). Rien d'autre n'a bougé — ni le §5, ni le §7, ni le §8,
+> ni l'attendu. Les §2, §4 et §5 portent le nouveau chemin, et le gel est **refait** : ses fichiers
+> ayant changé, l'ancien ne valait plus rien (conduite §1.1).
 > Champs imposés par la [spec du run](../../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §3 ;
 > l'attendu vit à côté, dans `.expected.json`, et ne part jamais.
 
@@ -69,12 +89,18 @@ until this is fixed. » Ce cas-ci prend donc un dépôt **sans** banc de mémoir
 **Commande d'installation dans un répertoire jetable** (exécutée, sortie recopiée) :
 
 ```text
-W=/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture
+W=/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture
 git clone --local /home/giak/projects/framework "$W/framework-origin"
 git -C "$W/framework-origin" checkout --detach 4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651
 ```
 
 État obtenu : `HEAD=4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651`, `git status --porcelain` vide, 60 Mo.
+
+> **Déplacé le 2026-10-15.** Les deux copies ont d'abord été faites sous `~/runs/aidd-device/<horodatage>-<cas>/`,
+> puis déplacées — sous leur ancien nom — vers `~/projects/aidd-device-work/<cas>/`, pour que l'espace de
+> travail vive dans `~/projects/` sans être **dans** le dépôt (§4). C'est le même objet déplacé : mêmes
+> `HEAD`, même `porcelain`, même remote. Les deux blocs ci-dessus reproduisent l'état à la nouvelle
+> destination, et l'ancien foyer a été supprimé.
 
 ## 3. Révision du terrain, et sa copie de travail
 
@@ -98,7 +124,7 @@ elle est propre par construction, ce qui rend le `git status` avant/après lisib
 
 ## 4. Répertoire de travail
 
-`/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/`
+`/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/`
 
 - **hors des quatre arbres** : le framework, la révision sous test, le terrain, ce dépôt. Un
   répertoire sous `$HOME` et non sous `/tmp` : il survit à un redémarrage, donc le départ reste
@@ -112,9 +138,15 @@ Entre les deux lignes de garde, et rien d'autre :
 
 ```text
 <<<DEMANDE
-Read the project-memory skill from framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.
+Read the project-memory skill from /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.
 >>>DEMANDE
 ```
+
+Ce chemin est **absolu**, et c'est une décision, pas une commodité : le premier run a montré qu'un
+chemin relatif se résout contre la racine de projet de la session (`$W/terrain`), où
+`framework-origin/` n'existe pas. Le §4 de cette demande porte déjà un chemin absolu de répertoire de
+travail ; le texte du §5 en porte un pour la même raison — un tiers qui rejoue sur sa machine
+substitue ses propres chemins, comme le dit [REPLAY.md](../REPLAY.md).
 
 La demande est en anglais comme la skill, ses gabarits et le banc qu'ils produisent : l'attendu
 porte sur l'**ordre** des gestes, pas sur la langue, et une demande française ajouterait une seconde

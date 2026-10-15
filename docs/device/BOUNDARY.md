@@ -17,11 +17,16 @@ status: in-progress
 | Arbre | Chemin | Ce qu'on y fait |
 | --- | --- | --- |
 | framework-origin | `/home/giak/projects/framework` | lu, **jamais** écrit ni installé ici |
-| révision sous test | un répertoire jetable, hors des quatre arbres | copie d'une révision de l'origine ; paramètre de run, jamais une constante |
+| révision sous test | `~/projects/aidd-device-work/<cas>/framework-origin` — un espace de travail par cas, hors des quatre arbres | copie d'une révision de l'origine ; paramètre de run, jamais une constante |
 | terrain | `/home/giak/projects/audio-sync-tool` | lu, **jamais** écrit ; copie de travail par run |
 | le dispositif | `/home/giak/projects/aidd-device` | le seul arbre que le dispositif écrit |
 
-Tout ce qui exécute tourne dans un répertoire jetable, hors de ces arbres.
+Tout ce qui exécute tourne dans un répertoire jetable, hors de ces arbres. Le foyer, arrêté le
+2026-10-15 : `~/projects/aidd-device-work/<identifiant-du-cas>/`, qui porte `terrain/` — où la session
+écrit — et `framework-origin/`, lu seul. Rangé sous `~/projects/` **avec** le projet et **hors** de
+lui : le dépôt du dispositif porte les preuves, dont le corrigé du cas en cours. **Un espace par cas,
+jamais par run** : le §5 de la demande et le gel y portent des chemins absolus ; deux runs du même cas
+se distinguent par leurs pièces, sous `docs/device/runs/`.
 
 ## 2. Les chemins du framework que le dispositif lit
 
@@ -46,10 +51,17 @@ La révision sous test est épinglée **par run** et enregistrée dans `CASES/<c
 commande qui l'installe, en revanche, n'est pas encore choisie : c'est un paramètre de run, et rien
 n'est écrit avant l'arbitrage de la spec du run — `OPEN`.
 
-Ni l'origine du framework ni la révision sous test ne sont publiées, pas plus que le terrain : le
-dépôt public du dispositif (`github.com/giak/aidd-device`, poussé le 2026-10-15) porte le dispositif
-seul. Le cloner suffit donc à lire ses pages, jamais à faire tourner un run — la copie sous test
-vient de `/home/giak/projects/framework`. Une partie de la réponse à la question 1 du §11.
+Les quatre arbres gelés du premier cas sont **publiés** (relevé du 2026-10-15) : `framework-origin`
+`fe48de12` sur `github.com/giak/framework`, branche `gel/2026-10-15-fe48de12`, poussée ce jour ;
+`terrain` et `travail` `416ec1f` sur `github.com/giak/audio-sync-tool` `main` ; `revision-sous-test`
+`4c39e5c5` sur `github.com/ai-driven-dev/framework`, où 83 branches distantes le portent. Un tiers
+reconstitue donc chaque `HEAD` gelé — mais pas le `porcelain` gelé : les fichiers non suivis
+(`.freebuff/`, la copie périmée du v6 chez l'origine) n'entrent dans aucun commit. Nuance du champ :
+`arbres[].refs_distants` dit les branches telles que **le clone de l'arbre** les connaît, et celui de
+`revision-sous-test` comme de `travail` est un miroir local — les adresses publiques sont celles
+dessus. Le dépôt public du dispositif (`github.com/giak/aidd-device`) porte le dispositif seul, et le
+gel porte des chemins de cette machine : un tiers refait son propre gel avant de faire tourner. Une
+partie de la réponse à la question 1 du §11.
 
 ## 4. Ce qu'il ne lit pas
 

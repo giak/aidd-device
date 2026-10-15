@@ -22,7 +22,7 @@ status: in-progress
 | Boucle 2 : gestion de projet | 🟨 spec écrite, en itération ([ADR-005](DECISIONS.md)) |
 | Cadre d'output de l'agent | 🟢 appliqué à `AGENTS.md` §OUTPUT ([ADR-009](DECISIONS.md)) |
 | Le protocole de test (MEGA-PROMPT v6) | 🔲 rien construit — le vrai travail |
-| Le dispositif (v6 §10) | 🟨 `DEVICE.md`, `BOUNDARY.md`, le harnais et le premier `CASES/` complet et gelé ([docs/device/](device/DEVICE.md), [ADR-013](DECISIONS.md), [ADR-014](DECISIONS.md)) ; aucun run — état B |
+| Le dispositif (v6 §10) | 🟨 `DEVICE.md`, `BOUNDARY.md`, le harnais et le premier `CASES/` complet et gelé ([docs/device/](device/DEVICE.md), [ADR-013](DECISIONS.md), [ADR-014](DECISIONS.md)) ; **un premier run a eu lieu** le 2026-10-15 — la session a lu le dépôt et **n'a rien produit**, verdict `non concluant` ([son PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)) |
 
 ## 2. Documents produits
 
@@ -35,17 +35,31 @@ status: in-progress
 | Fondation documentaire | `docs/brainstorm/2026-10-15-080225-fondation-documentaire.md` | 🟢 appliquée |
 | Boucle 2 | `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` | 🟨 en itération |
 | Journal | `docs/trace.md` | 🟢 vivant |
+| Explication pour débutants | `docs/EXPLICATION.md` | 🟨 écrit, 3 schémas mermaid, non commité |
+| Bilan du premier run | `docs/brainstorm/2026-10-15-201458-bilan-premier-run.md` | 🟨 écrit après le run : 4 causes du `non concluant`, 6 schémas, 2 arbitrages, 8 brainstorm — la page à lire avant de reprendre |
 | Dispositif — la page | `docs/device/DEVICE.md` | 🟨 v0.1, 895 mots |
-| Dispositif — la frontière | `docs/device/BOUNDARY.md` | 🟨 v0.1, 1 383 mots |
-| Dispositif — le harnais | `docs/device/harness/run.mjs` | 🟨 `freeze`, `collect`, `receipt`, `compare` ; banc jetable 36/36, aucun run réel |
-| Dispositif — le premier cas | `docs/device/CASES/` (demande, attendu, gel) | 🟨 écrit et **gelé** le 2026-10-15 (`gele_le` 15:29:49), 8 falsificateurs du run et 4 de l'attendu ; aucun run — état B |
+| Dispositif — la frontière | `docs/device/BOUNDARY.md` | 🟨 v0.1, 1 563 mots |
+| Dispositif — le harnais | `docs/device/harness/run.mjs` | 🟨 598 lignes, **40 refus**, 4 commandes ; `collect --sans-produit` ouvre le chemin de la spec §9 (un run qui ne produit rien laisse désormais un `receipt.json` et un `output.json`) ; banc jetable 36/36, 12/12 sur le re-hachage du cas (reçu et jugement), et le banc du 2026-10-15 sur le chemin sans produit ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §9) |
+| Dispositif — le premier run | `docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md` | 🟨 conduit le 2026-10-15 (`17:15:59`–`17:29:51`) : un échange consommé sur trois, aucun tableau rendu, aucun fichier produit, verdict `non concluant` — **sans reçu ni `output.json`** : le harnais refuse un produit vide (trou ouvert, PV §5) |
+| Dispositif — rejouer le gel | `docs/device/REPLAY.md` | 🟨 la recette qu'un inconnu suit depuis un clone neuf : un bloc, la sortie observée, quatre limites |
+| Dispositif — le premier cas | `docs/device/CASES/` (demande, attendu, gel) | 🟨 écrit le 2026-10-15, **re-gelé** après le premier run (`gele_le` 21:57:31, empreinte **`07246039`**, les anciens `bc126fe6` et `38fa91f4` détruits, après trois passes de rectification puis le déplacement de l'espace de travail sous `~/projects/aidd-device-work/`) : le texte du §5 porte un **chemin absolu** (le relatif ne résolvait pas depuis la racine de projet de la session), l'attendu porte **9 falsificateurs** avec `F9` (la lecture de la révision sous test) et 4 de l'attendu ; rejeu du gel `exit 0` ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §6.1) |
 
 ## 3. Prochains pas (TODO court terme)
 
-1. **Fait ce jour** : la spec du run par session d'opérateur est approuvée par l'ordre du relecteur
-   (`in-progress`), le harnais est écrit (gel, manifeste, reçu, comparaison) et le premier cas est
-   complet et gelé. Reste : conduire le run — la session que l'opérateur ouvre — puis `collect`,
-   `receipt`, `compare`.
+1. **Le premier run a eu lieu** (2026-10-15, session `opencode`, `ses_ebfdd6595ffentQru7gA9UPLSc`) et
+   s'est conclu `non concluant` : la session n'a rendu aucun tableau et n'a rien écrit sous
+   `terrain/aidd_docs/` ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)). L'ordre de
+   reprise, les 4 causes, les arbitrages et les brainstorm sont au
+   [bilan du premier run](brainstorm/2026-10-15-201458-bilan-premier-run.md), dont les contrôles rejoués
+   le soir (gel `exit 0`, 4 arbres, 40/44 fichiers identiques à la copie installée, 6/6 schémas rendus).
+   Quatre choses à
+   trancher avant le second run : **le harnais ne sait pas produire de reçu pour un run sans produit**
+   (spec §9 le prévoit, `collect` refuse, donc `receipt` puis `compare` refusent) ; et **le chemin du §5
+   de la demande ne résout pas** depuis l'ouverture que la conduite §2.1 prescrit (`$W/terrain`), la
+   session l'a mesuré et est allée lire la copie installée de la skill plutôt que la révision sous test ;
+   et **aucun falsificateur ne mesure la lecture** — rien n'a signalé que le cas avait mesuré un autre
+   objet que la révision sous test (la copie installée diverge sur 4 fichiers dont 2 alimentent des
+   destinations attendues, bilan §4.1 ; nouveau falsificateur `F9`, bilan §6.1).
 2. **Fait ce jour** : arbitrer la clause de preuve du v6 §10, mesurée insatisfiable sous sa lettre
    (`comm` des `git ls-files` rend 2 lignes : `AGENTS.md`, `README.md`). Arbitrée en **paires chemin
    + contenu** et réparée dans le document ([ADR-014](DECISIONS.md)) ; les trois relevés restent dans
@@ -53,8 +67,10 @@ status: in-progress
 3. Arbitrer la boucle 2 : commit de clôture (P5), remote (P6).
 4. Après approbation : ouvrir la boucle 3, le protocole de test du framework (MEGA-PROMPT v6).
 5. **Fait ce jour** : le remote public existe et porte `main` (`github.com/giak/aidd-device`, poussé
-   le 2026-10-15, 18 commits). La question 1 du §11 reste « non » : elle demande aussi de faire
-   tourner le dispositif et de lire l'écart, et aucun run n'a eu lieu.
+   le 2026-10-15, 18 commits). La question 1 du §11 reste « non » pour sa dernière clause : les quatre
+   arbres gelés du cas sont désormais publics ([ADR-017](DECISIONS.md), relevé dans
+   [BOUNDARY.md](device/BOUNDARY.md) §3), mais le run du 2026-10-15 n'a rien produit et n'a laissé
+   aucun `output.json` — « lire l'écart » attend encore.
 
 ## 4. Commits d'avancement
 

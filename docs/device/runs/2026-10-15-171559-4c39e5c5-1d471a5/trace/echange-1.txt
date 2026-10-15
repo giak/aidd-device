@@ -1,0 +1,595 @@
+[0m
+> build · qwen3.6:35b
+[0m✱ [0mGlob "**/02-project-memory/SKILL.md" [90m0 matches[0m
+[0m✱ [0mGlob "**/project-memory/**/*.md" [90m0 matches[0m
+> build · qwen3.6:35b
+[0m→ [0mRead . 
+[0m✱ [0mGlob "**/framework-origin/**" [90m0 matches[0m
+> build · qwen3.6:35b
+[0m✗ [0mSkill "project-memory" failed
+[91m[1mError: [0mUnable to load skill project-memory
+[0m→ [0mRead /home/giak/.agents/skills 
+> build · qwen3.6:35b
+[0m⚙ [0mexecute {"code":"\nconst paths = [\n  '~/.agents/skills/',\n  '/home/giak/.config/opencode/skills/',\n  '/home/giak/framework-origin/',\n].map(p => p.replace('~', process.env.HOME))\n\nconsole.log({ paths, HOME: process.env.HOME })\n\n// Check if there's something in ~/.opencode or opencode config\nconst fs = require('fs')\n"} 
+[0m→ [0mRead AGENT.md 
+> build · qwen3.6:35b
+[0m⚙ [0mexecute {"code":"\nconst fs = require('fs')\nconst os = require('os')\nconst home = os.homedir()\n\n// Search for project-memory SKILL.md across common locations\nconst searchPaths = [\n  `${home}/framework`,\n  `${home}/framework-origin`,\n  `${home}/projects`,\n  `${home}/dev`,\n  `/tmp/opencode`,\n]\n\nlet found = []\nfor (const p of searchPaths) {\n  if (fs.existsSync(p)) {\n    console.log(`EXISTS: ${p}`)\n    \n    // Find SKILL.md files\n    const findFiles = (dir, prefix) => {\n      try {\n        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {\n          const full = `${prefix}/${entry.name}`\n          if (entry.isDirectory()) findFiles(entry.name, full)\n          else if (entry.name === 'SKILL.md') console.log(`  SKILL.md: ${full}`)\n        }\n      } catch (e) {}\n    }\n    \n    findFiles(p, p)\n  } else {\n    console.log(`NOT FOUND: ${p}`)\n  }\n}\n\n// Also check opencode config dirs\nconst configDirs = [\n  `${home}/.config/opencode`,\n  `${home}/.opencode`,\n]\nfor (const cd of configDirs) {\n  if (fs.existsSync(cd)) console.log(`CONFIG: ${cd}`)  \n}\n"} 
+> build · qwen3.6:35b
+[0m$ [0mfind /home/giak -path "*/project-memory/SKILL.md" 2>/dev/null; find /home/giak -path "*project*memory*.md" 2>/dev/null | head -20
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/SKILL.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/02-write.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/01-scan.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/04-sync.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/03-check.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/report.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/scan-summary.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/deployment/deployment.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/desktop/desktop.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/api/integration.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/api/api.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/backlog/backlog.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/ecosystem/ecosystem.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/README.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/mobile/mobile.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/data/data.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/realtime/realtime.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/cli/cli.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/messaging/messaging.md
+/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/package/package.md
+> build · qwen3.6:35b
+[0m→ [0mRead /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/SKILL.md 
+> build · qwen3.6:35b
+[0m→ [0mRead /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/01-scan.md 
+> build · qwen3.6:35b
+[0m→ [0mRead /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/02-write.md 
+[0m$ [0mfind /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ -name "*.md" 2>/dev/null
+capability-signals.md
+ecosystem-signals.md
+memory-destinations.md
+memory-rules.md
+reading-sources.md
+review-protocol.md
+structure.md
+tools.md
+> build · qwen3.6:35b
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-rules.md"
+# Memory rules
+
+A memory file:
+
+- Captures the macro and the non-derivable: decisions, conventions, gotchas, the why.
+- Never restates a schema or a file tree.
+- Points to the code over a copy.
+- Holds one fact in one home, referenced elsewhere.
+- A duplicate keeps its home and loses the copy.
+- Stays small: short bullets, code in backticks.
+- Names a tech without its version (`React`, not `React 19`).
+- Reflects the current state only: no unused section, no placeholder.
+- Carries the diagram alone when a diagram is its payload: no note, no caption under it.
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-destinations.md"
+# Memory destinations
+
+Where each template under `assets/templates/` lands. Read from this table, never derived.
+
+Read backwards, it names the capabilities a bank already holds: a file present means its row's capability held when the bank was written.
+
+| Capability | Template                           | Write to                                |
+| ---------- | ---------------------------------- | --------------------------------------- |
+| core       | `README.md`                        | `aidd_docs/README.md`                   |
+| core       | `GUIDELINES.md`                    | `aidd_docs/GUIDELINES.md`               |
+| core       | `CONTRIBUTING.md`                  | `aidd_docs/CONTRIBUTING.md`             |
+| core       | `memory/README.md`                 | `aidd_docs/memory/README.md`            |
+| core       | `memory/core/project-brief.md`     | `aidd_docs/memory/project-brief.md`     |
+| core       | `memory/core/architecture.md`      | `aidd_docs/memory/architecture.md`      |
+| core       | `memory/core/codebase-map.md`      | `aidd_docs/memory/codebase-map.md`      |
+| core       | `memory/core/coding-assertions.md` | `aidd_docs/memory/coding-assertions.md` |
+| core       | `memory/core/testing.md`           | `aidd_docs/memory/testing.md`           |
+| core       | `memory/core/vcs.md`               | `aidd_docs/memory/vcs.md`               |
+| ecosystem  | `memory/ecosystem/ecosystem.md`    | `aidd_docs/memory/ecosystem.md`         |
+| backlog    | `memory/backlog/backlog.md`        | `aidd_docs/memory/backlog.md`           |
+| api        | `memory/api/api.md`                | `aidd_docs/memory/api.md`               |
+| api        | `memory/api/integration.md`        | `aidd_docs/memory/integration.md`       |
+| auth       | `memory/auth/auth.md`              | `aidd_docs/memory/auth.md`              |
+| cli        | `memory/cli/cli.md`                | `aidd_docs/memory/cli.md`               |
+| data       | `memory/data/data.md`              | `aidd_docs/memory/data.md`              |
+| database   | `memory/database/database.md`      | `aidd_docs/memory/database.md`          |
+| deployment | `memory/deployment/deployment.md`  | `aidd_docs/memory/deployment.md`        |
+| desktop    | `memory/desktop/desktop.md`        | `aidd_docs/memory/desktop.md`           |
+| infra      | `memory/infra/infra.md`            | `aidd_docs/memory/infra.md`             |
+| messaging  | `memory/messaging/messaging.md`    | `aidd_docs/memory/messaging.md`         |
+| mobile     | `memory/mobile/mobile.md`          | `aidd_docs/memory/mobile.md`            |
+| package    | `memory/package/package.md`        | `aidd_docs/memory/package.md`           |
+| realtime   | `memory/realtime/realtime.md`      | `aidd_docs/memory/realtime.md`          |
+| ui         | `memory/ui/design.md`              | `aidd_docs/memory/design.md`            |
+| ui         | `memory/ui/forms.md`               | `aidd_docs/memory/forms.md`             |
+| ui         | `memory/ui/navigation.md`          | `aidd_docs/memory/navigation.md`        |
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-destinations.md" 2>/dev/null || find /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ -exec wc -l {} \;
+# Memory destinations
+
+Where each template under `assets/templates/` lands. Read from this table, never derived.
+
+Read backwards, it names the capabilities a bank already holds: a file present means its row's capability held when the bank was written.
+
+| Capability | Template                           | Write to                                |
+| ---------- | ---------------------------------- | --------------------------------------- |
+| core       | `README.md`                        | `aidd_docs/README.md`                   |
+| core       | `GUIDELINES.md`                    | `aidd_docs/GUIDELINES.md`               |
+| core       | `CONTRIBUTING.md`                  | `aidd_docs/CONTRIBUTING.md`             |
+| core       | `memory/README.md`                 | `aidd_docs/memory/README.md`            |
+| core       | `memory/core/project-brief.md`     | `aidd_docs/memory/project-brief.md`     |
+| core       | `memory/core/architecture.md`      | `aidd_docs/memory/architecture.md`      |
+| core       | `memory/core/codebase-map.md`      | `aidd_docs/memory/codebase-map.md`      |
+| core       | `memory/core/coding-assertions.md` | `aidd_docs/memory/coding-assertions.md` |
+| core       | `memory/core/testing.md`           | `aidd_docs/memory/testing.md`           |
+| core       | `memory/core/vcs.md`               | `aidd_docs/memory/vcs.md`               |
+| ecosystem  | `memory/ecosystem/ecosystem.md`    | `aidd_docs/memory/ecosystem.md`         |
+| backlog    | `memory/backlog/backlog.md`        | `aidd_docs/memory/backlog.md`           |
+| api        | `memory/api/api.md`                | `aidd_docs/memory/api.md`               |
+| api        | `memory/api/integration.md`        | `aidd_docs/memory/integration.md`       |
+| auth       | `memory/auth/auth.md`              | `aidd_docs/memory/auth.md`              |
+| cli        | `memory/cli/cli.md`                | `aidd_docs/memory/cli.md`               |
+| data       | `memory/data/data.md`              | `aidd_docs/memory/data.md`              |
+| database   | `memory/database/database.md`      | `aidd_docs/memory/database.md`          |
+| deployment | `memory/deployment/deployment.md`  | `aidd_docs/memory/deployment.md`        |
+| desktop    | `memory/desktop/desktop.md`        | `aidd_docs/memory/desktop.md`           |
+| infra      | `memory/infra/infra.md`            | `aidd_docs/memory/infra.md`             |
+| messaging  | `memory/messaging/messaging.md`    | `aidd_docs/memory/messaging.md`         |
+| mobile     | `memory/mobile/mobile.md`          | `aidd_docs/memory/mobile.md`            |
+| package    | `memory/package/package.md`        | `aidd_docs/memory/package.md`           |
+| realtime   | `memory/realtime/realtime.md`      | `aidd_docs/memory/realtime.md`          |
+| ui         | `memory/ui/design.md`              | `aidd_docs/memory/design.md`            |
+| ui         | `memory/ui/forms.md`               | `aidd_docs/memory/forms.md`             |
+| ui         | `memory/ui/navigation.md`          | `aidd_docs/memory/navigation.md`        |
+> build · qwen3.6:35b
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/reading-sources.md"
+# Reading sources
+
+What the scan reads to understand the project, and what survives the reading. Read widely, keep
+little: `memory-rules.md` wants a small file, and most of what a repository shows is re-derivable by
+opening it again.
+
+## Read in this order
+
+| Source                                       | Answers                                      |
+| -------------------------------------------- | -------------------------------------------- |
+| the manifest, and a lockfile beside it        | the stack, the workspaces, the published name |
+| the root README, then any `docs/`             | what it does, for whom, its domain words      |
+| the top-level directories                     | the shape, and which areas own what           |
+| the entry points the manifest declares        | where execution starts                        |
+| every file under the VCS platform's own directory | how it ships, and what runs on its own schedule |
+| the test configuration and one test file      | the layers, the tools, the conventions        |
+| the code, area by area                        | what the writing above got wrong              |
+
+Stop at the first source that answers a question. Read the code last: it is the most expensive and
+the least quotable, and it exists to correct the others, not to be summarised.
+
+## Keep or drop
+
+This table judges what the reading yields, never what a memory file already holds. A line the user
+wrote stays whatever the verdicts below say.
+
+| Signal                                                        | Verdict |
+| ------------------------------------------------------------- | ------- |
+| a decision, and the constraint behind it                      | keep    |
+| a convention the files repeat without stating                 | keep    |
+| a gotcha, a trap, a thing that surprises a newcomer           | keep    |
+| the stack, and how the main parts fit                         | keep    |
+| the domain words a contributor must know to read the code     | keep    |
+| a fact one open file re-derives                               | drop    |
+| a file tree, a schema, a dependency list                      | drop    |
+| a version number                                              | drop    |
+| anything true of every project built this way                 | drop    |
+| a work item, a live value, a technical id                     | drop    |
+| a plan, a wish, a thing not shipped                           | drop    |
+
+## Depth
+
+- Every workspace of a monorepo, never the root manifest alone.
+- A directory whose name repeats across areas is read once, not per area.
+- Nothing under a dependency directory, a build output, or a path the VCS ignores.
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ecosystem-signals.md"
+# Ecosystem signals
+
+What the scan learns about the services the project uses and does not build. The AI hosts it wires
+the memory into are `tools.md`, not this.
+
+## What earns an entry
+
+- It holds state, or does work, outside the repo past a single CI run. A build step does not.
+- One entry per role: a platform that is also the tracker gives two.
+- The VCS platform always counts: a repo has one, so the graph is never empty.
+
+## Actors
+
+| Actor   | Is                        |
+| ------- | ------------------------- |
+| `Human` | a person opening the tool |
+| `Agent` | an AI assistant driving it |
+| `App`   | the running code calling it |
+
+## Access modes
+
+| Mode   | Means                                   |
+| ------ | --------------------------------------- |
+| `mcp`  | an MCP server the agent calls           |
+| `cli`  | a command run in a terminal             |
+| `http` | a direct API call                       |
+| `web`  | a browser interface, nothing programmatic |
+
+## What earns an edge
+
+| Edge                              | Verdict                                                   |
+| --------------------------------- | ---------------------------------------------------------- |
+| `Agent` reaching a tool           | keep, what an assistant can drive is never obvious          |
+| `App` reaching a tool             | keep, it names a runtime dependency                         |
+| `Human` reaching a tool by `web`  | drop, a person opens anything in a browser                  |
+| `Human` where no agent can follow | keep as `human only` in the label, so absence is not doubt  |
+| a hand-off with its trigger       | keep, the trigger is what makes it a rule                   |
+| a tool nobody drives              | keep it for its hand-off alone: acting on its own is the fact |
+| a hand-off without one            | keep the edge, name the trigger the repo proves             |
+
+## Detected when
+
+| Fact                                                                 | Read as                                    |
+| -------------------------------------------------------------------- | ------------------------------------------ |
+| a service config or a repo integration, whoever runs it, plus a badge | the tool exists                            |
+| a CI config, a webhook, or an integration naming two tools           | a hand-off between them                    |
+| the user names it                                                    | what the repo cannot prove                 |
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/capability-signals.md"
+# Capability signals
+
+A concern scan detects from a concrete fact in the repo, or an equivalent one, never inferred from the domain.
+
+In a monorepo, every workspace is scanned, never the root manifest alone.
+
+| Capability   | Means                          | Detected when                                                                             |
+| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `core`       | is a project at all            | always                                                                                    |
+| `ecosystem`  | works through external tools   | always                                                                                    |
+| `backlog`    | organizes planned work         | local backlog artifacts, issue templates, a ticketing tool in use, or a repo file naming backlog conventions |
+| `ui`         | renders a user interface       | a web frontend framework (not React Native), or a `components/`, `pages/`, or `views/` dir |
+| `api`        | exposes HTTP or RPC            | a server framework, or a `routes/`, `controllers/`, or `api/` dir                         |
+| `database`   | persists data                  | an ORM or driver, a `migrations/` dir, or a schema file                                    |
+| `auth`       | authenticates or authorizes    | an auth library (passport, next-auth, clerk, auth0, devise), auth middleware, or an auth module |
+| `realtime`   | pushes live updates            | a websocket or SSE library (socket.io, ws, pusher, ably, channels, actioncable), or a socket endpoint |
+| `messaging`  | async messages                 | a queue or broker (kafka, rabbitmq, sqs, bullmq) with producers or consumers               |
+| `deployment` | is built and shipped           | a CI config, or a `Dockerfile`                                                             |
+| `infra`      | infrastructure as code         | Terraform, Pulumi, Kubernetes, or Helm files                                               |
+| `mobile`     | ships a mobile app             | an `ios/` or `android/` dir, a `pubspec.yaml`, a `Podfile`, or React Native or Flutter      |
+| `desktop`    | ships a desktop app            | Electron, Tauri, or a native desktop toolkit (Qt, GTK, WPF, AppKit)                        |
+| `package`    | ships a reusable library       | a publishable manifest declaring an importable entry that is not the CLI bin (`package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`) |
+| `cli`        | runs as a command-line tool    | a `bin` field, or a CLI parser (commander, yargs, oclif, clap, click)                       |
+| `data`       | processes data or trains models | notebooks, a data-versioning or ML tool, or pipeline and model files                       |
+> build · qwen3.6:35b
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/03-check.md"
+# 03 - Check
+
+Show what drifted in the bank, and let the user pick what to fix. Change nothing.
+
+## Input
+
+The bank in `aidd_docs/memory/`, and the capabilities the scan found.
+
+## Output
+
+A report file under `aidd_docs/tasks/`, a short summary printed, and the findings the user approved.
+
+## Process
+
+1. **Match.** Compare the bank against [memory-destinations.md](../references/memory-destinations.md) and [structure.md](../references/structure.md).
+   - A file no row produces: flag it, and name the row it should have come from.
+   - A found capability, or a scaffolded path, with nothing on disk: flag it missing.
+2. **Review.** Have each memory file reviewed against [review-protocol.md](../references/review-protocol.md) in parallel.
+3. **Prune.** Offer to remove each file whose capability the scan did not find, and none when the scan asked nothing.
+4. **Report.** Fill [report.md](../assets/report.md), write it to `aidd_docs/tasks/<yyyy_mm>/<yyyy_mm_dd>_memory-check/report.md`, and print the summary with that path.
+   - The folder already holds a report: ask before replacing it.
+5. **Offer.** Ask which findings to apply, and hand the approved ones to write.
+   - Nothing drifted: call the bank current, hand nothing on.
+
+## Test
+
+| Case | Pass |
+| --- | --- |
+| Any run | no file under `aidd_docs/memory/` changed |
+| Any finding | the summary holds no table, names the report path, ends on the question |
+| Nothing drifted | nothing offered, the bank called current |
+| Report | structural gaps and reviewer findings under separate headings |
+| Report | no step of this skill named in it |
+| Orphan | flagged, with the row it should have come from |
+| Missing | a found capability with no file is flagged |
+| Contradiction | flagged, the line left in place |
+| Duplicate | flagged, both files left as they are |
+| Removal declined | the file is still there |
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/structure.md"
+# Structure
+
+The tree write scaffolds. Which template fills which file is `memory-destinations.md`; this is the
+shape around them, and who owns each part.
+
+```txt
+aidd_docs/
+├── README.md          copied as is
+├── GUIDELINES.md      the team fills its placeholders
+├── CONTRIBUTING.md    the team fills its placeholders
+└── memory/
+    ├── README.md      copied as is, its file list refreshed by the hook
+    ├── <bank>.md      the AI writes these, flat, never nested
+    ├── internal/      a .gitkeep, internal notes read on demand
+    └── external/      a .gitkeep, external notes read on demand
+```
+
+- The three root docs are the team's. Their placeholders survive until a human answers them.
+- Everything under `memory/` is the AI's, and sits at its root.
+- `internal/` and `external/` exist even when empty.
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/04-sync.md"
+# 04 - Sync
+
+Wire the memory into the tools the user picks.
+
+## Input
+
+The memory bank in `aidd_docs/memory/`.
+
+## Output
+
+Each picked tool's context file, carrying the filled block.
+
+## Process
+
+1. **Require.** Stop unless `aidd_docs/memory/` holds a `.md`, sending the user to write the memory first.
+2. **Detect.** Find the AI tools present per [tools.md](../references/tools.md).
+3. **Pick.** Show every tool, the detected ones ticked, and wait for one or several.
+4. **Upsert.** Ensure each picked tool's context file carries the block, per [tools.md](../references/tools.md).
+   - Absent file: create it from [AGENTS.md](../assets/templates/AGENTS.md).
+   - Its AIDD structure differs: offer to reconcile it, applying only what the user approves.
+5. **Fill.** Run `hooks/update_memory.js` from the project root, naming the picked tools, and stop on a non-zero exit.
+   - No script, the skill shipped alone: write each block from the bank.
+6. **Verify.** Read each picked tool's block back and compare it to the bank.
+   - A file in one and not the other: the fill did not land, report it and stop.
+
+## Test
+
+| Case | Pass |
+| --- | --- |
+| Empty bank | no context file created, the run stops |
+| Script | it exits `0` |
+| Picked tool | its block lists every root `.md` except `README.md`, nothing else |
+| Bank grew | the block gains that file and keeps the rest |
+| Unpicked tool | its context file is unchanged |
+> build · qwen3.6:35b
+Now let me read the templates and do the actual scan:
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/README.md"
+# memory/ - Project Memory
+
+Structured context the AI assistant reads at the start of a session, so it does not rediscover the project each time.
+
+## How it loads
+
+```mermaid
+flowchart LR
+    bank["memory/*.md"] -->|every session| ai(["AI context"])
+    notes["internal/ · external/"] -.->|on demand| ai
+```
+
+The root files load every session through the project memory block in each AI context file. `internal/` and `external/` load only when relevant.
+
+## Files
+
+Refreshed automatically by the memory hook. Do not edit by hand.
+
+<!-- files:start -->
+<!-- files:end -->
+
+## Maintaining it
+
+The AI writes and refreshes these files. When you edit one by hand:
+
+- One file per concern (architecture, database, vcs, ...).
+- Capture the macro and the non-derivable. Point to the code, never copy it.
+- Current state only, kept small. No personal notes, no future TODOs.
+
+## Subdirectories
+
+- `internal/`: AIDD workflow traces (the capability profile, audit notes, learn captures).
+- `external/`: external references the project pulls in (specs, design docs).
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/project-brief.md"
+# Project Brief
+
+What this project is, the problem it solves, and its domain language. The non-derivable "why", not the "how".
+
+## What it is
+
+- <One or two lines: what the project does and for whom>
+
+## Why it exists
+
+- <The problem it solves, the goal it serves>
+
+## Domain language
+
+The terms a contributor must know to read the code.
+
+| Term | Meaning |
+| ---- | ------- |
+| <term> | <one line> |
+
+## Key features
+
+- <The main capabilities, one line each. The macro list, not a spec>
+
+<!--
+Capture: the purpose, the domain vocabulary, the macro feature list.
+Skip: detailed specs and technical design. Personas and user journeys only if it is a user-facing product.
+Remove this comment when filled.
+-->
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/architecture.md"
+# Architecture
+
+The macro technical shape: the stack, how the pieces fit, and the decisions behind them. Point to the code, do not restate it.
+
+## Stack
+
+- <Language and runtime, the main framework, the one-line why>
+- <Cross-cutting libraries only; a capability's own library (ORM, test runner) lives in its file>
+
+## How it fits together
+
+The macro flow between the main parts. One box per area, high level only.
+
+```mermaid
+flowchart LR
+    A[TODO: replace with the real macro flow]
+```
+
+## Key decisions
+
+- <A decision not obvious from the code, and its reason>
+- <A constraint or trade-off a contributor must respect>
+
+## Gotchas
+
+- <Something surprising that bites newcomers>
+
+<!--
+Capture: the stack, the macro structure, the non-obvious decisions and gotchas.
+Skip: the full file tree, exhaustive dependency lists, anything re-derivable by scanning the repo.
+Keep the diagram macro and follow the project's Mermaid conventions. Remove this comment when filled.
+-->
+> build · qwen3.6:35b
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/codebase-map.md"
+# Codebase Map
+
+The macro layout: the top-level areas and what each holds. A map to navigate, not the full tree.
+
+```mermaid
+flowchart TD
+    A[TODO: top-level areas, one box each, macro only]
+```
+
+## Areas
+
+- `<dir>`: <what lives here, its responsibility>
+- `<dir>`: <...>
+
+## Entry points
+
+- <Where execution starts, the main file(s)>
+
+## Packages
+
+- <Each workspace package and its role. Drop this section if not a monorepo>
+
+<!--
+Capture: the few top-level areas, the entry points, and (if a monorepo) the package map.
+Skip: the full file tree, every subfolder. Point, do not enumerate.
+Keep the diagram macro and follow the project's Mermaid conventions. Remove this comment when filled.
+-->
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/coding-assertions.md"
+# Coding Assertions
+
+The checks that must pass for code to count as done. Minimal, run after every change.
+
+## Before commit
+
+The fast gate.
+
+| Order | Command     | Checks           |
+| ----- | ----------- | ---------------- |
+| 1     | `<command>` | <e.g. typecheck> |
+
+## Before push
+
+The heavier gate.
+
+| Order | Command     | Checks              |
+| ----- | ----------- | ------------------- |
+| 1     | `<command>` | <e.g. tests, build> |
+
+## Behavior
+
+I fix is needed, spawn 1 agent per assertion to fix (e.g typechecking / tests / rules violated on category UI = 3 agents).
+
+<!--
+Capture: the real commands a contributor runs, in order, for each gate.
+Skip: aspirational checks not wired up. List only what actually exists.
+Remove this comment when filled.
+-->
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/ecosystem/ecosystem.md"
+# Ecosystem
+
+```mermaid
+flowchart LR
+  Human([Human])
+  Agent([Agent])
+  App([App])
+  Vcs["<vcs platform> · vcs.md"]
+  Tracker["<tracker> · backlog.md"]
+  Service["<runtime service> · integration.md"]
+  Chat["<tool> · human only"]
+  Bot["<autonomous tool>"]
+
+  Agent -- cli --> Vcs
+  Agent -- mcp --> Tracker
+  App -- http --> Service
+  Human -- web --> Chat
+
+  Vcs -- "<trigger>" --> Tracker
+  Bot -- "<trigger>" --> Vcs
+```
+
+<!--
+Capture: every external tool, how each actor reaches it, and what moves between tools.
+Skip: a build step, a live value, and any detail the named file already owns.
+This file is written on every project, like every other always row.
+Rebuild the graph from the scan, never keep this one.
+An actor edge carries the access mode, a hand-off edge carries what moves between two distinct
+tools, and a tool a memory file owns names that file after a middle dot.
+The file is the heading and the graph. Nothing follows it, not a note, not a caption.
+Remove this comment when filled.
+-->
+[0m$ [0mcat "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/testing.md"
+# Testing
+
+How the project is tested: the layers, the tools, and the conventions. Where tests live and how to run them.
+
+## Strategy
+
+- <The test layers in use (unit, integration, e2e) and what each covers>
+
+## Tools
+
+- <Test runner, assertion library, mocking, coverage, one line each>
+
+## Conventions
+
+- <Where tests live, the naming, what must be tested versus not>
+
+## Run
+
+- <The command(s) to run each layer>
+
+## Browser QA
+
+- Entry: <The local application URL and command that starts it>
+- Auth: <The test identity or auth bootstrap, without secrets>
+- State: <The deterministic fixture source and executable reset or teardown>
+
+<!--
+Capture: the macro strategy, tools, conventions, and run commands. Keep Browser QA only when the project has a browser journey.
+Skip: listing individual test files. Point to the test directory.
+Remove this comment when filled.
+-->
+> build · qwen3.6:35b
+Now let me do the actual **scan** of this repository. Following 01-scan.md reading sources order:
+[0m→ [0mRead README.md 
+[0m→ [0mRead package.json 
+[0m→ [0mRead requirements.txt 
+> build · qwen3.6:35b
+Now let me detect capabilities by scanning the repo:
+[0m✗ [0mRead  failed
+[91m[1mError: [0mTool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments.
+[0m✗ [0mRead  failed
+[91m[1mError: [0mTool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments.
+[0m✗ [0mRead  failed
+[91m[1mError: [0mTool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments.
+> build · qwen3.6:35b

@@ -1,0 +1,1778 @@
+{
+  "info": {
+    "id": "ses_ebfdd6595ffentQru7gA9UPLSc",
+    "projectID": "c5b3eb9c385c2b63c50f1de67e1b7a11d53c556b",
+    "model": {
+      "id": "qwen3.6:35b",
+      "providerID": "ollama",
+      "variant": "default"
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 313108,
+      "output": 5092,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    },
+    "outcome": "succeeded",
+    "time": {
+      "created": 1792077372029,
+      "updated": 1792078056786,
+      "idle": 1792078056794
+    },
+    "title": "Initializing repository project memory",
+    "location": {
+      "directory": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain"
+    }
+  },
+  "messages": [
+    {
+      "id": "msg_140229aa3001e9hLwCFu7KKTKL",
+      "time": {
+        "created": 1792077372153
+      },
+      "text": "\"Read the project-memory skill from framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.\"",
+      "files": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_140229b180019bOCvPL6GbTLK7",
+      "time": {
+        "created": 1792077372214,
+        "streamed": 1792077559727,
+        "completed": 1792077559803
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user wants me to read a specific SKILL.md file for project memory, then use that skill on the current repository. Let me first find and read that file.\n\nWait - looking at the path `framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md`, this should be relative to some framework directory. Let me search for it.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077551374,
+            "completed": 1792077559706
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_fzitb2nv",
+          "name": "glob",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/02-project-memory/SKILL.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "No files found"
+              }
+            ],
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077557820,
+            "ran": 1792077559717,
+            "completed": 1792077559768
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_bj8cdgp8",
+          "name": "glob",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/project-memory/**/*.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "No files found"
+              }
+            ],
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077559645,
+            "ran": 1792077559724,
+            "completed": 1792077559773
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 7285,
+        "output": 144,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14025780d0011NyueHiJsN7yvS",
+      "time": {
+        "created": 1792077559831,
+        "streamed": 1792077568047,
+        "completed": 1792077568084
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The file doesn't exist anywhere in the repo. Let me check if there's a framework directory or any skill files nearby.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077561458,
+            "completed": 1792077568024
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_r2xj9z28",
+          "name": "glob",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/framework-origin/**"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "No files found"
+              }
+            ],
+            "metadata": {
+              "count": 0,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077564713,
+            "ran": 1792077568033,
+            "completed": 1792077568065
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_k397178n",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read directory /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain, entries 1-33\n.git/\n.github/\ndocs/\nscripts/\nstatic/\ntemplates/\ntests/\n.gitignore\nAGENT.md\nanalysis.py\napp.py\nbiome.json\nbuild.js\nllms.txt\nnml.py\npackage-lock.json\npackage.json\nREADME.md\nrequirements.txt\ntest_analysis.py\ntest_app.py\ntest_apply_styles.py\ntest_apply_years.py\ntest_collect_discogs_reform.py\ntest_collect_discogs_reform2.py\ntest_collect_itunes.py\ntest_collect_years.py\ntest_collect_youtube_topic.py\ntest_nml.py\ntest_report_years.py\ntest_web_search.py\ntsconfig.json\nvitest.config.js"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077567958,
+            "ran": 1792077568042,
+            "completed": 1792077568058
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 7455,
+        "output": 119,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_140259865001GM57tKUi0J2BvJ",
+      "time": {
+        "created": 1792077568112,
+        "streamed": 1792077576685,
+        "completed": 1792077576906
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Let me check the AGENT.md file since it might contain skill-related instructions, and also look in the ~/.agents/skills/ directory for project memory skills.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077571269,
+            "completed": 1792077576642
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_7wcq1axe",
+          "name": "skill",
+          "executed": false,
+          "state": {
+            "status": "error",
+            "input": {
+              "id": "project-memory"
+            },
+            "error": {
+              "type": "tool.execution",
+              "message": "Unable to load skill project-memory"
+            }
+          },
+          "time": {
+            "created": 1792077574786,
+            "ran": 1792077576663,
+            "completed": 1792077576700
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_r0tgsbaq",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/.agents/skills"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read directory /home/giak/.agents/skills, entries 1-3\nchatgpt-bridge/\nmnemolite-mem-first/\nvisual-explainer/"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077576634,
+            "ran": 1792077576680,
+            "completed": 1792077576792
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 7783,
+        "output": 91,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14025bada001GLNYl4tSd7faYB",
+      "time": {
+        "created": 1792077576932,
+        "streamed": 1792077589142,
+        "completed": 1792077589177
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The `project-memory` skill is not installed. Let me check the current AGENT.md for any project memory references, and also look around for this skill file elsewhere on disk.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077578977,
+            "completed": 1792077589115
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_usk32ywz",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/AGENT.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/AGENT.md, lines 1-229\n1: # DSL COMPRESSION: Audio Sync Tool — AGENT.md\n2: \n3: ## GLOSSAIRE\n4: \n5: ```\n6: @  → projet/contexte\n7: #  → règle impérative (était ◉ dans source)\n8: !  → contrainte (était ◆ dans source)\n9: $  → scope/périmètre (était ⟐ dans source)\n10: %  → section (était △ dans source)\n11: &  → donnée métrique/quantifiable\n12: ~  → workflow/process\n13: ```\n14: \n15: ## GRAPHE DE DÉPENDANCES\n16: \n17: ```\n18: @AudioSyncTool\n19:   ├── identity: \"Audio Sync Tool — synchronisation fichiers audio\"\n20:   ├── stack: Python3.12 + Flask3.x + VanillaJS + Vitest + pytest + mutagen\n21:   ├── port: 8765\n22:   ├── storage: JSON in data/ (config, journal, cache, playlists, beatgrids, extra_dirs)\n23:   ├── pages: sync | playlist | dups | years (routeur goPage)\n24:   ├── trash: <source>/_trash/<date>/ — déplacer, JAMAIS effacer (EPIC-028)\n25:   └── user: Christophe/Giak (music collection)\n26: \n27: %DATA-SAFETY [priorité: ABSOLUE]\n28:   #1: NE JAMAIS rm/rm -f/rm -rf sur chemins utilisateur\n29:   #2: NE JAMAIS écraser data/ sans confirmation\n30:   #3: NE JAMAIS modifier config/journal/cache/playlists sans demande\n31:   #4: NE JAMAIS supprimer cache (auto-régénéré)\n32:   #5: Demander avant opération destructive\n33:   $data_files: data/config.json, data/journal.json, data/cache.json, data/playlists.json, data/beatgrids.json, data/extra_dirs.json\n34:   $allowed_auto: Lire data/, créer /tmp/, modifier code, ajouter tests\n35:   $needs_confirm: Supprimer/écraser data/, modifier config, supprimer audio, rm/rmdir/delete, modifier .gitignore\n36: \n37: %RIGUEUR [exigence maniaque, zéro régression]\n38:   #1: Lire avant d'écrire — pas d'action sans contexte vérifié\n39:   #2: Ne pas casser les tests (vitest + pytest) — NO regression\n40:   #3: Chirurgie stricte — pas de refacto gratuit (YAGNI)\n41:     ! Refactor ONLY when demonstrated gain (KISS · DRY)\n42:   #4: Empathie — stress/frustration → écouter, pas justifier\n43:     ! Volonté de mieux faire : réparer d'abord, expliquer après\n44:   !Si stress utilisateur → priorité réparation\n45:   ! Pragmatique · Efficace · Robuste · Concis · Précis · Rigoureux · Maniaque · Minutieux · Fiable\n46:   ! No overengineering — solution minimale suffisante\n47: \n48: %HONESTY [vérité forensique, zéro compromis]\n49:   %HONESTY.1: Zéro flagornerie — vérité > politesse\n50:     ! contradiction obligatoire si fait erroné\n51:     ! NO sycophancy — jamais valider une erreur pour plaire\n52:   %HONESTY.2: Anti-hallucination / rigueur épistémique\n53:     #Aveu d'ignorance si incertain (OPEN/UNKNOWN/INCONCLUSIVE/GAP sont valides)\n54:     #Chaîne de pensée (CoT) explicite pour problèmes complexes\n55:     ! Double-check systématique : claims matériels → vérification capability disponible\n56:     ! EVIDENCE >= CLAIM — FACT != EVIDENCE != INFERENCE != HYPOTHESIS != SPECULATION\n57:   %HONESTY.3: Directness / precision chirurgicale\n58:     #Style direct — pas d'intro/conclusion inutiles (concision)\n59:     #Standalone results — prêts à publier\n60:     #Précision médico-légale — termes exacts, pas d'à-peu-près\n61:     ! SELF-ASSERTED COMPLIANCE != VERIFIED COMPLIANCE\n62:     ! TEST PASSED != TASK VERIFIED\n63: \n64: %STACK\n65:   $backend: Python 3.12 + Flask 3.x\n66:   $frontend: HTML/CSS/JS vanilla (ES modules)\n67:   $test_js: Vitest + jsdom\n68:   $test_py: pytest\n69:   $audio: mutagen (ID3/FLAC)\n70:   $storage: JSON (data/)\n71:   !Zéro dépendance npm frontend — npm only for devDeps\n72: \n73: %STRUCTURE [arbre: 22 entrées racine (hors venv/node_modules/cache), 20 lignes documentées ici]\n74:   app.py ← Flask (8765)\n75:   test_app.py ← pytest (146 tests)\n76:   test_nml.py ← pytest (29 tests)\n77:   test_analysis.py ← pytest (15 tests)\n78:   templates/index.html ← pages Sync/Playlist/Doublons/Années + modales\n79:   static/ ← 45 modules ES (src/ + render/ + commands/) + 39 *.test.ts (927 tests)\n80:     script.js ← orchestrateur (nav handlers, toolbar)\n81:     router.js ← goPage('sync'|'playlist'|'dups'|'years') — source de vérité nav\n82:     state.js ← état global mutable (EventEmitter, Proxy)\n83:     api.js ← fetch wrapper (retry réseau)\n84:     audio.js ← togglePlay, seek, stop\n85:     focus.js ← navigation spatiale ↑↓←→Tab + twin-hint jumeau\n86:     ui.js ← modales, toasts\n87:     render.js ← assembler (re-export render/)\n88:     actions.js ← config, scan, copy, move, replace, mkdir, groupes\n89:     filterEngine.js ← matcher tokens filtrage (casse/accents, nom+année+codec)\n90:     dupDetect.js ← matching doublons (durée ±2 s + nom fuzzy ≥ 0,88)\n91:     dupGroups.js ← groupes de versions (union-find 2 passes : enregistrements + morceaux via musicKey) + arbitrage qualité (cohorte du gagnant uniquement)\n92:     musicKey.js ← clé musicale (artiste, titre) depuis nom de fichier : parsing segments/pistes/parenthèses + tokens faibles\n93:     playlist.js ← CRUD + drag-drop\n94:     utils.js ← formatTime, formatDuration, computeStatus\n95:   data/ ← NE PAS TOUCHER\n96:   docs/superpowers/ ← specs + plans + rapports\n97:   docs/superpowers/epics/ ← REGISTRE des évolutions (README index + 1 fichier par EPIC)\n98:     #règle: toute évolution/amélioration → nouvelle EPIC + entrée à l'index\n99:     #règle: EPIC livrée → statut 🟢 + commits + tests dans le fichier\n100:   AGENT.md ← ce fichier\n101: \n102: %ARCHITECTURE\n103:   $routes: /config, /scan, /load, /copy, /move, /delete, /mkdir, /journal, /audio, /playlists\n104:   $storage_logic: load_json()/save_json() ← data/\n105:   $metadata: mutagen ← année, durée, codec\n106:   $export: os.link ← fallback shutil.copy2 (EXDEV)\n107:   $journal: append-only, horodaté (statuses: copied, moved, moved-to-trash, deleted, scan)\n108: \n109:   %ARCHITECTURE.core (EPIC-036 P1 — helpers partagés, doc de contrat : static/src/README.md)\n110:     $core/format.ts: fmtCount(n) (fr-FR — Node ICU = espace fine U+202F), plural(n, word, pl?) (pluriel si n > 1, 0 = singulier : comportement historique), byCountThenId(a, b) (tri volume desc puis id alpha) — pures, zéro dépendance ; JAMAIS de x.toLocaleString('fr') ni de pluriel fait main hors core/\n111:     $core/feedback.ts: setStatus(msg) — barre #status-text, no-op sûr si absente ; sémantique : status = guidage, toast = confirmation d'action, dialog = décision (ne pas croiser les canaux)\n112:     $core/subscribe.ts: subscribeVisible(event, containerId, render) — abonnement :changed + garde hidden en un point ; désabonnement renvoyé (contrat on())\n113:     $core/dom.ts: beginRender(container) → restore(el) — wipe + save/restore scrollTop (rAF), restore no-op si nœud détaché ; variante directe acceptée (renderPlaylistTracks)\n114:     !règle d'extraction: un module core/ n'est créé que s'il remplace ≥ 2 implémentations existantes écrites, tests verts avant ET après (YAGNI — pas d'abstraction anticipée) ; tout nouveau module passe par une EPIC\n115: \n116:   %ARCHITECTURE.css (EPIC-036 P3 — CSS en couches, static/styles/)\n117:     $couches: tokens.css (variables :root) · base.css (reset/focus/scrollbar) · components.css (familles transversales : modal, dialog, toast, filter-chip, panel-empty…) · pages/ (sync, sync-main, dups, years, playlist, overlays, cue-editor)\n118:     $ordre: pages/index.css agrège les @import dans l'ordre de cascade de l'ancien style.css — NE PAS réordonner ; script.ts importe index.css, esbuild bundle → dist/script.css (cache-buster app.py couvre JS+CSS)\n119:     !règles: nouvelle règle CSS = fichier de sa page ; transversale = components.css ; nouvelle variable = tokens.css uniquement (jamais 2 déclarations du même token) ; audit mort : npm run audit:css (rapport seul, vérif manuelle obligatoire)\n120: \n121:   %ARCHITECTURE.pages\n122:     $router: state.page ('sync'|'playlist'|'dups'|'years') ← router.js goPage()\n123:     #layouts et boutons nav mutuellement exclusifs (source de vérité unique)\n124:     !playlistMode dérivé: playlistMode === (page === 'playlist')\n125: \n126:   %ARCHITECTURE.keyboard\n127:     ~normal: Tab↔panels, ↑↓nav, ←→columns, Enter play, Space select, F5 copy, R replace-homonyme, F7// filter-chip, Escape pile: menu→modale→filtre→dossier→audio, ? légende, Shift+F10 menu clavier (EPIC-031)\n128:     ~playlist: Tab↔source/sidebar, ↑↓nav, Space toggle, Enter play, F7 filter, Delete remove, Ctrl+S save, Ctrl+E export, Ctrl+↑↓ reorder\n129:     ~dups: ↑↓ groupes, clic membre = override gagnant, R applique plan (perdants rangés → _trash), Échap → sync\n130:     ~years: ↑↓ cartes à revue (ordre VISIBLE : saute hors-filtre et rejetés), F7 ou / = chip filtre scope 'years' (pattern filterChip EPIC-030 — cartes certaines ET à revue, terme mémorisé), clic = choisir année / rejeter (session locale — l'écriture reste scripts/apply_years.py), e = export choix, Échap → sync (EPIC-033)\n131:     !sticky scroll (Années/Doublons/Playlist, même pattern CSS): le conteneur scrollable garde padding-top: 0 — l'espacement vit DANS le fond peint de l'élément collé (slot filtre ou #dups-head z3, barre z2, cartes/rows z-index:0 sinon elles peignent au-dessus) ; dups = sticky BOTTOM (.dup-card-actions, bouton Appliquer épinglé au bas du conteneur tant que la carte est visible) ; playlist-source = slot chip sticky avec margin négatif couvrant le padding du panneau ; sidebar playlist : actions déjà hors scroll par flex (rien à coller)\n132:     !clavier scopé page via registry (ctx.page) + activeModal:null — modal dialogue bloque tout\n133:     ~style (EPIC-035, page sync): g = palette de style (épars : sélection sinon ligne focusée), e = aperçu du rangement ; commands/style.js importé EN DERNIER dans script.ts (index matrice intacts)\n134:     !palette g = COUCHE DOM focusée (render/stylePalette.ts, tabindex -1, keydown propre : stopPropagation + preventDefault SYSTÉMATIQUE hors Ctrl/Alt/Meta — F5 non annulé = RECHARGEMENT navigateur, constaté en live) — pattern ratingEdit, ZÉRO champ de contexte registry, aucun binding existant modifié\n135:     !menu contextuel ouvert = état registry (ctx.isContextMenuOpen, EPIC-031) — ↓↑Enter Échap isole comme une modale ; surbrillance .ctx-highlight, focus DOM intact\n136:     !matrice clavier (commands/keyboardMatrix.test.ts) : 78 cellules + 5 invariants (mort/shadowé/Échap-pile/labels), IDX dérivés du registry — shuffle-proof\n137:     !légende GÉNÉRÉE depuis les bindings labellisés (label/group, render/legend.ts, bijection legend.test.ts) — éditer les raccourcis dans commands/*.ts, JAMAIS dans index.html\n138:     !F7// focusent le chip de la liste focusée (render/filterChip.js, input.filter-input)\n139:     !filtres mémorisés par scope dans state.filters (sync-epars, sync-source ; P1: playlist-*, dups)\n140:     !arbres source/playlist-source = filtre à DEUX NIVEAUX (tree: true au chip) : le terme ne matche que les NOMS de dossiers par défaut — l'expansion (manuelle OU auto-étendue) rend TOUS les fichiers (consulter un dossier sous filtre = vérifier un doublon, ne jamais masquer) ; toggle 📄 fichiers opt-in (state 'files:<scope>') matche aussi les fichiers (dirHasMatchingFile + table filtrée à la source dans buildSourceChildren) — comportement historique préservé derrière le toggle\n141:     !pastille « déjà rangé » (épars, EPIC-034) : dupMatches (EPIC-028) + jumeau CONSULTABLE sous le filtre sync-source actif (twinUnderFilteredDir — sémantique identique à l'arbre : dossiers, ou nom de fichier en mode 📄) → .dup-ranged + tooltip ⤷ ; rendu dans makeFileEl (discriminateur = selectEparsFileFn) ; renderSource rafraîchit renderEpars + restaure le focus (focusItemByPath) quand le panneau gauche est visible — les pastilles ne doivent jamais être périmées après un changement de filtre\n142:     !auto-expansion mémoire post-copie (EPIC-034) : executeCopy appelle revealSourceDir(destDir) — le dossier destination s'ouvre si replié (toggle standard → l'expansion persiste dans sourceExpanded), JAMAIS de repli, jamais de vol de focus (toggleSourceDir(…, focusFirstChild=false)) ; appelé APRÈS state.sourceFiles = { … } (le re-render event-driven sinon écrase le patch ciblé)\n143: \n144:   %ARCHITECTURE.years\n145:     $pipeline: scripts/collect_years.py (MusicBrainz→Deezer, 1 req/s) → collect_discogs.py (60 req/min, token data/discogs_token) → collect_itunes.py (sans clé, ~20 req/min) → collect_discogs_reform.py (Discogs requêtes REFORMULÉES : junk-artiste split au 1ᵉʳ marqueur de face, suffixes junk coupés) → collect_discogs_reform2.py (junk-artiste NUMÉRIQUE : 1ᵉʳ token num/symbole retiré — matrice/série/année-tête/#, '=' → espace obligatoire (403 Discogs sinon), aperçu lecture-seule par défaut, --go) → collect_youtube_topic.py (yt-dlp sans compte, chaîne « - Topic » OBLIGATOIRE, tokens + durée ±15 s, release_date requis ; exécutée 2026-09-18 : 0/84 — chaînes Topic fusionnées 2025-2026 dans les profils artiste ; --verified = tier chaînes vérifiées, année release_date OU ℗/Released on d'art track auto-généré, TOUT en lax — jamais re-requêter une clé conclusive, ré-interroger les none de l'autre mode) → caches data/year_cache.jsonl + discogs_cache.jsonl + itunes_cache.jsonl + discogs_reform_cache.jsonl + discogs_reform2_cache.jsonl + youtube_topic_cache.jsonl (clé 'artiste\\ttitre', reprise incrémentale, erreurs re-jetables) ; --keys-from-tags (EPIC-054) = univers de clés depuis les TAGS (1 144 clés jamais interrogées, key_source: 'tags') ; Beatport RETIRÉ du pipeline (EPIC-049 — jamais lancé, friction token refusée)\n146:     $apply: scripts/apply_years.py — vague « found » seule ; re-vérification de l'année sur disque AVANT écriture (jamais écraser) ; journal additif data/year_apply_journal.jsonl = backup ; --undo idempotent ; dry-run par défaut\n147:     !frames par format: MP3 TYER(v2.3)/TDRC(v2.4) selon version du tag existant, FLAC DATE, WAV TDRC (chunk ID3), M4A ©day, .wma exclu (non relu par get_audio_meta)\n148:     !caches consommés tels quels — ne JAMAIS re-interroger les clés collectées (3 h 30 MB) ; collecte = incrémentale uniquement\n149:     !consolidation: scripts/report_years.py + GET /years/preview (app.py) — priorité par clé MB/Deezer > Discogs > iTunes > reform > reform2 > youtube (chaque pool d'appoint ne cible que des 'none' amont → zéro chevauchement) ; caches ABSENTS tolérés (passe jamais lancée) ; lignes 'error' re-jetables ; consensus fenêtre ≤ 2 ans = year_cache UNIQUEMENT\n150:     !YouTube « - Topic » = source HONNÊTE seulement ère digitale ≥ ~2015 (biais réédition sur le vieux vinyle, mémoire ad9e92a8) — jamais automatique sur l'ère vinyle\n151:     !revue humaine (EPIC-033 P2): vue Années → choix session → e/💾 POST /years/review → data/year_review.json → scripts/apply_years.py --review (choix OVERRIDE consolidation, source 'review') ; champ année libre = tranche hors candidates à la carte focusée ; jamais d'écriture depuis l'UI\n152:     !player audio sur les pages à cartes (Années + Doublons, EPIC-034) : boutons ▶/⏹ réutilisant togglePlay (audio.js) + player bar globale + GET /audio — NE PAS dupliquer un player ; bouton = data-path + classe 'playing' re-marquée après CHAQUE re-render via playingPath() (les cartes sont re-rendues à chaque choix) ; clic ▶ ne doit JAMAIS déclencher l'action de la carte (stopPropagation : override gagnant dups / focus years)\n153:     !Discogs « lax » + ambiguës + reform lax/ambigu = revue humaine (vue Années, ~years) — jamais d'application automatique\n154:   %ARCHITECTURE.styles (EPIC-035 P1)\n155:     $taxonomie: styles.ts (PUR) — parseFolderName `^([a-z]+(?:_[a-z]+)*?)(?:_(\\d{4}))?$` sur les dossiers de 1ᵉʳ niveau de la racine Source Data + sourceExtraDirs ; 25 styles réels (18 datés + 7 hors temps = aucun dossier daté) ; trancheOf(y) = y - y%5 ; destFor(style, année, trancheForcée) → {dir, exists, needsYear} ; hotkeys dérivées (volume desc : initiales de segment → lettres de l'id → a-z libre)\n156:     !chemin destination = `${root}/${name}` SANS normalisation (même convention que sourceTree data-dirpath, dupDetect sourceFullPath, copyFilesTo startsWith) — racine config à slash final → `…/style//techno_1990` ; normaliser casserait patch d'index, reveal et exclusion des jumeaux (revue 2026-09-19)\n157:     $state: state.styleChoices Map<fullpath épars, {style, tranche|null}> — SESSION, toujours réaffecter une nouvelle Map ; taxonomie recalculée à la demande (mémo sur identité sourceFiles/sourceExtraDirs dans render/styleCell.ts currentTaxonomy)\n158:     $ui: render/styleCell.ts (td.style-cell inséré devant .codec par eparsUI — makeFileEl INTACT, makeFileTable(false, true) = 7 col + .has-style ; refreshStyleCells = UNE passe DOM pour un lot ; updateStyleRecap dans #epars-status-line) · render/stylePalette.ts (chord lettre → chiffre tranche seulement pour les cibles SANS année ; timeless = commit immédiat ; lot = tranche appliquée aux sans-année seuls) · render/stylePreview.ts (buildRangementPlan PUR : groupes par dest.dir triés, exclus noYear/twinInDest/unknownStyle ; confirmDialog multi-ligne → #dialog-msg white-space: pre-line ; applyRangementPlan = copyFilesTo par dossier, séquentiel, retire des choix EXACTEMENT les fullpaths copiés)\n159:     $copie: actions.ts copyFilesTo(destDir, files) → string[] fullpaths copiés — extrait du batch F5 (iso-comportement : patch index + DOM, journal rechargé, sélection vidée, revealSourceDir) ; /copy crée le dossier cible (os.makedirs) → pas de /mkdir\n160:     $filtre: FilterSubject.path OPTIONNEL (chemin relatif épars) — fourni par eparsUI seul ; arbres source/playlist inchangés (twinUnderFilteredDir, dirHasMatchingFile intacts)\n161:     !P1 = ZÉRO backend (pytest 298 intact) ; pas d'écriture ID3 ; tranche non forçable sur un fichier DÉJÀ daté (limite assumée, P4) ; hotkeys non configurables (styles.json = P4)\n162:     !live headless CDP (2026-09-19, /copy mocké) : 79 lignes sous F7 `_schranz` (77 au 1ᵉʳ segment + 2 noms), palette 25 styles, lot 3 → 2 dossiers dont 1 à créer, isolation ArrowDown/Espace/F5 prouvée APRÈS le fix preventDefault ; colonne nom = 40,4 % à 1280 px (seuil du plan atteint)\n163: \n164: %SURGERY [12 règles — protocole opératoire, zéro place à l'à-peu-près]\n165:   !S1: NE JAMAIS modifier signature fonction\n166:     exceptions: ZÉRO appelant impacté (grep) + demande utilisateur\n167:   !S2: NE JAMAIS modifier code partagé sans filet\n168:     $shared_fns: buildSourceChildren(), toggleSourceDir(), renderDirTree(), makeFileEl()\n169:     ~avant: git diff HEAD\n170:     ~après: vitest run complet\n171:   !S3: NE JAMAIS refactoring pendant bug fix — YAGNI, KISS\n172:   !S4: NE JAMAIS >3 fichiers par requête — atomicité\n173:     contournement: découper en étapes 1-3 fichiers\n174:   !S5: NE JAMAIS feature non demandée — scope strict\n175:   #S6: AVANT — lister fichiers impactés (lecture + analyse)\n176:   #S7: APRÈS — valider (git diff + scope + vitest run) — VERIFIED COMPLIANCE\n177:   #S8: SI test échoue — analyser cause (root cause, pas workaround)\n178:   #S9: Demander avant scope extension — TODO(@codebuff)\n179:   #S10: GOLDEN PATH — npx vitest run après changement fonctionnel\n180:   ~S11: Bug fix — 5 étapes (identifier→modifier→vérifier→git diff→test)\n181:   ~S12: Behaviour change — 5 étapes (spec→fichiers→test-first→code→valider)\n182:   ! Double-check systématique : claims → evidence → verification\n183:   ! Pragmatique · Efficace · Robuste · Concis · Précis · Rigoureux · Maniaque · Minutieux · Fiable\n184: \n185: %WORK-RULES [8 règles — exécutoires, non négociables]\n186:   #W1: Lire avant modifier — zéro action sans lecture préalable\n187:   #W2: Ne pas casser tests — NO regression (vitest + pytest verts)\n188:   #W3: Chirurgie — que ce qui est demandé (scope strict, YAGNI)\n189:   #W4: Data safety — △DATA-SAFETY absolues\n190:   #W5: Conventions style existant — cohérence > préférence perso\n191:   #W6: KISS — pas de sur-engineering (DRY, YAGNI, no-overengineering)\n192:   #W7: Preuve — tests verts + smoke test (VERIFIED COMPLIANCE, pas auto-déclarée)\n193:   #W8: Qualité frontend — transitions, hover, micro-interactions (soin maniaque)\n194: \n195: %AGENT-FLUX\n196:   AGENT.md → règles + architecture + contexte\n197:   docs/ → specs + plans + décisions\n198:   !distinction: AGENT.md ≠ code ≠ docs\n199: \n200: %SEM [executable_control_spec — méta-contrôle : COMMENT appliquer/vérifier les règles ci-dessus]\n201: \n202: ## CONTROL LOOP\n203:   1. READ → contexte complet (fichiers, tests, docs) avant toute action\n204:   2. PLAN → lister fichiers impactés, scope explicite, critères de succès\n205:   3. EXEC → plus petite change suffisante (atomicité ≤3 fichiers)\n206:   4. VERIFY → git diff + vitest run + pytest run + smoke test manuel\n207:   5. CLOSE → confirmer critères atteints, pas de régression, STOP\n208: \n209: ## DECISION GATES\n210:   ! Gate 1 (avant action) : ai-je lu tout le nécessaire ? scope clair ? test-first si behaviour change ?\n211:   ! Gate 2 (pendant) : change atomique ? pas de scope creep ? pas de refacto gratuit ?\n212:   ! Gate 3 (après) : tests verts ? VERIFIED COMPLIANCE (pas auto-déclarée) ? régression check ?\n213: \n214: ## EPISTEMIC STANDARDS\n215:   Claim → Evidence → Verification (chaque claim matériel)\n216:   Source existence ≠ claim presence ≠ claim verification\n217:   Derivative/repetition ≠ independent confirmation\n218:   Unverifiable → state limitation + downgrade conclusion explicitement\n219: \n220: ## CONFLICT RESOLUTION\n221:   Règle stricte applicable > règle souple\n222:   Préservation scope demandé > optimisation adjacente\n223:   Data safety (△DATA-SAFETY) > toute autre considération\n224:   User stress signal → repair priority (△RIGUEUR.4)\n225: \n226: ## TERMINATION\n227:   Success criteria met + no critical unresolved + further work immaterial → STOP\n228:   NO_PROGRESS → STOP (ne pas insister sur stratégie échouée)\n229: ```"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077583973,
+            "ran": 1792077589125,
+            "completed": 1792077589167
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_jlk3x34w",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "\nconst paths = [\n  '~/.agents/skills/',\n  '/home/giak/.config/opencode/skills/',\n  '/home/giak/framework-origin/',\n].map(p => p.replace('~', process.env.HOME))\n\nconsole.log({ paths, HOME: process.env.HOME })\n\n// Check if there's something in ~/.opencode or opencode config\nconst fs = require('fs')\n"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ReferenceError: Unknown identifier 'process'. (line 6, col 27)"
+              }
+            ],
+            "metadata": {
+              "toolCalls": [],
+              "error": true,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077589064,
+            "ran": 1792077589137,
+            "completed": 1792077589157
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 7952,
+        "output": 212,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14025eac9001klQUn3DX0kwrxt",
+      "time": {
+        "created": 1792077589204,
+        "streamed": 1792077648559,
+        "completed": 1792077648632
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The `project-memory` skill doesn't exist as an installed skill. The user's request specifically mentions a file path: `framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md`. This is a path they expect to exist. Let me search more broadly on the filesystem for any SKILL.md files related to project-memory.\n\nLet me check if there might be a framework-origin directory elsewhere or if this skill needs to be created from the user's context.\n\nActually wait - I think this skill may need to be found elsewhere, maybe on disk in a different location. Let me check.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077625788,
+            "completed": 1792077648544
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_wcawf8js",
+          "name": "execute",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "code": "\nconst fs = require('fs')\nconst os = require('os')\nconst home = os.homedir()\n\n// Search for project-memory SKILL.md across common locations\nconst searchPaths = [\n  `${home}/framework`,\n  `${home}/framework-origin`,\n  `${home}/projects`,\n  `${home}/dev`,\n  `/tmp/opencode`,\n]\n\nlet found = []\nfor (const p of searchPaths) {\n  if (fs.existsSync(p)) {\n    console.log(`EXISTS: ${p}`)\n    \n    // Find SKILL.md files\n    const findFiles = (dir, prefix) => {\n      try {\n        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {\n          const full = `${prefix}/${entry.name}`\n          if (entry.isDirectory()) findFiles(entry.name, full)\n          else if (entry.name === 'SKILL.md') console.log(`  SKILL.md: ${full}`)\n        }\n      } catch (e) {}\n    }\n    \n    findFiles(p, p)\n  } else {\n    console.log(`NOT FOUND: ${p}`)\n  }\n}\n\n// Also check opencode config dirs\nconst configDirs = [\n  `${home}/.config/opencode`,\n  `${home}/.opencode`,\n]\nfor (const cd of configDirs) {\n  if (fs.existsSync(cd)) console.log(`CONFIG: ${cd}`)  \n}\n"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "ReferenceError: Unknown identifier 'require'. (line 2, col 12)"
+              }
+            ],
+            "metadata": {
+              "toolCalls": [],
+              "error": true,
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077648486,
+            "ran": 1792077648555,
+            "completed": 1792077648573
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 15126,
+        "output": 474,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14026d309001iiq2daKRGu8n7P",
+      "time": {
+        "created": 1792077648659,
+        "streamed": 1792077657313,
+        "completed": 1792077673807
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "`execute` is sandboxed and doesn't allow `require('fs')`. Let me just use shell commands instead.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077650372,
+            "completed": 1792077657298
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_r9jvkfx0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "find /home/giak -path \"*/project-memory/SKILL.md\" 2>/dev/null; find /home/giak -path \"*project*memory*.md\" 2>/dev/null | head -20",
+              "timeout": 30000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/SKILL.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/02-write.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/01-scan.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/04-sync.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/03-check.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/report.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/scan-summary.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/deployment/deployment.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/desktop/desktop.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/api/integration.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/api/api.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/backlog/backlog.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/ecosystem/ecosystem.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/README.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/mobile/mobile.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/data/data.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/realtime/realtime.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/cli/cli.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/messaging/messaging.md\n/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/package/package.md\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077657239,
+            "ran": 1792077657308,
+            "completed": 1792077673797
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 15633,
+        "output": 114,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14027355e001GJ4MYXVESeltgD",
+      "time": {
+        "created": 1792077673833,
+        "streamed": 1792077686602,
+        "completed": 1792077686626
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Found it. Let me read the SKILL.md file and the related action files to understand the full skill, then apply it to this repository.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077681283,
+            "completed": 1792077686591
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_jyxvny3s",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/SKILL.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/SKILL.md, lines 1-33\n1: ---\n2: name: 'aidd-context-02-project-memory'\n3: description: 'Build the project''s memory of its architecture, conventions, and decisions, and wire it into your AI tools. Use when the user wants to set up or refresh project memory, or rewire it into a tool. Not for editing one existing memory file.'\n4: argument-hint: 'setup | refresh | rewire'\n5: ---\n6: \n7: # Project Memory\n8: \n9: ```mermaid\n10: flowchart LR\n11:   new([no argument, or setup]) --> scan --> write --> sync --> wired([memory wired])\n12:   update([refresh]) --> scan --> check --> write\n13:   rewire([rewire]) --> sync\n14:   scan -.-> empty([nothing to remember])\n15: ```\n16: \n17: ## Actions\n18: \n19: Run the flow above, reading only the next action file.\n20: \n21: | Action | Does                            |\n22: | ------ | ------------------------------- |\n23: | scan   | read the project                |\n24: | write  | write the memory                |\n25: | check  | show what drifted, change nothing |\n26: | sync   | pick the tools, wire it in      |\n27: \n28: ## Transversal rules\n29: \n30: - If a referenced file cannot be read, stop and say so. Never invent its content.\n31: - Ask before anything ambiguous. Never default silently.\n32: - A bank that already exists changes only through what the user approved, file by file and line by line.\n33: - End with a short report of what changed."
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077686526,
+            "ran": 1792077686599,
+            "completed": 1792077686613
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 16571,
+        "output": 92,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_140276773001qZHAl5NKruMQW7",
+      "time": {
+        "created": 1792077686654,
+        "streamed": 1792077697631,
+        "completed": 1792077697677
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now let me read the action files, starting with the scan action since this repository has no project memory yet (the flow for \"new\" or \"setup\" is: scan → write → sync → wired).",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077691555,
+            "completed": 1792077697617
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_ubhzhxug",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/01-scan.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/01-scan.md, lines 1-30\n1: # 01 - Scan\n2: \n3: Read the project.\n4: \n5: ## Input\n6: \n7: The project root.\n8: \n9: ## Output\n10: \n11: The confirmed capabilities and external tools, printed nowhere.\n12: \n13: ## Process\n14: \n15: 1. **Ground.** Read the project against [reading-sources.md](../references/reading-sources.md), and stop when it holds nothing to read.\n16: 2. **Find.** Detect the capabilities per [capability-signals.md](../references/capability-signals.md), each with its evidence.\n17: 3. **Map.** Detect the external tools per [ecosystem-signals.md](../references/ecosystem-signals.md), which fill the always-on `ecosystem` capability.\n18: 4. **Ask.** Show the scan as [scan-summary.md](../assets/scan-summary.md) does, ask for what the repo cannot prove, and wait.\n19: 5. **Confirm.** Keep what the scan found, plus the user's additions, minus their drops.\n20: \n21: ## Test\n22: \n23: | Case | Pass |\n24: | --- | --- |\n25: | Completion | no file under the project changed |\n26: | Evidence | the path or dependency named for a capability exists |\n27: | Summary | one row per capability and per tool, each carrying evidence |\n28: | Tool | one access mode per actor that reaches it |\n29: | Every run | the same capabilities for the same repo, bank or no bank |\n30: | Empty repo | the run stops at Ground and hands nothing on |"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077697548,
+            "ran": 1792077697628,
+            "completed": 1792077697648
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 17124,
+        "output": 108,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14027929d001In7JVCft5aOm6c",
+      "time": {
+        "created": 1792077697701,
+        "streamed": 1792077712529,
+        "completed": 1792077712916
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "This is complex. Let me read the reference files to understand the scanning methodology, then apply it systematically.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077702921,
+            "completed": 1792077712496
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_s5akj427",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "find /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ -name \"*.md\" 2>/dev/null"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "capability-signals.md\necosystem-signals.md\nmemory-destinations.md\nmemory-rules.md\nreading-sources.md\nreview-protocol.md\nstructure.md\ntools.md"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077708602,
+            "ran": 1792077712510,
+            "completed": 1792077712818
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_v87cju2i",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/02-write.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/02-write.md, lines 1-30\n1: # 02 - Write\n2: \n3: Write the memory the project deserves.\n4: \n5: ## Input\n6: \n7: The confirmed capabilities, external tools, access modes and hand-offs, plus the findings the user approved when a bank already exists.\n8: \n9: ## Output\n10: \n11: The written memory bank.\n12: \n13: ## Process\n14: \n15: 1. **Scaffold.** Create the tree in [structure.md](../references/structure.md).\n16: 2. **Select.** Take the rows to write from [memory-destinations.md](../references/memory-destinations.md).\n17: 3. **Write.** Write each row to its destination against [memory-rules.md](../references/memory-rules.md).\n18:    - Absent file: fill the template, strip its guidance comment.\n19:    - Existing file: apply the approved findings and nothing else.\n20:    - A section the file lacks: report it when the project has something for it, never inject it.\n21: \n22: ## Test\n23: \n24: | Case | Pass |\n25: | --- | --- |\n26: | Bank written | every selected row exists at its exact path |\n27: | Tree | no `.md` under `memory/` outside `internal/` and `external/`, each holding a `.gitkeep` |\n28: | Memory file | no `TODO` and no `<placeholder>` remains |\n29: | Scaffolded doc | its placeholders are untouched |\n30: | Rerun | only the approved findings changed, every other line survives |"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077712427,
+            "ran": 1792077712523,
+            "completed": 1792077712554
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 17689,
+        "output": 159,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14027ce29001eC9Sh2dKIiC6xx",
+      "time": {
+        "created": 1792077712946,
+        "streamed": 1792077731697,
+        "completed": 1792077731801
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Let me now read all the reference files to fully understand the skill methodology.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077717783,
+            "completed": 1792077731667
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_pss01k7l",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-rules.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Memory rules\n\nA memory file:\n\n- Captures the macro and the non-derivable: decisions, conventions, gotchas, the why.\n- Never restates a schema or a file tree.\n- Points to the code over a copy.\n- Holds one fact in one home, referenced elsewhere.\n- A duplicate keeps its home and loses the copy.\n- Stays small: short bullets, code in backticks.\n- Names a tech without its version (`React`, not `React 19`).\n- Reflects the current state only: no unused section, no placeholder.\n- Carries the diagram alone when a diagram is its payload: no note, no caption under it.\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077722540,
+            "ran": 1792077731676,
+            "completed": 1792077731752
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_8spg4fve",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-destinations.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Memory destinations\n\nWhere each template under `assets/templates/` lands. Read from this table, never derived.\n\nRead backwards, it names the capabilities a bank already holds: a file present means its row's capability held when the bank was written.\n\n| Capability | Template                           | Write to                                |\n| ---------- | ---------------------------------- | --------------------------------------- |\n| core       | `README.md`                        | `aidd_docs/README.md`                   |\n| core       | `GUIDELINES.md`                    | `aidd_docs/GUIDELINES.md`               |\n| core       | `CONTRIBUTING.md`                  | `aidd_docs/CONTRIBUTING.md`             |\n| core       | `memory/README.md`                 | `aidd_docs/memory/README.md`            |\n| core       | `memory/core/project-brief.md`     | `aidd_docs/memory/project-brief.md`     |\n| core       | `memory/core/architecture.md`      | `aidd_docs/memory/architecture.md`      |\n| core       | `memory/core/codebase-map.md`      | `aidd_docs/memory/codebase-map.md`      |\n| core       | `memory/core/coding-assertions.md` | `aidd_docs/memory/coding-assertions.md` |\n| core       | `memory/core/testing.md`           | `aidd_docs/memory/testing.md`           |\n| core       | `memory/core/vcs.md`               | `aidd_docs/memory/vcs.md`               |\n| ecosystem  | `memory/ecosystem/ecosystem.md`    | `aidd_docs/memory/ecosystem.md`         |\n| backlog    | `memory/backlog/backlog.md`        | `aidd_docs/memory/backlog.md`           |\n| api        | `memory/api/api.md`                | `aidd_docs/memory/api.md`               |\n| api        | `memory/api/integration.md`        | `aidd_docs/memory/integration.md`       |\n| auth       | `memory/auth/auth.md`              | `aidd_docs/memory/auth.md`              |\n| cli        | `memory/cli/cli.md`                | `aidd_docs/memory/cli.md`               |\n| data       | `memory/data/data.md`              | `aidd_docs/memory/data.md`              |\n| database   | `memory/database/database.md`      | `aidd_docs/memory/database.md`          |\n| deployment | `memory/deployment/deployment.md`  | `aidd_docs/memory/deployment.md`        |\n| desktop    | `memory/desktop/desktop.md`        | `aidd_docs/memory/desktop.md`           |\n| infra      | `memory/infra/infra.md`            | `aidd_docs/memory/infra.md`             |\n| messaging  | `memory/messaging/messaging.md`    | `aidd_docs/memory/messaging.md`         |\n| mobile     | `memory/mobile/mobile.md`          | `aidd_docs/memory/mobile.md`            |\n| package    | `memory/package/package.md`        | `aidd_docs/memory/package.md`           |\n| realtime   | `memory/realtime/realtime.md`      | `aidd_docs/memory/realtime.md`          |\n| ui         | `memory/ui/design.md`              | `aidd_docs/memory/design.md`            |\n| ui         | `memory/ui/forms.md`               | `aidd_docs/memory/forms.md`             |\n| ui         | `memory/ui/navigation.md`          | `aidd_docs/memory/navigation.md`        |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077725937,
+            "ran": 1792077731684,
+            "completed": 1792077731769
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_yxm6xiy5",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/memory-destinations.md\" 2>/dev/null || find /home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ -exec wc -l {} \\;"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Memory destinations\n\nWhere each template under `assets/templates/` lands. Read from this table, never derived.\n\nRead backwards, it names the capabilities a bank already holds: a file present means its row's capability held when the bank was written.\n\n| Capability | Template                           | Write to                                |\n| ---------- | ---------------------------------- | --------------------------------------- |\n| core       | `README.md`                        | `aidd_docs/README.md`                   |\n| core       | `GUIDELINES.md`                    | `aidd_docs/GUIDELINES.md`               |\n| core       | `CONTRIBUTING.md`                  | `aidd_docs/CONTRIBUTING.md`             |\n| core       | `memory/README.md`                 | `aidd_docs/memory/README.md`            |\n| core       | `memory/core/project-brief.md`     | `aidd_docs/memory/project-brief.md`     |\n| core       | `memory/core/architecture.md`      | `aidd_docs/memory/architecture.md`      |\n| core       | `memory/core/codebase-map.md`      | `aidd_docs/memory/codebase-map.md`      |\n| core       | `memory/core/coding-assertions.md` | `aidd_docs/memory/coding-assertions.md` |\n| core       | `memory/core/testing.md`           | `aidd_docs/memory/testing.md`           |\n| core       | `memory/core/vcs.md`               | `aidd_docs/memory/vcs.md`               |\n| ecosystem  | `memory/ecosystem/ecosystem.md`    | `aidd_docs/memory/ecosystem.md`         |\n| backlog    | `memory/backlog/backlog.md`        | `aidd_docs/memory/backlog.md`           |\n| api        | `memory/api/api.md`                | `aidd_docs/memory/api.md`               |\n| api        | `memory/api/integration.md`        | `aidd_docs/memory/integration.md`       |\n| auth       | `memory/auth/auth.md`              | `aidd_docs/memory/auth.md`              |\n| cli        | `memory/cli/cli.md`                | `aidd_docs/memory/cli.md`               |\n| data       | `memory/data/data.md`              | `aidd_docs/memory/data.md`              |\n| database   | `memory/database/database.md`      | `aidd_docs/memory/database.md`          |\n| deployment | `memory/deployment/deployment.md`  | `aidd_docs/memory/deployment.md`        |\n| desktop    | `memory/desktop/desktop.md`        | `aidd_docs/memory/desktop.md`           |\n| infra      | `memory/infra/infra.md`            | `aidd_docs/memory/infra.md`             |\n| messaging  | `memory/messaging/messaging.md`    | `aidd_docs/memory/messaging.md`         |\n| mobile     | `memory/mobile/mobile.md`          | `aidd_docs/memory/mobile.md`            |\n| package    | `memory/package/package.md`        | `aidd_docs/memory/package.md`           |\n| realtime   | `memory/realtime/realtime.md`      | `aidd_docs/memory/realtime.md`          |\n| ui         | `memory/ui/design.md`              | `aidd_docs/memory/design.md`            |\n| ui         | `memory/ui/forms.md`               | `aidd_docs/memory/forms.md`             |\n| ui         | `memory/ui/navigation.md`          | `aidd_docs/memory/navigation.md`        |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077731620,
+            "ran": 1792077731692,
+            "completed": 1792077731793
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 18334,
+        "output": 273,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1402817e9001jYm4p1PQn3WF6i",
+      "time": {
+        "created": 1792077731826,
+        "streamed": 1792077755100,
+        "completed": 1792077755209
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now let me read the reading-sources, capability-signals, ecosystem-signals, and structure references, as well as the templates we might need.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077743330,
+            "completed": 1792077755067
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_y46yairk",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/reading-sources.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Reading sources\n\nWhat the scan reads to understand the project, and what survives the reading. Read widely, keep\nlittle: `memory-rules.md` wants a small file, and most of what a repository shows is re-derivable by\nopening it again.\n\n## Read in this order\n\n| Source                                       | Answers                                      |\n| -------------------------------------------- | -------------------------------------------- |\n| the manifest, and a lockfile beside it        | the stack, the workspaces, the published name |\n| the root README, then any `docs/`             | what it does, for whom, its domain words      |\n| the top-level directories                     | the shape, and which areas own what           |\n| the entry points the manifest declares        | where execution starts                        |\n| every file under the VCS platform's own directory | how it ships, and what runs on its own schedule |\n| the test configuration and one test file      | the layers, the tools, the conventions        |\n| the code, area by area                        | what the writing above got wrong              |\n\nStop at the first source that answers a question. Read the code last: it is the most expensive and\nthe least quotable, and it exists to correct the others, not to be summarised.\n\n## Keep or drop\n\nThis table judges what the reading yields, never what a memory file already holds. A line the user\nwrote stays whatever the verdicts below say.\n\n| Signal                                                        | Verdict |\n| ------------------------------------------------------------- | ------- |\n| a decision, and the constraint behind it                      | keep    |\n| a convention the files repeat without stating                 | keep    |\n| a gotcha, a trap, a thing that surprises a newcomer           | keep    |\n| the stack, and how the main parts fit                         | keep    |\n| the domain words a contributor must know to read the code     | keep    |\n| a fact one open file re-derives                               | drop    |\n| a file tree, a schema, a dependency list                      | drop    |\n| a version number                                              | drop    |\n| anything true of every project built this way                 | drop    |\n| a work item, a live value, a technical id                     | drop    |\n| a plan, a wish, a thing not shipped                           | drop    |\n\n## Depth\n\n- Every workspace of a monorepo, never the root manifest alone.\n- A directory whose name repeats across areas is read once, not per area.\n- Nothing under a dependency directory, a build output, or a path the VCS ignores.\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077748389,
+            "ran": 1792077755076,
+            "completed": 1792077755167
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_tuzm14fe",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/capability-signals.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Capability signals\n\nA concern scan detects from a concrete fact in the repo, or an equivalent one, never inferred from the domain.\n\nIn a monorepo, every workspace is scanned, never the root manifest alone.\n\n| Capability   | Means                          | Detected when                                                                             |\n| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |\n| `core`       | is a project at all            | always                                                                                    |\n| `ecosystem`  | works through external tools   | always                                                                                    |\n| `backlog`    | organizes planned work         | local backlog artifacts, issue templates, a ticketing tool in use, or a repo file naming backlog conventions |\n| `ui`         | renders a user interface       | a web frontend framework (not React Native), or a `components/`, `pages/`, or `views/` dir |\n| `api`        | exposes HTTP or RPC            | a server framework, or a `routes/`, `controllers/`, or `api/` dir                         |\n| `database`   | persists data                  | an ORM or driver, a `migrations/` dir, or a schema file                                    |\n| `auth`       | authenticates or authorizes    | an auth library (passport, next-auth, clerk, auth0, devise), auth middleware, or an auth module |\n| `realtime`   | pushes live updates            | a websocket or SSE library (socket.io, ws, pusher, ably, channels, actioncable), or a socket endpoint |\n| `messaging`  | async messages                 | a queue or broker (kafka, rabbitmq, sqs, bullmq) with producers or consumers               |\n| `deployment` | is built and shipped           | a CI config, or a `Dockerfile`                                                             |\n| `infra`      | infrastructure as code         | Terraform, Pulumi, Kubernetes, or Helm files                                               |\n| `mobile`     | ships a mobile app             | an `ios/` or `android/` dir, a `pubspec.yaml`, a `Podfile`, or React Native or Flutter      |\n| `desktop`    | ships a desktop app            | Electron, Tauri, or a native desktop toolkit (Qt, GTK, WPF, AppKit)                        |\n| `package`    | ships a reusable library       | a publishable manifest declaring an importable entry that is not the CLI bin (`package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`) |\n| `cli`        | runs as a command-line tool    | a `bin` field, or a CLI parser (commander, yargs, oclif, clap, click)                       |\n| `data`       | processes data or trains models | notebooks, a data-versioning or ML tool, or pipeline and model files                       |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077751559,
+            "ran": 1792077755083,
+            "completed": 1792077755199
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_wyd2yzuf",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/ecosystem-signals.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Ecosystem signals\n\nWhat the scan learns about the services the project uses and does not build. The AI hosts it wires\nthe memory into are `tools.md`, not this.\n\n## What earns an entry\n\n- It holds state, or does work, outside the repo past a single CI run. A build step does not.\n- One entry per role: a platform that is also the tracker gives two.\n- The VCS platform always counts: a repo has one, so the graph is never empty.\n\n## Actors\n\n| Actor   | Is                        |\n| ------- | ------------------------- |\n| `Human` | a person opening the tool |\n| `Agent` | an AI assistant driving it |\n| `App`   | the running code calling it |\n\n## Access modes\n\n| Mode   | Means                                   |\n| ------ | --------------------------------------- |\n| `mcp`  | an MCP server the agent calls           |\n| `cli`  | a command run in a terminal             |\n| `http` | a direct API call                       |\n| `web`  | a browser interface, nothing programmatic |\n\n## What earns an edge\n\n| Edge                              | Verdict                                                   |\n| --------------------------------- | ---------------------------------------------------------- |\n| `Agent` reaching a tool           | keep, what an assistant can drive is never obvious          |\n| `App` reaching a tool             | keep, it names a runtime dependency                         |\n| `Human` reaching a tool by `web`  | drop, a person opens anything in a browser                  |\n| `Human` where no agent can follow | keep as `human only` in the label, so absence is not doubt  |\n| a hand-off with its trigger       | keep, the trigger is what makes it a rule                   |\n| a tool nobody drives              | keep it for its hand-off alone: acting on its own is the fact |\n| a hand-off without one            | keep the edge, name the trigger the repo proves             |\n\n## Detected when\n\n| Fact                                                                 | Read as                                    |\n| -------------------------------------------------------------------- | ------------------------------------------ |\n| a service config or a repo integration, whoever runs it, plus a badge | the tool exists                            |\n| a CI config, a webhook, or an integration naming two tools           | a hand-off between them                    |\n| the user names it                                                    | what the repo cannot prove                 |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077755014,
+            "ran": 1792077755094,
+            "completed": 1792077755177
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 20307,
+        "output": 239,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14028735c0010WOAIer6bQsL8A",
+      "time": {
+        "created": 1792077755239,
+        "streamed": 1792077778268,
+        "completed": 1792077778378
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now let me read the structure reference and the templates we'll need. But first, let me understand the scan output format.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077767108,
+            "completed": 1792077778238
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_cqxa1s9v",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/references/structure.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Structure\n\nThe tree write scaffolds. Which template fills which file is `memory-destinations.md`; this is the\nshape around them, and who owns each part.\n\n```txt\naidd_docs/\n├── README.md          copied as is\n├── GUIDELINES.md      the team fills its placeholders\n├── CONTRIBUTING.md    the team fills its placeholders\n└── memory/\n    ├── README.md      copied as is, its file list refreshed by the hook\n    ├── <bank>.md      the AI writes these, flat, never nested\n    ├── internal/      a .gitkeep, internal notes read on demand\n    └── external/      a .gitkeep, external notes read on demand\n```\n\n- The three root docs are the team's. Their placeholders survive until a human answers them.\n- Everything under `memory/` is the AI's, and sits at its root.\n- `internal/` and `external/` exist even when empty.\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077771546,
+            "ran": 1792077778247,
+            "completed": 1792077778343
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_zvehxukt",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/03-check.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# 03 - Check\n\nShow what drifted in the bank, and let the user pick what to fix. Change nothing.\n\n## Input\n\nThe bank in `aidd_docs/memory/`, and the capabilities the scan found.\n\n## Output\n\nA report file under `aidd_docs/tasks/`, a short summary printed, and the findings the user approved.\n\n## Process\n\n1. **Match.** Compare the bank against [memory-destinations.md](../references/memory-destinations.md) and [structure.md](../references/structure.md).\n   - A file no row produces: flag it, and name the row it should have come from.\n   - A found capability, or a scaffolded path, with nothing on disk: flag it missing.\n2. **Review.** Have each memory file reviewed against [review-protocol.md](../references/review-protocol.md) in parallel.\n3. **Prune.** Offer to remove each file whose capability the scan did not find, and none when the scan asked nothing.\n4. **Report.** Fill [report.md](../assets/report.md), write it to `aidd_docs/tasks/<yyyy_mm>/<yyyy_mm_dd>_memory-check/report.md`, and print the summary with that path.\n   - The folder already holds a report: ask before replacing it.\n5. **Offer.** Ask which findings to apply, and hand the approved ones to write.\n   - Nothing drifted: call the bank current, hand nothing on.\n\n## Test\n\n| Case | Pass |\n| --- | --- |\n| Any run | no file under `aidd_docs/memory/` changed |\n| Any finding | the summary holds no table, names the report path, ends on the question |\n| Nothing drifted | nothing offered, the bank called current |\n| Report | structural gaps and reviewer findings under separate headings |\n| Report | no step of this skill named in it |\n| Orphan | flagged, with the row it should have come from |\n| Missing | a found capability with no file is flagged |\n| Contradiction | flagged, the line left in place |\n| Duplicate | flagged, both files left as they are |\n| Removal declined | the file is still there |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077774815,
+            "ran": 1792077778254,
+            "completed": 1792077778330
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_rpk03gyz",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/actions/04-sync.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# 04 - Sync\n\nWire the memory into the tools the user picks.\n\n## Input\n\nThe memory bank in `aidd_docs/memory/`.\n\n## Output\n\nEach picked tool's context file, carrying the filled block.\n\n## Process\n\n1. **Require.** Stop unless `aidd_docs/memory/` holds a `.md`, sending the user to write the memory first.\n2. **Detect.** Find the AI tools present per [tools.md](../references/tools.md).\n3. **Pick.** Show every tool, the detected ones ticked, and wait for one or several.\n4. **Upsert.** Ensure each picked tool's context file carries the block, per [tools.md](../references/tools.md).\n   - Absent file: create it from [AGENTS.md](../assets/templates/AGENTS.md).\n   - Its AIDD structure differs: offer to reconcile it, applying only what the user approves.\n5. **Fill.** Run `hooks/update_memory.js` from the project root, naming the picked tools, and stop on a non-zero exit.\n   - No script, the skill shipped alone: write each block from the bank.\n6. **Verify.** Read each picked tool's block back and compare it to the bank.\n   - A file in one and not the other: the fill did not land, report it and stop.\n\n## Test\n\n| Case | Pass |\n| --- | --- |\n| Empty bank | no context file created, the run stops |\n| Script | it exits `0` |\n| Picked tool | its block lists every root `.md` except `README.md`, nothing else |\n| Bank grew | the block gains that file and keeps the rest |\n| Unpicked tool | its context file is unchanged |\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077778183,
+            "ran": 1792077778261,
+            "completed": 1792077778369
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 22231,
+        "output": 228,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14028cdda001hprC5uHksYe39O",
+      "time": {
+        "created": 1792077778408,
+        "streamed": 1792077804391,
+        "completed": 1792077804771
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now let me read the templates to understand what I need to create. Since this repo has no project memory yet, I'll follow: scan → write → sync. Let me read the key templates and also start doing the actual scan of this repository.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077787762,
+            "completed": 1792077804284
+          }
+        },
+        {
+          "type": "text",
+          "text": "Now let me read the templates and do the actual scan:"
+        },
+        {
+          "type": "tool",
+          "id": "call_6us9lbt0",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/README.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# memory/ - Project Memory\n\nStructured context the AI assistant reads at the start of a session, so it does not rediscover the project each time.\n\n## How it loads\n\n```mermaid\nflowchart LR\n    bank[\"memory/*.md\"] -->|every session| ai([\"AI context\"])\n    notes[\"internal/ · external/\"] -.->|on demand| ai\n```\n\nThe root files load every session through the project memory block in each AI context file. `internal/` and `external/` load only when relevant.\n\n## Files\n\nRefreshed automatically by the memory hook. Do not edit by hand.\n\n<!-- files:start -->\n<!-- files:end -->\n\n## Maintaining it\n\nThe AI writes and refreshes these files. When you edit one by hand:\n\n- One file per concern (architecture, database, vcs, ...).\n- Capture the macro and the non-derivable. Point to the code, never copy it.\n- Current state only, kept small. No personal notes, no future TODOs.\n\n## Subdirectories\n\n- `internal/`: AIDD workflow traces (the capability profile, audit notes, learn captures).\n- `external/`: external references the project pulls in (specs, design docs).\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077795682,
+            "ran": 1792077804293,
+            "completed": 1792077804663
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_stfah68y",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/project-brief.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Project Brief\n\nWhat this project is, the problem it solves, and its domain language. The non-derivable \"why\", not the \"how\".\n\n## What it is\n\n- <One or two lines: what the project does and for whom>\n\n## Why it exists\n\n- <The problem it solves, the goal it serves>\n\n## Domain language\n\nThe terms a contributor must know to read the code.\n\n| Term | Meaning |\n| ---- | ------- |\n| <term> | <one line> |\n\n## Key features\n\n- <The main capabilities, one line each. The macro list, not a spec>\n\n<!--\nCapture: the purpose, the domain vocabulary, the macro feature list.\nSkip: detailed specs and technical design. Personas and user journeys only if it is a user-facing product.\nRemove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077799909,
+            "ran": 1792077804301,
+            "completed": 1792077804669
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_nq8ysltt",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/architecture.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Architecture\n\nThe macro technical shape: the stack, how the pieces fit, and the decisions behind them. Point to the code, do not restate it.\n\n## Stack\n\n- <Language and runtime, the main framework, the one-line why>\n- <Cross-cutting libraries only; a capability's own library (ORM, test runner) lives in its file>\n\n## How it fits together\n\nThe macro flow between the main parts. One box per area, high level only.\n\n```mermaid\nflowchart LR\n    A[TODO: replace with the real macro flow]\n```\n\n## Key decisions\n\n- <A decision not obvious from the code, and its reason>\n- <A constraint or trade-off a contributor must respect>\n\n## Gotchas\n\n- <Something surprising that bites newcomers>\n\n<!--\nCapture: the stack, the macro structure, the non-obvious decisions and gotchas.\nSkip: the full file tree, exhaustive dependency lists, anything re-derivable by scanning the repo.\nKeep the diagram macro and follow the project's Mermaid conventions. Remove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077804230,
+            "ran": 1792077804382,
+            "completed": 1792077804722
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 23540,
+        "output": 270,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1402934f2001RhX7seAymhUsIZ",
+      "time": {
+        "created": 1792077804794,
+        "streamed": 1792077833076,
+        "completed": 1792077833512
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good progress. Let me now read more templates and also continue the actual scan of this repository by reading key files. The scan process says to read: manifest, README, top-level dirs, entry points, VCS platform docs, test config/tests, code areas.\n\nLet me do these in parallel for efficiency.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077811845,
+            "completed": 1792077832981
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_avnkqpwi",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/codebase-map.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Codebase Map\n\nThe macro layout: the top-level areas and what each holds. A map to navigate, not the full tree.\n\n```mermaid\nflowchart TD\n    A[TODO: top-level areas, one box each, macro only]\n```\n\n## Areas\n\n- `<dir>`: <what lives here, its responsibility>\n- `<dir>`: <...>\n\n## Entry points\n\n- <Where execution starts, the main file(s)>\n\n## Packages\n\n- <Each workspace package and its role. Drop this section if not a monorepo>\n\n<!--\nCapture: the few top-level areas, the entry points, and (if a monorepo) the package map.\nSkip: the full file tree, every subfolder. Point, do not enumerate.\nKeep the diagram macro and follow the project's Mermaid conventions. Remove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077819988,
+            "ran": 1792077832991,
+            "completed": 1792077833343
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_dezlo6uh",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/coding-assertions.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Coding Assertions\n\nThe checks that must pass for code to count as done. Minimal, run after every change.\n\n## Before commit\n\nThe fast gate.\n\n| Order | Command     | Checks           |\n| ----- | ----------- | ---------------- |\n| 1     | `<command>` | <e.g. typecheck> |\n\n## Before push\n\nThe heavier gate.\n\n| Order | Command     | Checks              |\n| ----- | ----------- | ------------------- |\n| 1     | `<command>` | <e.g. tests, build> |\n\n## Behavior\n\nI fix is needed, spawn 1 agent per assertion to fix (e.g typechecking / tests / rules violated on category UI = 3 agents).\n\n<!--\nCapture: the real commands a contributor runs, in order, for each gate.\nSkip: aspirational checks not wired up. List only what actually exists.\nRemove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077824535,
+            "ran": 1792077832999,
+            "completed": 1792077833349
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_8zblu5p5",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/core/testing.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Testing\n\nHow the project is tested: the layers, the tools, and the conventions. Where tests live and how to run them.\n\n## Strategy\n\n- <The test layers in use (unit, integration, e2e) and what each covers>\n\n## Tools\n\n- <Test runner, assertion library, mocking, coverage, one line each>\n\n## Conventions\n\n- <Where tests live, the naming, what must be tested versus not>\n\n## Run\n\n- <The command(s) to run each layer>\n\n## Browser QA\n\n- Entry: <The local application URL and command that starts it>\n- Auth: <The test identity or auth bootstrap, without secrets>\n- State: <The deterministic fixture source and executable reset or teardown>\n\n<!--\nCapture: the macro strategy, tools, conventions, and run commands. Keep Browser QA only when the project has a browser journey.\nSkip: listing individual test files. Point to the test directory.\nRemove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077828582,
+            "ran": 1792077833062,
+            "completed": 1792077833461
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_62oya75e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cat \"/home/giak/.config/aidd/cache/built/5.4.0/aidd-framework/freebuff/.agents/skills/aidd-context-02-project-memory/assets/templates/memory/ecosystem/ecosystem.md\""
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Ecosystem\n\n```mermaid\nflowchart LR\n  Human([Human])\n  Agent([Agent])\n  App([App])\n  Vcs[\"<vcs platform> · vcs.md\"]\n  Tracker[\"<tracker> · backlog.md\"]\n  Service[\"<runtime service> · integration.md\"]\n  Chat[\"<tool> · human only\"]\n  Bot[\"<autonomous tool>\"]\n\n  Agent -- cli --> Vcs\n  Agent -- mcp --> Tracker\n  App -- http --> Service\n  Human -- web --> Chat\n\n  Vcs -- \"<trigger>\" --> Tracker\n  Bot -- \"<trigger>\" --> Vcs\n```\n\n<!--\nCapture: every external tool, how each actor reaches it, and what moves between tools.\nSkip: a build step, a live value, and any detail the named file already owns.\nThis file is written on every project, like every other always row.\nRebuild the graph from the scan, never keep this one.\nAn actor edge carries the access mode, a hand-off edge carries what moves between two distinct\ntools, and a tool a memory file owns names that file after a middle dot.\nThe file is the heading and the graph. Nothing follows it, not a note, not a caption.\nRemove this comment when filled.\n-->\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1792077832936,
+            "ran": 1792077833071,
+            "completed": 1792077833454
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 24511,
+        "output": 344,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_14029a536001PQRXLZ5ynnbzBf",
+      "time": {
+        "created": 1792077833534,
+        "streamed": 1792077866981,
+        "completed": 1792077867165
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now I have a good understanding of the skill. Let me now do the actual scan of this repository. Following 01-scan.md:\n\n1. **Ground** — read the project (manifest, README, top-level dirs, entry points, VCS platform docs, test config/tests)\n2. **Find** — detect capabilities per capability-signals.md\n3. **Map** — detect external tools per ecosystem-signals.md\n4. **Ask** — show the scan as scan-summary.md template does\n\nLet me now read the project systematically following the reading-sources order:\n- manifest, lockfile → package.json\n- root README → README.md  \n- top-level directories (already listed above)\n- entry points → app.py, build.js\n\n\n- test configuration and files → vitest.config.js, package.json scripts\n- code area by area\n\nI can skip the templates I've already gathered. Now scanning through the actual project files in parallel to understand the domain language and structure.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792077841336,
+            "completed": 1792077866907
+          }
+        },
+        {
+          "type": "text",
+          "text": "Now let me do the actual **scan** of this repository. Following 01-scan.md reading sources order:"
+        },
+        {
+          "type": "tool",
+          "id": "call_mjjdlg57",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/package.json"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/package.json, lines 1-42\n1: {\n2:   \"name\": \"audio-sync-tool\",\n3:   \"private\": true,\n4:   \"type\": \"module\",\n5:   \"scripts\": {\n6:     \"test\": \"vitest run\",\n7:     \"test:shuffle\": \"vitest run --sequence.shuffle\",\n8:     \"test:shuffle:gate\": \"vitest run --sequence.shuffle --sequence.seed=1 && vitest run --sequence.shuffle --sequence.seed=2 && vitest run --sequence.shuffle --sequence.seed=3\",\n9:     \"test:watch\": \"vitest\",\n10:     \"build\": \"node build.js && node scripts/validate-build.js\",\n11:     \"start\": \"fuser -k 8765/tcp 2>/dev/null; npm run build && ./venv/bin/python app.py\",\n12:     \"dev\": \"node build.js --watch\",\n13:     \"typecheck\": \"tsc --noEmit\",\n14:     \"typecheck:watch\": \"tsc --noEmit --watch\",\n15:     \"lint\": \"biome check static/src/\",\n16:     \"lint:write\": \"biome check --write static/src/\",\n17:     \"lint:unsafe\": \"biome check --write --unsafe static/src/\",\n18:     \"format\": \"biome format --write static/src/\",\n19:     \"format:check\": \"biome format static/src/\",\n20:     \"coverage\": \"npm run coverage:clean && vitest run --coverage && npm run build\",\n21:     \"audit:css\": \"node scripts/audit-css.mjs\",\n22:     \"coverage:clean\": \"rm -rf static/dist\"\n23:   },\n24:   \"devDependencies\": {\n25:     \"@biomejs/biome\": \"^2.5.1\",\n26:     \"@vitest/coverage-v8\": \"^1.6.1\",\n27:     \"esbuild\": \"^0.28.1\",\n28:     \"jsdom\": \"^28.1.0\",\n29:     \"purgecss\": \"^7.0.2\",\n30:     \"typescript\": \"^6.0.3\",\n31:     \"vitest\": \"^1.6.0\"\n32:   },\n33:   \"dependencies\": {\n34:     \"wavesurfer.js\": \"7.12.11\"\n35:   },\n36:   \"engines\": {\n37:     \"node\": \">=22\"\n38:   },\n39:   \"volta\": {\n40:     \"node\": \"22.23.2\"\n41:   }\n42: }"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077858933,
+            "ran": 1792077866914,
+            "completed": 1792077867024
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_syubx63z",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/README.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/README.md, lines 1-725\n1: # Audio Sync Tool\n2: \n3: Outil web local pour cartographier des fichiers musicaux entre dossiers\n4: éparpillés et un dossier source organisé manuellement. Repère les fichiers\n5: manquants, les copie en un clic vers le bon sous-dossier, complète les années\n6: manquantes, range par style, et intègre un **éditeur de cues/loops avec\n7: waveform** calé sur la collection **Traktor (NML)** (beatgrid, BPM, grille\n8: native, export de playlists).\n9: \n10: Stack : **Python 3.12 + Flask 3.1**, **TypeScript vanilla** bundlé par esbuild\n11: (aucun framework), **Vitest** (frontend) + **pytest** (backend), **mutagen**\n12: (tags), `data/` en JSON (git-ignoré).\n13: \n14: ## Fonctionnalités\n15: \n16: - **Sync** : scan des dossiers éparpillés, détection manquant/doublon (nom\n17:   exact **et** homonymes probables — durée ±2 s + nom, LED ambre), copie en un\n18:   clic (F5) vers le bon sous-dossier, remplacement d'homonyme de moindre qualité\n19:   (R — l'ancien part dans `_trash/<date>/`, jamais effacé).\n20: - **Filtre rapide** (chips persistants au-dessus de chaque liste) : F7 ou /\n21:   focus le chip de la liste focusée, filtre en direct insensible casse/accents\n22:   sur nom + **année** + codec, mémorisé par liste (changer de colonne/page le\n23:   conserve), ✕/Backspace pour effacer. Sur les arbres source : **filtre à deux\n24:   niveaux** — dossiers seuls par défaut (déplier montre TOUS les fichiers, pour\n25:   vérifier un doublon), toggle 📄 fichiers pour chercher aussi par nom de fichier.\n26: - **Rangement assisté** : pastille « ⤷ déjà rangé » sur les fichiers éparpillés\n27:   dont le jumeau existe déjà dans le dossier visé par le filtre source (tooltip\n28:   = chemin exact — copier créerait un doublon). Le dossier destination **reste\n29:   plié** après F5 (clic ou Entrée déplient) mais **garde son focus** à travers\n30:   les re-renders (EPIC-053) — le cycle F5 → ↑↓ → F5 se parcourt sans re-viser\n31:   le dossier ; un **clic ne fait jamais bouger le scroll** (EPIC-052, seul le\n32:   clavier amène la vue).\n33: - **Rangement par style** (palette `G`) : le style se choisit dans une palette\n34:   clavier, la destination (`<style>_<tranche>`) **se calcule** depuis l'année, et\n35:   le **tag du fichier est écrit tout de suite** ; `A` aligne ensuite le **stock\n36:   déjà rangé** sur son arborescence — voir « Rangement par style ».\n37: - **Années manquantes** : page de revue des années douteuses (consolidation\n38:   multi-sources), avec filtre, écoute avant de trancher, et export des choix —\n39:   voir « Enrichissement des années ». En tête de page, la section **⟲ Années\n40:   déjà écrites** tranche les cas où le tag contredit les sources (« écrit 2024 →\n41:   1991 ») : **Corriger** écrit tout de suite (annulable), **Garder** sort le cas\n42:   de la file.\n43: - **Doublons** : vue dédiée des groupes de versions d'un même morceau (épars\n44:   et/ou rangés) — arbitrage automatique par qualité (FLAC > 320 > 128), override\n45:   au clic, application du plan (gagnant rangé à droite, perdants rangés → trash).\n46: - **Playlist** : création/édition de playlists, notation (0–100), export par\n47:   hard links, badge d'importation NML (`✓ NML` / `≈ homonymes` / `✕ non importé`).\n48: - **Lecture audio partout** : bouton ▶/⏹ sur les cartes Années et les membres\n49:   de groupe Doublons — comme sur les listes — **un seul lecteur** (singleton\n50:   strict : une piste audible à la fois, quel que soit le point d'entrée), état\n51:   « en lecture » re-marqué après chaque re-render.\n52: - **Éditeur cues / loops (waveform)** : cues A–H (touches `1–8`), loops, zoom\n53:   contrôlé (+/−, molette, « Fit », « 1 beat »), minimap synchronisée au zoom,\n54:   waveform **3 bandes RGB** (low/mid/high standard DJ), renommage/recolorisation\n55:   des cues, **undo/redo**.\n56: - **Beatgrid** : snap sur BPM (détecté ou saisi), calage manuel de phase\n57:   (`←/→ 1/4`, `◎ Beat 1`), analyse serveur kick/phase (DSP pur Python, bouton\n58:   🔍 Analyser), **écriture de la grille dans le `collection.nml`** (TEMPO +\n59:   TYPE=4 `AutoGrid`, bouton 💾 Grille).\n60: - **Collection Traktor** : lecture de la collection NML, match par FILESIZE (Ko,\n61:   convention Traktor), ajout des pistes absentes au collection, export NML\n62:   configurable.\n63: - **Légende `?`** : feuille de raccourcis **générée depuis les bindings du code**\n64:   (bijection vérifiée par test) — impossible qu'elle décrive un raccourci qui\n65:   n'existe pas, ou l'inverse.\n66: - **Focus lisible** : une seule grammaire de curseur (boîte d'accent 2 px +\n67:   barre 4 px + fond teinté) pour les fichiers comme pour les dossiers, dans\n68:   toutes les listes.\n69: \n70: ## Installation\n71: \n72: ```bash\n73: python3 -m venv venv\n74: ./venv/bin/pip install -r requirements.txt   # Flask 3.1.3, mutagen 1.47.0, pytest 9.1.1\n75: npm install                                  # frontend : esbuild, vitest, biome\n76: ```\n77: \n78: > **Analyse serveur (bouton 🔍 Analyser)** : utilise `ffmpeg` (binaire système) pour décoder\n79: > les mp3/flac/ogg. Les `.wav` fonctionnent sans (repli stdlib). Si ffmpeg est absent, seul le\n80: > décodage WAV + la détection client restent disponibles.\n81: \n82: ## Utilisation\n83: \n84: ```bash\n85: npm start                    # tue le process sur 8765, rebuild, lance Flask\n86: # ou, sans rebuild :\n87: ./venv/bin/python app.py\n88: # → http://localhost:8765\n89: ```\n90: \n91: Quatre pages accessibles depuis la toolbar, plus un **éditeur de cues** ouvert\n92: depuis la page Playlist (bouton « Cues » sur une ligne, ou menu clic droit) :\n93: \n94: | Page / Outil | Bouton | Fonction |\n95: |------|--------|----------|\n96: | **Sync** | 📦 Sync | Copier des fichiers éparpillés vers la source data (F5) |\n97: | **Playlist** | 🎵 Playlist | Créer des playlists, noter les morceaux, exporter |\n98: | **Doublons** | ↔ Doublons | Groupes de versions d'un même morceau, arbitrage qualité, perdants rangés → `_trash/` |\n99: | **Années** | 📅 Années | Revue des années manquantes non corroborées (choisir / rejeter, export des choix) |\n100: | **Cue editor** | 🎛️ Cue Editor / « Cues » | Éditer cues/loops, zoom waveform, beatgrid, grille NML |\n101: \n102: Les **outils** (⚙️ Config, 🔄 Scan, 📋 Journal, ❓ Raccourcis) sont\n103: disponibles dans les pages.\n104: \n105: > **Config** — renseigne aussi le chemin du `collection.nml` Traktor (champ\n106: > *Traktor NML path*), nécessaire pour le match NML et l'écriture de la grille.\n107: \n108: > ⚠ **Après toute modification de `templates/index.html`, redémarrer l'app**\n109: > (`npm start`). Flask compile le template au chargement (`debug` est éteint) :\n110: > le template est figé dans le process, alors que le JS/CSS repartent au simple\n111: > rafraîchissement (cache-buster par mtime). Sans redémarrage, le navigateur\n112: > exécute le nouveau bundle contre l'ancien HTML — deux sections de la légende\n113: > s'affichaient ainsi vides le 2026-09-22.\n114: \n115: ### Workflow de base\n116: \n117: 1. **Config** — renseigne le dossier source data et les dossiers éparpillés.\n118: 2. **Scan** — analyse tous les dossiers et extrait les métadonnées.\n119: 3. **Navigation** — au clavier : Tab, ↑↓, F5, F7.\n120: 4. **Playlist** — crée des playlists, sauvegarde, export par hard links.\n121: 5. **Cues** — ouvre l'éditeur waveform depuis une ligne de playlist.\n122: \n123: ## Raccourcis clavier\n124: \n125: > La **référence** est la légende **`?`** de l'app : elle est **générée depuis les\n126: > bindings** (`static/src/commands/*.ts`) et un test de bijection garantit que\n127: > chaque raccourci labellisé y figure et qu'aucune ligne n'est orpheline. Les\n128: > tableaux ci-dessous ne gardent que les gestes du quotidien ; les modifier dans\n129: > le HTML ou ici ne changerait rien au comportement.\n130: \n131: ### Page Sync\n132: \n133: | Touche | Action |\n134: |--------|--------|\n135: | **Tab** | Basculer de colonne (Éparpillé ↔ Source Data) |\n136: | **↑ ↓** | Naviguer dans la liste focusée |\n137: | **← →** | Colonne précédente / suivante (pendant une écoute : seek) |\n138: | **Entrée** | Jouer le fichier / déplier le dossier |\n139: | **Espace** | Sélectionner le fichier (multi-copie) |\n140: | **F5** | Copier vers le dossier surligné — modale « fichier → destination » ; si le dossier déclare un style, le tag genre est écrit des deux côtés (le dossier reste plié) |\n141: | **R** | Remplacer l'homonyme rangé (l'ancien → `_trash/<date>/`) |\n142: | **F7** / **/** | Afficher/masquer le filtre — taper pour filtrer (nom, année, codec) |\n143: | **G** | Style : écrit la **paire complète** (épars + jumeau rangé, genre et année) — palette si épars (voir « Rangement par style ») |\n144: | **E** | Aperçu du rangement par style (copies groupées par dossier cible) |\n145: | **A** | Aligner le genre des fichiers rangés sur leur dossier (aperçu, 2 modes) |\n146: | **⌫** | Aller au dossier parent · **Ctrl+L** : aller au fichier en lecture |\n147: | **Alt + ← →** | Historique de navigation |\n148: | **Shift + ← →** | Seek ±20 s pendant l'écoute |\n149: | **Shift + F10** | Menu contextuel clavier (↑↓ + Entrée) |\n150: | **?** | Ouvrir cette légende |\n151: \n152: ### Page Doublons\n153: \n154: | Touche | Action |\n155: |--------|--------|\n156: | **↑ ↓** | Naviguer les paires de doublons |\n157: | **Clic sur un exemplaire** | Le désigner gagnant (override de l'arbitrage qualité) |\n158: | **▶ / ⏹ (bouton du membre)** | Écouter avant de trancher — ne désigne **jamais** le gagnant |\n159: | **R** / bouton **✓ Appliquer** | Plan du groupe (confirmation) : gagnant rangé à droite, perdants → `_trash/<date>/` |\n160: | **Échap** / **📦 Sync** | Revenir à la page Sync |\n161: \n162: > **Arbitrage qualité** : score par paliers — lossless (FLAC/WAV/AIFF/ALAC) =\n163: > 100, ≥ 256 kbps = 80, 128-255 = 60, < 128 = 40 ; tie-breaks durée puis chemin.\n164: > Le tooltip et la colonne « codec » permettent de juger ; la détection est une\n165: > heuristique (revue humaine = confirmation obligatoire).\n166: \n167: ### Page Années\n168: \n169: | Touche | Action |\n170: |--------|--------|\n171: | **↑ ↓** | Naviguer les cartes (ordre **visible** : saute hors-filtre et rejetés) |\n172: | **F7** / **/** | Filtrer les cartes (artiste, titre, année) |\n173: | **Clic** | Choisir une année / rejeter la carte (session locale) |\n174: | **▶** | Écouter le fichier avant de trancher |\n175: | **E** | Exporter les choix (`apply_years.py --review`) |\n176: | **Échap** | Revenir à la page Sync |\n177: \n178: ### Page Playlist\n179: \n180: | Touche | Action |\n181: |--------|--------|\n182: | **Tab** | Basculer source ↔ sidebar |\n183: | **↑ ↓** | Naviguer (source ou pistes), **Entrée** : jouer |\n184: | **Espace** | Ajouter / retirer le morceau |\n185: | **Suppr** / **⌫** | Retirer la piste du sidebar |\n186: | **Ctrl + ↑ ↓** | Réordonner les pistes · **Ctrl+S** sauvegarder · **Ctrl+E** exporter |\n187: | **← →** | Colonne précédente / suivante (seek pendant l'écoute) |\n188: | **N** | Noter le morceau ou la source (édit inline) |\n189: \n190: > **Note :** Échap ne quitte plus la page Playlist. Pour revenir à Sync,\n191: > cliquer sur **📦 Sync** dans la toolbar.\n192: \n193: ### Éditeur de cues\n194: \n195: | Touche | Action |\n196: |--------|--------|\n197: | **← →** | Seek audio ±5 s |\n198: | **+/−** | Zoom waveform (molette aussi : ×1,25) |\n199: | **Espace** | Lecture / pause |\n200: | **1–8** | Poser un cue sur les slots A–H |\n201: | **C** | Poser un cue au curseur (déplace l'existant si 8 pleins) |\n202: | **Ctrl + Z** / **Ctrl + Shift + Z** (ou **Ctrl + Y**) | Annuler / rétablir (undo/redo) |\n203: | **⟳ Loop / 🔁 Play** | Dessiner / lire une boucle |\n204: | **←/→ 1/4** | Calage manuel de la grille (nudge de phase ±1/4 beat) |\n205: | **◎ Beat 1** | Poser le premier beat |\n206: | **🔍 Analyser** | Analyse serveur de la basse/du kick (BPM + phase) |\n207: | **💾 Grille** | Écrire la grille (TEMPO + TYPE=4) dans le collection.nml |\n208: | **Suppr** / clic droit | Retirer / supprimer un cue |\n209: | **Double-clic** (slot ou région) | Renommer / recolorer le cue |\n210: | **Échap** | Fermer l'éditeur (ou quitter le plein écran) |\n211: \n212: ### Transverse\n213: \n214: `Échap` ferme dans l'ordre : **menu contextuel → modale → filtre → dossier\n215: déplié → stop audio** (pile de fermeture explicite, testée par invariant).\n216: `Shift+F10` ouvre le menu contextuel de l'élément surligné (`↑↓` + `Entrée`).\n217: \n218: ### États & pastilles\n219: \n220: | Marqueur | Signification |\n221: |----------|--------------|\n222: | LED bleue | Nouveau — hors Source Data |\n223: | LED grise | Doublon — nom identique |\n224: | LED ambre | Homonyme probable (durée + nom) |\n225: | LED verte | Traité — déjà copié |\n226: | LED cyan | En lecture (audio) |\n227: | LED bleue + fond | Sélectionné (multi-copie, Espace) |\n228: | Carré ambre pulsé | Jumeau du doublon surligné (colonne droite) |\n229: | Badge chiffré | Note personnelle (0-100) |\n230: | Badge ✅ | Dans la playlist active |\n231: | Badge ✓ NML | Matché dans la collection Traktor |\n232: | Badge ≈ homonymes | Plusieurs entrées Traktor |\n233: | Badge ✕ non importé | Absent de la collection Traktor |\n234: \n235: **Métadonnées affichées** : chaque fichier montre **Année** — **Codec** — **Durée**.\n236: \n237: ## Workflow F5\n238: \n239: 1. Naviguer sur un fichier ● (panneau gauche) — la pastille « ⤷ déjà rangé »\n240:    signale ceux dont le jumeau existe déjà dans le dossier filtré à droite\n241: 2. **Tab** → panneau droit\n242: 3. **↑↓** sur un dossier de destination\n243: 4. **F5** → modale « fichier → destination » (**Entrée** valide, **Échap**\n244:    annule) : le morceau, le dossier cible et le consentement style s'y lisent\n245:    d'un coup d'œil\n246: 5. Le dossier destination **reste plié** (clic ou Entrée déplient) et **garde\n247:    son focus** — le focus épars reste en place pour enchaîner\n248: 6. Si le dossier cible déclare un style (`<style>_<tranche>`), le **tag genre est\n249:    écrit des deux côtés** — épars et copie — et le statut le dit\n250:    (`· style « techno » écrit (epars + copie)`). L'année n'est **jamais** touchée.\n251: \n252: ## Page Playlist\n253: \n254: 1. Cliquer **🎵 Playlist** dans la toolbar → deux panneaux : Source / Sidebar\n255: 2. **Espace** sur un fichier → ajoute ✅ / retire\n256: 3. **Ctrl + S** → sauvegarde persistante\n257: 4. **Ctrl + E** → export par hard links vers `source_data/_playlists/<nom>/`\n258: 5. Revenir à Sync → cliquer **📦 Sync** dans la toolbar\n259: \n260: ## Éditeur de cues & beatgrid\n261: \n262: 1. Dans la page Playlist, cliquer **« Cues »** sur une ligne (ou clic droit →\n263:    *Cues / loops (waveform)*) → modale waveform de la piste.\n264: 2. **Cues** — `1–8` ou **C** pose un cue ; **Suppr**/clic droit le retire ;\n265:    double-clic pour le renommer/recolorer (écrit dans le NML au save).\n266: 3. **Zoom** — +/− ou molette, `Fit` (piste entière), `1 beat` (largeur ÷\n267:    intervalle, nécessite BPM) ; la minimap sous la waveform reste synchronisée,\n268:    clic = seek.\n269: 4. **Waveform** — 3 bandes RGB (rouge basse / vert médium / bleu aigu), downbeat\n270:    différencié (trait ambre), numéros de barre tous les 4 beats.\n271: 5. **Beatgrid** — `←/→ 1/4` et `◎ Beat 1` calent la grille ; **🔍 Analyser**\n272:    lance l'analyse serveur (BPM + phase, cache par piste) ; **💾 Grille** écrit\n273:    TEMPO + TYPE=4 dans le `collection.nml`.\n274: \n275: ## Notation (Ratings)\n276: \n277: Une note de 0 à 100 est **visible sur tous les fichiers** (pages Sync,\n278: Playlist, Années), affichée à droite du row après la durée. Elle est stockée\n279: globalement (pas par playlist) dans `data/ratings.json`, clé = chemin absolu.\n280: \n281: | Action | Raccourci / Gestuelle | Où |\n282: |--------|----------------------|-----|\n283: | **Éditer la note** | **N** sur l'élément focusé (sidebar ou arbre source) | Page Playlist |\n284: | **Éditer la note** | **Clic** sur la zone de note (`.file-rating`) | Page Playlist (panneau Source) |\n285: | **Valider** | **Entrée** → sauvegarde immédiate | — |\n286: | **Annuler** | **Échap** → note précédente | — |\n287: | **Effacer** | Champ vide + **Entrée** | — |\n288: | **Valider auto** | **Blur** → sauvegarde automatique | — |\n289: \n290: > **Hors Playlist**, la cellule de note n'est pas éditable : sur la page Sync,\n291: > `N` ne déclenche rien (cellule de matrice « sync: n sans playlist = rien ») et\n292: > le clic ne fait que surligner la ligne. Limite connue, consignée dans\n293: > « Limites connues ».\n294: \n295: **Implémentation :** fonction partagée `_startInlineRatingEdit()` dans\n296: `render/ratingEdit.ts`, avec deux points d'entrée `startRatingEdit()` (sidebar\n297: Playlist) et `startSourceRatingEdit()` (arbre source Playlist).\n298: \n299: ## Rangement par style (`G`)\n300: \n301: Les dossiers de Source Data suivent la grammaire `<style>_<tranche>` (tranche =\n302: palier de 5 ans : `techno_acid_1990`) ou `<style>` seul pour les styles hors\n303: temps (`italo_disco`). La **taxonomie est dérivée des dossiers existants**\n304: (aucune liste à maintenir) ; le style est la seule décision humaine, la tranche\n305: se déduit de l'année du tag, le dossier cible est calculé.\n306: \n307: 1. **G** sur la ligne surlignée — **Éparpillé ou Source Data** (un fichier prime\n308:    sur un dossier, le panneau actif arbitre) :\n309:    - **fichier rangé** (Source Data) → le dossier **déclare** le style, donc `G`\n310:      l'écrit dans le tag tout de suite, en **une frappe** (EPIC-050) : il n'y a\n311:      rien à choisir. Le **clic** sur la cellule Style ouvre la palette, pour un\n312:      *autre* style ; un dossier hors grammaire (`_trash`, `2008_08`) n'écrit\n313:      rien et ouvre la palette ;\n314:    - **fichier épars** → la palette s'ouvre : **clic** (ou lettre) = style,\n315:      **4 chiffres** = année, **Entrée** = accepter la suggestion locale.\n316:    La palette propose les styles **des dossiers du disque** — un dossier encore\n317:    **vide** est une déclaration de style (`breakbeat_2000` est proposé, et\n318:    `/styles/apply` l'accepte, même sans fichier dedans) — et s'adapte à l'écran\n319:    (`clamp(560px, 44vw, 1180px)` : 44 % de la largeur à 2 560 px, colonnes\n320:    `auto-fill`, **0** pavé de touche `<kbd>` dans un bouton cliquable).\n321:    **Les 57 années réelles (1970→2026)** sont toujours proposées en entier.\n322: 2. **Le tag est écrit immédiatement** — `TCON`/`GENRE`/`©gen` pour le style,\n323:    `TDRC`/`TYER`/`DATE`/`©day` pour l'année — via `POST /styles/apply` et\n324:    `POST /years/apply` (validation → confinement aux racines configurées →\n325:    journal `old` → écriture du frame natif → **relecture** de la valeur). Le\n326:    journal est **celui des scripts** (`data/style_apply_journal.jsonl`,\n327:    `data/year_apply_journal.jsonl`, `source: \"palette\"`) : `apply_styles.py\n328:    --undo` / `apply_years.py --undo` annulent indifféremment l'écriture faite par\n329:    la palette ou par le script. **`g` écrit la paire complète** (EPIC-051) :\n330:    un épars ciblé étend l'écriture à son jumeau rangé — style **et** année, en\n331:    une seule requête ; un rangé ciblé directement ne s'étend pas (la divergence\n332:    reste visible `≠` et corrigeable via `a`).\n333: 3. **E** → aperçu groupé par dossier cible (fichiers sans année et jumeaux déjà\n334:    rangés exclus et listés) → **Appliquer** = copies enchaînées via le flux F5\n335:    (journal, pastille « déjà rangé »). Le choix de\n336:    session reste **épars-only** : taguer une piste déjà rangée corrige la\n337:    métadonnée, ça ne planifie aucune copie.\n338: \n339: La colonne « Style » montre le choix, la suggestion (`chip` à confiance > seuil,\n340: issue de 4 signaux pondérés : segment du chemin épars (0,50), voisinage artiste\n341: dans la source (0,40), historique de session du sous-dossier épars (0,20), genre\n342: ID3 aliasé (0,15) — suggestion retenue si la confiance ≥ 0,30) et la destination en\n343: tooltip (`→ techno_acid_1990`, `→ ➕ … (sera créé)`, `année manquante`). Sans\n344: choix de session mais avec un genre écrit (copie F5), la cellule montre un\n345: **chip neutre** — le tag écrit est le réel (EPIC-051).\n346: Le filtre de la colonne gauche matche aussi le **sous-dossier** épars\n347: (`_techno`, `2008_08`).\n348: \n349: La colonne **Source Data** a sa **propre** cellule « Style » (EPIC-046) : sa\n350: référence n'est pas un choix de session mais **le dossier** — un fichier rangé\n351: est *dans* sa déclaration de style. Elle affiche `✓ techno_acid` (tag et dossier\n352: d'accord), `techno_acid ≠` (divergence, ambre, `G` corrige) ou `techno_acid ?`\n353: (tag vide) ; un dossier hors grammaire la laisse **vide** (aucune cible\n354: inventée). Elle est rafraîchie par chaque écriture (copie F5, `G`, alignement),\n355: donc ce qu'elle montre est ce que le disque dit.\n356: \n357: 4. **F5 (et tout ce qui copie) écrit le style aussi** — le nom du dossier de\n358:    destination est la déclaration de style, donc une copie vers `techno_acid_1990`\n359:    met le tag genre à `techno_acid` **sur l'épars et sur la copie** (jamais\n360:    l'année). Pas de validation contre la taxonomie : un dossier neuf marche du\n361:    premier coup. Un dossier hors grammaire (`_trash`, `2008_08`, capitalisé)\n362:    n'écrit rien, et un échec de tag est **rapporté sans bloquer la copie**.\n363:    Journal partagé (`source: \"copy-f5\"`), comme la palette.\n364: 5. **A (page Sync) aligne le STOCK sur les dossiers** — les fichiers **déjà\n365:    rangés** dont le genre ne dit pas ce que le dossier déclare (mesuré : 1 023\n366:    contredisent leur dossier, 258 n'ont pas de genre). **A** ouvre un aperçu\n367:    (aucune écriture) puis propose deux modes : *corriger + remplir* ou *remplir\n368:    seulement les vides*. Le disque tranche fichier par fichier (un cache périmé\n369:    n'écrase jamais un genre existant en mode « vides »), l'année n'est pas\n370:    touchée, les lignes sont journalisées (`source: \"align\"`) — `apply_styles.py\n371:    --undo` restaure, comme pour la palette et les copies. Les **épars** sont hors\n372:    périmètre : leur genre est un indice de suggestion, pas un rangement.\n373: \n374: ⚠ L'écriture est **immédiate et définitive** pour le fichier : la sortie est le\n375: journal (`--undo`), pas une annulation dans la palette (Échap annule *avant*\n376: écriture).\n377: \n378: ## Enrichissement des années\n379: \n380: À l'origine : **3 704 / 6 522 fichiers sans année (57 %)**. Pipeline **gratuit et sans compte**\n381: (mise à part l'option Discogs) : MusicBrainz (1ʳᵉ sortie du morceau, 1 req/s) → Deezer (sans\n382: clé) → Discogs (60 req/min, token dans `data/discogs_token`, git-ignoré chmod 600).\n383: Les résultats sont **mis en cache** (`data/year_cache.jsonl`, `data/discogs_cache.jsonl`,\n384: `data/itunes_cache.jsonl`, `data/discogs_reform_cache.jsonl`, `data/discogs_reform2_cache.jsonl`,\n385: `data/youtube_topic_cache.jsonl` — git-ignorés) : les clés déjà\n386: collectées ne sont **jamais re-interrogées** ; une relance de collecte ne traite que\n387: l'incrément (reprise JSONL, erreurs re-jetables).\n388: \n389: **Un remix doit PROUVER son remixeur (EPIC-048, moteur v3)** : `artist_title()` retire les\n390: segments parenthésés et `NOISE` effaçait `mix`/`remix`/`edit` **avant** la recherche — la version\n391: de remix devenait invisible au lieu d'être vérifiée. Conséquence mesurée :\n392: `age of love - the age of love (cosmic gate mix)(tasnoise).mp3` concluait **1990**, l'année de\n393: l'**original**, pour un remix de 2004. Le crédit est maintenant lu (`scripts/remix_credit.py` :\n394: le PREMIER segment qui **nomme quelqu'un** — `(cosmic gate mix)`, jamais `(tasnoise)` ; un\n395: « Extended Mix » n'est personne), et MusicBrainz comme Deezer doivent **nommer le remixeur** pour\n396: compter. Sans source nommante : **aucune année n'est écrite**, la suggestion vient de la piste\n397: web cherchée **avec** le remixeur, et s'il n'y a pas de consensus, il n'y a **pas de\n398: suggestion** (on ne propose pas l'année de l'original). Le moteur passe en **v3** :\n399: `--only=remix` re-collecte les seules clés dont le nom porte un remixeur.\n400: \n401: **Règle de corroboration (EPIC-040)** : aucune année n'est écrite sur la foi d'une seule\n402: source quand elle contredit les autres. La clé artiste/titre est construite en orientations\n403: multiples (tags du fichier → nom → nom inversé, une garde de tokens tranche), Deezer est\n404: sommé de respecter artiste **et** titre, `release_date` d'album n'est plus prise pour une\n405: première sortie — et **deux providers indépendants concordants** sont exigés (Discogs en\n406: 3ᵉ provider) ; sinon la ligne part en **revue humaine**. Motif : 408 écritures Deezer dont\n407: **173 ≥ 2015 (42,4 %)** pour des morceaux des années 90. Audit des années déjà écrites :\n408: `scripts/audit_applied_years.py` (classe `confirme` / `contredit` / `a_revoir` /\n409: `non_verifie`) — **audit complet exécuté le 2026-09-22** (`data/year_audit.json`, 408 entrées) :\n410: **23 confirmées · 38 contredites** (le tag dit autre chose que la première sortie, proposition\n411: fournie) **· 8 à revoir · 339 non vérifiées** (226 « une seule source « édition » », 100 « aucune\n412: source », 13 candidats sans corroboration).\n413: \n414: **Revue des années déjà écrites (EPIC-045)** : la vue Années ouvre sur la section **⟲** — pour\n415: chaque cas à trancher, l'année écrite et la proposition (badge `écrit 2024 → 1991`), les années\n416: de chaque source (`musicbrainz 1995 · deezer 2004`) et la fiche de sortie. **Corriger** écrit\n417: l'année tout de suite (journal partagé, `source: \"audit:revue\"` → `apply_years.py --undo`\n418: **restaure** l'année d'avant), une **candidate** de l'audit est cliquable (édition, remaster),\n419: **Garder** ne touche à rien et sort le cas de la file (décision persistée), et les lots\n420: (« Corriger les 38 proposées » / « Garder les 46 ») passent par un dialogue qui dit ce qu'il va\n421: écrire. Le disque reste autoritaire (déjà au bon millésime → aucune réécriture, aucune ligne de\n422: journal) et un échec est nommé sans interrompre le lot. Les **339 non vérifiées** sont seulement\n423: comptées par classe : rien à trancher sans nouvelles sources.\n424: \n425: **État courant (2026-09-23)** : couverture **76,8 %** (5 141 / 6 696, re-scan du\n426: 2026-09-21 — 1 604 Source Data + 5 092 épars) ; l'audit des années déjà écrites\n427: est **exécuté et soldé côté humain** (408 entrées : les 38 contredites sont\n428: toutes corrigées sur disque via la revue ⟲, journal `audit:*`, `--undo\n429: disponible ; 8 a_revoir et 339 non vérifiées restent consultables). La\n430: re-collecte moteur est **terminée à rendement nul** (1 448 clés du nom toutes\n431: interrogées : 1 416 `none`, 1 `found`) — le gisement était dans la **clé**, pas\n432: dans les providers : EPIC-054 interroge désormais les clés construites depuis\n433: les **tags** (`--keys-from-tags`, 1 144 clés / 1 197 fichiers). Les récits\n434: détaillés vivent dans les EPICs : [EPIC-033](docs/superpowers/epics/EPIC-033-enrichissement-annees-id3.md)\n435: (clôture, 2 161 écritures) · [EPIC-040](docs/superpowers/epics/EPIC-040-annees-corroboration-2-sources.md)\n436: (corroboration) · [EPIC-054](docs/superpowers/epics/EPIC-054-cles-annees-depuis-tags.md)\n437: (clés-tags).\n438: \n439: **Revue industrialisée** : dans la vue Années, **F7** ou **/** filtre les cartes\n440: (artiste, titre, année — terme mémorisé), choisissez/rejetez puis **e** (ou bouton 💾) → les\n441: choix sont persistés (`data/year_review.json`) ; le chip filtre et la barre d'export se\n442: collent en haut pendant le scroll ; chaque carte porte un bouton **▶** pour écouter le\n443: fichier avant de trancher (player global, état conservé à travers les re-renders) ;\n444: `apply_years.py --review --apply` applique le lot — un choix humain OVERRIDE toujours la\n445: consolidation, journal + `--undo` inchangés. **Aucune écriture ne part de l'interface** hors\n446: les routes `/years/apply` et `/styles/apply` décrites plus haut.\n447: \n448: **Sources retirées (EPIC-049)** : Beatport (jamais lancée — token à recopier à la main,\n449: friction refusée deux fois ; script et tests supprimés) et Brave (payant, jamais\n450: configuré) ne font plus partie du pipeline. **Recherche web locale et gratuite** : le\n451: moteur interroge le **DuckDuckGo local** (serveur MCP `search`, `http://localhost:8010/mcp`\n452: — `data/search_mcp.json` ou `SEARCH_MCP_URL` pour le changer) avec repli sur l'endpoint\n453: HTML public, **sans clé ni compte**. `GET /years/web-status` **sonde** le provider (1 s) et\n454: la vue Années peut dire « recherche web indisponible » au lieu de laisser croire qu'elle\n455: l'est. Les années trouvées par le web restent des **candidats** (`web_candidates`) : elles\n456: ne votent jamais — la règle des 2 sources ne se contourne pas avec un moteur de recherche.\n457: \n458: ```bash\n459: # Collecte (incrémentale — inutile tant qu'aucun nouveau fichier n'arrive)\n460: ./venv/bin/python scripts/collect_years.py --report        # MB → Deezer (1 req/s)\n461: ./venv/bin/python scripts/collect_discogs.py --report      # Discogs sur les 'none'\n462: ./venv/bin/python scripts/collect_itunes.py --report       # iTunes sans clé (~20 req/min)\n463: ./venv/bin/python scripts/collect_discogs_reform.py        # Discogs requêtes reformulées\n464: ./venv/bin/python scripts/collect_discogs_reform2.py --go  # junk-artiste numérique (aperçu sans --go)\n465: ./venv/bin/python scripts/collect_youtube_topic.py         # YouTube « - Topic » (0/84, relançable)\n466: ./venv/bin/python scripts/collect_years.py --only=remix    # re-collecte des SEULES clés de remix\n467: ./venv/bin/python scripts/collect_years.py --keys-from-tags  # clés construites depuis les TAGS (EPIC-054)\n468: \n469: # Diagnostic d'une clé (réseau réel, record complet)\n470: ./venv/bin/python scripts/collect_years.py \"--probe=age of love|the age of love\" \\\n471:   \"--name=age of love - the age of love (cosmic gate mix)(tasnoise).mp3\"\n472: \n473: # Rapport consolidé (toutes sources, sans double comptage)\n474: ./venv/bin/python scripts/report_years.py --files\n475: \n476: # Application de la vague « certaines »\n477: ./venv/bin/python scripts/apply_years.py            # dry-run : rien n'écrit\n478: ./venv/bin/python scripts/apply_years.py --apply    # écrit les tags\n479: ./venv/bin/python scripts/apply_years.py --review   # + choix humains de la vue Années\n480: ./venv/bin/python scripts/apply_years.py --keys-from-tags   # match par tags (collecte EPIC-054)\n481: ./venv/bin/python scripts/apply_years.py --report   # résumé du journal\n482: ./venv/bin/python scripts/apply_years.py --undo     # annule (idempotent)\n483: \n484: # Rangement par style (mêmes garanties, côté genre)\n485: ./venv/bin/python scripts/apply_styles.py --undo     # annule les TCON écrits\n486: \n487: # Audit des années déjà écrites (EPIC-040)\n488: ./venv/bin/python scripts/audit_applied_years.py     # dry-run ; --apply --yes pour agir\n489: ```\n490: \n491: **Garanties** (testées dans `test_apply_years.py` / `test_apply_styles.py`) :\n492: \n493: - **Jamais écraser** : chaque fichier est re-vérifié sur disque juste avant écriture ;\n494:   une année apparue depuis le scan → fichier sauté.\n495: - **Journal = backup** : `data/year_apply_journal.jsonl` (append-only) enregistre chaque\n496:   écriture ; l'opération étant purement additive (fichiers sans année), `--undo` retire\n497:   exactement les frames posés et restaure l'état antérieur.\n498: - **Formats natifs, lisibles par l'app** : MP3 `TYER` (tag v2.3) / `TDRC` (v2.4) — version\n499:   du tag existant préservée, FLAC `DATE`, WAV `TDRC` (chunk ID3), M4A `©day` ; `.wma`\n500:   exclu (non relu par `get_audio_meta`).\n501: - Dry-run par défaut, `--limit N` pour un échantillon de contrôle.\n502: \n503: **État courant (2026-09-23)** — le détail par étape vit dans les EPICs, cette section\n504: ne répète plus les bilans de session :\n505: \n506: - **Couverture** : **76,8 %** (5 141 / 6 696, re-scan du 2026-09-21) contre 43 %\n507:   à l'ouverture ; revue humaine soldée (692 choix exportés, apply final\n508:   idempotent, 2 161 écritures au journal, `--undo` idempotent) — EPIC-033.\n509: - **Audit des années déjà écrites** : exécuté (408 entrées) et **soldé côté\n510:   humain** — les 38 contredites sont toutes corrigées sur disque via la revue\n511:   ⟲ (journal `audit:*`, `--undo` restaure) ; 8 `a_revoir` et 339 non\n512:   vérifiées restent consultables dans la vue Années — EPIC-040/045.\n513: - **Re-collecte moteur (clés du NOM)** : terminée à rendement nul (1 448 clés\n514:   toutes interrogées : 1 416 `none`, 1 `found`) — le gisement était dans la\n515:   **clé**, pas dans les providers.\n516: - **Clés depuis les TAGS (EPIC-054)** : `load_keys()` cherchait\n517:   `gb / my gasoline (extended mix)` là où les tags disent `maddix / …` —\n518:   1 204 des 1 555 fichiers sans année portent artiste **et** titre dans leurs\n519:   tags, **1 144 clés** n'avaient jamais été interrogées.\n520:   `collect_years.py --keys-from-tags` les interroge (moteur inchangé : 2\n521:   providers concordants, garde remix), `apply_years.py --keys-from-tags`\n522:   matche les fichiers par tags d'abord (nom en fallback) ; les enregistrements\n523:   portent `key_source: 'tags'`.\n524: \n525: Récits et chiffres détaillés : [EPIC-033](docs/superpowers/epics/EPIC-033-enrichissement-annees-id3.md)\n526: · corroboration : [EPIC-040](docs/superpowers/epics/EPIC-040-annees-corroboration-2-sources.md)\n527: · clés-tags : [EPIC-054](docs/superpowers/epics/EPIC-054-cles-annees-depuis-tags.md).\n528: \n529: ## Structure\n530: \n531: ```\n532: audio-sync-tool/\n533: ├── app.py                 # Serveur Flask (port 8765, routes REST + écriture des tags)\n534: ├── analysis.py            # Analyse serveur kick/phase (DSP pur Python, beatgrid)\n535: ├── nml.py                 # Parser/écriture collection Traktor (NML) : match, add, export, grille\n536: ├── templates/index.html   # Interface utilisateur (structure des modales incluse)\n537: ├── static/\n538: │   ├── styles/            # CSS EN COUCHES : tokens, base, components + pages/*.css (11 fichiers)\n539: │   │   └── pages/index.css  # agrège les @import — l'ordre fait la cascade, ne pas réordonner\n540: │   ├── src/               # TypeScript : 61 modules + 53 fichiers de test\n541: │   │   ├── commands/      # Command Registry (13 modules) : navigation, audio, filter, style…\n542: │   │   │                  #   + keyboardMatrix.test.ts (matrice touches × contextes)\n543: │   │   ├── render/        # Component factories (fileRow, sourceTree, cueEditor, legend…)\n544: │   │   ├── core/          # Helpers partagés : format, feedback, subscribe, dom\n545: │   │   ├── router.ts      # state.page : sync | playlist | dups | years\n546: │   │   ├── styleSuggest.ts# suggestions de style (chemin, voisinage artiste, genre ID3)\n547: │   │   ├── dupDetect.ts   # Détection doublons (durée ±2 s + nom fuzzy)\n548: │   │   ├── dupGroups.ts   # Groupes de versions + arbitrage qualité\n549: │   │   └── script.ts / state.ts / api.ts / audio.ts / focus.ts / ui.ts\n550: │   └── dist/              # script.js + script.css bundlés par esbuild (gitignored)\n551: ├── data/                  # Config, journal, caches, playlists, ratings, beatgrids (gitignored)\n552: ├── docs/superpowers/      # Specs + plans + rapports\n553: │   └── epics/             # ⭐ Registre des EPICs (traçabilité de toute évolution)\n554: ├── build.js · scripts/validate-build.js · scripts/audit-css.mjs   # bundle esbuild + validation\n555: ├── scripts/               # enrichissement Python : collect_*, apply_years, apply_styles,\n556: │   │                      #   report_years, audit_applied_years ; capture_ui / perf_ui\n557: │   └── proof_*.py · measure_*.py   # harnais de preuve headless (Chrome CDP)\n558: ├── tests/fixtures/        # échantillons (nml-sample.xml)\n559: ├── docs/refactoring/ · docs/TESTING-GUIDE.md   # bilan de refactoring, guide de test\n560: ├── .github/workflows/     # CI : typecheck + lint + vitest + shuffle + pytest\n561: ├── biome.json · vitest.config.js · tsconfig.json · package.json · requirements.txt\n562: ├── test_app.py            # Tests backend API (164 tests)\n563: ├── test_analysis.py · test_nml.py · test_apply_*.py · test_collect_*.py · test_report_years.py\n564: └── README.md\n565: ```\n566: \n567: Routes REST principales : `/config`, `/scan`, `/scan-progress`, `/load`, `/ping`,\n568: `/copy`, `/move`, `/delete`, `/mkdir`, `/journal` (GET/DELETE), `/audio`,\n569: `/ratings`, `/playlists` (+ `/<name>`, `/export`), `/years/preview`,\n570: `/years/review`, `/years/apply`, `/styles/review`, `/styles/apply`,\n571: `/styles/audit`, `/styles/align`, `/years/audit`, `/years/audit/review`,\n572: `/api/nml/status`, `/api/track/match`, `/api/track/add`, `/api/track/cues`,\n573: `/api/track/grid`, `/api/beatgrid`, `/api/track/analyze`.\n574: \n575: **Routes qui écrivent des tags** — `/years/apply` et `/styles/apply` (palette `G`),\n576: `/styles/align` (`A`, alignement genre ↔ dossier) et `/years/audit/review` (revue des années\n577: déjà écrites), plus `/copy` (F5 écrit le style du dossier cible). Toutes suivent la même\n578: grammaire (validation → confinement aux racines configurées → journal `old` → écriture →\n579: **relecture**) et le **même journal** que les scripts : `apply_years.py --undo` et\n580: `apply_styles.py --undo` annulent aussi ces écritures. Depuis EPIC-050, **l'écriture remet\n581: l'index à jour** dans la même requête (le cache de scan prend la valeur relue ; la réponse\n582: porte `cache_updated`) : sans cela, l'écran resservait la valeur d'avant au rechargement et\n583: `/styles/audit` continuait de compter un cas déjà corrigé. `/years/audit` et `/styles/audit`\n584: sont les deux vues d'aperçu, en **lecture seule**.\n585: \n586: ## Développement\n587: \n588: Tout le code frontend est en **TypeScript** ; les fichiers `.js` de `static/dist/`\n589: sont des artefacts de build (gitignorés) générés par esbuild.\n590: \n591: ```bash\n592: npm start                  # tue le process 8765, build, lance Flask (le plus sûr)\n593: npm run dev                # Watch mode (rebuild à chaque changement)\n594: npm run build              # Build + validation du bundle (script.js parsable, invariants)\n595: npm run typecheck          # tsc --noEmit\n596: npm run lint               # biome check static/src/\n597: npm test                   # vitest run — 1 230 tests, 53 fichiers\n598: npm run test:shuffle       # ordre aléatoire (détecte les fuites d'état entre tests)\n599: npm run test:shuffle:gate   # 3 graines FIXES (un échec de shuffle redevient reproductible)\n600: npm run coverage           # clean → vitest --coverage → build\n601: npm run audit:css          # classes CSS mortes (rapport seul, vérification manuelle)\n602: ./venv/bin/python -m pytest -q    # 367 tests backend\n603: ```\n604: \n605: > **CI** (`.github/workflows/ci.yml`, chaque push/PR) : typecheck, lint, `npm test`, `test:shuffle` (graine aléatoire) puis `test:shuffle:gate` (3 graines fixes : un échec de shuffle redevient reproductible) et pytest.\n606: \n607: > ⚠ **Le CSS et le JS sont bundlés** : `npm run build` est **obligatoire avant toute\n608: > mesure dans le navigateur** (et `npm start` après une modification de template).\n609: > Un harnais lancé sans rebuild mesure la version précédente.\n610: \n611: **Preuves headless** — plusieurs décisions d'UI sont tranchées par la mesure, pas à\n612: l'œil : `scripts/measure_legend.py` (légende : alignement, libellés coupés, contraste\n613: calculé comme le navigateur le rend, tenue de la modale — 13 vérifications, rejouable à\n614: toute largeur avec `PROOF_WINDOW=2560,1400`), `measure_focus_visibility.py` (contraste du\n615: focus), `proof_filter_chip.py`, `proof_style_palette.py` (tags relus **sur disque**).\n616: \n617: ### Couverture (mesurée le 2026-09-23)\n618: \n619: | Suite | Tests | Couverture |\n620: |-------|-------|------------|\n621: | Pytest | **367** (12 fichiers) | — |\n622: | Vitest | **1 230** (53 fichiers) | **94,72 %** lignes/statements, **83,96 %** branches, **91,18 %** fonctions |\n623: \n624: ## Limites connues\n625: \n626: - **Notation hors Playlist** : la note est *visible* partout, mais éditable seulement en page\n627:   Playlist (`N`, ou clic en panneau Source). Sur Sync, `N` ne fait rien et le clic ne fait que\n628:   surligner la ligne (documenté par une cellule de la matrice clavier).\n629: - **Le tag suit le rangement** : une copie vers un dossier qui « ment » (`techno` dans un\n630:   dossier `hardcore_1990`) écrit un tag faux — c'est cohérent avec la déclaration du dossier, et\n631:   `apply_styles.py --undo` revient en arrière (journal `source: \"copy-f5\"`). L'année, elle,\n632:   n'est jamais écrite par une copie. L'alignement **A** remplace à dessein des genres externes\n633:   (`Electronic`, `Dance`…) par le style du dossier : c'est l'objectif, et le journal les garde.\n634:   Depuis EPIC-051, `g` étend l'écriture au **jumeau rangé** même si son dossier\n635:   contredit — la divergence reste visible (`≠`) et corrigeable via `a`.\n636: - **Template ≠ bundle** : après une modification de `templates/index.html`, redémarrer l'app\n637:   (voir l'avertissement en tête de « Utilisation »). Le code tolère un HTML d'une autre version\n638:   (sections statiques adoptées par leur titre, jamais effacées) mais garde alors l'ancienne mise\n639:   en forme.\n640: - **Légende sous 1 850 px** : la feuille passe de 4 à 2 colonnes (équilibre mesuré 1,07) et fait\n641:   alors **1 061 px** de haut — un peu de défilement sur une fenêtre courte. Le palier 3 colonnes a\n642:   été **écarté** après mesure (inéquilibrable avec ces sept sections : 410 px contre 770 px).\n643:   Harnais rejoué à 2 560 / 1 600 / 1 366 px : **13/13**.\n644: - **Colonne Source Data** : le filtre des arbres teste les **noms de dossiers** par défaut\n645:   (toggle 📄 fichiers pour les noms de fichiers) — décision assumée, EPIC-037.\n646: - **Années** : le re-scan du 2026-09-21 laisse **1 555 fichiers sans année sur 6 696 (76,8 %\n647:   couverts)** ; le rapport consolidé ne propose plus que 3 fichiers « certaines » / 54 en revue /\n648:   1 492 introuvables (6 non parsables) et `apply_years.py` en dry-run ne trouve **0 candidat**.\n649: L'audit des années déjà écrites est **exécuté** (408 entrées · 38 contredites · 8 à revoir) et\n650: **tranchable** dans la vue Années (section ⟲, EPIC-045) — les corrections ne partent que d'un\n651: clic, jamais en lot automatique. La re-collecte moteur est **terminée** (1 448 clés, 0\n652: restante) avec un rendement quasi nul (1 416 `none`, **1** `found`) ; le gisement suivant est\n653: la clé construite depuis les **tags** — **corrigé et lancé** (EPIC-054 : 1 144 clés jamais\n654: interrogées, collecte du 2026-09-23) ; les années « à revue » non tranchées restent hors\n655: application automatique.\n656: - **`data/` en JSON** : config, journal, caches, playlists, ratings, beatgrids, journaux\n657:   d'écriture (`year_apply_journal.jsonl`, `style_apply_journal.jsonl` — créés à la première\n658:   écriture). Jamais supprimés par l'outil ; le trash (`<source>/_trash/<date>/`) remplace\n659:   toute suppression de fichier audio.\n660: \n661: ## Évolutions & traçabilité\n662: \n663: Toute évolution/amélioration du projet est tracée dans une **EPIC**\n664: (`docs/superpowers/epics/`) : registre central `README.md` + un fichier par\n665: évolution (objectif, tâches cochables, fichiers, validation, commits, décisions).\n666: Créer une nouvelle EPIC = copier `_template.md` + l'ajouter à l'index.\n667: Statuts : ⚪ Backlog → 🔵 En cours → 🟢 Livré | 🟠 Bloqué | 🔴 Abandonné.\n668: \n669: Dernières EPICs : **040** (années corroborées : 2 providers concordants exigés),\n670: **041** (palette `G` : le tag s'écrit tout de suite, cible Éparpillé *ou* Source Data),\n671: **042** (légende : mise en forme mesurée — une seule abscisse de libellé, familles de\n672: touches, flux multi-colonnes ; deux régressions d'usage corrigées et verrouillées par\n673: des vérifications de harnais),\n674: **043** (F5 range **et** tague : le style du dossier cible est écrit sur l'épars et\n675: sur la copie, journal partagé des scripts, année jamais touchée),\n676: **044** (le stock de genres rejoint l'arborescence : aperçu, deux modes, disque\n677: autoritaire, `--undo`),\n678: **045** (l'audit des années écrites a une surface : section ⟲, corriger/garder, `--undo`),\n679: **046** (le style se lit des deux côtés : colonne Style côté Source Data, référence = le dossier),\n680: **047** (palette complète — dossiers vides du disque — et à l'échelle de l'écran, plus de `<kbd>`),\n681: **048** (un remix ne date pas de l'original : le remixeur doit être nommé par la source ; la\n682: piste web le cherche avec lui),\n683: **049** (recherche web **locale** DuckDuckGo sans clé, Brave et Beatport retirés du pipeline),\n684: **050** (l'écriture met l'index à jour, les slashes de racine sont pliés, `G` sur un rangé écrit\n685: le style de son dossier),\n686: **051** (la copie se lit d'un coup d'œil : modale « fichier → destination » élargie sans\n687: troncature, dossier plus auto-déplié, `g` écrit la **paire complète** et le style se voit des\n688: deux côtés),\n689: **052** (un clic ne fait jamais bouger le scroll),\n690: **053** (le focus du dossier destination survit au re-render après copie — le cycle\n691: F5 → ↑↓ → F5 sans re-viser le dossier),\n692: **054** (les clés d'années sont construites depuis les **tags** — 1 144 clés jamais\n693: interrogées, moteur inchangé, match par tags à l'application).\n694: \n695: ## Architecture\n696: \n697: Le frontend utilise le **Command Pattern** pour router les entrées clavier : un\n698: `CommandRegistry` déclaratif remplace l'ancien handler monolithique. Les touches\n699: sont réparties dans **13 modules de commandes** (`registry`, `navigation`,\n700: `audio`, `copy`, `filter`, `rating`, `playlist`, `modals`, `replace`, `dups`,\n701: `menu`, `style`, `years`), scopées par page (`state.page`), par contexte\n702: (`page`, `activePanel`, `playlistMode`, `activeModal`, `isContextMenuOpen`…).\n703: \n704: Points de contrat à connaître avant de toucher l'existant :\n705: \n706: - **Raccourcis** : ils se déclarent **dans** `commands/*.ts` (`label`, `group`,\n707:   `legendFamily`), jamais dans le HTML ni dans le README. La légende `?` en est la\n708:   projection, et `commands/keyboardMatrix.test.ts` (matrice touches × contextes)\n709:   fait échouer la CI sur un binding mort ou shadowé.\n710: - **CSS** : une nouvelle règle va dans le fichier de sa page, une règle transversale\n711:   dans `components.css`, une nouvelle variable **uniquement** dans `tokens.css`\n712:   (jamais deux déclarations du même token). `npm run audit:css` signale le CSS mort.\n713: - **Journal des écritures** : toute écriture de tag passe par un journal additif\n714:   partagé avec les scripts, seule voie d'annulation (`--undo`).\n715: - **Trash** : `_trash/<date>/` sous la source, jamais d'effacement.\n716: \n717: ```\n718: script.ts (orchestrateur) → commands/ (CommandRegistry) → state.ts (Proxy + EventEmitter)\n719:                           → render/ (component factories) → core/ (format, feedback, subscribe, dom)\n720: actions.ts (mutations d'état) · api.ts (fetch + retry) · audio.ts (lecteur singleton)\n721: ```\n722: \n723: **Tags git :**\n724: - `v0.1-functional` — appli fonctionnelle (291 tests à l'époque)\n725: - `v0.2-clean-architecture` — Command Pattern + EventEmitter (313 tests à l'époque)"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077862985,
+            "ran": 1792077866919,
+            "completed": 1792077867019
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_kw0ct617",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/requirements.txt"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Read file /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/requirements.txt, lines 1-4\n1: Flask==3.1.3\n2: mutagen==1.47.0\n3: pytest==9.1.1\n4: websocket-client==1.9.2"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1792077866848,
+            "ran": 1792077866972,
+            "completed": 1792077867088
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 25754,
+        "output": 424,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1402a28ae001YImWGg6e5oxX14",
+      "time": {
+        "created": 1792077867192,
+        "streamed": 1792078049584,
+        "completed": 1792078049607
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now let me look at the directory structure, entry points, CI config, and test files.",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792078037141,
+            "completed": 1792078049561
+          }
+        },
+        {
+          "type": "text",
+          "text": "Now let me detect capabilities by scanning the repo:"
+        },
+        {
+          "type": "tool",
+          "id": "call_md1f06ek",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "error",
+            "input": {},
+            "error": {
+              "type": "tool.input-incomplete",
+              "message": "Tool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments."
+            }
+          },
+          "time": {
+            "created": 1792078042263,
+            "completed": 1792078049590
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_yyuaub79",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "error",
+            "input": {},
+            "error": {
+              "type": "tool.input-incomplete",
+              "message": "Tool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments."
+            }
+          },
+          "time": {
+            "created": 1792078045627,
+            "completed": 1792078049594
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_duc62fy9",
+          "name": "read",
+          "executed": false,
+          "state": {
+            "status": "error",
+            "input": {},
+            "error": {
+              "type": "tool.input-incomplete",
+              "message": "Tool call arguments were not completed and were not executed. Re-issue the tool call with complete arguments."
+            }
+          },
+          "time": {
+            "created": 1792078048918,
+            "completed": 1792078049598
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "length",
+      "rawFinish": "length",
+      "cost": 0,
+      "tokens": {
+        "input": 32528,
+        "output": 240,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1402cf15a0017avCbN6rTkCmv7",
+      "time": {
+        "created": 1792078049641,
+        "streamed": 1792078056778,
+        "completed": 1792078056786
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "qwen3.6:35b",
+        "providerID": "ollama",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user is asking me to execute a scan (01-scan.md from the AIDD project memory skill). This skill was loaded, which means the system recognized that the capability `aidd-context-02-project-memory` is relevant for this task.\n\nNow I need to look at",
+          "state": {
+            "reasoningField": "reasoning"
+          },
+          "time": {
+            "created": 1792078053798,
+            "completed": 1792078056773
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "end": "0c074ef6e406c9643f0c320518e720386c2a3a15",
+        "files": []
+      },
+      "finish": "length",
+      "rawFinish": "length",
+      "cost": 0,
+      "tokens": {
+        "input": 32709,
+        "output": 59,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1402d0d5a001ORqyw2uUiVT2eW",
+      "time": {
+        "created": 1792078056794
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    }
+  ]
+}

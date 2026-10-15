@@ -13,6 +13,10 @@ status: in-progress
 >
 > État décrit : **2026-10-15**, 21 commits, dépôt public ouvert. Un chiffre ici a toujours la même
 > forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit `SUPPOSÉ`.
+>
+> **Mis à jour le 2026-10-15 au soir**, sur une décision : le candidat du second run sera une session
+> **Freebuff**, à modèle hébergé. Ce que ça change est raconté au §9 bis, et les chiffres qui y sont
+> donnés sont lus dans la base de Freebuff elle-même.
 
 ## 1. L'idée, en une image de cuisine
 
@@ -57,12 +61,12 @@ C'est le cœur du projet, et tout le reste en découle. Un examen surveillé, av
 
 ```mermaid
 flowchart TD
-  A["1. Écrire ce qu'on attend"] --> B["2. Sceller et dater l'empreinte"]
-  B --> C["3. Ouvrir une session neuve"]
-  C --> D["4. Remettre le texte, mot pour mot"]
-  D --> E["5. Recopier la copie, telle quelle"]
-  E --> F["6. Écrire le reçu, à chaud"]
-  F --> G["7. Comparer au corrigé"]
+  A["Étape 1 : écrire ce qu'on attend"] --> B["Étape 2 : sceller et dater l'empreinte"]
+  B --> C["Étape 3 : ouvrir une session neuve"]
+  C --> D["Étape 4 : remettre le texte, mot pour mot"]
+  D --> E["Étape 5 : recopier la copie, telle quelle"]
+  E --> F["Étape 6 : écrire le reçu, à chaud"]
+  F --> G["Étape 7 : comparer au corrigé"]
   B -.->|"le corrigé ne part jamais"| D
 ```
 
@@ -172,8 +176,8 @@ seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
 | Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 4 commandes, 40 refus — dont ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
-| Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run (empreinte `38fa91f4`, l'ancien `bc126fe6` détruit) : texte à chemin absolu, falsificateur `F9` ajouté |
-| Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre |
+| Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run puis après le déplacement de l'espace de travail (empreinte `07246039`, les anciens `bc126fe6` et `38fa91f4` détruits) : texte à chemin absolu, falsificateur `F9` ajouté |
+| Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
 | Le dépôt public | `https://github.com/giak/aidd-device`, 21 commits, poussé |
 | **Un run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
 
@@ -184,6 +188,50 @@ dit, en une phrase : la session doit **d'abord montrer ce qu'elle a lu et attend
 l'opérateur sans avoir touché un seul fichier**, puis n'écrire que les fichiers autorisés — et finir
 par un court rapport. Autrement dit : la fiche promet « je te montre avant d'écrire » ; on va voir si
 c'est vrai.
+
+## 9 bis. Le candidat, sa fenêtre, et ce qui a tué le premier run
+
+Une session IA n'a pas une mémoire illimitée : elle travaille dans une **fenêtre**, un nombre de
+jetons qu'elle peut tenir à la fois — sa consigne, les fichiers qu'elle lit, ce qu'elle répond. Le
+premier run est mort **exactement là**, et c'est la seule cause mesurée de son échec :
+
+| Ce qui a été mesuré le 2026-10-15 | Le chiffre |
+| --- | --- |
+| la fenêtre allouée par le serveur local (`ollama ps`) | **32 768** jetons |
+| sa mort, à l'unité près | `32 528 + 240 = 32 768` |
+| envoyé, puis réellement évalué | ~40 000 jetons envoyés → **16 386** évalués, tronqué **en silence** |
+| le remède, éprouvé | modèle dérivé des mêmes poids + `PARAMETER num_ctx 131072` → **131 072** alloués, **44 018** évalués, poids **non dupliqués**, gabarit identique à l'octet |
+
+Deux leçons, et la seconde a servi tout de suite :
+
+1. **Un plafond de contexte ne se devine pas, il se mesure.** Sur cette machine, ollama alloue
+   **32 768** jetons par défaut, identiquement pour un modèle de 36B et pour un de 9B : ce n'est donc
+   pas une propriété du modèle — aucun modèle de la bibliothèque ne porte de `num_ctx`. Et au-delà du
+   plafond, le serveur **tronque sans le dire** : la session croit avoir tout lu.
+2. **Le remède ne duplique rien.** `FROM <le même modèle>` plus `PARAMETER num_ctx 131072` partage les
+   poids déjà sur le disque et ne change que la fenêtre : rien à télécharger, aucun service à
+   redémarrer, aucun octet de poids en double.
+
+**Et le second run change de client : ce sera une session Freebuff**, dont le modèle est hébergé. Le
+plafond local disparaît donc, mais deux choses ne disparaissent pas :
+
+- **La fenêtre n'est pas une constante à citer.** Relevé dans la base de Freebuff elle-même
+  (`~/.config/freebuff-desktop/projects/<projet>-<uuid>/desktop-v2.db`, champ `metrics_json` de chaque
+  message) : pour un **même** modèle, l'application a enregistré 1 048 576, 1 000 000, 500 000,
+  262 144 et 131 072 jetons selon le moment, avec des seuils de compaction de 320 000, 160 000 ou
+  88 000. La règle qui en sort : **la fenêtre du run se lit dans les messages du run**, jamais dans
+  une table de constantes.
+- **La compaction est un événement de l'épreuve.** Au-delà d'un seuil, le client **réécrit lui-même
+  son contexte** : il range, il ne tronque pas. Sur cette machine, 124 messages portent une compaction
+  et le transcript en contient 158 parts (`"kind":"compaction"`). Ne pas le dire, c'est ne pas dire ce
+  que la session avait sous les yeux — exactement ce que le falsificateur `F9` demande.
+
+Ce que ça change dans le dispositif, et qui est déjà écrit dans la
+[conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) : la trace
+machine ne se tire plus d'`opencode session export` mais d'une **requête SQL** sur la base de Freebuff
+— une ligne JSON par part (`text`, `reasoning`, `tool`, `changes`, `compaction`, `ad`), requête
+éprouvée qui a rendu 533 lignes sur une session d'audit de ce poste — et le contexte se lit dans les
+messages du run au lieu de se sonder avant.
 
 ## 10. Les échecs, racontés sans enjoliver
 
@@ -254,6 +302,12 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   qu'il attendait, l'écart sera réel et pourtant accusateur du mauvais côté.
 - **Un modèle n'est pas un autre.** Un bon résultat peut venir d'un coup de chance, un mauvais d'un
   mauvais jour. Chaque run est une observation, pas une loi.
+- **La mémoire de la session peut être réécrite en cours de route.** Sous Freebuff, au-delà d'un seuil,
+  le client **compacte** : il résume son propre contexte. Si la trace ne le dit pas, personne ne peut
+  dire ce que la session avait sous les yeux au moment du geste qui est jugé.
+- **Le client dépose un dossier dans le terrain.** `.freebuff/` apparaît dans la copie du projet de
+  travail ; sans le déclarer ni l'exclure, l'arbre `travail` paraîtra modifié et le reçu accusera à
+  tort.
 - **On ne rejoue pas une réponse.** On peut seulement refaire le même départ.
 
 ## 13. Où lire les choses sérieuses
@@ -292,3 +346,5 @@ git clone https://github.com/giak/aidd-device
 | **trace machine** | l'enregistrement technique de la session, copié dans le dossier de l'épreuve |
 | **état A / état B** | A : un run a eu lieu. B : la session a été demandée, rien n'est encore revenu |
 | **état C** (proposé) | un run a eu lieu et n'a rien produit : le cas est instruit, pas conclu ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §5) |
+| **fenêtre de contexte** | combien de jetons une session peut tenir à la fois : mesurée, jamais devinée (§9 bis) |
+| **compaction** | quand la session, au-delà d'un seuil, réécrit son propre contexte : elle range, elle ne tronque pas (§9 bis) |

@@ -1,0 +1,23 @@
+{
+  "session": {
+    "application": "opencode 2.0.26 (ligne de commande, run + export ; service d'arrière-plan)",
+    "identifiant": "ses_ebfdd6595ffentQru7gA9UPLSc",
+    "modele": "ollama/qwen3.6:35b (local, agent « build ») — le modèle par défaut de la configuration, huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7, est absent du serveur ollama",
+    "ouverte_par": "l'agent, sur l'ordre de l'opérateur (giak)",
+    "ouverte_le": "2026-10-15T17:16:12+02:00"
+  },
+  "horodatage_debut": "2026-10-15T17:15:59+02:00",
+  "horodatage_fin": "2026-10-15T17:29:51+02:00",
+  "repertoire_de_travail": "/home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain",
+  "trace": {
+    "source": "~/.local/share/opencode (storage de la session, export par `opencode session export`)",
+    "chemin_exporte": "docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/trace/session-ses_ebfdd6595ffentQru7gA9UPLSc.json",
+    "commande": "opencode session export ses_ebfdd6595ffentQru7gA9UPLSc  (lancée dans /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain)"
+  },
+  "cloisonnement": { "attendu_vu": "non" },
+  "temoignage": {
+    "qui": "giak (opérateur), par la main de l'agent",
+    "quand": "2026-10-15T17:29:51+02:00",
+    "texte": "Ordre de l'opérateur, mot pour mot : « Ouvre la session du premier cas sur la copie de travail, remets-lui le texte gelé et pousse jusqu'au verdict. » Il n'a pas assisté à la session. Le texte gelé a été lu dans le fichier gelé, jamais retapé ; les deux réponses figées du §2.2 n'ont pas été envoyées, faute de déclencheur (la session n'a rendu aucun tableau et n'a posé aucune question). Les échanges 2 et 3 du budget restent intacts."
+  }
+}

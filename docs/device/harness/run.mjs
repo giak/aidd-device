@@ -10,8 +10,10 @@
 //   collect  once the product is back — verbatim copy under runs/<id>/raw/<case>/,
 //            with sha256, size and birth per file (§4)
 //   receipt  at run time, hot — receipt.json (§6), the four falsifiers of §5 checked,
-//            the verdict ceiling of §7 enforced
-//   compare  the judge, from the receipt alone — runs/<id>/output.json (§8, v6 §10)
+//            the verdict ceiling of §7 enforced, the case re-hashed against the freeze
+//   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
+//            happened (§8: never the session) and the freeze for the premise, which it
+//            re-hashes before judging
 //
 // Usage: node docs/device/harness/run.mjs <freeze|collect|receipt|compare> [options]
 //        node docs/device/harness/run.mjs --help
@@ -24,6 +26,10 @@
 // it refuses a symlink inside the product (a way out of the working directory), and
 // it resolves its own repository root from its own path, never from the working
 // directory of the caller. Every path it writes is printed absolute.
+//
+// It refuses a case whose files no longer match the freeze, at the receipt as at the
+// judgment: the receipt's only proof of « écrit avant d'avoir vu le produit » is the
+// fingerprint §3 records, and a fingerprint whose files have moved on proves nothing.
 
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -34,15 +40,26 @@ import { fileURLToPath } from "node:url";
 const USAGE = `usage: run.mjs <commande> [options]
 
   freeze   --case <id> --arbre <label>=<chemin> [--arbre ...] [--cases <dir>]
-           [--ref <chemin-relatif> ...] [--ref-root <dir>] [--refreeze]
+           [--ref <chemin-relatif> ...] [--ref-root <chemin>] [--refreeze]
+           chemins gelés relatifs, références nommées par leur arbre : un tiers
+           rejoue la formule sur son clone sans réécrire un chemin (--ref-root doit
+           être l'un des --arbre) ; seul le chemin d'un arbre reste absolu, parce que
+           « où cette machine a lu cet arbre » est un fait, pas un paramètre
   collect  --run <dir> --case <id> --from <fichier|dir>   (copie verbatim le contenu
            de --from sous raw/<case>/ : l'arbre du produit s'y reflète à l'identique,
            la source absolue de chaque fichier est dans le manifeste)
+  collect  --run <dir> --case <id> --sans-produit          (run sans produit, spec §9 :
+           le manifeste est écrit avec fichiers: [] et produit_absent: true, sans
+           --from ; sans lui, un run qui ne produit rien ne laissait aucun reçu)
   receipt  --run <dir> --case <id> --faits <faits.json> [--verdict conforme|ecart|non concluant]
            [--limite <texte> ...] [--cases <dir>]
+           refuse si un fichier du cas ou une référence du gel a changé depuis le gel
+           (re-hachage, §3) : le gel est relu sur le disque, jamais cru sur parole
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
+           refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
+           dont le reçu cite une empreinte que le gel sur disque ne porte plus
 
   faits.json (receipt) : session{application,identifiant,modele,ouverte_par,ouverte_le}
     horodatage_debut · horodatage_fin · repertoire_de_travail ·
@@ -50,15 +67,19 @@ const USAGE = `usage: run.mjs <commande> [options]
     temoignage{qui,quand,texte}
 
   receipt.json (spec §6) : les champs du §6, plus falsificateurs (les quatre
-    conditions du §5, dont celle que ce script ne peut pas évaluer), recu_ecrit_le
-    et demande.gel. produit.chemins donne les chemins bruts, produit.fichiers
-    le sha256, la taille et le birth de chacun. Les arbres gelés sont repris sous
-    arbres.avant, remesurés sous arbres.apres ; les labels framework-origin et
-    terrain alimentent en plus framework_rev et terrain_rev.`;
+    conditions du §5, dont celle que ce script ne peut pas évaluer), recu_ecrit_le,
+    demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
+    re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
+    produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
+    repris sous arbres.avant, remesurés sous arbres.apres ; les labels framework-origin
+    et terrain alimentent en plus framework_rev et terrain_rev.
+  output.json (spec §8) : cas, attendu, produit_brut, difference, verdict, limites,
+    ecarte_comme_non_testable, phrase, et gel_verifie — le même re-hachage, refait
+    avant que le juge tranche.`;
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CASES_DEFAULT = join(REPO, "docs", "device", "CASES");
-const BOOLEAN_FLAGS = new Set(["help", "refreeze"]);
+const BOOLEAN_FLAGS = new Set(["help", "refreeze", "sans-produit"]);
 const VERDICTS = new Set(["conforme", "ecart", "non concluant"]);
 const LIMITES = new Set(["mord", "ne mord pas", "non évaluable"]);
 // Labels whose revision the receipt names as its own fields (§6 `framework_rev`, `terrain_rev`).
@@ -110,6 +131,27 @@ function nowStamp() {
 const sha256File = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
 const sha256Text = (t) => createHash("sha256").update(t).digest("hex");
 const display = (p) => (p.startsWith(REPO + sep) ? relative(REPO, p) : p);
+// A frozen path is never absolute, so a third party replays the formula on its own
+// clone without rewriting anything it reads here. Inside the repository the path names
+// the file from the repository root; outside it (a throwaway bench) the freeze sits
+// beside the file, so its base name is enough.
+const cheminPortable = (p) => {
+  const rel = relative(REPO, p);
+  return rel.startsWith("..") ? basename(p) : rel;
+};
+// Where an arbre can be found again: a label alone does not let a stranger fetch it.
+const remotesDe = (chemin) => {
+  try {
+    return execFileSync("git", ["-C", chemin, "remote", "-v"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => l.split(/\s+/))
+      .filter(([, , sens]) => sens === "(fetch)")
+      .map(([nom, url]) => ({ nom, url }));
+  } catch {
+    return [];
+  }
+};
 const writeJson = (p, objet) => {
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, JSON.stringify(objet, null, 2) + "\n");
@@ -140,14 +182,90 @@ function gitTree({ label, chemin }) {
     }
   };
   const porcelain = lire(["status", "--porcelain"]);
+  const head = lire(["rev-parse", "--short", "HEAD"]);
+  // Where a stranger can meet this revision: the remote branches carrying it, as this clone
+  // knows them — an empty list says out loud that the tree is published nowhere.
+  const distants = head === null ? null : lire(["branch", "-r", "--contains", head]);
   return {
     label,
     chemin,
-    head: lire(["rev-parse", "--short", "HEAD"]),
+    head,
+    head_complet: lire(["rev-parse", "HEAD"]),
     porcelain: porcelain === null ? null : porcelain.split("\n").filter(Boolean),
+    remotes: remotesDe(chemin),
+    refs_distants:
+      distants === null
+        ? []
+        : distants
+            .split("\n")
+            .map((l) => l.trim())
+            .filter((l) => l !== "" && !l.includes("->")),
   };
 }
-const memeArbre = (a, b) => a.head === b.head && JSON.stringify(a.porcelain) === JSON.stringify(b.porcelain);
+// The fingerprint of a case: roles, base names and hashes, never the paths — so the same
+// case fingerprints identically from any clone, and a receipt can cite it anywhere.
+const empreinteDeGel = (fichiers, references) =>
+  sha256Text(
+    [...fichiers.map((f) => `${f.role}\t${basename(f.chemin)}\t${f.sha256}`), ...references.map((r) => `reference\t${r.chemin}\t${r.sha256}`)].sort().join("\n") + "\n",
+  );
+// The inverse of cheminPortable: a case file is named from the repository root, or by its
+// base name alone when the case sits beside its freeze (a throwaway bench).
+const cheminDuCas = (chemin, casesDir) => (chemin.includes(sep) ? resolve(REPO, chemin) : join(casesDir, chemin));
+
+// A freeze is worth what its files are worth. Both moments that lean on it — the receipt
+// at run time, the judgment after — re-hash the case files and the references and refuse on
+// the first drift, then check that the freeze still fingerprints to what it claims. Without
+// this, §3's « le reçu porte cette empreinte » is a citation, not a proof.
+function verifierLeGel(gel, casesDir, ou) {
+  const arbres = new Map((gel.arbres ?? []).map((t) => [t.label, t]));
+  const fichiers = (gel.fichiers ?? []).map((f) => {
+    const p = cheminDuCas(f.chemin, casesDir);
+    if (!existsSync(p)) {
+      refuse(`${ou} : le fichier du cas « ${f.chemin} » du gel n'est plus là (${display(p)}) — un gel sans ses fichiers ne fonde rien (§3)`);
+    }
+    const sha256 = sha256File(p);
+    if (sha256 !== f.sha256) {
+      refuse(
+        `${ou} : le ${f.role} a changé depuis le gel — ${sha256.slice(0, 8)} au disque, ${f.sha256.slice(0, 8)} gelé ` +
+          `(${display(p)}) ; le gel est la seule preuve du « écrit avant d'avoir vu le produit » (§3), donc rien ne s'écrit ici`,
+      );
+    }
+    return { role: f.role, chemin: f.chemin, sha256 };
+  });
+  const references = (gel.references ?? []).map((r) => {
+    const arbre = arbres.get(r.arbre);
+    if (!arbre) {
+      refuse(`${ou} : la référence « ${r.chemin} » se nomme par l'arbre « ${r.arbre} », que le gel ne décrit pas — l'arbre où elle a été hachée est introuvable`);
+    }
+    const racine = arbre.chemin;
+    const p = resolve(racine, r.chemin);
+    if (p !== racine && !p.startsWith(racine + sep)) refuse(`${ou} : la référence « ${r.chemin} » sort de l'arbre « ${r.arbre} » (${racine})`);
+    if (!existsSync(p)) {
+      refuse(`${ou} : la référence « ${r.chemin} » de l'arbre « ${r.arbre} » est introuvable sous ${racine} — les références du gel ne peuvent pas être re-hachées`);
+    }
+    const sha256 = sha256File(p);
+    if (sha256 !== r.sha256) {
+      refuse(
+        `${ou} : la référence « ${r.chemin} » de l'arbre « ${r.arbre} » a changé depuis le gel — ` +
+          `${sha256.slice(0, 8)} au disque, ${r.sha256.slice(0, 8)} gelé (${display(p)}) ; le cas n'est plus celui qui a été gelé`,
+      );
+    }
+    return { arbre: r.arbre, chemin: r.chemin, sha256 };
+  });
+  const empreinte = empreinteDeGel(fichiers, references);
+  if (gel.empreinte && empreinte !== gel.empreinte) {
+    refuse(
+      `${ou} : le gel ne concorde pas avec lui-même — empreinte recalculée ${empreinte.slice(0, 8)}, empreinte écrite ${gel.empreinte.slice(0, 8)} ; ` +
+        `des empreintes et des fichiers ont été réécrits ensemble, le gel n'atteste plus l'instant qu'il déclare`,
+    );
+  }
+  return { le: localIso(), empreinte, fichiers: fichiers.length, references: references.length };
+}
+
+// The full hash when both sides carry it: a short hash is abbreviated per clone, so two
+// clones of the same commit can print different widths and a string equality would lie.
+const memeArbre = (a, b) =>
+  (a.head_complet ?? a.head) === (b.head_complet ?? b.head) && JSON.stringify(a.porcelain) === JSON.stringify(b.porcelain);
 const casesDirOf = (a) => resolve(a.one("cases") ?? CASES_DEFAULT);
 
 // ---------------------------------------------------------------------------
@@ -183,23 +301,27 @@ function cmdFreeze(a) {
   }
 
   const fichiers = noms
-    .filter((n) => !n.endsWith(".freeze.json"))
-    .map((n) => ({ role: n.endsWith(".request.md") ? "demande" : "attendu", chemin: join(casesDir, n), ...empreinteDe(join(casesDir, n)) }));
+    .filter((n) => !n.endsWith(".freeze.json"))      .map((n) => ({ role: n.endsWith(".request.md") ? "demande" : "attendu", chemin: cheminPortable(join(casesDir, n)), ...empreinteDe(join(casesDir, n)) }));
 
   const references = [];
   for (const rel of a.all("ref")) {
     const root = a.one("ref-root");
     if (!root) refuse("freeze : --ref exige --ref-root (le chemin d'un fichier du framework est relatif à sa racine)");
     const racine = resolve(root);
+    const arbre = arbres.find((t) => resolve(t.chemin) === racine);
+    if (!arbre) {
+      refuse(
+        `freeze : --ref-root ${racine} n'est l'un des --arbre — une référence ne se nomme que par ` +
+          `l'arbre où elle a été hachée, et un chemin absolu n'entre pas au gel`,
+      );
+    }
     const abs = resolve(racine, rel);
     if (!abs.startsWith(racine + sep)) refuse(`freeze : ${abs} sort de --ref-root ${racine}`);
     if (!existsSync(abs)) refuse(`freeze : référence absente : ${abs}`);
-    references.push({ chemin: relative(racine, abs), racine, ...empreinteDe(abs) });
+    references.push({ arbre: arbre.label, chemin: relative(racine, abs), ...empreinteDe(abs) });
   }
 
-  const empreinte = sha256Text(
-    [...fichiers.map((f) => `${f.role}\t${basename(f.chemin)}\t${f.sha256}`), ...references.map((r) => `reference\t${r.chemin}\t${r.sha256}`)].sort().join("\n") + "\n",
-  );
+  const empreinte = empreinteDeGel(fichiers, references);
   const objet = {
     cas,
     ...nowStamp(), // taken once the case files are hashed: the freeze marks the fingerprint, not its beginning
@@ -224,10 +346,24 @@ function cmdFreeze(a) {
 function cmdCollect(a) {
   const runDir = resolve(a.required("run"));
   const cas = a.required("case");
-  const from = resolve(a.required("from"));
-  if (!existsSync(from)) refuse(`collect : --from absent : ${from}`);
+  const sansProduit = a.has("sans-produit");
+  if (sansProduit && a.has("from")) refuse("collect : --sans-produit et --from sont exclusifs — un run a un produit, ou n'en a pas (§9)");
+  const from = sansProduit ? null : resolve(a.required("from"));
+  if (!sansProduit && !existsSync(from)) refuse(`collect : --from absent : ${from}`);
   const dest = join(runDir, "raw", cas);
   if (existsSync(dest)) refuse(`collect : ${display(dest)} existe déjà — un produit collecté deux fois n'est plus le produit du run`);
+
+  if (sansProduit) {
+    // Spec §9 : « la session ne produit rien → non concluant, produit = sa sortie brute ».
+    // Le harnais ne juge pas la sortie brute ; il en garde la place, écrite, pour que le
+    // reçu puisse exister et que le juge lise un verdict au lieu d'un silence.
+    mkdirSync(dest, { recursive: true });
+    const manifesteVide = { cas, run: runDir, source: null, produit_absent: true, collecte_le: localIso(), fichiers: [] };
+    writeJson(join(dest, "manifest.json"), manifesteVide);
+    console.log(`collect ok — ${cas} : run sans produit (§9), 0 fichier ; le manifeste nomme l'absence sous ${display(dest)}`);
+    return;
+  }
+
   mkdirSync(dest, { recursive: true });
 
   const fichiers = [];
@@ -288,6 +424,7 @@ function cmdReceipt(a) {
   const gelPath = join(casesDir, `${cas}.freeze.json`);
   const gel = lireJson(gelPath, "receipt");
   if (!gel) refuse(`receipt : aucun gel ${display(gelPath)} — la pièce (3) du §5 vient de là ; lancer freeze d'abord`);
+  const gelVerifie = verifierLeGel(gel, casesDir, "receipt");
   const manifestPath = join(runDir, "raw", cas, "manifest.json");
   const manifeste = lireJson(manifestPath, "receipt");
   if (!manifeste) refuse(`receipt : aucun manifeste ${display(manifestPath)} — lancer collect d'abord`);
@@ -360,6 +497,7 @@ function cmdReceipt(a) {
   for (const m of motifRefus) limites.push(m);
 
   const produit = {
+    absent: manifeste.fichiers.length === 0,
     chemins: manifeste.fichiers.map((f) => join("raw", cas, f.chemin)),
     fichiers: manifeste.fichiers.map(({ chemin, source, sha256, taille, birth, birth_epoch }) => ({ chemin, source, sha256, taille, birth, birth_epoch })),
   };
@@ -374,6 +512,7 @@ function cmdReceipt(a) {
     recu_ecrit_le: localIso(),
     session,
     demande: { chemin: demande?.chemin ?? null, sha256: demande?.sha256 ?? null, gel: gelPath, empreinte_gel: gel.empreinte, gele_le: gel.gele_le },
+    gel_verifie: gelVerifie,
     ...Object.assign({}, ...apres.map(reecrireRevision)),
     repertoire_de_travail: travail,
     horodatage_debut: horodatageDebut,
@@ -407,12 +546,22 @@ function cmdCompare(a) {
   const limites = a.one("limites") ?? "non évaluable";
   if (!LIMITES.has(limites)) usage(`--limites vaut « ${limites} », attendu : mord | ne mord pas | non évaluable`);
   const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "compare");
+  if (!gel) refuse(`compare : aucun gel ${display(gelPath)} — le juge relit le cas gelé avant de comparer, sans quoi il juge un cas qui n'est plus celui qui a été gelé (§3)`);
+  const gelVerifie = verifierLeGel(gel, casesDir, "compare");
   const attenduPath = join(casesDir, `${cas}.expected.json`);
   const attendu = lireJson(attenduPath, "compare");
   if (!attendu) refuse(`compare : aucun attendu ${display(attenduPath)}`);
   const receiptPath = join(runDir, "receipt.json");
   const recu = lireJson(receiptPath, "compare");
   if (!recu) refuse(`compare : aucun reçu ${display(receiptPath)} — le juge travaille sur le reçu seul (§8)`);
+  if (recu.demande?.empreinte_gel && recu.demande.empreinte_gel !== gel.empreinte) {
+    refuse(
+      `compare : le reçu cite l'empreinte ${String(recu.demande.empreinte_gel).slice(0, 8)}, le gel sur disque porte ` +
+        `${String(gel.empreinte).slice(0, 8)} — le cas a été regelé depuis le reçu, le jugement ne porterait pas sur le cas reçu (§3)`,
+    );
+  }
   const outPath = join(runDir, "output.json");
   if (existsSync(outPath)) refuse(`compare : ${display(outPath)} existe déjà`);
 
@@ -430,6 +579,7 @@ function cmdCompare(a) {
     limites,
     ecarte_comme_non_testable: attendu.ecartes ?? [],
     phrase,
+    gel_verifie: gelVerifie,
     juge_le: localIso(),
     depuis_le_recu: display(receiptPath),
   };

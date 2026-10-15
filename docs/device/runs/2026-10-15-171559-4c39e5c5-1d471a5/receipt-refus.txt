@@ -1,0 +1,1 @@
+REFUS — receipt : aucun manifeste docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/raw/2026-10-15-133423-promesse-memoire-avant-ecriture/manifest.json — lancer collect d'abord

@@ -410,3 +410,61 @@ remplacée par la mesure ; la prohibition demeure et le gel du cas est refait av
 session — `1b9a8434` détruit, `bc126fe6` au `2026-10-15T15:59:39.604335300+0200`. Cet arbitrage est
 **faux** si le premier run montre une session quittant le cadre par ses propres décisions : les
 interdits devraient alors être dits, et le §5 amendé.
+
+## ADR-016 — Le gel ne stocke que des chemins relatifs (2026-10-15)
+
+**Contexte** : le gel `bc126fe6` a été rejoué depuis un clone neuf du dépôt public, en tiers qui doute
+(mémoires `d7ec5531`, `79f3858f`). La formule se recalcule, mais pas verbatim : les chemins gelés sont
+**absolus** — `/home/giak/projects/aidd-device/docs/device/CASES/…` pour les deux fichiers du cas,
+un champ `racine` pour les huit références. Un tiers doit donc réécrire ce que le gel contient avant de
+pouvoir le rejouer, et un gel que seul son auteur peut rejouer ne prouve rien à personne.
+
+**Options** : (a) garder les chemins absolus et documenter la substitution — le rejeu reste possible,
+mais chaque relecture commence par modifier le fichier gelé ; (b) stocker des chemins relatifs et
+nommer les références par l'arbre où elles ont été hachées ; (c) réserver le rejeu à qui a accès à la
+machine de l'auteur.
+
+**Choix** : (b). `fichiers[].chemin` devient relatif à la racine du dépôt — le nom de base seul quand
+le cas vit hors du dépôt, comme sur un banc jetable ; `references[]` porte `arbre`, le label de l'arbre
+où le fichier a été haché, à la place de `racine` ; et `freeze` **refuse** un `--ref-root` qui n'est
+l'un des `--arbre`, puisqu'un chemin absolu ne doit plus entrer au gel. Les arbres, eux, gardent leur
+chemin absolu — « où cette machine a lu cet arbre » est un fait, pas un paramètre — et gagnent
+`remotes`, sans quoi un label ne dit pas où retrouver l'arbre.
+
+**Conséquences** : le rejeu du §1.1 de la conduite se fait sans réécrire un chemin, avec un seul
+paramètre fourni (`RACINE_FRAMEWORK`), et il vérifie en plus que l'arbre du relecteur est à la révision
+gelée — mesuré : à `main` au lieu de `4c39e5c5`, les huit fichiers hachés sont identiques et
+l'empreinte concorde, seul le contrôle de `HEAD` distingue les deux. L'empreinte **ne bouge pas**
+(`bc126fe6`) : la formule ne hache que les rôles, les noms de base et les `sha256`, jamais les chemins.
+Le gel est refait le `2026-10-15T16:36:06.165096639+0200` et l'ancien est détruit ; le reçu et le
+jugement d'attendu ne changent pas, et `commande` garde les chemins absolus qu'elle a réellement portés
+— un fait n'est pas réécrit. La portabilité vaut pour la **formule** : les quatre arbres restent, eux,
+hors de portée d'un tiers (`framework-origin` n'est publié nulle part, mesuré en `d7ec5531`).
+
+## ADR-017 — L'origine du framework est publiée là où un tiers la retrouve (2026-10-15)
+
+**Contexte** : mesure du tour précédent (mémoire `d7ec5531`) — des quatre arbres gelés, un seul n'était
+joignable par personne : `framework-origin` (`fe48de12`) n'était dans **aucune** branche distante, et un
+`git fetch` par `sha` sur le dépôt public le refuse (« impossible de trouver la référence distante »).
+Un arbre que seul son auteur peut constater ne rend que sa parole. L'ordre : « publie la révision gelée
+là où un inconnu peut la retrouver, puis revalide le gel ».
+
+**Options** : (a) laisser `framework-origin` privé et l'écrire comme limite — c'est ce que faisaient
+l'ADR-016 et BOUNDARY §3 ; (b) publier la révision sur le fork public `github.com/giak/framework`,
+sous une branche dédiée ; (c) pousser la branche de travail de l'origine ou `main`.
+
+**Choix** : (b). `git push origin fe48de12:refs/heads/gel/2026-10-15-fe48de12` — un ref neuf, aucune
+branche existante déplacée, `main` et l'upstream intacts. Le gel gagne de quoi le dire : `arbres[]`
+porte `refs_distants`, les branches distantes qui portent le `HEAD` telles que ce clone les connaît, et
+`head_complet`, le hash entier — `--short` s'abrège **par dépôt** : le même commit rend `fe48de1` dans
+un clone et `fe48de12` ici, mesuré, et la comparaison courte aurait menti.
+
+**Conséquences** : les quatre `HEAD` gelés sont publics — `framework-origin` par la branche nommée,
+`terrain` et `travail` (`416ec1f`) par `github.com/giak/audio-sync-tool` `main`, `revision-sous-test`
+(`4c39e5c5`) par six branches de `github.com/ai-driven-dev/framework`. Le `porcelain` gelé, lui, ne se
+reconstitue pas : les fichiers non suivis n'entrent dans aucun commit — la limite est dite dans
+BOUNDARY §3, pas cachée. Le gel est refait le `2026-10-15T16:43:17.693147522+0200`, empreinte
+`bc126fe6` encore inchangée (les arbres ne sont pas hachés), et revalidé : `10/10`, l'arbre du relecteur
+au `HEAD` gelé, `receipt` et `compare` inchangés. Un tiers refait donc son propre gel sans réécrire un
+chemin — mais il refait, il ne rejoue pas celui-ci : le gel du dispositif porte les chemins de cette
+machine.

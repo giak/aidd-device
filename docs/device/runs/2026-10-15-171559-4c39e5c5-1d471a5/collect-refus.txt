@@ -1,0 +1,1 @@
+REFUS — collect : --from absent : /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain/aidd_docs

@@ -18,8 +18,8 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 | --- | --- | --- | --- |
 | `DEVICE.md` | ce que fait le dispositif, la commande de clonage et de lancement | 2 | 🟨 page écrite (895 mots), lancement à écrire |
 | `BOUNDARY.md` | le framework est intact, aucun fichier du dispositif ne lui appartient | 2 | 🟨 page écrite, relevés du run à venir |
-| `CASES/*.expected.json` | les attendus écrits avant le premier run, empreinte figée | 2 | 🟨 écrit et gelé (2026-10-15), aucun run |
-| `runs/<horodatage>/output.json` | l'écart : un objet par cas, verdict et limites | 2 | 🔲 |
+| `CASES/*.expected.json` | les attendus écrits avant le premier run, empreinte figée | 2 | 🟨 écrit et gelé (2026-10-15) ; **un run a eu lieu** le même jour (`non concluant`, aucun produit), le cas attend une rectification ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
+| `runs/<horodatage>/output.json` | l'écart : un objet par cas, verdict et limites | 2 | 🔲 — un run a eu lieu (`runs/2026-10-15-171559-…/`), **sans `output.json`** : le harnais refuse un produit vide |
 | `NEGATIVE.md` | le dispositif a signalé une casse connue | 2 | 🔲 |
 | `ECART.md` | le compte-rendu commité dans la pull request framework | 2 | 🔲 |
 

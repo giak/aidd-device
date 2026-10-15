@@ -26,8 +26,8 @@ refaire le départ, jamais la réponse.
 
 - Pas une refonte : il lit le framework, ne le modifie pas ([BOUNDARY.md](BOUNDARY.md)).
 - Pas un harnais de régression : il rejoue un **départ**, jamais une réponse.
-- Pas un runner automatique : aucun runner sans interaction ne répond ici, donc pas de commande à
-  brancher — le runner est la session que l'opérateur ouvre (v6 §7).
+- Pas un runner automatique : aucun runner sans interaction ne répond ici — le runner est la session
+  que l'opérateur ouvre (v6 §7).
 - Pas un juge : il ne sait pas si l'attendu était juste, et il le dit (v6 §8).
 
 ## Qui fait quoi
@@ -38,24 +38,23 @@ refaire le départ, jamais la réponse.
 | opérateur | le relecteur | ouvre la session, remet la demande, recueille, exporte la trace | — |
 | juge | l'agent | compare depuis le reçu, écrit le verdict | la session |
 
-Aucun cas n'existe encore : ces rôles sont attribués, pas encore joués, et le reçu portera
-`temoignage.qui`. Séparation **de contexte, pas de personne** (question 4 du §11) : auteur et
+Séparation **de contexte, pas de personne** (question 4 du §11) : auteur et
 opérateur seront la même personne, le juge ne verra pas la session — aucune position ne verra
 l'objet qui la contredit le plus.
 
 ## L'état
 
-- **Existent** : cette page, `BOUNDARY.md`, la spec du run, l'emplacement des artefacts, le harnais
-  (`harness/run.mjs`) et le premier cas gelé (`CASES/` : demande, attendu, gel).
+- **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`) et le
+  premier cas gelé (`CASES/` : demande, attendu, gel).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
-- **État B** (v6 §7) : aucune session n'a reçu de demande ; il se rend avec la session demandée et
-  la réponse obtenue — ou son absence.
+- **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
+  ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
 
 ## Ce qui part
 
 `CASES/<cas>.request.md`, huit champs : identifiant ; révision du framework sous test et commande
 d'installation en répertoire jetable ; révision du terrain et commande de copie de travail ; chemin
-absolu du répertoire de travail, hors des quatre arbres ; **le texte remis à la session, verbatim,
+absolu du répertoire de travail, hors des quatre arbres — foyer arrêté : `~/projects/aidd-device-work/<cas>/` ; **le texte remis à la session, verbatim,
 entre deux lignes de garde** ; ce qu'elle doit produire, chemin et nom exacts ; les interdits
 (écrire dans `framework-origin`, écrire dans le terrain, lire `CASES/`, sortir du répertoire de
 travail) ; le budget d'échanges. L'attendu reste ici : s'il est relayé, le reçu porte
@@ -69,13 +68,14 @@ Sous `runs/<horodatage>-<framework@rev>-<dispositif@rev>/` : `raw/<cas>/` et son
 ## Récupérer et lancer
 
 ```text
-git clone /home/giak/projects/aidd-device
-git -C aidd-device rev-parse --short HEAD   → 39750fe   (branche main, relevé du 2026-10-15)
+git clone https://github.com/giak/aidd-device.git
+git -C aidd-device rev-parse --short HEAD   → 1d471a5   (branche main, relevé du 2026-10-15)
 ```
 
-D'une autre machine : oui depuis le push du 2026-10-15.
-La question 1 du §11 demande aussi de le faire tourner et de lire l'écart : « non », aucun run
-n'a eu lieu (§3 de [BOUNDARY.md](BOUNDARY.md)).
+D'une autre machine : oui, les quatre arbres du cas publiés (§3 de [BOUNDARY.md](BOUNDARY.md) ; le
+rejeu du gel, [REPLAY.md](REPLAY.md)). La question 1 du §11 reste « non », mais pour sa seule
+dernière clause : un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, `non concluant`, aucun
+produit) et rien n'a été publié qui permette d'en lire l'écart, faute de reçu ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. La séquence d'un run :
@@ -89,7 +89,8 @@ serait mentir. La séquence d'un run :
 ## Lire un écart
 
 `output.json` : un objet par cas — `{ cas, attendu, produit_brut, difference, verdict (conforme |
-écart | non concluant), limites (mord | ne mord pas | non évaluable), ecarte_comme_non_testable }` —
+écart | non concluant), limites (mord | ne mord pas | non évaluable), ecarte_comme_non_testable,
+gel_verifie }` —
 plus une phrase de verdict par exécution : « au vu de l'attendu écrit, le produit fait X ; l'attendu
 disait Y ». « La modification ne marche pas » n'est pas une réponse.
 

@@ -1,0 +1,5 @@
+commande : opencode session export ses_ebfdd6595ffentQru7gA9UPLSc
+répertoire : /home/giak/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain
+horodatage : 2026-10-15T17:29:52+02:00
+source : /home/giak/.local/share/opencode (opencode 2.0.26, service d'arrière-plan)
+journal du client (echange 1) : trace/echange-1.txt

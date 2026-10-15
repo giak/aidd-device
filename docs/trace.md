@@ -441,4 +441,220 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   récupération, et les trois pages qui affirmaient le contraire réparées. Du tour suivant :
   `691e913c` — l'arbitrage du cadre (ADR-015) sur mesures de `tools.md`, `update_memory.js` et
   `04-sync.md`, la rectification du §7 de la demande, et le gel refait (`bc126fe6`, `1b9a8434`
-  détruit).
+  détruit). Du tour suivant : `59a2f37b` — `docs/EXPLICATION.md`, le projet raconté à qui n'en connaît
+  rien (la fiche de recette, l'enveloppe scellée, les quatre arbres, les quatre pièges, l'état B,
+  échecs et réussites), 3 schémas et 0 lien interne cassé ; **rectification de mon fait dans le même
+  tour** : mon §5 dessinait cinq arbres, dont un `travail` que j'avais posé comme cinquième alors
+  que la conduite gèle exactement quatre arbres — `framework-origin`, `terrain` lus et jamais
+  écrits, `revision-sous-test` (`$W/framework-origin`) et `travail` (`$W/terrain`) — le schéma et le
+  titre de section sont refaits sur le vocabulaire gelé ; et la phrase fausse du `README.md` (« son
+  harnais reste à écrire ») réparée, alors que `run.mjs` (448 lignes) existe depuis 15:21. Du tour
+  suivant : `d7ec5531` — le gel `bc126fe6` rejoué depuis un **clone neuf du dépôt public** : la formule
+  du §5.3, réimplémentée sans le harnais, rend les `10/10` empreintes de fichiers et l'empreinte
+  globale `bc126fe6…` à l'identique, les 8 références relues dans un clone public de
+  `ai-driven-dev/framework` à `4c39e5c5` (le `fetch` par SHA y est refusé : clone `--filter=blob:none`
+  puis `checkout`). Les quatre arbres rendent les `HEAD` et `porcelain` gelés. Quatre limites
+  mesurées, non supposées : `fe48de12` n'est dans aucune branche distante, la naissance des fichiers
+  n'est pas transportée par git (`16:28:44` au clone pour des fichiers nés à `13:34:50` et `15:26:49`),
+  les lignes `porcelain` sont locales à la machine, et la commande gelée porte des chemins absolus —
+  le tiers doit substituer les siens pour rejouer. `terrain` reste vérifiable sans cloner :
+  `git ls-remote https://github.com/giak/audio-sync-tool.git main` → `416ec1fa…`. Du tour suivant : `79f3858f` — rejeu du gel **en tiers qui doute**, depuis un second clone neuf (`/tmp/tiers2-20261015-163144`, HEAD `1d471a5`, arbre propre) : `10/10` empreintes et `bc126fe6…` ; l'horloge corrobore ce que le gel déclare (`gele_le_epoch` → `2026-10-15T15:59:39+02:00`, exactement `gele_le` ; les deux `birth_epoch` rendent leurs dates au centième près), la prémisse du cas est vraie (`$W/terrain` n'a pas d'`aidd_docs`, il est accessible en écriture), et les quatre arbres tiennent après tous les bancs. **Un défaut trouvé par ce doute, mesuré et non déduit** : hors `freeze`, le harnais ne hache plus jamais les fichiers du cas — `receipt` et `compare` lisent le gel, pas le disque. Banc 2 : `request.md` réécrit dans un `--cases` jetable → `receipt` **exit 0** et `demande.sha256` recopie la valeur gelée. Banc 3 : `expected.json` réécrit (`attendu` est une chaîne de 447 caractères) → `compare` **exit 0** et `output.json.attendu` porte le texte réécrit pendant que le reçu cite `bc126fe6`. L'invariant « l'attendu écrit avant le produit » ne tient donc que par le rejeu manuel du §1.1 et par la parole de l'opérateur. Réparation proposée, non appliquée : re-hacher `gel.fichiers` + `gel.references` dans `receipt` et `compare`, refuser sur écart. Du tour suivant : `191f5687` — **ADR-016**, le gel ne stocke plus que des chemins relatifs : `fichiers[].chemin` relatif à la racine du dépôt (nom de base seul hors du dépôt), `references[]` nomme l'`arbre` où le fichier a été haché à la place de `racine`, `--ref-root` doit être l'un des `--arbre` (refus mesuré, exit 1), et chaque arbre porte ses `remotes` — sans quoi un label ne dit pas où le reprendre ; les chemins des arbres restent absolus, « où cette machine a lu cet arbre » étant un fait. Gel refait à `16:36:06.165096639+0200` : **empreinte inchangée**, `bc126fe6` — la formule ne hache que rôle, nom de base et `sha256`. Le §1.1 de la conduite est réécrit en rejeu d'un seul paramètre (`RACINE_FRAMEWORK`, aucun chemin réécrit), il vérifie le `HEAD` de l'arbre et sort en `1` sur un seul `False` : éprouvé depuis un clone neuf (exit 0, 10/10) et sur `main` au lieu de `4c39e5c5` (exit 1, `False` — les huit fichiers y sont identiques, seul ce contrôle distingue les deux). Régression vérifiée sur banc : verdict interdit refusé, reçu et `compare` inchangés. Le compte de refus passe de 29 à 30 et `run.mjs` de 448 à 479 lignes ; les pages qui citaient 29 refus et le scellé de 15:59:39 sont rectifiées. Du tour suivant : `8fac6e0b` — **ADR-017**, l'origine du framework est publiée : `git push origin fe48de12:refs/heads/gel/2026-10-15-fe48de12` sur `github.com/giak/framework` (ref neuf, `main` et l'upstream intacts), après mesure que le commit n'était dans aucune branche distante et qu'un `fetch` par `sha` le refuse. Un clone public de cette branche rend `fe48de12a8b615ec4c456b63945b7e9dfc7835ca`, exactement le `head_complet` gelé — les quatre `HEAD` gelés sont désormais publics, le `porcelain` gelé non (fichiers non suivis, dits dans BOUNDARY §3). Le gel gagne `refs_distants` et `head_complet`, ce dernier pour une raison mesurée : `--short` s'abrège par dépôt, `fe48de12` devient `fe48de1` dans un clone neuf, et la comparaison courte aurait menti. Gel refait à `16:43:17.693147522+0200`, empreinte `bc126fe6` encore inchangée ; rejeu à jour : `10/10`, arbre du relecteur au `HEAD` gelé, `receipt` et `compare` inchangés, `node --check` OK. `BOUNDARY` §3 et `DEVICE.md` affirmaient que rien n'était publié : c'était faux, ils sont réparés (DEVICE reste à 894 mots sur 900).
+
+Du tour suivant : `AGENTS.md` — quatre puces de forme de réponse et un `R4` renforcé, **non commité**.
+`framework/CLAUDE.md` (3 870 o) et `framework/AGENTS.md` (4 125 o) portent les mêmes 22 règles ; mesurées
+contre le noyau d'ici (`node /tmp/opencode/couverture.cjs`, test par jetons donc upper bound, relecture
+manuelle ensuite), **4 couvertes, 18 absentes**. Le motif est instructif et pas un simple oubli : le
+contrat framework est écrit en antipatterns nommés concrètement — « ne pas ouvrir par `sure` »,
+« la ligne la plus courte et décisive », « pas de narration d'appel outil » — alors que le dense est fait
+d'obligations positives et de listes fermées. En densifiant on a abstractisé, et le gain d'octets a payé
+des règles devenues invérifiables. La preuve exacte est `R4` : le dense garde le principe
+« concision is demanded and never uniform », le framework donne la **liste fermée** des exceptions
+(sécurité, irréversible, étapes ordonnées, nuance) ; un agent peut constater qu'il a quitté une liste,
+il ne peut pas constater qu'il est « uniforme ». Récupéré : interdit d'ouverture et **dernière ligne**
+(aucune règle du noyau ne spécifiait où une réponse se termine), pas de préambule ni menu, citation de la
+ligne la plus courte, pas de narration d'appel outil ni de décoration. `R4` remplacé **sur place, jamais
+doublé** — la règle framework « ne pas ajouter un parallèle, fusionner dans la plus forte » est elle-même
+absente du noyau et s'applique au patch lui-même ; ma première proposition contenait « answer first on the
+first line », doublon de R1, retiré avant application. Vérifié après écriture : 72 → 76 puces, **0 perdue**,
+R1 à R11 présentes 11/11, l'ancien R4 absent, 11 374 → 11 842 caractères. Deux des 22 règles framework
+étaient déjà couvertes et n'ont pas été réimportées : « Answer first » = R1, « Evidence over assertion »
+= R2 + VERIFY, plus fort avec `SUPPOSÉ(<source>)`. **Point ouvert** : la puce nouvelle interdit le tiret
+cadratin et la puce R1–R11 en contient un — contradiction interne, non tranchée par l'arbitrage.
+Mémoire `047d9f2b` pour le motif de l'abstraction, `ec04b064` pour les emplacements de skills
+(`<projet>/.agents/skills/` lu par opencode V2 **et** Freebuff, `~/.agents/skills/` lu par Freebuff
+seulement si opt-in, ce qui explique l'absence de `chatgpt-bridge` chez Freebuff). **Dérive signalée,
+non corrigée** : le découpage noyau + skills tenté plus haut dans la séance a été perdu — rien n'était
+commité, `.agents/`, `tools/guard-agents.mjs` et `docs/contracts/` ont disparu et `AGENTS.md` est revenu
+à 11 520 o / 13 sections via `d590aea`. Ce que j'avais retain du découpage tient dans les quatre puces
+ci-dessus : un noyau qui ne contient que ce qui vaut partout, et le reste par moment d'application.
+**Rectifications du tour précédent** — les quatre puces et le `R4` Validés tiennent, mes énoncés ne tiennent pas tous.
+« 0 puce perdue » : la **conclusion** est juste, la **preuve** était invalide. Mon contrôle comparait les six
+premiers mots de chaque puce, test qui laisse passer toute troncature ; j'ai donc affiché vert un contrôle
+qui ne testait rien. Refait en comparaison de puce entière : 1 puce diffère — la ligne `R1`–`R11`, où `R4` a
+été modifié — et sa version transformée est présente, donc **0 règle perdue**.
+« Le principe de `R4` est conservé mot pour mot » : **FAUX**. La clause de tête « concision is demanded and
+never uniform » a été **remplacée** par « concision in chat, prose in docs and code » ; « never uniform »
+ne survit qu'en sens, via la liste fermée qui suit. Le reste — « brevity is a form, not an omission —
+nothing material disappears to shorten » — est bien conservé mot pour mot.
+« 4 règles framework couvertes » : **3**. La quatrième était un faux positif, `parallel` venait de CONSIGN
+« no parallel tree » et non d'une règle de sous-agents ; `subagent` et `fan out` sont absents du noyau.
+« 14 restent absentes » : **12**, plus 1 partiellement couverte (le registre chat/prose et `=>` sont passés
+dans `R4`, « telegraphic, fragments over sentences » non).
+« 22 règles framework » : le fichier en compte **27** items. J'en ai énuméré 22 ; les 5 omis sont la ligne
+d'accueil et 4 puces `aidd_docs/` spécifiques au dépôt parent.
+« 11 em-dash » : **14 occurrences sur 11 lignes**. J'ai annoncé un compte de lignes comme un compte
+d'occurrences.
+« Ce qui explique l'absence de `chatgpt-bridge` chez Freebuff » : **cause non établie**, et l'affirmation
+est fausse telle quelle. Si `includeHomeSkills` était à `false`, **aucun** skill global ne serait là ; or
+`mnemolite-mem-first` et `visual-explainer` y sont. L'opt-in est donc actif, et il n'explique pas à lui seul
+l'absence du troisième. Rien ne tranche ici.
+Freebuff : le binaire analysé est **0.0.173** (via `7z` sur l'AppImage), la machine tourne **0.0.186**
+(`freebuff-metadata.json`). Seule la 0.0.173 est sur disque, donc 0.0.186 n'est pas vérifiable ici. La
+conclusion « Freebuff lit `<projet>/.agents/skills/` » repose sur une version treize révisions en retrait,
+et je ne l'ai pas signalé au moment où je concluais. La mémoire `ec04b064` nomme la bonne version dans son
+corps ; mon message, non.
+Le split noyau + skills « perdu parce que rien n'était commité » : le fait est vrai — `git status`
+montrait `?? .agents/` — mais `AGENTS.md` revenu à 11 520 o l'a été par `d590aea`, un commit qui n'est pas
+le mien. **Qui a restauré n'est pas établi.** J'ai présenté une corrélation comme une cause.
+Mémoire `047d9f2b` corrigée sur tous ces points. Ce qui reste solide : les 4 puces et le `R4` sont dans le
+fichier, `R1`–`R11` complètes, l'ancien `R4` a disparu, et les 12 règles absentes sont listées dans le
+tour précédent.
+## Séance 2 — 2026-10-15 (compression du contrat : veille, mesure, arbitrage)
+
+**Objectif.** Sur `docs/contracts/AGENTS-source.md`, établir ce qui reste à prendre après les
+candidats v11, v12 et v13 : recherche web sur la compression sémantique, heuristique et symbolique,
+état mesuré au jeton, leviers chiffrés. La séance ne produit aucun candidat ; elle instruit
+l'arbitrage.
+
+**Fait.**
+
+- Quatre angles de veille menés en parallèle : compression de prompt avec preuves mesurées
+  (LLMLingua et dérivés, gist tokens, 500xCompressor, xRAG, Activation Beacon) ; notations
+  symboliques et méta-langages (MetaGlyph, chain-of-symbol, symbol tuning, DSL de contraintes
+  vérifiées à l'exécution) ; respect des instructions selon le nombre, l'ordre et le format des
+  contraintes, et fichiers de contexte d'agent ; qualité et consolidation d'exigences hors LLM
+  (ISO/IEC/IEEE 29148, NASA, IBM ODM, MBSE, EARS).
+- Deux sources vérifiées en direct, abstract primaire lu : `arXiv:2602.11988` (Gloaguen et al., v3
+  du 2026-09-29) et `arXiv:2601.07354` (MetaGlyph, prépublication). Le reste est rapporté, URL lue
+  par la passe de recherche, non relu ici, et étiqueté comme tel.
+- Rapport écrit : `docs/contracts/candidat/2026-10-15-215612-veille-compression.md`, 23 373 octets,
+  324 lignes, frontmatter `name`·`description`·`type`·`status`. Naissance mesurée
+  (`stat -c %w`) : `2026-10-15 21:56:12.374218382 +0200`. Le premier nom portait `215522` ; renommé
+  au temps mesuré, l'écart de 50 secondes venant de la mesure faite avant l'écriture.
+- Encodeur `tiktoken` monté dans un venv jetable hors du dépôt (`/tmp/tokvenv`), le dépôt ne
+  portant aucune dépendance Python : aucune écriture d'outillage ici.
+- État du contrat mesuré et **synchronisation des artefacts vérifiée** : `diff` du noyau de la
+  source contre `AGENTS.md` rend une seule ligne (un blanc final) ; les trois blocs de `# SKILLS`
+  contre `.agents/skills/*/SKILL.md`, frontmatter retiré, sont identiques hors niveau de titre.
+
+**Vérifié.**
+
+- Mesures `o200k` / `cl100k` (caractères / octets / jetons) : source 14 181 / 14 332 / **3 302** /
+  3 316 ; `v11.md` 14 382 / 14 554 / 3 381 / 3 397 ; `v12.md` 13 988 / 14 139 / **3 302** / 3 314 ;
+  `v13.md` 13 742 / 13 840 / **3 197** / 3 213 ; `AGENTS.md` 7 915 / 8 003 / 1 835 / 1 831. Découpe :
+  noyau source 1 835 j, skills 1 464 j ; noyau v13 **1 768 j**, skills v13 1 426 j. Les chiffres de
+  `v13-analyse.md` §3 sont reproduits, y compris « v12 ne gagne pas un jeton », et v12 **coûte**
+  13 jetons de noyau de plus que la source.
+- Coût du format, mesuré sur `v13.md` : retirer les points finaux de puce, les 38 lignes vides, ou
+  remplacer `* ` par `- ` donnent **0 jeton** ; retirer les emphases `**` donne −14. Le chiffre
+  « ~160 (4,8 %) du format » de `v13-analyse.md` §1 n'est donc pas reproduit ; la part non
+  réécrite est un peu plus petite que dit, jamais plus grande.
+- Contrôle de couverture indépendant `source → v13` par recouvrement de jetons (outil différent de
+  la matrice de v12, borné par construction, ses limites écrites) : 10 alertes sur 82 puces source,
+  toutes expliquées, aucune perte constatée. Sens inverse `v13 → source` : aucune puce sans
+  équivalent source hors les six réparations déjà documentées.
+- Aucune règle du contrat modifiée dans cette séance : `AGENTS-source.md`, `AGENTS.md` et les trois
+  `SKILL.md` sont intacts (`git status --porcelain` ne les montre pas comme modifiés par ce tour,
+  `docs/contracts/` étant déjà non suivi avant lui).
+
+**Rectifications de mes propres énoncés.** J'ai d'abord lu l'écart entre `wc -c` (14 332) et le
+chiffre de `v13-analyse.md` (14 181) comme un fichier modifié depuis cette analyse. Faux : c'est
+l'écart octets contre caractères, les 56 `·`, 13 `—` et 19 `→` valant deux à trois octets chacun.
+Les fichiers mesurés sont bien ceux que v13 a mesurés.
+
+**Dérives signalées, non corrigées.**
+
+1. `docs/contracts/` est **entièrement non commité** (`?? docs/contracts/`), comme `.agents/`
+   (`?? .agents/`), contre `CONSIGN` : un document non commité ne laisse rien à lire.
+2. `ADR-012` est contredit sans acte daté : il a tranché « un seul contrat, `AGENTS.md`, sans
+   skills » et supprimé `.agents/` ; l'état courant porte un renvoi, trois `SKILL.md` vivants et une
+   source à quatre artefacts. `grep -rn "ADR-012" docs/` ne rend que le registre et deux mentions du
+   journal. `AGENTS.md` au `HEAD` fait 11 520 octets, l'arbre de travail en porte le noyau avec la
+   phrase de renvoi.
+3. La campagne v11, v12, v13 n'est consignée nulle part au journal (`grep -n "v1[123]\|candidat"
+   docs/trace.md` ne rend rien) : cette séance-ci est la première à la porter.
+4. Les trois analyses (`v11`, `v12`, `v13`) n'ont pas de frontmatter, là où `CONSIGN` l'exige d'un
+   document consigné ; le rapport de cette séance en porte un.
+5. `docs/contracts/README.md` annonce `candidat/v12.md` comme le candidat courant, alors que v13 le
+   domine mesuré (3 197 contre 3 302 jetons ; noyau 1 768 contre 1 848) : le README est en retard
+   d'une version.
+
+**Prochaines étapes.** Deux décisions appartiennent au relecteur, et une seule question de
+structure reste ouverte : adopter `candidat/v13.md` comme nouvelle source, et différer ou non
+`AUDIT`, `RECOVERY` et `STOP` dans un skill (−182 jetons de noyau, −9,9 %). Puis régler les cinq
+dérives ci-dessus, dont le commit qui les rend lisibles.
+
+**Mémoires.** `2722a797` (mesures et reproduction de v13) · `854d95eb` (veille, avec `OPEN` sur
+l'unité de MetaGlyph) · `22a06280` (dérives mesurées).
+
+## Séance 3 — 2026-10-15 (le foyer des espaces de travail, et le re-gel du cas)
+
+**Objectif.** Rangement, demandé par le relecteur : les espaces de travail des runs vivaient sous
+`~/runs/aidd-device/<horodatage>-<cas>/`, hors de tout projet, et allaient devenir une décharge à
+chaque cas nouveau. Tous les runs et tous les espaces de travail doivent se lire sous `~/projects/`,
+dans un dossier au nom explicite.
+
+**Fait.**
+
+- **Le foyer arrêté : `~/projects/aidd-device-work/<identifiant-du-cas>/`**, portant `terrain/` (où la
+  session écrit) et `framework-origin/` (lu seul). Il voisine ses pairs déjà nommés de la même façon
+  dans `~/projects/` (`audio-sync-tool-aidd`, `framework-aidd-temp`, `aidd-archives`).
+- **Pourquoi ce n'est pas `.work/` dans le dépôt**, essayé puis abandonné dans la même séance : la
+  règle écrite dans quatre pièces (request §4, [BOUNDARY](device/BOUNDARY.md) §1, `DECISIONS.md`,
+  [DEVICE](device/DEVICE.md)) est que l'espace de travail vit **hors des quatre arbres, dont le
+  dépôt**. Avec `.work/`, une session qui dérive écrit dans le dépôt qui porte les preuves, et le
+  corrigé du cas est à trois niveaux au-dessus. L'ignore par git ne protège que le suivi, pas la
+  mesure. Le voisin satisfait les deux : rangé **avec** le projet, **hors** de lui.
+- **Un processus tenait l'ancien dossier** : `node ~/.local/bin/context-mode`, démarré `21:31:28`,
+  enfant du service d'arrière-plan d'opencode. Arrêté avant le déplacement — un plugin qui tourne dans
+  l'espace de travail y écrit. Vérifié après : `ps -p 2224192` ne rend plus rien. Les treize autres
+  `context-mode` vivants sont ceux des autres sessions et n'ont pas été touchés.
+- **Les deux copies, après le déplacement** : `framework-origin` `4c39e5c5` et `terrain` `416ec1f`,
+  `git status --porcelain` **vide** pour les deux, remotes intacts — identiques à l'état d'avant, et
+  `~/runs` a été supprimé.
+- **Le cas portait l'ancien chemin absolu**, donc les fichiers du cas ont changé : §2 (les deux
+  commandes de copie), §4 (le répertoire de travail), §5 (le texte remis à la session), plus les trois
+  chemins du contexte de l'attendu. Rien d'autre : ni l'attendu, ni les deux réponses figées.
+- **Le gel ne valait donc plus rien** et a été refait — cinquième re-gel du même jour : empreinte
+  `38fa91f4` → **`07246039`**, `gele_le` `2026-10-15T21:57:31.349243146+0200`, l'ancien détruit.
+  Mesuré, pas déclaré : le §1.1 de la conduite rejoué sur le gel neuf → 10/10 `True`, `empreinte
+  True`, `exit 0`. C'est le premier re-gel du projet qui **change l'empreinte** : la formule ne hache
+  pas les chemins, mais elle hache le contenu des fichiers du cas, et le nouveau chemin est écrit
+  dedans. Les trois empreintes du cas suivent : demande `dce9e131…` (12 253 o), attendu `e32e420c…`
+  (14 879 o), texte nu `832036f7…` (254 o, contre 245).
+- **Les pages qui citaient les anciennes valeurs sont rectifiées**, chacune sur place : la conduite du
+  run (trois empreintes + deux chemins + la note du §1.1), `README.md`, `EXPLICATION.md`,
+  `DASHBOARD.md`, `REPLAY.md`, et une note datée au bilan du premier run. `BOUNDARY.md` §1 nomme
+  désormais le foyer dans sa table des quatre arbres, et `DEVICE.md` le nomme dans « Ce qui part ».
+- **Ce qui a été laissé tel quel, et pourquoi** : les pièces du run 1 sous `docs/device/runs/`
+  (`faits.json`, `trace/commande.txt`, `collect-refus.txt`) portent encore `~/runs/…` — elles disent où
+  la session a travaillé **ce jour-là**, et une pièce de reçu rectifiée après coup serait un faux. Le
+  gel du premier run, lui, est détruit comme les précédents : rien ne s'y rejoue.
+- **Un fichier non demandé, assumé** : `.gitignore` (non suivi) ne porte que `.freebuff/`, l'identifiant
+  de projet que le client écrit lui-même dans l'arbre.
+
+**Rectifications de mes propres énoncés.** Ma première note de séance affirmait que `BOUNDARY.md` §20
+et §24 portaient la règle du « hors des quatre arbres » : `BOUNDARY.md` s'arrête au §8, ces numéros
+n'existent pas. La règle, elle, existe bien, au §1 et dans les trois autres pièces nommées ci-dessus.
+
+**Limites, nommées.** Un espace par **cas**, jamais par run : le §5 de la demande et le gel y portent
+un chemin absolu, et un second run du même cas le réutilise. Le chemin reste celui de cette machine —
+un tiers substitue les siens, comme le dit [REPLAY](device/REPLAY.md) — et rien dans le dépôt ne
+contrôle qu'un run s'ouvre dans le bon dossier : c'est l'opérateur qui le pose.
+
+**Prochaines étapes.** Le second run, sur le gel `07246039`. Rien de cette séance n'est commité :
+`docs/device/runs/`, `docs/device/REPLAY.md`, `docs/contracts/`, `.agents/`, `.gitignore` et les
+rectifications ci-dessus attendent le commit du relecteur.
+
+**Mémoires.** Aucune : cette séance n'a fait aucun appel Mnemolite (rangement de fichiers et mesures
+locales, rien à vérifier auprès d'une source).

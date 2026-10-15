@@ -369,8 +369,12 @@ jointe à la pull request — sans quoi la question 1 du §11 se répond « non 
   la personne qui doute doit pouvoir récupérer la révision exacte qui a produit la sortie.
 - **`BOUNDARY.md`** — la frontière : les chemins du framework que le dispositif lit, la révision
   qu'il installe, ceux qu'il ne lit pas, et la preuve écrite que **aucun fichier du dispositif
-  n'appartient au framework** — ses propres `git ls-files` (le dispositif est un dépôt), confrontés
-  à `git ls-files` du framework, intersection vide — et que le framework n'a pas été modifié :
+  n'appartient au framework** — ses propres `git ls-files` (le dispositif est un dépôt) confrontés à
+  `git ls-files` du framework **en paires chemin + contenu** (`git ls-files -s`), l'intersection des
+  paires vide. Ni le chemin seul ni le contenu seul ne décident : deux dépôts qui portent chacun leur
+  `AGENTS.md` et leur `README.md` partagent ces deux chemins sans qu'aucun fichier appartienne à
+  l'autre, et deux fichiers vides partagent leur contenu sans rien partager du tout — seule une paire
+  identique est le même fichier, et elle vaut appartenance. Et que le framework n'a pas été modifié :
   `git -C <framework> status --porcelain` avant et après, identiques. Y figure aussi la révision du
   dispositif : `git -C <dispositif> rev-parse --short HEAD`.
 - **`CASES/<cas>.expected.json`** — les attendus, écrits **avant** le premier run, et figés avant :
@@ -448,7 +452,8 @@ compte-rendu se rend quand même.
    → `NEGATIVE.md` et sa sortie brute ; une raison documentée à la place du contrôle laisse cette
    question sans réponse, et la réponse est alors « non ».
 7. **Aucun fichier du dispositif n'appartient au framework, et le framework est-il intact ?**
-   → `BOUNDARY.md` : l'intersection vide, les deux `git status --porcelain`.
+   → `BOUNDARY.md` : l'intersection des paires chemin + contenu, vide, et les deux
+   `git status --porcelain`.
 8. **Le compte-rendu tient-il dans la pull request, et suffit-il à contester le verdict sans
    cloner le dispositif ?** → `ECART.md` commité, ses sorties brutes citées, et les deux révisions
    avec la commande de clonage. C'est la question que pose la personne qui relit ; les sept

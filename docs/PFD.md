@@ -16,9 +16,9 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 
 | Artefact | Ce qu'il prouve | Phase | Statut |
 | --- | --- | --- | --- |
-| `DEVICE.md` | ce que fait le dispositif, la commande de clonage et de lancement | 2 | 🔲 |
-| `BOUNDARY.md` | le framework est intact, l'intersection des fichiers est vide | 2 | 🔲 |
-| `CASES/*.expected.json` | les attendus écrits avant le premier run, empreinte figée | 2 | 🔲 |
+| `DEVICE.md` | ce que fait le dispositif, la commande de clonage et de lancement | 2 | 🟨 page écrite (895 mots), lancement à écrire |
+| `BOUNDARY.md` | le framework est intact, aucun fichier du dispositif ne lui appartient | 2 | 🟨 page écrite, relevés du run à venir |
+| `CASES/*.expected.json` | les attendus écrits avant le premier run, empreinte figée | 2 | 🟨 écrit et gelé (2026-10-15), aucun run |
 | `runs/<horodatage>/output.json` | l'écart : un objet par cas, verdict et limites | 2 | 🔲 |
 | `NEGATIVE.md` | le dispositif a signalé une casse connue | 2 | 🔲 |
 | `ECART.md` | le compte-rendu commité dans la pull request framework | 2 | 🔲 |
@@ -28,7 +28,7 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 | Phase | Contenu | Statut |
 | --- | --- | --- |
 | 1 — Gestion documentaire (fondation + boucle 2) | la gestion comme terrain de consignation : B1–B6, unité de travail, clôture, remote | 🟨 en cours |
-| 2 — Le dispositif (le v6) | DEVICE/CASES/runs/NEGATIVE, au moins un run réel | 🔲 |
+| 2 — Le dispositif (le v6) | DEVICE/BOUNDARY écrits ; CASES/runs/NEGATIVE et un run réel restent | 🟨 |
 | 3 — Amélioration continue | mesure des dérives de sa propre consignation, arbitrages | 🔲 |
 
 ## 2. Gestion documentaire (la partie en cours)

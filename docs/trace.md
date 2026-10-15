@@ -110,6 +110,78 @@ id hex|2026-10-1[45]|relecteur'` sur `AGENTS.md` → aucune ligne ; `grep -c '^#
   quatre sections « à deux maisons » (la liste même des doublons), et une fois `.agents/` retiré il
   rend `ok — 13 sections, 72 regles, noyau 11374 o, 0 skills` (`exit 0`). Après suppression :
   racine = `AGENTS.md docs .git README.md`, `liens_morts=0` sur 12 markdown, aucun renvoi résiduel.
+- **Le dispositif reçoit ses deux premières pages**, sur l'ordre « Écris DEVICE.md et BOUNDARY.md du
+  dispositif à partir du §7 amendé, sans coder le dispositif lui-même » :
+  `docs/device/DEVICE.md` (895 mots, limite du §10 : 900 ; 105 lignes) et `docs/device/BOUNDARY.md`
+  (1 013 mots, 128 lignes) — chiffres finaux, après les deux retouches de forme du tour.
+  `DEVICE.md` porte ce que le dispositif fait et ne fait pas, les trois rôles et la séparation
+  réellement tenue (« de contexte, pas de personne » — question 4 du §11), l'état (**état B** :
+  aucune session n'a reçu de demande), les huit champs de la demande, ce qui revient, la commande de
+  clonage et la révision `d02b750`, la séquence d'un run dont seule la première ligne existe, et la
+  correspondance nom du v6 §10 → foyer. `BOUNDARY.md` porte les quatre arbres, les chemins lus
+  (2 599 fichiers suivis, 51 `SKILL.md`, 400 fichiers `cli/src`, 17 `scripts/*.mjs|js` — tous
+  revérifiés), la révision installée `fe48de12`, ce qui n'est pas lu, et les deux preuves :
+  framework intact (porcelain 2 lignes et HEAD inchangés avant et après l'écriture), et aucun
+  fichier du dispositif appartenant au framework. Aucun code écrit, conformément à l'ordre.
+  Décision de foyer consignée (ADR-013, mémoire `118a0d4f`) : `docs/device/`, noms du v6 conservés,
+  sans préfixe daté, pour ne pas faire violer au dispositif la règle qu'il enseigne.
+- **La clause de preuve du v6 §10 est arbitrée et réparée dans le document**, sur l'ordre « Arbitre la
+  clause de preuve du v6 §10, mesurée insatisfiable telle qu'écrite, et répare-la dans le document »
+  (ADR-014, mémoire `2dc0e6a0`). Les trois lectures de la clause ont été mesurées avant de trancher :
+  par **chemin** seul, `LC_ALL=C comm -12` des deux `git ls-files` triés rend 2 lignes, `AGENTS.md`
+  et `README.md` — insatisfiable pour tout dépôt qui a ses deux pages d'entrée ; par **contenu**
+  seul, 0 commune sur 2 556 empreintes distinctes côté framework et 11 côté dispositif, mais 13
+  fichiers vides suivis chez l'origine (blob `e69de29b…`) casseraient le contrôle au premier
+  `.gitkeep` écrit d'un côté ; par **paire** chemin + contenu (`git ls-files -s`), 0 commune sur
+  2 599 paires contre 11. Réparé sur la troisième, la seule qui décide, et le document dit lui-même
+  pourquoi les deux autres ne décident pas : §10 et §11 Q7 exigent l'intersection vide des paires.
+  Mesures après réparation : md5 `607eebaf…` → `a33f947d…`, `wc -l` 600 → 605 ; `BOUNDARY.md` §6
+  réécrit sur l'ordre des raisons et re-relevé (1 013 → 1 383 mots). Le journal v6, lui, n'est pas
+  touché : c'est un enregistrement daté.
+- **Le harnais minimal du run est écrit**, sur l'ordre « Écris le harnais minimal du run — gel de
+  l'empreinte de `CASES/`, manifeste des produits, reçu, comparaison attendu/produit — sans ouvrir de
+  session » (mémoire `9f15f4d7`). Un fichier, `docs/device/harness/run.mjs`, Node 22 ESM, sans
+  dépendance, quatre commandes adossées chacune à un paragraphe de la spec : `freeze` (§3 Figement,
+  §5.2 avant — sha256, taille et `birth` des fichiers du cas, références du framework, état des trois
+  arbres), `collect` (§4 — copie verbatim sous `runs/<id>/raw/<cas>/`, manifeste par fichier, copie
+  relue contre la source), `receipt` (§6, §5, §7 — reçu écrit à chaud, falsificateurs, plafond de
+  verdict), `compare` (§8, v6 §10 — l'écart et la phrase, depuis le reçu seul). Il n'ouvre aucune
+  session et ne décide rien : il **refuse** — un gel sans attendu, un gel, un produit ou un reçu déjà
+  là, un lien symbolique dans le produit, un champ manquant dans `faits.json`, et tout verdict que la
+  preuve ne porte pas (produit né avant le gel, arbre de travail inchangé, produit identique à une
+  empreinte antérieure, cloisonnement rompu, rien produit). Vérifié par un banc jetable hors des
+  quatre arbres, non commité (`/tmp/aidd-harness-test.sh`) : **36/36 PASS, 0 FAIL** (`node --check`
+  compris), les quatre commandes, les onze refus, et les conditions 1 et 3 du §5 isolées l'une de
+  l'autre. Sur le vrai cas, il refuse — le gel d'un cas sans attendu ne prouverait pas « écrit avant
+  d'avoir vu le produit » — et laisse `CASES/` intact. La spec du run passe `pending` →
+  `in-progress` : l'ordre tient lieu d'approbation, et la phrase qui interdisait d'écrire la moindre
+  ligne de dispositif avant l'approbation est corrigée sur place. `DEVICE.md` porte le harnais, ses
+  cinq gestes et 897 mots (limite du §10 : 900).
+- **Le premier cas est complet et gelé**, sans qu'aucune session ait été ouverte. L'attendu
+  (`CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.expected.json`, 12 985 o, `sha256`
+  `d9b4ee01…`) porte les
+  champs du v6 §10 — identifiant, la demande verbatim remise au skill, le contexte de départ
+  (révision `4c39e5c59`, arbre `4c79f56a…`, terrain `416ec1f`, les deux copies, les interdits),
+  l'attendu en une phrase, les sources dont il se lit — plus **8 falsificateurs du run**, **4
+  falsificateurs de l'attendu** et **7 attendus écartés** avec leur critère. Le gel
+  (`…freeze.json`, `gele_le` `2026-10-15T15:29:49.581938260+0200`, empreinte `1b9a8434…`, refait
+  après la rectification 6 ci-dessous) couvre les deux fichiers du cas — naissances 13:34:50 et
+  15:26:49, toutes deux antérieures au gel, `sha256` recalculés après coup et identiques —,
+  **8 références** de la révision sous test (`SKILL.md`,
+  `01-scan.md`, `02-write.md`, `scan-summary.md`, `memory-destinations.md`, `structure.md`,
+  `memory-rules.md`, `reading-sources.md`) et **4 arbres** : `framework-origin` `fe48de12` (ses 2
+  lignes `??`, inchangées), `terrain` `416ec1f` (1 ligne, `?? .freebuff/`, ADR-011),
+  `revision-sous-test` `4c39e5c5` propre, `travail` `416ec1f` propre. L'état B tient : `receipt`
+  refuse faute de manifeste — aucun run n'a eu lieu, et rien ici ne l'atteste. L'attendu se lit dans
+  la révision sous test, jamais deviné : la colonne `Write to` de `memory-destinations.md` fixe les
+  destinations, la seule correction de l'opérateur (`memory/backlog.md` écarté) est un falsificateur,
+  et les deux règles que la session doit tenir — aucun `TODO` ni `<placeholder>` sous `memory/`,
+  rapport final — viennent des Tests de `02-write.md` et de la règle transverse de `SKILL.md`.
+- **La demande du premier cas a été rectifiée en tête**, l'état ayant contredit deux de ses lignes :
+  `status: frozen`, hors de `pending`·`in-progress`·`done`·`blocked`, → `pending`, et l'affirmation
+  d'un gel « pris au même moment » → « pris à l'étape 2, avant toute ouverture de session », le gel
+  existant désormais. Le texte verbatim du §5 et les deux réponses figées du §8 n'ont pas bougé ; la
+  rectification est écrite dans le fichier, et le gel qui suit porte les empreintes du texte rectifié.
 
 **Vérifié.** `date +'%Y-%m-%d-%H%M%S'` → `2026-10-15-080225` au moment de la création. Pas d'autre
 mesure : aucun script ne contrôle quoi que ce soit (« pas de script », arbitrage 4 de la séance) ;
@@ -124,9 +196,43 @@ ce journal est écrit à la main et se déclare reconstitution.
   phrase fausse du 2026-10-14, réfutée par la mémoire `12cdb674` et par la mesure de 659 parts
   d'outils. Traité dans la séance : `CONSIGN` réécrite, phrase corrigée sur place.
 - Les outils de fichiers du client résolvent un chemin relatif contre la racine du projet du client,
-  pas contre ce dépôt : toute écriture relative faite d'ici peut atterrir dans `framework-origin`. Le
-  cas d'aujourd'hui est réparé, la cause ne l'est pas — la parade tenue désormais est d'écrire en
-  chemin absolu, et rien dans le dépôt ne la contrôle.
+  pas contre ce dépôt : toute écriture relative faite d'ici peut atterrir dans `framework-origin`.
+  **Deux occurrences le même jour**, deux fois réparées : la spec du run vers 13:0x (`docs/tasks`
+  copié dans le dispositif puis retiré de l'origine), et la demande du premier cas à 13:34
+  (`docs/device/CASES/2026-10-15-133423-…request.md` retrouvée chez l'origine, remise dans
+  `docs/device/CASES/`, `docs/device/` retiré de l'origine). Preuve du retour, les deux fois :
+  `git -C /home/giak/projects/framework status --porcelain` → les 2 lignes documentées
+  (`.freebuff/`, `aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`). La cause n'est pas réparée — la parade
+  tenue est d'écrire en chemin absolu, et rien dans le dépôt ne la contrôle.
+- **La clause de preuve du v6 §10 était fausse telle qu'écrite** : signalée, non corrigée d'abord
+  (le document n'était pas de l'agent, et la règle veut qu'une clause contredite se répare sur ordre,
+  jamais en silence — ADR-010), puis **réparée sur ordre du relecteur** dans le tour suivant (ADR-014,
+  mémoire `2dc0e6a0`, entrée correspondante dans **Fait** ci-dessus). Mesure de la dérive :
+  `LC_ALL=C comm -12` des deux `git ls-files` triés rendait **2 lignes**, `AGENTS.md` et `README.md`
+  — deux dépôts qui portent chacun leur page d'entrée partagent forcément ces noms. Ces deux fichiers
+  ne sont pas les mêmes (sha256 `499b6a99…` contre `030506ef…` pour `AGENTS.md`, `aae97f91…` contre
+  `9920d7e1…` pour `README.md`), l'intersection des **contenus** est vide (2 556 empreintes distinctes
+  côté framework, 11 côté dispositif, 0 commune) mais le framework suit 13 fichiers vides, et
+  l'intersection des **paires** chemin + contenu est vide (2 599 contre 11, 0 commune). `BOUNDARY.md`
+  porte les trois relevés et retient la paire ; le v6 §10 et sa question 7 sont réparés à la source.
+  La même phrase, recopiée dans le PFD (« l'intersection des fichiers est vide »), avait déjà été
+  corrigée là où elle décrivait le dispositif.
+- **Une tension entre l'ordre et un invariant, nommée.** `AGENTS.md` §`CONSIGN` porte « No script,
+  no hook, no CI by default: a mechanical check is earned by demonstrated drift, never promised ».
+  Le harnais écrit ce jour n'est pas un contrôle sur le dépôt : c'est l'instrument du run, exigé par
+  le v6 §10 et par les §3, §4 et §6 de la spec, et ordonné par le relecteur. Les deux lectures sont
+  nommées ; si la seconde est la bonne, le harnais se supprime et les quatre gestes redeviennent
+  manuels.
+- La demande du premier cas porte `status: frozen`, hors de l'ensemble autorisé
+  (`pending`·`in-progress`·`done`·`blocked`), et affirme que l'empreinte du cas « est dans
+  `…freeze.json`, prise au même moment » : ce gel n'existe pas, et le harnais refuse de le prendre
+  tant que l'attendu manque. Corriger l'artefact d'une autre tâche est un arbitrage du relecteur :
+  nommé, laissé tel quel.
+- **Le titre de cette séance ne couvre plus ce qu'elle tient**, nommé et non corrigé. Elle s'ouvre
+sur « le dépôt est vidé, la fondation documentaire est en brainstorm » et porte depuis la boucle 2,
+la remesure du v6, l'amendement de son §7, l'arbitrage du contrat unique et les deux pages du
+dispositif. Numéroter une séance neuve pour la suite du jour est un arbitrage du relecteur, pas une
+correction d'agent sur une section vivante.
 
 **Prochaines étapes (TODO).**
 
@@ -151,7 +257,9 @@ ce journal est écrit à la main et se déclare reconstitution.
    `OUVERT` du §6 du journal v6 reste tel quel : c'est un enregistrement daté, la résolution vit ici.
 6. Arbitrer la spec du run par session d'opérateur : elle commande la phase 2 du PFD (`DEVICE.md`,
    `BOUNDARY.md`, `CASES/`), et la question qu'elle laisse ouverte — l'emplacement des artefacts du
-   dispositif, que le v6 veut à la racine et que le contrat de ce dépôt interdit hors de `docs/`.
+   dispositif. Cette ligne disait « que le v6 veut à la racine » : c'était mon inférence, rectifiée
+   à l'arbitrage (rectification 5 ci-dessous). Le foyer est tranché : `docs/device/` (ADR-013,
+   mémoire `e185e4da`).
 
 - Audit externe d'`AGENTS.md` (un autre LLM) vérifié point par point le 2026-10-15 (mémoire
   `312c1c32`) : confirmés — le worktree `.kilo/worktrees/polished-climb` dans l'arbre du terrain
@@ -202,7 +310,24 @@ comme acquis — désormais marqués `SUPPOSÉ(MEGA-PROMPT v6 §2)` ; (3) `DECIS
 rétablie, attribuée à `e493b0b8` ; (4) j'avais écrit « `.agents/` (cinq skills) » dans la mémoire
 `a31a4ac2` du même jour, et la carte de suite proposée au relecteur portait ce chiffre — comptage
 fait dans ce tour : **trois** skills, pas cinq ; la rectification vit dans l'ADR-012 et dans la
-mémoire `594f7674`, le chiffre faux reste lisible dans `a31a4ac2`, non réécrit.
+mémoire `594f7674`, le chiffre faux reste lisible dans `a31a4ac2`, non réécrit ; (5) j'ai écrit ici
+que le v6 §10 « veut à la racine » les artefacts du dispositif. Mesure faite au tour de
+l'arbitrage du foyer : `grep -n 'racine'` sur le méga-prompt v6 → **une seule ligne**, l.524 de
+l'annexe A, et elle parle du *résolveur de racine du framework* (`project-root.ts`), pas du parent
+des artefacts ; sur le journal v6 → aucune. Le §10 nomme les artefacts sans dossier parent — le seul
+chemin à dossier côté dispositif est `runs/<horodatage>-<framework@rev>-<dispositif@rev>/output.json`. Le document est muet sur le
+parent : c'est le contrat du dépôt qui le comble, et la ligne 186 lui prêtait une prescription qu'il
+ne porte pas. Le v6 n'a pas été touché ; `docs/device/` reste le foyer (ADR-013), et l'indirection
+est payée par une porte d'entrée dans `README.md`. (6) Le premier gel du cas a d'abord été pris
+(15:27:08) sur un attendu dont des citations étaient inexactes : « no TODO and no <placeholder>
+remains » écrit sans les deux backticks du fichier source, et une citation de `01-scan.md` dont le
+lien interne avait été abrégé. Les 15 citations de l'attendu — spans entre « … » — ont été repassées
+une à une sur les fichiers gelés, la demande et le message du commit `4c39e5c59` : 14 viennent des
+fichiers de la skill, une du message du commit (« survives a refresh 1 run in 2 »), une de la demande
+(« Everything else is right. »). Les rectifications faites, l'attendu portait `d9b4ee01…` au lieu de
+`9da9b265…`, et le gel, devenu caduc, a été refait (`--refreeze`, 15:29:49) : le gel précédent est
+détruit, jamais conservé à côté d'un texte qu'il ne couvre plus. La naissance de l'attendu reste
+15:26:49 — une rectification ne la déplace pas —, et le gel porte l'empreinte du texte tel qu'il est.
 
 **Mémoires de la séance.** `8c78b47e` le verdict du matin (« enfonce des portes ouvertes »,
 « tout revoir ») ; `50add890` la remise à plat et la correction du pivot (`aidd_docs/<date>.md`
@@ -215,4 +340,15 @@ l'approbation de la fondation et l'ordre de corriger `AGENTS.md` ; `a3e08338` la
   qui survit à l'effacement des fichiers : `12cdb674` (les cinq décisions du 14 et la réfutation
   du « 0 tool rows »). Du tour d'après : `594f7674` l'arbitrage du contrat unique — `AGENTS.md`
   seul, les trois artefacts doublons supprimés avec leurs empreintes, et la rectification du
-  « cinq skills » mesuré à trois.
+  « cinq skills » mesuré à trois. Du tour suivant : `118a0d4f` les deux pages du dispositif
+  (`DEVICE.md` 895 mots, `BOUNDARY.md` 1 013), le foyer `docs/device/` (ADR-013), la clause du §10 mesurée
+  fausse sous sa lettre, et l'état B déclaré — aucun run n'a eu lieu. Et, de  l'arbitrage du foyer :
+  `e185e4da` — le v6 ne prescrit nulle part la racine (une occurrence du mot, l.524, et elle parle du
+  résolveur de racine du framework), ma trace affirmait le contraire, et `docs/device/` est gardé sans
+  qu'aucune exception soit nécessaire. De l'arbitrage de la clause de preuve : `2dc0e6a0` — le §10
+  mesuré insatisfiable sous trois lectures (chemins, contenus, paires), la réparation du document
+  sur ordre, et la seconde occurrence de l'incident de territoire, réparée dans le même tour. Du tour
+  suivant : `9f15f4d7` — le harnais minimal du run, ses quatre commandes, ses onze refus, le banc
+  jetable à 36/36, et la tension nommée avec l'invariant « pas de script ». Du tour d'après :
+  `ba4885cf` — le premier cas écrit et gelé (attendu, 8 falsificateurs du run, 4 de l'attendu, 7
+  attendus écartés, `gele_le` `15:29:49`), la demande rectifiée, l'état B intact.

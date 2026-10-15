@@ -293,3 +293,85 @@ complète, rien ne le duplique, et la racine n'a plus d'arbre parallèle ni de s
 et nommée : les `description` de déclenchement des skills (quand les lire, quand ne pas les lire)
 ne sont pas reportées, faute de chargeur on-demand dans ce dépôt. Une tentative de re-découpe devra
 venir avec sa dérive mesurée, pas avec un contrôle promis.
+
+## ADR-013 — Les artefacts du dispositif vivent sous `docs/device/`, sous les noms du v6 (2026-10-15)
+
+**Contexte** : le v6 §10 nomme les artefacts du dispositif — `DEVICE.md`, `BOUNDARY.md`, `CASES/`,
+`runs/`, `NEGATIVE.md`, `REFUSED.md`, `LIMITS.md`, `ATTEMPT.md` — sans dire où ils vivent, et ses
+§7/§10 le veulent « chez lui, dans son propre dépôt git ». Or ce dépôt-ci **est** le dispositif, et
+son contrat (ADR-002, §`CONSIGN`) range tout document sous `docs/` et interdit qu'un fichier flotte à
+la racine. La [spec du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+a laissé la question ouverte (§10) en recommandant `docs/device/`.
+
+**Mesure, faite au tour de l'arbitrage** : le v6 §10 **ne prescrit pas la racine**. `grep -n 'racine'`
+sur le méga-prompt v6 → **une seule ligne**, l.524 de l'annexe A, et elle parle du *résolveur de
+racine du framework* (`project-root.ts`) ; sur le journal v6 → aucune. Le §10
+nomme les artefacts du dispositif **sans dossier parent**, et le seul chemin à dossier de son côté
+est `runs/<horodatage>-<framework@rev>-<dispositif@rev>/output.json`. Il ne donne de chemin complet
+que pour le côté framework (`ECART.md`, sous `aidd_docs/tasks/<année_mois>/<date_slug>/`). Il n'y a
+donc pas de conflit à trancher entre le v6 et le contrat de ce dépôt : il y a un silence du v6, et
+c'est le contrat qui le comble. La ligne 186 de `docs/trace.md`, qui affirmait le contraire, était
+une inférence de l'agent, rectifiée sur place (rectification 5 de la séance) et reprise dans la
+mémoire `e185e4da`.
+
+**Options** : (a) la racine du dépôt, comme les noms du v6 le suggèrent, au prix d'une exception au
+contrat que le dispositif enseigne ; (b) `docs/device/`, noms du v6 conservés et correspondance dite
+en tête de `DEVICE.md` ; (c) des noms datés selon la règle `NAMING`, ce qui casse la recherche du
+lecteur qui vient chercher `DEVICE.md` (question 1 du §11).
+
+**Décision** : (b). `DEVICE.md` et `BOUNDARY.md` vivent dans `docs/device/`, sous leurs noms
+prescrits et **sans préfixe daté** — le préfixe sert à rendre l'ordre alphabétique chronologique
+entre documents d'une même nature, et ceux-ci sont des singletons nommés par le v6, comme `AGENTS.md`
+et `README.md` à la racine. `ECART.md` reste chez le framework,
+`aidd_docs/tasks/<année_mois>/<date_slug>/`. La correspondance est écrite dans `DEVICE.md`.
+
+**Conséquences** : aucune exception au contrat — le dispositif n'énonce plus une règle qu'il
+violerait lui-même ; le coût est qu'un lecteur qui clone doit lire un chemin, dit en tête de
+`DEVICE.md`. Le harnais n'est pas décidé ici : il s'écrit après l'arbitrage de la spec du run, et
+rien du dispositif n'est codé avant. Mesures du jour : `DEVICE.md` 895 mots (limite du §10 : 900),
+`BOUNDARY.md` 1 013 mots, `liens_morts=0` sur 14 markdown, `framework-origin` inchangée (porcelain
+2 lignes, HEAD `fe48de12`, avant et après écriture). Le coût de l'indirection, lui, se paie à la
+porte : `README.md` faisait 14 octets et ne portait aucune entrée — il nomme désormais `AGENTS.md`,
+les deux pages du dispositif et le journal, sans quoi la question 1 du §11 se serait répondue « non »
+pour une raison de chemin.
+
+## ADR-014 — La preuve d'appartenance se mesure en paires chemin + contenu (2026-10-15)
+
+**Contexte** : le v6 §10 exige de `BOUNDARY.md` « la preuve écrite que **aucun fichier du dispositif
+n'appartient au framework** — ses propres `git ls-files` (le dispositif est un dépôt), confrontés à
+`git ls-files` du framework, **intersection vide** », et la question 7 du §11 lit cette preuve. Le
+relevé du jour a mesuré cette clause **insatisfiable telle qu'écrite** : `LC_ALL=C comm -12` des deux
+listes triées rend **2 lignes**, `AGENTS.md` et `README.md` — deux dépôts qui portent chacun leur
+page d'entrée partagent forcément ces noms. La dérive a été signalée et non corrigée : le v6 n'est
+pas de l'agent, et la règle du dépôt (ADR-010) veut qu'une clause ni claire ni spécifiée soit
+réparée, jamais interprétée en silence. Le relecteur ordonne la réparation.
+
+**Mesures** (2026-10-15 ; dispositif `d02b750`, 11 fichiers suivis, contre framework `fe48de12`,
+2 599) : intersection des **chemins** → `AGENTS.md` et `README.md`, qui ne sont pas les mêmes
+fichiers (`sha256` `030506ef…` contre `499b6a99…`, `9920d7e1…` contre `aae97f91…`) ; intersection des
+**contenus** → 0, mais le framework suit **13 fichiers vides** (`e69de29b…`) : au premier `.gitkeep`
+écrit d'un côté, cette intersection tombe sans qu'aucun fichier n'appartienne à l'autre ;
+intersection des **paires** chemin + contenu (`git ls-files -s`) → **0**, sur 2 599 paires contre 11.
+
+**Options** : (a) garder la lettre et lui ajouter une exception écrite (« intersection vide, pages
+d'entrée exclues ») — une liste à tenir à la main, que le prochain nom partagé par convention
+rouvre ; (b) retenir le contenu seul — un critère qu'un fichier vide casse sans rien prouver ;
+(c) la paire chemin + contenu, où un seul élément commun **est** le même fichier.
+
+**Décision** : (c), consignée en mémoire `2dc0e6a0`. La clause du §10 et sa lecture par la question 7 du §11 sont réparées dans le
+document — `docs/brainstorm/MEGA-PROMPT-TEST-AIDD-v6.md`, §10 (l.371-379) et §11 (l.454-456) :
+l'intersection des **paires chemin + contenu** doit être vide, et la clause dit elle-même pourquoi le
+chemin seul (deux pages d'entrée se partagent un nom) et le contenu seul (deux fichiers vides se
+partagent un contenu) ne décident pas. `BOUNDARY.md` §6 porte les trois relevés, l'ordre des raisons
+et la paire de `porcelain` qui garde l'intégrité du framework — elle ne change pas.
+
+**Conséquences** : une paire commune vaut appartenance, sans exception à tenir ni cas trivial à
+excuser ; l'intersection reste un relevé daté, valable pour ces deux révisions seulement. Limite
+nommée : le contrôle porte sur les fichiers **suivis**, et les artefacts non commités du dispositif
+(`docs/device/`, `docs/tasks/`) n'y entrent pas — ce qu'ils touchent est couvert par la paire de
+`porcelain`, relevée avant et après chaque run. Mesures après réparation : v6 `md5` `607eebaf…` →
+`a33f947d…`, `wc -l` 600 → 605 ; `BOUNDARY.md` 1 013 → 1 383 mots. Le journal v6 et la copie périmée
+restée chez l'origine ne sont pas touchés : l'un est un enregistrement daté, l'autre est hors de
+portée. Réparation faite aussi d'une dérive du tour, nommée dans `BOUNDARY.md` §8 : la demande du
+premier cas avait atterri dans `framework-origin` (chemin relatif résolu contre la racine du client),
+remise dans `docs/device/CASES/` — porcelain de l'origine revenu à ses 2 lignes documentées.

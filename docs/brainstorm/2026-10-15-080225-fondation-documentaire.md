@@ -2,7 +2,7 @@
 name: Fondation documentaire
 description: Les six bases de la consignation (deux canaux, un foyer, preuve, immuabilité, règles en AGENTS.md, zéro dérive), révisées après l'exemple deuteros, en itération ouverte
 type: spec
-status: in-progress
+status: done
 ---
 
 # Fondation documentaire

@@ -1140,8 +1140,49 @@ les deux dérives ci-dessus, l'étape 3 du bilan §11 (la sonde du client), et l
 run montre un arbre voisin déplacé.
 
 **Mémoires.** `42548adf` — l'ADR-021 : réponse `A`, ce qu'elle applique, ce que `B` aurait coûté et ce qui
-la rappellerait.
-
-**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+la rappellerait.**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
 bloc daté qui la cite. Elle se ferme sur `1235c5a`, trois fichiers qui portent l'arbitrage, rien de codé, et
 une dérive devenue lue sans être empêchée.
+
+## Séance 13 — 2026-10-16 (le remote déclaré dans `AGENTS.md`, et la journée poussée)
+
+**Objectif.** Fermer le second des cinq arbitrages de la Séance 6, la **déclaration** du remote dans
+`AGENTS.md`, la seule moitié de P6 qui restait, puis pousser la journée et remettre au vrai les pages qui
+l'attendaient.
+
+**Fait.** `AGENTS.md` gagne une phrase, la première du contrat à nommer l'adresse du dépôt : le contrat passe
+de 113 à 115 lignes (commit `0fd34d7`, 3 insertions, 1 suppression, un seul fichier). La poussée suit dans la
+même foulée. Quatre pages portaient la décision comme pendante et portent son état : la note datée sous
+`P6` de la [spec de la boucle 2](brainstorm/2026-10-15-081511-gestion-de-projet.md), qui dit maintenant que
+la déclaration est faite ; sa ligne « À décider par le relecteur », qui l'avait listée ; le point 5 du
+[DASHBOARD](DASHBOARD.md), dont la moitié « remote » est close quand celle du commit debout (P5) reste
+ouverte, et son en-tête de dernière mise à jour ; la ligne « Boucle 2 : remote » du [PFD](PFD.md).
+
+**Vérifié.** L'adresse n'est pas recopiée d'une page : `git remote -v` rend `origin
+https://github.com/giak/aidd-device.git` (fetch et push), `git branch --show-current` rend `main`, et
+`git ls-remote origin refs/heads/main` la lit **sans authentification** — la lecture hors machine que P6
+demandait. La déclaration est au contrat, mesurée par `grep -n 'github.com/giak/aidd-device' AGENTS.md` →
+ligne 11 ; avant elle, 0 occurrence de « remote » ou de « github » dans `AGENTS.md` (relevé de la Séance 10,
+rejoué). **Le geste de l'[ADR-021](DECISIONS.md) est tenu pour la première fois** : `git -C
+/home/giak/projects/framework status --porcelain` → les deux lignes documentées en [BOUNDARY](device/BOUNDARY.md)
+§5 (`?? .freebuff/`, `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`), `exit 0`, aucun écart à lire. Et la
+poussée, avant et après : `git ls-remote origin refs/heads/main` → `d239b08` avant, `0fd34d7` après ;
+`git push origin main` → `d239b08..0fd34d7  main -> main`, `exit 0`.
+
+**Dérives signalées, non corrigées.** Aucune nouvelle. Celles de la Séance 10 tiennent : les six décrochages
+de la relecture, dont le sixième — `EXPLICATION.md` annonçait « 21 commits » quand l'arbre en comptait 38 à
+ce relevé-là et **40** avant le commit qui porte ce bloc (`git rev-list --count HEAD`) — et l'adjectif
+« jetable » du `DASHBOARD`. Les deux restent au mot du relecteur.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** L'étape 3 du bilan §11 (la sonde du client Freebuff), puis le second run sur le gel
+`0d9a2180`. Restent ouverts, hors de cette fiche : le commit debout de P5, les six décrochages, le frontmatter
+des trois skills, et la copie `/tmp/banc-porte.sh`.
+
+**Mémoires.** `11210a41` corrigée à la source : elle disait « `origin/main` reste `d239b08` et **rien n'est
+poussé** ».
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur le commit qui la porte et sur la poussée qui suit : `origin/main`
+quitte `d239b08` pour porter la journée, et le geste de l'ADR-021 a trouvé son premier témoin.

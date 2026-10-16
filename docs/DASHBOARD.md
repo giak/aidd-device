@@ -7,7 +7,7 @@ status: in-progress
 
 # DASHBOARD — État d'avancement
 
-> Dernière mise à jour : 2026-10-16 (Séance 6 — mise au vrai de l'état mesuré)
+> Dernière mise à jour : 2026-10-16 (Séance 13 — le remote déclaré dans `AGENTS.md`, P6 close)
 > Source de vérité pour « où en est le projet ? ». Mettre à jour après chaque séance.
 
 ## 1. Statut global
@@ -63,10 +63,11 @@ status: in-progress
 3. **Puis l'écart, même si le run ne produit rien** : `collect --sans-produit`, `receipt`, `compare`
    (étapes 5 et 6), avec l'entrée au journal de la séance.
 4. **Enfin `NEGATIVE.md`, puis `ECART.md`** (étape 7) : jamais ouverts à ce jour.
-5. **Ouvert, sans action ce jour** : l'arbitrage de la boucle 2 sur le commit debout (P5) — le remote
-   (P6) existe et porte `main` depuis le 2026-10-15, re-poussé le 2026-10-16 ; et le frontmatter des trois
-   skills (`name`;`description` là où `CONSIGN` en nomme quatre), laissé `OPEN` par la Séance 5, faute de
-   `drift` établi. Après quoi seulement : la boucle 3, le protocole de test du framework (MEGA-PROMPT v6).
+5. **P6 close le 2026-10-16, P5 ouverte** : le remote (`origin`, public) porte `main` depuis le 2026-10-15
+   et `AGENTS.md` **déclare** désormais son adresse (ligne 11, commit `0fd34d7`, journée poussée le jour
+   même) — c'était la seule moitié de P6 qui restait. **Restent ouverts, sans action ce jour** : l'arbitrage
+   de la boucle 2 sur le commit debout (P5) et le frontmatter des trois skills (`name`;`description` là où
+   `CONSIGN` en nomme quatre), laissé `OPEN` par la Séance 5, faute de `drift` établi. Après quoi seulement : la boucle 3, le protocole de test du framework (MEGA-PROMPT v6).
 
 **Ce qui est fermé depuis le bilan du premier run** : ses trois trous le sont tous — reçu d'un run sans
 produit (spec §9, `collect --sans-produit`), chemin du §5 qui ne résolvait pas ([ADR-019](DECISIONS.md),

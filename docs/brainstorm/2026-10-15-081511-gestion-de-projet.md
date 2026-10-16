@@ -61,6 +61,11 @@ déclaré dans `AGENTS.md` s'il en veut l'usage.
 > **déclaration** du remote dans `AGENTS.md`. Mesuré le même jour, `AGENTS.md` ne porte aucune occurrence
 > de « remote » ni de « github » ; la seule adresse écrite vit dans [DEVICE](../device/DEVICE.md), dans un
 > bloc de clonage.
+>
+> **P6 close le 2026-10-16 (Séance 13).** La déclaration est faite : `AGENTS.md` nomme `origin` et `main`
+> (ligne 11, commit `0fd34d7`), et la journée est poussée (`d239b08..0fd34d7  main -> main`, `exit 0`). Le
+> relevé de la Séance 10 qui comptait 0 occurrence de « remote » ou « github » dans ce fichier ne vaut plus :
+> `grep -n 'github.com/giak/aidd-device' AGENTS.md` → ligne 11. P6 n'a plus de reste.
 
 ## Hors de portée de cette spec
 
@@ -77,6 +82,6 @@ déclaré dans `AGENTS.md` s'il en veut l'usage.
 - Du relecteur, 2026-10-15 : la boucle 2 est ouverte avec écriture immédiate des specs (mémoire
   `6bf9e005`) ; le commit de clôture de la boucle 1 est explicitement autorisé, ponctuel.
 - De l'agent, réversibles à l'itération : P1–P6, le format du dossier, le hors-périmètre.
-- À décider par le relecteur : le commit debout de P5, la **déclaration** du remote dans `AGENTS.md`
-  (le remote, lui, existe et porte `main` : note datée sous P6), l'approbation de cette spec comme la
-  boucle 2 du contrat.
+- À décider par le relecteur : le commit debout de P5, l'approbation de cette spec comme la boucle 2 du
+  contrat. La **déclaration** du remote dans `AGENTS.md`, qui figurait ici, est **faite le 2026-10-16**
+  (note datée sous P6).

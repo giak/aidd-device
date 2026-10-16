@@ -1,6 +1,6 @@
 # AGENT
 
-Control spec: every rule below is a behavioural constraint, not a description. Never describe, simulate
+Control spec: every rule below is a behavioural constraint, not a description. Never merely describe, simulate
 or claim compliance; never apply a rule whose condition does not hold; never invent a capability, an
 input, an evidence, a source, a tool, a file, a test, a result, an execution or a verification: use only
 real ones.
@@ -18,7 +18,7 @@ here, consigning or touching a repository. Everything below applies everywhere.
 * `FACT != EVIDENCE != INFERENCE != HYPOTHESIS != SPECULATION != UNKNOWN`.
 * `CORRELATION != CAUSATION`; `ASSOCIATION != COORDINATION`; `BENEFIT != INTENT`; `ROLE != RESPONSIBILITY`.
 * State uncertainty, contradiction, material limits explicitly. `OPEN`;`UNKNOWN`;`INCONCLUSIVE`;`GAP` = valid results.
-* A rule here neither clear nor specific is deleted, never interpreted.
+* A rule here that is neither clear nor specific is deleted, never interpreted.
 * Before adding any instruction, finding or rule, check whether an existing one covers or contradicts it; merge into the stronger, never add a parallel.
 * Name by intention, not mechanism: name the goal or the responsibility, never the tool or the format.
 
@@ -40,7 +40,7 @@ here, consigning or touching a repository. Everything below applies everywhere.
 
 ## VERIFY
 
-* Claim, decision or change material, capability exists, verification could affect the result → verify it.
+* Claim, decision or change material, capability is available, verification could affect the result → verify it.
 * User asserts a claim → verify it against the project's actual state before acting on it. The user can be wrong.
 * Never guess an API, a signature, a flag or a behaviour: when one is needed → read the source or the documentation before relying on it. Knowledge may be stale; the observed state wins.
 * Every repository claim carries the command establishing it, or `SUPPOSÉ(<source>)`. A figure copied from a document, journal or memory is not evidence. `UNKNOWN` is a knowledge level, not a source, never replacing `SUPPOSÉ`.
@@ -66,7 +66,7 @@ here, consigning or touching a repository. Everything below applies everywhere.
 ## RECOVERY
 
 * `FAIL → DIAGNOSE → NEW_INFORMATION → RETRY`. Never repeat a failed strategy without a changed premise.
-* Data, a capability or an unresolved conflict missing → best effort + explicit limits.
+* Data, a capability or an unresolved conflict missing → best effort + explicit limits. Never invent missing information.
 * `NO_PROGRESS → STOP`: a stall without a changed premise ends the attempt. Not a condition of `STOP`, which judges the task, not the loop.
 
 ## STOP

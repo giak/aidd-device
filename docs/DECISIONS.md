@@ -485,3 +485,42 @@ un automatisme.
 chacun). Le banc se lit et se corrige avec le harnais qu'il éprouve, et les contrôles à venir (les deux du
 volet reçu d'ADR-021) prennent place dans ce même compte. Ce qu'il ne couvre pas reste ce qu'il ne
 couvrait pas : aucun run, aucune qualité du cas, rien de ce qui est propre à une machine.
+
+## ADR-023 — Le nom du dossier d'un run s'écrit en tirets, `framework@rev` est la notation du v6 (2026-10-16)
+
+**Contexte** : la Séance 16 a rendu visible une divergence d'un caractère, laissée à trancher. Trois pages
+vivantes prescrivent le nom du dossier d'un run sous la forme copiée du v6,
+`runs/<horodatage>-<framework@rev>-<dispositif@rev>/` : la [spec du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+l. 83, la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) l. 205
+(qui le dit « nom imposé par la spec §4 ») et [DEVICE](device/DEVICE.md) l. 70. Or la commande que cette
+même conduite donne à l'opérateur, l. 212, rend des **tirets**
+(`$(date +%Y-%m-%d-%H%M%S)-4c39e5c5-$(git -C … rev-parse --short HEAD)`), et le seul dossier de run qui
+existe, commité et cité par son nom dans trois pages, est
+`docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/`. [ARCHITECTURE](ARCHITECTURE.md), rectifiée le
+même jour, est la seule page alignée sur le nom réel.
+
+**Mesure, faite au tour de l'arbitrage** : le v6 §10 écrit son gabarit l. 387, entre chevrons, et énonce lui
+même son exigence l. 392-393 : « Le nom du dossier porte les deux révisions, sans quoi la sortie ne dit pas
+ce qui l'a produite. » Le **séparateur n'est prescrit nulle part** ; ce qui est prescrit, ce sont les deux
+révisions dans le nom. Le nom réel les porte : `4c39e5c5` (la révision sous test du gel) et `1d471a5`, que
+`git cat-file -t` dit `commit` de ce dépôt.
+
+**Options** : (a) le nom littéral sépare par des tirets, et `framework@rev` reste la notation du v6 ; (b) le
+nom littéral porte un `@`, ce qui déclare mal nommé le dossier du premier run, le fait renommer et casse
+les liens de trois pages ; (c) ne pas trancher, l'état de la Séance 16.
+
+**Choix** : (a). Les pages du dispositif qui **prescrivent** écrivent le nom littéral,
+`runs/<horodatage>-<révision du framework>-<révision du dispositif>/`. Les **citations du v6 restent
+verbatim** : le méga-prompt lui-même, l'ADR-013 l. 145 (qui *mesure* le texte du v6, il ne le prescrit
+pas) et le journal, aux deux endroits qui portent le gabarit (Séance 1 l. 345, Séance 16 l. 1290 et
+l. 1311) : un enregistrement daté ne se réécrit pas pour une notation.
+Les trois pages vivantes sont amendées, avec leur note datée en tête pour la spec et la conduite, et la
+phrase du §5 d'[ARCHITECTURE](ARCHITECTURE.md) reçoit le renvoi.
+
+**Ce que ce n'est pas** : un renommage. Rien ne bouge sur le disque, le premier run garde son nom, et
+`run.mjs` ne construit aucun nom de dossier : `--run` reçoit le chemin, il ne le fabrique pas.
+
+**Conséquences** : une seule lecture du gabarit, et plus aucune page du dispositif qui prescrive un nom
+qu'aucune commande ne produit. Le séparateur n'est pas ce que le v6 éprouve ; les deux révisions dans le nom
+le sont, et elles y sont. **Falsificateur** : un dossier de run dont le nom porte un `@`, ou une ligne de la
+conduite qui en rend un.

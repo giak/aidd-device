@@ -7,7 +7,7 @@ status: in-progress
 
 # DASHBOARD — État d'avancement
 
-> Dernière mise à jour : 2026-10-16 (Séance 13 — le remote déclaré dans `AGENTS.md`, P6 close)
+> Dernière mise à jour : 2026-10-16 (Séance 18 — le gabarit du nom d'un run tranché : [ADR-023](DECISIONS.md), des tirets)
 > Source de vérité pour « où en est le projet ? ». Mettre à jour après chaque séance.
 
 ## 1. Statut global
@@ -36,28 +36,33 @@ status: in-progress
 | Fondation documentaire | `docs/brainstorm/2026-10-15-080225-fondation-documentaire.md` | 🟢 appliquée |
 | Boucle 2 | `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` | 🟨 en itération |
 | Journal | `docs/trace.md` | 🟢 vivant |
-| Architecture du protocole | `docs/ARCHITECTURE.md` | 🟨 écrit le 2026-10-16 (Séance 6, suite) : acteurs, arbres, cinq commandes, vie des artefacts, falsificateurs et plafond du verdict, **5 schémas mermaid** rendus et libellés relus en SVG ; les autres pages y renvoient, la page ne les recopie pas |
+| Architecture du protocole | `docs/ARCHITECTURE.md` | 🟨 écrit le 2026-10-16 (Séance 6, suite) : acteurs, arbres, cinq commandes, vie des artefacts, falsificateurs et plafond du verdict, **5 schémas mermaid** rendus et libellés relus en SVG ; les autres pages y renvoient, la page ne les recopie pas. **Rectifiée le même jour (Séance 16)**, chaque chiffre relu contre sa pièce : le gabarit du nom d'un run (un `@` que le nom réel n'a pas), le marqueur `.freebuff/project-id` du client dans « qui écrit où », et ce que la sonde du client a mesuré aux limites — les cinq schémas restent **intacts**. **Complétée le même jour (Séance 17)**, second contrôle, trois réparations : le banc du harnais entre au §4 et à la carte du §9, `last-message.md` revient sous `raw/<cas>/` (spec §4), `produit.absent` est rendu au reçu ; les cinq schémas re-rendus, 5/5 `exit 0`, et `cmp` identique après la dernière réparation |
 | Explication pour débutants | `docs/EXPLICATION.md` | 🟢 écrit et commité (`41f531c`, revu en `6789bec`), 3 schémas mermaid |
 | Bilan du premier run | `docs/brainstorm/2026-10-15-201458-bilan-premier-run.md` | 🟢 écrit après le run et commité (`d0d894b`) : 4 causes du `non concluant`, 6 schémas, 2 arbitrages, 8 brainstorm — la page à lire avant de reprendre |
 | Dispositif — la page | `docs/device/DEVICE.md` | 🟨 v0.1, 895 mots |
 | Dispositif — la frontière | `docs/device/BOUNDARY.md` | 🟨 v0.1, 1 686 mots (`wc -w`, mesuré le 2026-10-16 ; la page annonçait 1 563) |
-| Dispositif — le harnais | `docs/device/harness/run.mjs` | 🟨 882 lignes, **63 refus**, 5 commandes ; `freeze --racine` déclare la racine des espaces de travail une seule fois et en dérive les deux copies du cas (ADR-019), `preflight` (ADR-018) refuse d'autoriser l'ouverture hors de l'espace de travail gelé et vérifie le texte remis (`--texte`), `collect` refuse un `--from` hors de l'arbre `travail` du gel et le reçu y relit la provenance (ADR-020), et `receipt` n'accepte plus un autre des quatre arbres ; `collect --sans-produit` ouvre le chemin de la spec §9 (un run qui ne produit rien laisse un `receipt.json` et un `output.json`) ; banc jetable 36/36, 12/12 sur le re-hachage du cas (reçu et jugement), **46/46** sur la porte, la racine déclarée, l'origine du produit et la non-régression (13 contrôles pour la porte dont 9 refus, 11 pour la racine, 15 pour l'origine), et le banc du 2026-10-15 sur le chemin sans produit ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §9) |
+| Dispositif — le harnais | `docs/device/harness/run.mjs` | 🟨 882 lignes, **63 refus**, 5 commandes ; `freeze --racine` déclare la racine des espaces de travail une seule fois et en dérive les deux copies du cas (ADR-019), `preflight` (ADR-018) refuse d'autoriser l'ouverture hors de l'espace de travail gelé et vérifie le texte remis (`--texte`), `collect` refuse un `--from` hors de l'arbre `travail` du gel et le reçu y relit la provenance (ADR-020), et `receipt` n'accepte plus un autre des quatre arbres ; `collect --sans-produit` ouvre le chemin de la spec §9 (un run qui ne produit rien laisse un `receipt.json` et un `output.json`) ; banc jetable 36/36, 12/12 sur le re-hachage du cas (reçu et jugement), **46/46** sur la porte, la racine déclarée, l'origine du produit et la non-régression (13 contrôles pour la porte dont 9 refus, 11 pour la racine, 15 pour l'origine), et le banc du 2026-10-15 sur le chemin sans produit ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §9) ; **son foyer a changé le 2026-10-16** : le banc vit au dépôt, `docs/device/harness/banc-harnais.sh`, renommé avec son foyer et lisant ses faits de machine au gel ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)) ; rejoué le même jour depuis le dépôt, **46/46 PASS**, `exit 0` |
 | Dispositif — le premier run | `docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md` | 🟨 conduit le 2026-10-15 (`17:15:59`–`17:29:51`) : un échange consommé sur trois, aucun tableau rendu, aucun fichier produit, verdict `non concluant` — **sans reçu ni `output.json`**, ce run étant antérieur au chemin sans produit ; le harnais sait désormais l'écrire (spec §9, `collect --sans-produit`), la pièce reste donc telle quelle : ce qui reste ouvert est le **run**, plus l'outil |
 | Dispositif — rejouer le gel | `docs/device/REPLAY.md` | 🟨 la recette qu'un inconnu suit depuis un clone neuf : un bloc, la sortie observée, quatre limites |
+| Dispositif — le banc du harnais | `docs/device/BANC.md` | 🟨 v0.1, écrit le 2026-10-16 : les 46 contrôles qui éprouvent les refus et les acceptations de `run.mjs`, où ils vivent, comment les lancer, ce qu'ils lisent dans le gel et ce qu'ils ne prouvent pas ([ADR-022](DECISIONS.md)) |
 | Dispositif — le premier cas | `docs/device/CASES/` (demande, attendu, gel) | 🟨 écrit le 2026-10-15, **re-gelé** après le premier run (`gele_le` `2026-10-15T22:11:24.782242943+0200`, empreinte **`0d9a2180`**, les anciens `bc126fe6`, `38fa91f4` et `07246039` détruits, après trois passes de rectification, le déplacement de l'espace de travail puis la racine déclarée) : le cas nomme `$RACINE` — la racine que le gel déclare une seule fois, et dont les deux copies du cas sont dérivées ([ADR-019](DECISIONS.md)) — le texte du §5 porte un **chemin absolu** après substitution (le relatif ne résolvait pas depuis la racine de projet de la session) et la porte le vérifie (`preflight --texte`), l'attendu porte **9 falsificateurs** avec `F9` (la lecture de la révision sous test) et 4 de l'attendu ; rejeu du gel `exit 0` ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §6.1). **Remesuré le 2026-10-16** : demande `5aac04fb…` (13 413 o), attendu `ae4914c5…` (15 423 o), gel à `2 fichiers` et `8 références`, racine `…/aidd-device-work`, les deux copies au repos (`framework-origin` `4c39e5c5`, `terrain` `416ec1f`, `porcelain` 0 ligne), et `preflight --case … --repertoire <W>/terrain --texte <W>/texte-a-remettre.txt` rend « ouverture autorisée », `exit 0` |
 
 ## 3. Prochains pas (TODO court terme)
 
-1. **Il ne manque qu'une chose avant le second run : la sonde du client.** Décidé le 2026-10-15 au soir,
-   le client du second run est **Freebuff**, à modèle hébergé ; la
+1. **La sonde du client est faite (2026-10-16, Séance 15) ; ce qui reste est un geste, pas une
+   mesure.** Le client du second run est **Freebuff**, à modèle hébergé ; la
    [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) §1.5
-   et §1.6 portent la source de trace et la lecture de la fenêtre. **Non éprouvé à ce jour, et mesuré
-   tel** : aucun projet Freebuff ne pointe l'espace de travail gelé — `select root_path from projects`
-   sur les onze bases `~/.config/freebuff-desktop/projects/*/desktop-v2.db` rend
-   `/home/giak/projects/audio-sync-tool` (le terrain **original**) et `/home/giak/projects/aidd-device`,
-   jamais `<W>/terrain`. Trois choses restent à mesurer : poser la racine de projet de la session sur
-   `<W>/terrain`, la remise du texte **à l'octet** (le run 1 avait perdu 2 guillemets par le client), et
-   l'export de trace sur la base du run.
+   et §1.6 portent la source de trace et la lecture de la fenêtre, et son **§1.7** ce que la sonde a rendu :
+   les foyers du client (`~/.config/freebuff-desktop/`, `~/.config/Freebuff/`, `~/.freebuff/`, et
+   `.freebuff/project-id` écrit **dans l'arbre ouvert**) ; le mode **worktree** à refuser, un fil pouvant
+   créer une **branche** dans la copie du cas ; la racine de projet, les onze projets portant des racines
+   absolues quelconques, dont une en `/tmp` — rien n'interdit `<W>/terrain` ; le texte remis **octet pour
+   octet** (`cmp` identique sur deux échantillons, aucun guillemet ajouté, l'inverse d'`opencode` au
+   premier run) ; la lecture **hors de la racine** libre, donc le `..` du bilan §11 n'est pas bloqué ; et
+   l'export de trace rejoué tel quel (**694 lignes**, huit genres, `notice` compris). Reste un geste de
+   l'opérateur, pas une mesure : **aucun projet Freebuff ne pointe l'espace de travail gelé** —
+   `select root_path from projects` sur les onze bases rend `/home/giak/projects/audio-sync-tool` (le
+   terrain **original**) et `/home/giak/projects/aidd-device`, jamais `<W>/terrain`.
 2. **Puis le second run**, sur le gel `0d9a2180`, trois échanges, session neuve (bilan §11, étape 4).
    Son ordre exact : la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md).
 3. **Puis l'écart, même si le run ne produit rien** : `collect --sans-produit`, `receipt`, `compare`

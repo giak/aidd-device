@@ -1228,3 +1228,221 @@ n'était pas encore poussé.
 **Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
 bloc daté qui la cite. Elle se ferme sur le commit qui la porte : un inconnu, depuis un clone neuf, rejoue le
 texte scellé et lit les quatre arbres, sans rien connaître de cette machine.
+
+## Séance 15 — 2026-10-16 (la sonde du client Freebuff : ce qu'il écrit, où, et ce qu'on peut en prouver)
+
+**Objectif.** Faire l'**étape 3** de la chaîne du [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)
+§11 — sonder le client du second run : racine de projet, texte octet pour octet, lecture en `..`, trace
+exportable — et l'écrire dans son foyer, sans toucher au harnais.
+
+**Fait.** La [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
+gagne un **§1.7**, en neuf sous-sections : les cinq foyers du client et ce qu'on y trouve ; ce qu'il écrit
+**dans l'arbre où on l'ouvre** ; le piège du mode *worktree* ; la racine de projet ; la comparaison du texte
+**octet pour octet** ; la lecture hors de la racine ; l'export de trace ; les quatre gestes de l'ouverture,
+puis cinq limites nommées. Son §1.5 est rectifié — sa liste de genres était **incomplète**, pas fausse. Le
+point 1 du [DASHBOARD](DASHBOARD.md) §3.1 passe de « non éprouvé » à « sonde faite ; il reste un geste ».
+**Aucune ligne de code** : `run.mjs` et le banc ne sont pas touchés, et rien n'entre au dépôt comme script —
+les commandes de la sonde vivent dans la page, pas dans un mécanisme de plus.
+
+**Vérifié.** Chaque ligne du §1.7 vient d'une commande courue le 2026-10-16, dans une session Freebuff
+ouverte sur ce dépôt (fil `ce9c488a`, *harness* `codebuff`) :
+
+| Ce qui est mesuré | Commande | Résultat |
+| --- | --- | --- |
+| le texte stocké contre le texte reçu | `cmp` et `sha256sum`, sur `parts_json[0].text` extrait en lecture seule | **identiques**, `deffae8d…` (145 o) et `12c09bd7…` (105 o) : aucun guillemet ajouté, l'inverse d'`opencode` au premier run |
+| la base du projet | `count(*)` sur `threads`, `messages`, `json_array_length(parts_json)` | 4 fils, 101 messages, 2 504 parts, 10,5 Mo |
+| les racines | `select id, root_path, default_branch from projects` sur les onze bases | onze lignes, toutes **absolues**, dont une en `/tmp` — rien n'interdit `<W>/terrain` |
+| l'état du fil | `threads` : `model`, `harness_id`, `execution_mode`, `branch`, `worktree_path` | `codebuff`, `local`, `branch` et `worktree_path` **vides** ici ; un autre fil porte une branche `freebuff/…` et `~/.freebuff/worktrees/dfe8952d/aidd-device`, encore dans `git worktree list` |
+| ce que le client écrit dans l'arbre | `cat .freebuff/project-id` | 37 o, l'UUID du projet ; la copie `terrain` du cas n'en a **pas** et son `porcelain` est **vide** |
+| la lecture hors racine | `read_files` sur `../audio-sync-tool/README.md` | résolu et lu (`/home/giak/projects/audio-sync-tool/README.md`) — le `..` du bilan §11 n'est pas bloqué |
+| l'export de trace | la commande du §1.5, rejouée telle quelle | `exit 0`, **694 lignes**, 863 514 o, huit genres dont `notice` |
+| les compteurs | `select distinct key from messages, json_each(metrics_json)` | `context`, `compactions`, `usage`, `costUsd` |
+| la pièce du cas | `sha256sum <W>/texte-a-remettre.txt` | `832036f7…`, 254 o — le texte à comparer à l'ouverture |
+
+**Dérives signalées, non corrigées.** Celles de la Séance 10, inchangées : les six décrochages de la
+relecture (dont `EXPLICATION.md`, « 21 commits ») et l'adjectif « jetable » du `DASHBOARD`. Celle que cette
+séance a nommée était **dans son périmètre** et a été corrigée dans la foulée : la liste des genres du §1.5.
+
+**Rectifications.** Deux, sur les affirmations de cette séance, trouvées par un contrôle fait après
+l'écriture : le **compte de sous-sections** annoncé « huit » est **neuf** (`grep -c '^#### '` sur le §1.7) ;
+et le lien du §1.7 vers le `.gitignore` racine visait `docs/.gitignore`, qui n'existe pas — réparé en
+`../../../../.gitignore`, et les cinq liens du §1.7 résolvent tous, contrôle rejoué (`exit 0`).
+
+**Prochaines étapes.** Le geste, pas la mesure : **aucun projet Freebuff ne pointe `<W>/terrain`** — la
+racine du run se pose à la main, et c'est la dernière chose qui manque avant l'étape 4, le second run.
+Tiennent aussi, hors de cette fiche : le commit debout de P5, les six décrochages, le frontmatter des trois
+skills, la copie `/tmp/banc-porte.sh`.
+
+**Mémoires.** `e1112361` — nouvelle : les foyers du client, le texte octet pour octet, le piège du worktree,
+la lecture hors racine, l'export rejoué, et ce que la sonde ne prouve pas. `11210a41` corrigée à la source :
+sa ligne disait que l'étape 3 était non faite.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau bloc
+daté qui la cite. Elle se ferme sur un travail **non commité** (la conduite, le `DASHBOARD`, ce bloc) : le
+relecteur n'a pas demandé de commit, et un dépôt propre se lit — pas une séance.
+
+## Séance 16 — 2026-10-16 (`ARCHITECTURE.md` relue, chiffre par chiffre)
+
+**Objectif.** Double-check de [ARCHITECTURE.md](ARCHITECTURE.md) : relire chaque chiffre contre sa pièce, et
+réparer ce qui ne tenait plus.
+
+**Fait.** **Un chiffre était faux, corrigé** : le gabarit du nom de dossier d'un run portait un `@`
+(`runs/<horodatage>-<révision du framework>@<révision du dispositif>/`) que le nom réel n'a pas : le seul
+dossier existant est `docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/`, séparateurs à tirets, et c'est
+lui la source du gabarit. **Deux faits mesurés le même jour entrent**, au foyer de leurs sections : au §3,
+le marqueur `.freebuff/project-id` (37 o) que le client écrit dans l'arbre ouvert et hors produit ; au §8, ce que la sonde du client a rendu (lectures hors racine **libres**, écritures hors racine **non éprouvées**, mode *worktree* à refuser, texte stocké identique au texte reçu). La note de rectification entre en tête et le §9 nomme désormais le §1.7 de la conduite.
+
+**Vérifié.** Chaque affirmation chiffrée de la page, relue contre sa pièce, le 2026-10-16 :
+
+| Ce que la page affirme | Pièce réinterrogée | Résultat |
+| --- | --- | --- |
+| 882 lignes, « aucune dépendance, aucun hook, aucun CI » | `wc -l run.mjs` ; son en-tête l. 33 | 882 ; la phrase y est : **tient** |
+| le reçu et le jugement refusent un cas qui a bougé depuis le gel | en-tête de `run.mjs` l. 42-44, la formule d'empreinte l. 259, le refus l. 274 | **tient** : c'est la réparation du doute du 2026-10-15, en place dans le code |
+| les quatre labels et leurs `HEAD` (`fe48de12`, `416ec1f`, `4c39e5c5`, `416ec1f`) | lecture du gel | **tient** |
+| `arbres[]` porte `head`, `head_complet`, `porcelain`, `remotes`, `refs_distants` | les clés réelles de `arbres[0]` | **tient** (`chemin`, `head`, `head_complet`, `label`, `porcelain`, `refs_distants`, `remotes`) |
+| `fichiers[]` (rôle, chemin, `sha256`), `references[]` (arbre, chemin, `sha256`), **8 références** | les clés réelles et le comptage | **tient** (les deux portent en plus `birth`, `birth_epoch`, `taille`) |
+| **neuf** falsificateurs du run, **quatre** de l'attendu, nommés `F1`…`F9` / `E1`…`E4` | `falsificateurs_du_run` et `falsificateurs_de_l_attendu` de l'attendu | **tient** : 9 et 4, conditions conformes à ce que la page écrit |
+| un re-gel détruit le précédent, « six fois le 2026-10-15 » | `run.mjs` l. 379 ; journal, Séance 3 (« cinquième re-gel du même jour » puis « sixième ») | **tient** |
+| le plafond du verdict | conduite §3.3 | **tient** |
+| les liens de la page | existence de chaque cible | **10/10 résolvent** |
+
+**Dérives signalées, non corrigées.** Celles de la Séance 10, inchangées (les six décrochages, l'adjectif
+« jetable »). Et une nommée par cette relecture : `DECISIONS.md` l. 145 écrit le même gabarit de nom de run
+avec `@` (`runs/<horodatage>-<framework@rev>-<dispositif@rev>/`) : lisible comme une notation, mais c'est
+elle qui a induit le `@` de la page ; la laisser telle quelle est un choix du relecteur, pas une évidence.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Inchangées : le geste (ouvrir un projet Freebuff sur `<W>/terrain`), puis le second
+run. Restes hors de cette fiche : le commit debout de P5, les six décrochages, le frontmatter des trois
+skills, `/tmp/banc-porte.sh`, et ce qui n'est pas commité depuis la Séance 15.
+
+**Mémoires.** `0f0916a8` — nouvelle : la relecture d'`ARCHITECTURE.md`, ce qui tient chiffre par chiffre, le
+`@` corrigé, et les deux faits de la sonde entrés dans la page.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau bloc
+daté qui la cite. Elle se ferme sur un travail **non commité** (la page, son registre, ce bloc) : quatre
+fichiers modifiés aujourd'hui, aucun commit, la relecture a réparé une page, elle n'a ouvert aucune session.
+
+## Séance 17 — 2026-10-16 (`ARCHITECTURE.md`, second contrôle : trois réparations)
+
+**Objectif.** Refaire le double-check de [ARCHITECTURE.md](ARCHITECTURE.md), la Séance 16 ayant clos le sien
+sur un travail non commité : chaque référence reportée sur sa pièce, et ce qui a manqué depuis, comblé.
+
+**Fait.** Trois défauts trouvés, trois réparations, dans la page et à sa note d'en-tête :
+
+| Défaut | Pièce qui le dit | Réparation |
+| --- | --- | --- |
+| le **banc du harnais** n'était nommé nulle part, alors qu'il vit au dépôt depuis le jour même | [BANC.md](device/BANC.md), [ADR-022](DECISIONS.md) | une phrase au §4 (46 contrôles, rien ne le déclenche seul, il n'éprouve que le harnais, jamais le dépôt) et une ligne à la carte du §9 |
+| `last-message.md` rangé sous `runs/<id>/` | spec §4, qui le place sous `raw/<cas>/` | la ligne du tableau §5 et le libellé du schéma §5, remis sous `raw/<cas>/` |
+| `produit.absent` attribué à `output.json` | `run.mjs` l. 784 (le reçu porte `produit`) contre l. 858 (la sortie porte `produit_brut`) | la phrase du §7 : `produit.absent` au reçu, `produit_brut` à la sortie |
+
+Le [DASHBOARD](DASHBOARD.md) suit : en-tête à la séance, ligne du banc du harnais complétée de son nouveau
+foyer, et une ligne pour [BANC.md](device/BANC.md), qui manquait à la liste des documents produits.
+
+**Vérifié.** Chaque chiffre et chaque nom, remesuré ce jour :
+
+| Ce que la page affirme | Commande | Résultat |
+| --- | --- | --- |
+| le banc, 46 contrôles | `bash docs/device/harness/banc-harnais.sh` | `exit 0`, `46/46 PASS`, 46 `PASS` / 0 `FAIL` |
+| les cinq schémas mermaid | 5 blocs extraits, `mmdc` 11.4.2, `PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome` | 5/5 `exit 0` : 24 336 / 11 918 / 14 101 / **19 375** / 16 149 o ; 0 élément `<g class="error-icon"` ; le libellé modifié relu dans le SVG ; et `cmp` 5/5 avec les blocs extraits **après** la dernière réparation |
+| les 11 liens | boucle sur chaque cible | 11/11 résolvent (10 + `BANC.md`) |
+| 882 lignes, « aucune dépendance » | `wc -l run.mjs` ; `grep '^import'` | 882 ; cinq imports, tous `node:` (fs, crypto, child_process, path, url) |
+| les quatre labels et leurs `HEAD` | lecture du gel | tiennent (`fe48de12`, `416ec1f`, `4c39e5c5`, `416ec1f`) |
+| 2 fichiers de cas, 8 références, `racine_espace_de_travail`, `gele_le` | lecture du gel | tiennent (`…/aidd-device-work`, `2026-10-15T22:11:24…`) |
+| 9 falsificateurs du run, 4 de l'attendu, `F1`…`F9` / `E1`…`E4` | `falsificateurs_du_run`, `falsificateurs_de_l_attendu` | tiennent, conditions conformes à ce que la page écrit |
+| le dossier du run | `ls docs/device/runs/` ; `git cat-file -t 1d471a5` | un seul dossier, `2026-10-15-171559-4c39e5c5-1d471a5` ; `1d471a5` est un commit du dépôt |
+| les refus du §4, commande par commande | `grep 'preflight : ' run.mjs` (9 refus) et les refus de `collect`, `receipt`, `compare` | tiennent |
+| la copie `travail` ne porte aucun `aidd_docs` | `ls $W/terrain` | tient |
+| `cloisonnement.attendu_vu` | `run.mjs` l. 683, 756 | tient : exigé au reçu, et « oui » force `non concluant` |
+
+**Dérives signalées, non corrigées.** Le gabarit `@` du v6 vit encore à cinq endroits (spec §4, conduite
+§1.3, [DEVICE](device/DEVICE.md) l. 70, [DECISIONS](DECISIONS.md) l. 145, méga-prompt v6 l. 387), et c'est
+la commande réelle de la conduite §1.3 qui rend des tirets : `ARCHITECTURE.md` est la seule page alignée sur
+le nom réel du dossier de run. `DASHBOARD.md` §2 garde l'adjectif « jetable » et les comptes du banc des 15
+et 16 : complétés d'une ligne de foyer, pas réécrits. Et rien des Séances 15 et 16 n'est commité à cet
+instant.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Inchangées : le geste (ouvrir un projet Freebuff sur `<W>/terrain`, en mode direct,
+sans *worktree*), puis le second run sur le gel `0d9a2180`.
+
+**Mémoires.** `e0a566d7` — nouvelle : le second contrôle d'`ARCHITECTURE.md`, les trois réparations, ce qui a
+été remesuré, et les cinq endroits qui gardent le gabarit `@`.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau bloc
+daté qui la cite. Elle se ferme sur un travail **non commité** (la page, le tableau de bord, ce bloc) : aucun
+commit, aucune session ouverte, `run.mjs` intact.
+
+## Séance 18 — 2026-10-16 (le gabarit du nom d'un run : des tirets, et `@` redevient une notation)
+
+**Objectif.** Trancher la divergence que la Séance 16 avait nommée et laissée ouverte : trois pages du
+dispositif **prescrivaient** `runs/<horodatage>-<framework@rev>-<dispositif@rev>/`, la seule page alignée sur
+le nom réel écrivait des tirets, et la commande de la conduite en produisait déjà.
+
+**Fait.** La décision est l'[ADR-023](DECISIONS.md), et les pages qui prescrivent l'appliquent :
+
+| Pièce | Nature | Geste |
+| --- | --- | --- |
+| spec §4 l. 83 | prescription | le gabarit écrit en tirets, renvoi à l'ADR-023, note datée en tête |
+| conduite §1.3 l. 205 et ses puces l. 219-220 | prescription | même gabarit ; les puces nomment « révision du framework » et « révision du dispositif » et disent `framework@rev` pour ce qu'il est, la notation du v6 ; note datée en tête |
+| [DEVICE](device/DEVICE.md) l. 70 | prescription | même gabarit, renvoi |
+| [ARCHITECTURE](ARCHITECTURE.md) §5 l. 184 | description | la phrase du gabarit gagne le renvoi |
+| v6 l. 387 (le gabarit) et l. 392-393 (l'exigence), [ADR-013](DECISIONS.md) l. 145, journal l. 345 et l. 1311 | citations | **inchangées** : un enregistrement daté ne se réécrit pas pour une notation |
+
+**Vérifié.** La mesure qui tranche, et le reste, remesurés ce jour :
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le v6 ne prescrit aucun séparateur | `grep -n 'porte les deux révisions'` (l. 393) et relecture du bullet l. 387 | le v6 dit « Le nom du dossier porte les deux révisions, sans quoi la sortie ne dit pas ce qui l'a produite » : l'exigence porte sur les deux révisions, pas sur le caractère qui les sépare |
+| le nom réel porte ces deux révisions | `ls docs/device/runs/` ; `git cat-file -t 1d471a5` | `2026-10-15-171559-4c39e5c5-1d471a5`, et `1d471a5` → `commit` de ce dépôt |
+| la commande de la conduite rend des tirets | conduite §1.3 l. 212 | `…/runs/$(date +%Y-%m-%d-%H%M%S)-4c39e5c5-$(git -C … rev-parse --short HEAD)` |
+| `run.mjs` ne fabrique aucun nom de dossier | `grep -n 'runs/' run.mjs` ; `grep -c 'date +'` | deux mentions, en commentaire ; `--run` reçoit le chemin ; zéro `date +` |
+| ce qui garde un `@` est une citation | `grep -rn 'framework@rev'` | quatre fichiers : le v6, l'ADR-013 qui le mesure, le journal, et l'ADR-023 qui le cite |
+| les liens des six pages touchées | boucle sur chaque cible, depuis le dossier de chaque page | 0 mort, après la réparation de `DEVICE.md` |
+| les cinq schémas d'ARCHITECTURE | `cmp` des blocs extraits contre ceux rendus en Séance 17 | identiques : l'édition est hors mermaid |
+
+**Dérives signalées, non corrigées.** Aucune nouvelle : le `@` qui subsiste dans le v6 et dans les
+enregistrements datés est le résultat de la décision, pas une dérive. Restent celles des séances 10, 16 et
+17, inchangées.
+
+**Rectifications.** Deux, toutes deux de cette séance. (1) L'ADR-023 citait la spec « l. 80 » et la conduite
+« l. 201 / l. 205 », numéros mesurés **avant** l'amendement des deux pages ; l'édition déplaçant ses propres
+cibles, ils ont été remesurés après (l. 83, l. 205, l. 212) et corrigés dans l'ADR. (2) Le renvoi
+`[ADR-023](DECISIONS.md)` du premier jet de `DEVICE.md` visait à côté depuis `docs/device/` : lien mort,
+attrapé par le contrôle et corrigé en `../DECISIONS.md`.
+
+**Prochaines étapes.** Inchangées : le geste (ouvrir un projet Freebuff sur `<W>/terrain`, en mode direct,
+sans *worktree*), puis le second run sur le gel `0d9a2180`, dont le dossier suivra le gabarit tranché ici.
+
+**Mémoires.** `2819def3` — nouvelle : l'ADR-023, la mesure qui la fonde, les pages amendées, les citations
+laissées verbatim et les deux rectifications de la séance.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau bloc
+daté qui la cite. Elle se ferme sur un travail **non commité** (sept fichiers : trois pages vivantes du
+dispositif, la spec, la conduite, le tableau de bord et ce bloc) : aucun commit, aucune session ouverte,
+`run.mjs` intact.
+
+## Séance 18 — 2026-10-16 (suite)
+
+**Objectif.** Le contrôle de fin de la séance, qui relit ce qu'elle vient d'écrire : la citation du journal
+dans l'ADR-023.
+
+**Fait.** Cette citation nommait « les séances 3, 9 et 16 du journal », écrit **sans mesure** dans le premier
+bloc. Le journal ne porte le gabarit du v6 qu'à **deux** endroits, et dans **deux** séances : Séance 1 l. 345
+et Séance 16 l. 1290 et 1311. La phrase de l'ADR-023 est corrigée sur place et cite désormais les lignes
+mesurées, pas des numéros de séance devinés.
+
+**Vérifié.** `awk` sur le journal, chaque occurrence rattachée à sa séance (`/^## Séance/`), et
+`grep -n 'framework@rev' docs/trace.md` → l. 345 (Séance 1), l. 1290 et 1311 (Séance 16). Les liens des sept
+pages touchées : 0 mort, rejoué après cette correction. `run.mjs` intact (`git diff --quiet`, `exit 0`).
+
+**Rectifications.** La troisième de la séance, et la seule que le premier bloc ne porte pas : une citation
+qui nommait deux séances étrangères au fait. Les deux premières (numéros de ligne de l'ADR remesurés après
+amendement, lien mort de `DEVICE.md`) sont dans le bloc précédent, telles qu'écrites.
+
+**Mémoires.** `2819def3` — complétée de cette troisième rectification, relue après coup.
+
+**Fermeture.** La séance est de nouveau close, cette fois sur ses trois rectifications. Travail toujours
+**non commité** : sept fichiers, aucun commit, aucune session ouverte.

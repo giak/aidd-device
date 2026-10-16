@@ -12,6 +12,18 @@ status: in-progress
 > rendu par mermaid-cli 11.4.2 le jour de l'écriture, et le libellé attendu relu dans le SVG produit
 > (un `exit 0` ne prouve pas un rendu, le [bilan du premier run](brainstorm/2026-10-15-201458-bilan-premier-run.md) §9 l'a mesuré).
 >
+> **Rectifié le 2026-10-16 (Séance 16)**, après relecture de chaque chiffre contre sa pièce : le gabarit
+> du nom de dossier d'un run portait un `@` que le seul nom réel n'a pas ; le marqueur `.freebuff/project-id`
+> que le client écrit dans l'arbre ouvert entre au tableau des arbres ; et ce que la sonde du client a
+> mesuré le même jour (lectures hors racine libres, mode worktree à refuser) entre aux limites.
+>
+> **Complété le 2026-10-16 (Séance 17)**, second contrôle, chaque référence reportée sur sa pièce, trois
+> réparations. Le **banc du harnais**, entré au dépôt le jour même (`harness/banc-harnais.sh`,
+> [BANC](device/BANC.md), [ADR-022](DECISIONS.md)), n'était nommé nulle part ici ; `last-message.md` était
+> rangé un cran au-dessus de son foyer, que la [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+> §4 place sous `raw/<cas>/` ; et `produit.absent` était attribué à `output.json`, qui ne le porte pas, le
+> reçu le porte.
+>
 > **Ce que cette page possède** : les acteurs et leur séparation de contexte, le trajet des fichiers,
 > les cinq commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
 > **Ce que possèdent les autres pages** : [DEVICE](device/DEVICE.md) dit ce qu'il fait, ne fait pas, et
@@ -79,7 +91,7 @@ sequenceDiagram
 | framework-origin | `/home/giak/projects/framework` | la source à l'épreuve | personne, lu seul |
 | terrain | `/home/giak/projects/audio-sync-tool` | le vrai projet, un vrai dépôt | personne, lu seul |
 | révision sous test | `<racine>/<cas>/framework-origin` | la source copiée pour le run | le gel, qui la dérive de `--racine` ([ADR-019](DECISIONS.md)) |
-| travail | `<racine>/<cas>/terrain` | la copie du terrain, **c'est ici que la session écrit** | le gel, puis la session |
+| travail | `<racine>/<cas>/terrain` | la copie du terrain, **c'est ici que la session écrit** | le gel, puis la session, et le **client** qui y marque `.freebuff/project-id` (37 o, mesuré le 2026-10-16, [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) §1.7) : hors produit, `collect` ne copie que `aidd_docs` |
 | le dispositif | `/home/giak/projects/aidd-device` | les preuves, le harnais, les cas | le dispositif, et lui seul |
 
 `<racine>` est `racine_espace_de_travail`, déclarée **une seule fois** au gel : c'est un fait de la
@@ -98,8 +110,11 @@ graph TD
 ## 4. Les cinq commandes, et le cycle d'un run
 
 `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
-aucun CI ([ADR-004](DECISIONS.md)). Son code de sortie est toujours le même trio : `0` fait, `1` refus
-(imprimé, jamais compté), `2` usage.
+aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
+le dépôt, `docs/device/harness/banc-harnais.sh` : 46 contrôles, sans ouvrir de session ni écrire dans le dépôt
+([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). Le banc n'est pas un automatisme pour autant : rien ne
+le déclenche seul, et il n'éprouve que le harnais, jamais le dépôt. Son code de sortie est toujours le
+même trio : `0` fait, `1` refus (imprimé, jamais compté), `2` usage.
 
 | Commande | Quand | Ce qu'elle lit | Ce qu'elle écrit | Ce qu'elle refuse |
 | --- | --- | --- | --- | --- |
@@ -108,7 +123,7 @@ aucun CI ([ADR-004](DECISIONS.md)). Son code de sortie est toujours le même tri
 | `collect` | le produit revenu | le gel, `--from` résolu (`realpath`) | `runs/<id>/raw/<cas>/` et son manifeste : `sha256`, taille, `birth`, source absolue de chaque fichier ([ADR-020](DECISIONS.md)) | un `--from` hors de l'arbre `travail`, un lien symbolique, un dossier déjà collecté, une copie dont le `sha256` diffère, `--from` vide |
 | `collect --sans-produit` | un run qui ne rend rien | le gel seul | le même manifeste, avec `fichiers: []` et `produit_absent: true` | `--sans-produit` **avec** `--from` (spec §9) |
 | `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json` | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un verdict que la preuve ne porte pas |
-| `compare` | après, par le juge | le **reçu seul** et le gel, re-haché | `runs/<id>/output.json` : `cas`, `attendu`, `produit_brut`, `difference`, `verdict`, `limites`, `ecarte_comme_non_testable`, `phrase`, `gel_verifie` | un cas qui ne concorde plus avec le gel, un reçu qui cite une empreinte que le gel sur disque ne porte plus |
+| `compare` | après, par le juge | le **reçu seul** et le gel, re-haché | `runs/<id>/output.json` : `cas`, `attendu`, `produit_brut`, `difference`, `verdict`, `limites`, `ecarte_comme_non_testable`, `phrase`, `gel_verifie`, `juge_le`, `depuis_le_recu` | un cas qui ne concorde plus avec le gel, un reçu qui cite une empreinte que le gel sur disque ne porte plus |
 
 ```mermaid
 flowchart TD
@@ -140,7 +155,7 @@ flowchart LR
   subgraph Ope["Operateur"]
     O1["racine/cas : les deux copies"]
     O2["racine/cas/texte-a-remettre.txt"]
-    O3["runs id last-message.md, trace/"]
+    O3["runs id raw cas last-message.md, trace/"]
   end
   Ses["Session sous test"] -->|"ecrit"| S1["racine/cas/terrain/aidd_docs"]
   R1 -.->|"texte du paragraphe 5, substitue"| O2
@@ -160,14 +175,16 @@ flowchart LR
 | `<racine>/<cas>/framework-origin`, `terrain` | `freeze`, par dérivation | la session, le harnais | hors des arbres, sous `~/projects/` | une par **cas**, jamais par run |
 | `<racine>/<cas>/texte-a-remettre.txt` | l'opérateur | `preflight --texte` | hors des arbres | regénérée à chaque rectification du cas |
 | `raw/<cas>/` et son manifeste | `collect` | le reçu | `docs/device/runs/<id>/` | versionnée avec le run |
-| `last-message.md` | l'opérateur, à la main, verbatim | le juge | `docs/device/runs/<id>/` | versionnée |
+| `raw/<cas>/last-message.md` | l'opérateur, à la main, verbatim | le juge | `docs/device/runs/<id>/raw/<cas>/` | versionnée |
 | `trace/` (export et commande) | l'opérateur | le juge, et quiconque doute | `docs/device/runs/<id>/` | versionnée : c'est la pièce la plus forte du run |
 | `receipt.json` | `receipt`, à chaud | le juge | `docs/device/runs/<id>/` | **jamais reconstruit après coup** : un reçu du lendemain est un témoignage |
 | `output.json` | `compare` | le relecteur de la pull request | `docs/device/runs/<id>/` | versionnée : c'est l'écart |
 | `ECART.md` | à écrire | le relecteur de la pull request framework | chez le framework, `aidd_docs/tasks/<année_mois>/<date_slug>/` | pas ouvert à ce jour |
 
-Le nom du dossier d'un run porte ce qui l'a produit : `runs/<horodatage>-<révision du framework>@<révision du dispositif>/`,
-soit, pour le premier run, `runs/2026-10-15-171559-4c39e5c5-1d471a5/`.
+Le nom du dossier d'un run porte ce qui l'a produit : `runs/<horodatage>-<révision du framework>-<révision du dispositif>/`,
+soit, pour le premier run (le seul à ce jour, et la source de ce gabarit),
+`runs/2026-10-15-171559-4c39e5c5-1d471a5/`. Des tirets, donc : la forme du v6 porte un `@`
+(`framework@rev`), c'est une notation, et [ADR-023](DECISIONS.md) a tranché ce point le 2026-10-16.
 
 ## 6. Ce que le gel scelle, et ce qu'il ne peut pas sceller
 
@@ -227,8 +244,8 @@ flowchart TD
 ```
 
 Un run qui n'a rien produit n'est pas un échec de la mesure : avec `collect --sans-produit`, il laisse un
-manifeste, un reçu et un `output.json` où `produit.absent: true` dit ce qui manque, et le verdict tombe
-à `non concluant` ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §9, [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §6.2).
+manifeste, un reçu où `produit.absent: true` dit ce qui manque, et un `output.json` dont `produit_brut`
+nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §9, [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §6.2).
 
 ## 8. Ce qui est structurellement vrai, et ce qui reste une limite
 
@@ -246,6 +263,13 @@ manifeste, un reçu et un `output.json` où `produit.absent: true` dit ce qui ma
   texte n'existe que si on lui donne) ; un manifeste recollé à la main après coup reste indiscernable
   d'un manifeste né ainsi ; un artefact peut atterrir dans l'arbre de l'origine par la résolution d'un
   chemin relatif côté client ([BOUNDARY](device/BOUNDARY.md) §8).
+- **Le client, mesuré le 2026-10-16** ([conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) §1.7) : ses
+  **lectures** ne sont pas cloisonnées à l'arbre ouvert (un `..` qui en sort résout, un chemin absolu
+  aussi), donc la prémisse du cas (aller lire la révision sous test) tient ; ses **écritures** hors
+  racine, elles, n'ont pas été éprouvées, et la limite ci-dessus porte là. Il peut aussi vivre en
+  *worktree* : ouvert ainsi sur la copie du terrain, il y créerait une branche et déplacerait le `HEAD`
+  gelé : à refuser avant d'ouvrir. Et le texte qu'il stocke est **identique à celui qu'il reçoit**
+  (`cmp`, deux échantillons, aucun guillemet ajouté).
 
 ## 9. Où lire quoi
 
@@ -254,7 +278,8 @@ manifeste, un reçu et un `output.json` où `produit.absent: true` dit ce qui ma
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| l'ordre exact à suivre pour un run, et ce qui se remet mot pour mot | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
+| le banc qui éprouve le harnais, ses 46 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |
 | ce qui a eu lieu, et ce qu'un run a laissé | `docs/device/runs/`, son `PV.md` |

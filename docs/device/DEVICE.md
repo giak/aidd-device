@@ -67,7 +67,8 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 
 ## Ce qui revient
 
-Sous `runs/<horodatage>-<framework@rev>-<dispositif@rev>/` : `raw/<cas>/` et son manifeste,
+Sous `runs/<horodatage>-<révision du framework>-<révision du dispositif>/` (des tirets, [ADR-023](../DECISIONS.md)) :
+`raw/<cas>/` et son manifeste,
 `last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
 jamais par l'opérateur (`run.mjs` : son chemin est `join(runDir, "output.json")`). Rien d'autre.
 

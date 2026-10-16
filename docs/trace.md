@@ -997,3 +997,33 @@ qu'il ne couvre pas.
 **Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
 bloc daté qui la cite. Elle se ferme sur un `HEAD` inchangé, `d239b08`, et un banc qui passe ses 46
 contrôles depuis le dépôt.
+
+## Séance 9 — 2026-10-16 (la journée est mise au dépôt)
+
+**Objectif.** Mettre au dépôt ce que les Séances 6 à 8 ont produit, sur la demande du relecteur.
+
+**Fait.** Un commit sur `main` : `0d2f012` (« Consigner la journée du 2026-10-16 : l'architecture, la
+relecture, deux ADR et le banc »), **11 fichiers, +1 199 / −52**. Contenu : les deux pages neuves de la
+Séance 6 (architecture, relecture à froid) et ses cinq pages remises au vrai ; le registre avec l'ADR-021
+proposée et l'ADR-022 ; le banc `docs/device/harness/banc-harnais.sh`, mode `100755`, avec son mode d'emploi
+`docs/device/BANC.md` ; et le journal des trois séances.
+
+**Vérifié.** `git show --stat --format='' 0d2f012` → les 11 chemins attendus, aucun autre ;
+`git status --porcelain` → vide après le commit ; `git rev-parse --short HEAD origin/main` → `0d2f012`
+d'un côté, `d239b08` de l'autre : **rien n'est poussé**, `main` est devant d'un commit. Le compte de
+fichiers annoncé par le relecteur (six pages et deux fichiers neufs) était celui de la Séance 6 : les
+Séances 7 et 8 y ont ajouté `docs/DECISIONS.md` et les deux fichiers du banc, d'où les onze.
+
+**Dérives signalées, non corrigées.** Aucune.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Le push n'est pas demandé ; la déclaration du remote dans `AGENTS.md` reste un
+arbitrage ouvert, et il commande ce push. Puis, inchangés : l'arbitrage de l'ADR-021, ses deux contrôles de
+banc, et le mot à dire sur la copie `/tmp/banc-porte.sh`.
+
+**Mémoires.** Aucune nouvelle : `e65db0f3` porte la mise à jour du dépôt de la Séance 8, et le hash du
+commit vit ici.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur `0d2f012`, arbre propre, dépôt devant `origin/main` d'un commit.

@@ -1181,8 +1181,10 @@ ce relevé-là et **40** avant le commit qui porte ce bloc (`git rev-list --coun
 des trois skills, et la copie `/tmp/banc-porte.sh`.
 
 **Mémoires.** `11210a41` corrigée à la source : elle disait « `origin/main` reste `d239b08` et **rien n'est
-poussé** ».
+poussé** ». `e65db0f3` (le banc entré au dépôt, Séance 8) portait la même phrase ; corrigée elle aussi, dans
+l'amendement du même jour, parce qu'une mémoire contredite par l'état se corrige à la source.
 
 **Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
-bloc daté qui la cite. Elle se ferme sur le commit qui la porte et sur la poussée qui suit : `origin/main`
-quitte `d239b08` pour porter la journée, et le geste de l'ADR-021 a trouvé son premier témoin.
+bloc daté qui la cite. Elle se ferme sur `65ae76b`, qui porte P6 remise au vrai, puis sur le commit qui
+porte cet amendement : `origin/main` a quitté `d239b08` pour porter la journée, et le geste de l'ADR-021 a
+trouvé son premier témoin.

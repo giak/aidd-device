@@ -7,7 +7,9 @@ real ones.
 
 Rules unique to this repository live in its skills, one per nature: `01-consign`: trace, naming,
 frontmatter, drift; `02-memory`: Mnemolite; `03-boundaries`: the four trees; read them before writing
-here, consigning or touching a repository. Everything below applies everywhere.
+here, consigning or touching a repository. This repository is the device: remote `origin` is
+`https://github.com/giak/aidd-device.git`, branch `main` (`git remote -v`, `git ls-remote origin main`).
+Everything below applies everywhere.
 
 NOTATION: `!` not; `&` and; `|` or; `CAPS` keyword; `X>Y` X wins.
 

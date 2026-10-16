@@ -1349,3 +1349,162 @@ réellement envoyés : ce que le client joint à chaque appel — noyau seul, ou
 un fragment JSON collé dans le contenu, corrigé à la source par `update_memory`, pas argué en prose).
 Quatre compactions déclarées dans le fil courant (`metrics_json.compactions`) : trois `context_limit` et
 une `cache_expiry`, `preTokens` 359 914 à 380 749 contre un seuil de 320 000.
+
+### v19 revu règle par règle, corrigé, et appliqué (suite de la Séance 4, 2026-10-16 08:27 ; étiquette rectifiée le 08:36)
+
+**Objectif.** L'arbitrage a été rendu : appliquer `v19` **avec** la relecture règle par règle que
+l'analyse disait manquante. La relecture est donc la condition de l'application, pas une promesse.
+
+**Fait — la relecture.** Le diff ligne à ligne est illisible (le texte est recomposé : un seul hunk de
+299 lignes pour 199 lignes) ; l'instrument retenu est un **diff au mot par section** (6 sections du noyau,
+3 blocs de skill), qui ne laisse passer que les changements réels. Sept **pertes de fidélité** et trois
+**défauts de ponctuation** ont été trouvés, tous réparés avant application.
+
+| # | où | `v15` | `v19` avant réparation | réparation |
+|---|---|---|---|---|
+| `P1` | `INVARIANTS` | « improve **materially** » (adverbe) | « IMPROVE IF material » (condition) | `IMPROVE materially` |
+| `P2` | `VERIFY` | « `UNKNOWN` … never **replacing** `SUPPOSÉ` » | « NEVER source » | `NEVER source, NEVER replacing SUPPOSÉ` |
+| `P3` | `REASON` | « seek **only** alternatives … » | « SEEK … cases that could change it, **only** » | `SEEK only alternatives …` |
+| `P4` | `REASON` | « iterate only while it can **materially** change » | « ITERATE WHILE can change » | `ITERATE ONLY WHILE it can change materially` |
+| `P5` | `RECOVERY` | « never invent **missing information** » | « NEVER invent » | `NEVER invent missing information` |
+| `P6` | `STOP` | « unlikely to **materially** change the result » | « unlikely to change result » | `… to materially change result` |
+| `P7` | `01-consign` | « the running séance stays alive **and is worked at** » | « stays alive » | `stays alive & is worked at` |
+| `D1` | `OUTPUT` | — | « N2,**,** else N1 » | virgule doublée retirée |
+| `D2` | `OUTPUT` | — | « default=3-6 lines**;,** » | séquence `;,` nettoyée |
+| `D3` | `01-consign` | — | « figures, **|** `OPEN`|`UNKNOWN` » | barre orpheline retirée |
+
+Ce qui a été **accepté** et n'est pas réparé, dit plutôt que tu : « the project's actual state » devient
+« observed state » (généralisation), le mot « falsifiability » disparaît du libellé `R7` (le numéro reste),
+et « a rule here » devient un « DELETE IF !clear|!specific » dont le sujet est implicite.
+
+**Fait — l'application.** Les quatre artefacts sont réécrits par la procédure du README :
+`cp candidat/v19.md docs/contracts/AGENTS-source.md` ; noyau par `sed`/`head -n -2` vers `AGENTS.md` ;
+chaque bloc vers son `SKILL.md`, phrase de tête en `description:`, niveau de titre remonté de `###` à `##`.
+
+**Vérifié.** Les trois contrôles du README, lancés après écriture : noyau de la source ↔ `AGENTS.md`
+**muet** ; les trois corps de blocs ↔ leurs `SKILL.md` **identiques** ; les trois `description` ↔ phrases
+de tête **identiques** ; `cmp` source ↔ `v19.md` **octet pour octet**. Mesure (`o200k_base`) : `AGENTS.md`
+**1 777 → 1 610 jetons (−167, −9,4 %)** ; par tour au repos **1 967 → 1 787 (−180, −9,2 %)** ; contrat
+entier 3 170 → 2 935 (−235, −7,4 %) ; caractères 13 750 → 12 013. Réconciliation : Σ des deltas de corps
+= **−235** = delta du fichier. Les dix réparations coûtent **+14 jetons** au total (2 921 → 2 935).
+
+**Rectification.** Les chiffres publiés avant la relecture (noyau 1 599, −178 par appel, −191 par tour,
+delta de session 116 234) sont **périmés** : ils mesuraient la version non revue. Les nouveaux sont
+1 610 / −167 / −180, et pour la session, **sur les 24 tours clos avant l'application**, 108 884 à 109 218
+jetons (0,1147 à 0,1151 %) et 117 360 à 117 720 au repos (0,1237 à 0,1240 %) selon la définition de tour
+retenue — la sous-section du `08:32` dit laquelle et pourquoi, et donne aussi l'état courant de la base
+(123 914 à 124 248, 0,1121 à 0,1124 %), qui inclut depuis un tour à cheval. Les mémoires `ee8e7bb8` et
+`f7ed5a8a` sont corrigées à la source par `update_memory`.
+
+**Dérives signalées, non corrigées.** `SCOPE` gagne toujours **+3** ; `ADR-012` reste contredit sans
+acte ; `F1` à `F7` de l'audit de la couture restent ouverts ; et rien n'établit encore qu'un contrat plus
+court soit mieux suivi — la mesure de compréhension reste à faire, et `ollama` est là pour la porter.
+
+**Mémoires.** `ee8e7bb8` (v19 revu, appliqué, chiffres révisés — la décision d'application est portée
+par cette mémoire, il n'en existe pas de parallèle) ; `f7ed5a8a` (coût de session, delta révisé).
+
+### Contrôle du coût contre la base : deux comptes faux, et un tour à cheval sur la bascule (suite de la Séance 4, 2026-10-16 08:32, contre-épreuve à 08:36)
+
+**Objectif.** Refaire la mesure du 08:30 **après** l'application : relire la base en lecture seule et
+chiffrer ce que `v19` change par rapport au texte appliqué — qui est `v19` depuis `08:27:15`.
+
+**Premier verdict, écrit ici, et faux.** J'ai conclu « aucun appel mesuré n'a porté `v19` » en comparant
+l'écriture des artefacts (`08:27:15`) au **dernier tour alors clos** du fil courant (`4b737012`, `seq` 58,
+`ts` `08:21:49`). C'est lire une base **en mouvement** : le tour resté **ouvert** s'est clos pendant ce
+contrôle, et c'est celui qui avait appliqué `v19`.
+
+**Contre-épreuve (08:36), et ce qu'elle casse.** Une relecture cinq minutes plus tard montre une ligne
+neuve : `4b737012` `seq` 60, `ts` `08:33:47`, **15 662 999** jetons d'entrée, **89** parties d'outil. Son
+`parts_json` nomme `revue.py`, `appliquer_v19.py` et `AGENTS-source.md` : c'est **le tour de
+l'application**. Ce que `ts` date est établi par ce croisement, non supposé : `seq` 60 est le seul tour
+dont les parties nomment `appliquer_v19.py`, et son `ts` (`08:33:47`) tombe **après** les écritures du
+fichier qu'il a lui-même produites — `ts` date donc la **clôture** du tour, pas son ouverture. Sa fenêtre
+va de la question (`08:21:49`) à sa clôture (`08:33:47`) et **contient**
+l'écriture des artefacts (`08:27:15`) : ses appels d'avant portaient `v15`, ceux d'après peuvent porter
+`v19`. La base **n'horodate pas les parties** (`json_extract(p.value,'$.ts')` nul sur les 89) : la coupure
+est hors de portée et le gain de ce tour est **partiellement réalisé, non chiffrable**. Reste vrai : les
+**24 tours clos avant** `08:27:15` (huit de `dfe8952d`, seize de `4b737012`) n'ont porté que `v15` — pour
+eux, et pour eux seuls, le delta est un **contrefactuel** propre.
+
+**La relecture, et ce qu'elle rend à l'identique.** Au moment du relevé (`08:29`–`08:31`), la base rendait
+Les mêmes sommes qu'à `08:25`, au jeton près, puis la base a grandi (cf. la contre-épreuve ci-dessus) `4b737012` 85 430 467 d'entrée dont 83 823 360 en cache et 302 505 de contexte maximal ;
+`dfe8952d` 9 480 609 dont 9 144 320, 256 030 ; total **94 911 076**, cache **97,95 %** ; **628** parties
+d'outil (529 + 99) ; fenêtre 1 048 576, seuil 320 000 ; quatre compactions déclarées (trois
+`context_limit` à `preTokens` 380 749, 363 796, 359 914 ; une `cache_expiry` à 208 973). Reproduire un
+chiffre une fois n'est pas le confirmer ; le reproduire **à l'identique, deux fois, à deux horaires**
+ôte le soupçon d'un relevé accidentel.
+
+```bash
+DB=~/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db
+sqlite3 -readonly "$DB" "select substr(thread_id,1,8), count(*), \
+  sum(cast(json_extract(metrics_json,'\$.usage.inputTokens') as integer)) \
+  from messages where role='assistant' group by 1;"
+sqlite3 -readonly "$DB" "select substr(m.thread_id,1,8), count(*) from messages m, json_each(m.parts_json) p \
+  where json_extract(p.value,'\$.kind')='tool' group by 1;"
+```
+
+**Deux défauts de compte dans la section du 08:30, nommés plutôt que lissés.**
+
+1. La colonne `tours` y mélange **deux filtres** : `8` pour `dfe8952d` compte les messages qui portent un
+   bloc `usage`, `17` pour `4b737012` compte ceux qui portent un `metrics_json` quelconque. Une seule
+   définition, et c'est la seconde qui vaut : messages d'assistant des deux fils mesurés, soit
+   **9 + 17 = 26 tours** à cet instant (18 pour `4b737012` depuis la clôture du tour `seq` 60, cf. l'état
+   courant), dont **24** portent un `usage`. La borne d'appels qui en découle est
+   **628 + 26 = 654** (ou **652** si l'on ne compte que les tours porteurs d'un `usage`). Le **653**
+   publié n'est ni l'un ni l'autre : c'est `628 + 8 + 17`.
+2. « Un troisième (`1024769a`) n'a **aucun** `metrics_json` » est faux dans la lettre : ses deux
+   messages portent `{}`. Même chose pour `dfe8952d` `seq` 2. Et `4b737012` `seq` 44 porte
+   `{"context":{"usedTokens":302505,…},"usageIncomplete":true}` — sans `usage`, d'où le contexte maximal
+   de 302 505 que la table reprend.
+
+**Noyau re-mesuré dans ce tour** (`o200k_base`, `/tmp/tokvenv`) : `v15` **1 777**, `v19` **1 610**,
+delta **−167** ; au repos 1 967 → **1 787**, delta −180 ; contrat entier 3 170 → **2 935**, delta −235 ;
+`AGENTS.md` **1 610**, égal au noyau de la source.
+
+**Delta de session sur les 24 tours clos avant l'application** (entrée de ce périmètre : 94 911 076) :
+
+| delta de session | borne 652 | borne 654 |
+|---|---:|---:|
+| noyau seul | 108 884 (0,1147 %) | **109 218 (0,1151 %)** |
+| au repos | 117 360 (0,1237 %) | 117 720 (0,1240 %) |
+| par tour (au repos) | 4 890 | 4 528 |
+
+Par fil, sous la borne 654 : `dfe8952d` 108 appels → 18 036 (0,190 %) ; `4b737012` 546 → 91 182
+(0,107 %). La part du contrat dans l'entrée passe de **1 162 158 (1,225 %)** à **1 052 940 (1,109 %)**.
+Dans la fenêtre : noyau **0,5553 % → 0,5031 %** du seuil de compaction, 0,1535 % de la fenêtre de
+1 048 576.
+
+**L'état courant de la base** (relevé `08:36`) : 25 tours porteurs d'un `usage` (les **27** messages
+d'assistant des deux fils), **717** parties d'outil, entrée **110 574 075**, cache **98,12 %**. Borne
+**742** (tours porteurs d'un `usage`) à **744** appels ; delta contrefactuel **123 914 à 124 248**
+(0,1121 à 0,1124 % de cette entrée) — qui **surestime**, puisqu'il compte le tour à cheval comme s'il
+n'avait porté que `v15`. Part du contrat dans cette entrée : **1,152 % → 1,044 %**.
+
+**Ce que la mesure ne dit pas, et qui est la réponse à la question posée.** Le gain **réalisé** est
+inconnu : un tour l'a porté en partie, non séparable, et aucun tour mesuré ne l'a porté **de bout en
+bout** — le premier sera **celui-ci**, ouvert à `08:34:31`, donc encore absent de la base. Ce qui est
+mesuré, c'est la taille de deux textes et une borne d'appels ; ce qui est calculé, c'est un contrefactuel
+de ~0,115 % de l'entrée, soit **un dixième** de la place que le contrat occupe lui-même (1,109 %) : la
+révision gagne sur la lisibilité, pas sur la facture.
+
+**Vérifié.** Les trois contrôles du dossier, relancés dans ce tour après écriture : noyau de la source ↔
+`AGENTS.md` muet ; les trois corps de blocs ↔ leurs `SKILL.md` identiques (3/3) ; les trois
+`description` ↔ phrases de tête identiques (3/3). La base reste ouverte en **lecture seule** — ce qui
+est affirmable est le mode d'ouverture, pas l'immobilité du fichier : `desktop-v2.db-wal` est daté de
+`08:32`, le client écrit sa propre session pendant la mesure. La revendication « le contrat n'apparaît
+dans la base que cité » est reproduite : `Control spec` dans **15** messages d'assistant.
+
+**Limites.** Le prompt système n'est pas observable ; la contribution par appel est le compte du
+**fichier** ; et la borne d'appels est **basse** — les appels de modèle d'un tour ne sont pas déclarés
+(le `usage` d'un message est cumulatif sur les manches d'outil), donc les deltas sont des minima.
+
+**Dérive signalée : les étiquettes horaires des sous-sections étaient devinées.** Preuve : `b735b4f` est
+commité à `08:25:13` (`git log --format=%cI`), et la sous-section qu'il porte est étiquetée `08:30` ;
+celle de l'application, écrite entre `08:25:13` et `08:32:33` (mtime), était étiquetée `08:45` ; la
+mienne, écrite à `08:32:33`, était étiquetée `08:55`. Les trois étiquettes étaient **en avance de
+plusieurs minutes sur l'horloge**. Les deux non commitées sont rectifiées ici (`08:27`, `08:32`) ; celle
+du `08:30`, dans un relevé commité, n'est pas réécrite : elle est fausse d'au moins cinq minutes.
+
+**Mémoires.** `f7ed5a8a` corrigée **deux fois** à la source (`update_memory`) : 26 tours et non 25, 654
+et non 653, `{}` et non « aucun `metrics_json` », puis la contre-épreuve du `08:36` — le tour `seq` 60 à
+cheval, 717 parties d'outil, borne 742 à 744 ; relue après chaque écriture.

@@ -1188,3 +1188,43 @@ l'amendement du même jour, parce qu'une mémoire contredite par l'état se corr
 bloc daté qui la cite. Elle se ferme sur `65ae76b`, qui porte P6 remise au vrai, puis sur le commit qui
 porte cet amendement : `origin/main` a quitté `d239b08` pour porter la journée, et le geste de l'ADR-021 a
 trouvé son premier témoin.
+
+## Séance 14 — 2026-10-16 (la poussée vue par un inconnu : la recette rejouée depuis un clone neuf)
+
+**Objectif.** Éprouver la poussée de la Séance 13 par l'interface d'un tiers — la [recette de
+rejeu](device/REPLAY.md) — et réparer ce que ce push a rendu faux.
+
+**Fait.** La poussée a fait mentir deux phrases de REPLAY §3, écrites le 2026-10-15 : « le gel poussé est
+encore celui d'avant l'ADR-016 » (sortie `exit 3`) et « il attend un commit et un push ». Réparées : le bloc
+`exit 3` reste, daté « jusqu'au push du 2026-10-16 » ; une entrée datée dit ce que le clone public rend
+depuis ; l'intro du bloc « avec le gel refait » passe au passé ; la note d'ouverture des sorties citées
+mentionne le 2026-10-16 ; et la dernière phrase que la recette imprime sur un gel d'avant l'ADR-016 ne parle
+plus d'un push qui n'a plus lieu d'être.
+
+**Vérifié.** Le §3 n'était pas une prédiction : la recette du §2, **extraite du fichier** (bloc `bash`, pas
+recopiée à la main), écrite dans `/tmp/replay-seance14.sh` et rejouée **depuis un clone neuf**, deux fois —
+avant la réparation et après. Les deux : `empreinte True`, `VERDICT   gel rejoué à l'identique`, `exit 0`,
+les huit références `True`, `framework-origin publié sur gel/2026-10-15-fe48de12 True`, `terrain publié sur
+main True`, et les deux mêmes limites (« dépôt public inconnu du gel ») pour `revision-sous-test` et
+`travail`. `bash -n` sur la recette réparée → `exit 0`. Le gel que le clone reçoit, mesuré : `git show
+origin/main:docs/device/CASES/<cas>.freeze.json` → empreinte `0d9a2180…`, `gele_le`
+`2026-10-15T22:11:24.782242943+0200`, `fichiers[].chemin` **relatifs**, et `git diff --quiet origin/main --
+<gel>` → `exit 0` (identique au disque). La journée sur `origin/main` : `0d2f012`, `1235c5a`, `497c5fe`,
+`0fd34d7`, `65ae76b`, `553de8d` ; `git rev-list --count origin/main..HEAD` → **0** à cette mesure-là.
+
+**Dérives signalées, non corrigées.** Celles de la Séance 10, inchangées : les six décrochages de la
+relecture (dont `EXPLICATION.md`, « 21 commits ») et l'adjectif « jetable » du `DASHBOARD`.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** L'étape 3 du bilan §11 (la sonde du client Freebuff), puis le second run sur le gel
+`0d9a2180` — qui se lit maintenant hors machine. Inchangés, hors de cette fiche : le commit debout de P5, les
+six décrochages, le frontmatter des trois skills, la copie `/tmp/banc-porte.sh`.
+
+**Mémoires.** `4aec359e` — nouvelle : la recette passe depuis un clone public, ce qu'elle prouve et ce qu'elle
+ne prouve pas, et la réparation de REPLAY. `11210a41` corrigée à la source : sa ligne disait que le gel refait
+n'était pas encore poussé.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur le commit qui la porte : un inconnu, depuis un clone neuf, rejoue le
+texte scellé et lit les quatre arbres, sans rien connaître de cette machine.

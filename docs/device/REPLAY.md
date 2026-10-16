@@ -11,7 +11,8 @@ status: in-progress
 > [spec du run](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md),
 > écrite aussi au §1.1 de la [conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
 > pour l'opérateur — qui, lui, connaît le cas et ses racines. Ici, rien n'est connu d'avance : tout
-> vient du gel. Les sorties citées ont été observées le 2026-10-15.
+> vient du gel. Les sorties citées ont été observées le 2026-10-15, et celle du §3 depuis le clone public
+> l'a été le 2026-10-16, après le push de la journée.
 
 ## 1. Ce que la recette établit, et ce qu'elle n'établit pas
 
@@ -73,7 +74,7 @@ lignes, ok = [], []
 if any(os.path.isabs(f["chemin"]) for f in g["fichiers"]):
     print("gel d'avant l'ADR-016 : des chemins absolus y sont écrits (fichiers[].chemin),")
     print("donc un clone ne peut pas le rejouer sans réécrire ces chemins — c'est ce que")
-    print("l'ADR-016 a réparé. Le dispositif n'a pas encore poussé le gel refait.")
+    print("l'ADR-016 a réparé.")
     sys.exit(3)
 
 for f in g["fichiers"]:
@@ -116,7 +117,8 @@ PY
 
 ## 3. Ce que la recette rend, mesuré
 
-**Depuis le clone public, aujourd'hui** — le gel poussé est encore celui d'avant l'ADR-016 :
+**Depuis le clone public, jusqu'au push du 2026-10-16** — le gel poussé était encore celui d'avant
+l'ADR-016 :
 
 ```text
 cas gelé : 2026-10-15-133423-promesse-memoire-avant-ecriture
@@ -128,15 +130,22 @@ l'ADR-016 a réparé. Le dispositif n'a pas encore poussé le gel refait.
 ```
 
 C'est un résultat, pas une panne : la recette **dit** qu'elle ne peut pas rejouer ce gel-là, au lieu
-de rendre deux `False` qui accuseraient les mauvais fichiers. Le gel refait est sur disque
-(`gele_le` `2026-10-15T22:11:24.782242943+0200`, empreinte `0d9a2180`, après les re-gels du soir, celui
-du déplacement de l'espace de travail puis celui de la racine déclarée), il attend un commit et un push.
-Ce gel-ci porte un champ de plus, `racine_espace_de_travail` : la recette l'ignore, elle n'en a pas
-besoin pour rejouer les empreintes.
+de rendre deux `False` qui accuseraient les mauvais fichiers. La dernière phrase de cette sortie a été
+réécrite le 2026-10-16 : la recette ne dit plus que le gel refait attend un push, il est poussé ; le
+reste de la sortie n'a pas bougé.
 
-**Avec le gel refait** — le même bloc, plus une ligne qui dépose le gel refait dans le clone
-(`cp <dispositif>/docs/device/CASES/<cas>.freeze.json dispositif/docs/device/CASES/`, ce que le push
-rendra inutile) :
+**Depuis le push du 2026-10-16**, un clone neuf reçoit le gel refait et la recette va au bout d'elle-même :
+le bloc du §2, sans la ligne `cp` du § suivant, rejoué ce soir-là depuis `/tmp/gel-verif` → `empreinte
+True`, `VERDICT   gel rejoué à l'identique`, `exit 0`. Le gel que ce clone porte, mesuré :
+`git show origin/main:docs/device/CASES/<cas>.freeze.json` → empreinte
+`0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8`, `gele_le`
+`2026-10-15T22:11:24.782242943+0200`, `fichiers[].chemin` **relatifs** — c'est le gel qui attendait un
+commit et un push, et c'est le seul changement : la recette, elle, est identique. Le champ qu'il porte en
+plus, `racine_espace_de_travail`, reste ignoré d'elle, qui n'en a pas besoin pour rejouer les empreintes.
+
+**Avec le gel refait, avant son push** — le même bloc, plus une ligne qui déposait le gel refait dans le
+clone (`cp <dispositif>/docs/device/CASES/<cas>.freeze.json dispositif/docs/device/CASES/`, ce que le push
+a rendu inutile) :
 
 ```text
 cas gelé : 2026-10-15-133423-promesse-memoire-avant-ecriture

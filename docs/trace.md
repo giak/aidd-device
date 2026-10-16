@@ -1276,3 +1276,76 @@ question vérifiable par règle, v15 contre v19, à l'aveugle, N répétitions. 
 trancherait la question posée.
 
 **Mémoires.** `bac7d811` (littérature, chiffres, sources, correction `ollama`, relue).
+
+### Ce que le contrat coûte par appel et par session, chiffré contre v19 (suite de la Séance 4, 2026-10-16 08:30)
+
+**Objectif.** Le chiffre du dossier mesurait un fichier, jamais une session : « −191 jetons par tour »
+ne dit pas ce que la session dépense. Reprendre la mesure du 2026-10-15 (base du client, lecture seule)
+et y brancher `v19`.
+
+**La source.** La base du client Freebuff pour ce projet,
+`~/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db`,
+ouverte en lecture seule (`sqlite3 -readonly`, et `sqlite3.connect('file:…?mode=ro', uri=True)` pour le
+script qui la croise avec les fichiers). **Aucune écriture par ces accès** : ce qui est affirmable est le
+mode d'ouverture, pas l'immobilité du fichier — le client écrit sa propre session dans la même base
+(`desktop-v2.db-wal` daté de la minute de la mesure), et c'est lui, pas la mesure. Les jetons sont **déclarés par le client** :
+`metrics_json.context.{usedTokens,windowTokens,compactionThresholdTokens}` et
+`metrics_json.usage.{inputTokens,cachedInputTokens,outputTokens}`, par message d'assistant, cumulés sur
+un tour.
+
+```bash
+DB=~/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db
+sqlite3 -readonly "$DB" "select substr(thread_id,1,8), count(*), \
+  sum(cast(json_extract(metrics_json,'\$.usage.inputTokens') as integer)) \
+  from messages where role='assistant' group by 1;"
+```
+
+**Ce que le client déclare.** Fenêtre 1 048 576 jetons ; seuil de compaction 320 000. Deux fils portent
+des mesures : `dfe8952d` (le travail de run) et `4b737012` (celui de ce contrat, ouvert le 2026-10-15 à
+`21:37`). Un troisième (`1024769a`) n'a aucun `metrics_json` : rien à lire, et c'est dit plutôt que
+comblé.
+
+| fil | tours | outils | appels* | entrée | cache | contexte max |
+|---|---:|---:|---:|---:|---:|---:|
+| `dfe8952d` | 8 | 99 | 107 | 9 480 609 | 96,5 % | 256 030 |
+| `4b737012` | 17 | 529 | 546 | 85 430 467 | 98,1 % | 302 505 |
+| **total** | **25** | **628** | **653** | **94 911 076** | **98,0 %** | — |
+
+`appels*` n'est pas déclaré par le client : c'est une **borne** calculée, parties d'outil (`parts_json`,
+`kind = tool`) plus une réponse finale par tour. Le client ne dit pas combien d'appels de modèle un tour
+a consommés ; la borne est en dessous du vrai compte, jamais au-dessus.
+
+**Le coût du contrat, mesuré sur les fichiers (`o200k_base`), appliqué à ces appels.** Noyau `v15`
+(**le texte appliqué**) 1 777 jetons ; noyau `v19` 1 599, soit **178 de moins par appel**. Au repos
+(noyau + les trois phrases de tête) : 1 967 → 1 776, **191 de moins**.
+
+| | noyau `v15` | noyau `v19` | delta `v19` | % de l'entrée |
+|---|---:|---:|---:|---:|
+| `dfe8952d` | 190 139 | 171 093 | **19 046** | 0,201 % |
+| `4b737012` | 970 242 | 873 054 | **97 188** | 0,114 % |
+| **total** | **1 160 381** | **1 044 147** | **116 234** | **0,122 %** |
+
+Au repos, le delta total est **124 723 jetons**, 0,131 % de l'entrée, soit **~4 989 par tour** (25 tours,
+653 appels, 26,1 appels par tour).
+
+**Poids dans la fenêtre.** Noyau `v15` = 0,555 % du seuil de compaction, `v19` = 0,500 % : `v19` déplace
+**0,056 %** du seuil. Le contexte maximal observé (302 505) est à **94,5 %** du seuil, et quatre
+compactions ont déjà eu lieu, dont une à `preTokens` 359 914 → `postTokens` 46 487 : ce qui déclenche la
+compaction, ce sont la conversation et les sorties d'outil, pas le contrat.
+
+**Ce que ça veut dire, sans arrondir dans le sens qui plaît.** Sur ces deux sessions, le contrat pèse
+**1,22 % des jetons d'entrée**, et `v19` en retire **0,122 %** — douze centièmes de point. Et 98,0 % de
+cette entrée est un **cache hit** : la part *en jetons* surestime le poids réel dans le coût, que la
+politique de prix du client ne permet pas de lire (`costUsd` déclaré à `0`, mode gratuit). Le vrai
+levier d'une session n'est pas là : il est dans la conversation et les sorties d'outil.
+
+**Limites.** Le prompt système n'est **pas observable** dans la base : le contrat y apparaît seulement
+cité dans des raisonnements (`parts_json` porte « Control spec » dans 15 messages, en texte d'assistant,
+jamais comme prompt). La contribution par appel est donc le compte du **fichier**, pas les jetons
+réellement envoyés : ce que le client joint à chaque appel — noyau seul, ou noyau plus les skills — reste
+`OPEN`, et les deux bornes sont chiffrées. Le coût en argent n'est pas mesurable ici.
+
+**Mémoires.** `f7ed5a8a` (coût du contrat par appel et par session, relue : sa première écriture portait
+un fragment JSON collé dans le contenu, corrigé à la source par `update_memory`, pas argué en prose).
+Quatre compactions déclarées dans le fil courant (`metrics_json.compactions`) : trois `context_limit` et
+une `cache_expiry`, `preTokens` 359 914 à 380 749 contre un seuil de 320 000.

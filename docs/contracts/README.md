@@ -39,17 +39,25 @@ artefact divergent pour de bon, un contrôle se justifiera. Pas avant.
 
 ## Candidats
 
-[`candidat/v19.md`](candidat/v19.md) **attend un arbitrage** : c'est le contrat écrit en **DSL**, un
-appareil de notation fait de mots-clés en capitales, de `→`, `|`, `&`, `!` et de la seule grammaire
-retirée. Mesure contre le texte appliqué : noyau **1 777 → 1 599 jetons (−10,0 %)**, **par tour au repos
-1 967 → 1 776 (−9,7 %)**, contrat entier 3 170 → 2 921, caractères 13 750 → 11 927 (−13,3 %). Il porte
-une légende de **32 jetons** (`OUTPUT` R5 l'exige) ; sans elle le tour tombe à **1 744**, au prix d'une
-règle violée. [`candidat/2026-10-16-074335-v19-analyse.md`](candidat/2026-10-16-074335-v19-analyse.md)
-donne la mesure appareil par appareil : la jointure `_`, les parenthèses d'appel et `NO_REGRESSION`
-**coûtent** des jetons (8 contre 4, 4 contre 2, 4 contre 2), la barre paie et la flèche est neutre ; le gain
-vient de la grammaire retirée, pas des glyphes. Couverture : `78` puces sur `83` au-dessus de 60 % de
-mots retrouvés, les cinq autres entièrement littérales et vérifiées au `grep`. **La relecture règle par
-règle n'est pas faite** : c'est la faiblesse nommée du candidat.
+[`candidat/v19.md`](candidat/v19.md) est **le texte appliqué** : `AGENTS-source.md` est ce fichier,
+octet pour octet (`cmp`, 2026-10-16), et les quatre artefacts ont été écrits depuis lui. C'est le contrat
+en **DSL** — mots-clés en capitales, `→`, `|`, `&`, `!`, et la seule grammaire anglaise retirée. Mesure
+contre l'état précédent : noyau **1 777 → 1 610 jetons (−167, −9,4 %)**, **par tour au repos
+1 967 → 1 787 (−180, −9,2 %)**, contrat entier 3 170 → 2 935 (−235, −7,4 %), caractères 13 750 → 12 013.
+Il porte une légende de **32 jetons** (`OUTPUT` R5 l'exige) ; sans elle le tour tomberait d'environ 32 de
+plus, au prix d'une règle violée. L'application a été précédée de la **relecture règle par règle** que
+l'analyse réclamait : un diff au mot par section, **sept pertes de fidélité** restaurées (`IMPROVE
+materially`, `NEVER replacing SUPPOSÉ`, `SEEK only`, `ITERATE ONLY WHILE it can change materially`,
+`NEVER invent missing information`, `unlikely to materially change result`, `stays alive & is worked at`)
+et **trois défauts de ponctuation** réparés, pour **+14 jetons** au total. Le journal porte les dix
+lignes du tableau.
+[`candidat/2026-10-16-074335-v19-analyse.md`](candidat/2026-10-16-074335-v19-analyse.md) donne la mesure
+appareil par appareil : la jointure `_`, les parenthèses d'appel et `NO_REGRESSION` **coûtent** des jetons
+(8 contre 4, 4 contre 2, 4 contre 2), la barre paie et la flèche est neutre ; le gain vient de la
+grammaire retirée, pas des glyphes. Couverture : `78` puces sur `83` au-dessus de 60 % de mots retrouvés,
+les cinq autres entièrement littérales et vérifiées au `grep`. **Ce qui reste non établi** : qu'un contrat
+plus court soit *mieux suivi* — aucune mesure de compréhension n'a été faite, et la littérature ne
+tranche pas (mémoire `bac7d811`).
 
 [`candidat/v17.md`](candidat/v17.md) est le brouillon du DSL et [`candidat/v18.md`](candidat/v18.md) la
 mesure qui a condamné ses appareils coûteux. L'analyse de `v17` affirmait « v17 = v15 + DSL, une seule
@@ -69,8 +77,8 @@ retrouvées mot pour mot, `0` perdue, `1` nouvelle. Le prix : `C` ne vaut que si
 [`candidat/2026-10-16-073347-v16-analyse.md`](candidat/2026-10-16-073347-v16-analyse.md) dit le reste :
 la réconciliation par opération, et le jeton d'écart qui reste `OPEN`.
 
-[`candidat/v15.md`](candidat/v15.md) est **le texte appliqué** : `AGENTS-source.md` est ce fichier,
-octet pour octet (`cmp`, 2026-10-16), et les quatre artefacts ont été réécrits depuis lui. Mesure :
+[`candidat/v15.md`](candidat/v15.md) est **l'état précédent**, conservé comme référence de mesure
+(c'est le texte que `v19` remplace). Mesure :
 source 13 659 caractères / 3 170 jetons `o200k`, noyau **1 777** jetons. v15, c'est v14 moins le
 paragraphe de tête du bloc `# SKILLS` (« Ce qui ne décrit que ce dépôt. Chargé à la pertinence… ») :
 **−36 jetons**, et **aucun artefact ne bouge** (`sha256sum -c` sur les quatre, identiques). Le

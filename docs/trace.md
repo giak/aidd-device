@@ -905,3 +905,374 @@ le préfixe stable, pas comme économie de session.
 argent : seuls des jetons.
 
 **Mémoire.** `899bfa71`, relue après écriture.
+
+### Delta de v13 contre l'état d'avant application (suite de la Séance 2, 2026-10-15 22:40)
+
+**Ce qui a changé d'abord.** La relecture du 220849 ouvre sur « Le texte d'avant application n'existe
+plus dans le dépôt » : **c'est faux**. Le commit **`3b54711`** (« Freebuff: Cloud's files for chat
+dfe8952d », 2026-10-15T20:54:23+02:00), tenu par la seule référence locale
+`freebuff/landing/dfe8952d-8775-4c41-93ff-c252ae57b05f/cloud` et non ancêtre de `HEAD`, porte
+`AGENTS-source.md` d'avant v13 (164 lignes, 14 181 caractères, 3 302 jetons, 82 puces) **et** les
+quatre artefacts qu'elle rend, noyau et trois blocs identiques. La reconstruction d'alors n'était pas
+nécessaire. Identité avec la copie locale : `SUPPOSÉ` sur trois mesures concordantes, pas `cmp`, la
+copie locale ayant été écrasée à 22:00:38.
+
+**Anomalie `OPEN`.** La relecture annonçait 229 lignes de `diff -u` ; le même diff, sur la base
+`3b54711`, en fait **211**. Les 18 lignes d'écart restent inexpliquées.
+
+**Vérifié.** État appliqué en phase : `cmp candidat/v13.md AGENTS-source.md` identiques ; noyau de
+la source contre `AGENTS.md`, `diff` muet ; les trois blocs contre les trois `SKILL.md`, trois `diff`
+muets hors frontmatter et niveau de titre ; les trois `description` égales aux phrases de tête ; et
+`git status --porcelain -- AGENTS.md .agents docs/contracts` vide. Les diffs des skills commencent
+ligne 4 : aucun `name` ni `description` n'a bougé, donc aucun déclencheur.
+
+**Ce que la comparaison dit.** Gains mesurés : source 3 302 → 3 197 jetons, noyau **1 835 → 1 768**
+(−67, −3,7 %), skills 1 427 → 1 389, total des cinq fichiers 6 564 → 6 354 (−210, −3,2 %) ; plus
+quatre gains de structure (R7/R8/R9/R10 adressables, « No production before a written spec » rendue à
+`CHANGE`, contradiction de `RECOVERY` réparée, en-tête élargi). **Pertes sans domicile** : `F2`
+« Never invent missing information. », `F8` la justification du commit, huit qualités d'`INVARIANTS`
+dont six sans domicile, et la nuance « named as one ». **Régressions** : `F1` « Never merely
+describe » élargi contre `R4`, `F3` « capability exists » plus faible que « is available », et la
+règle d'ADR-010 devenue agrammaticale (« A rule here neither clear nor specific is deleted »).
+
+**Rectification de mes propres chiffres.** Le coût des réparations, annoncé « +7, +2, +3 » par la
+relecture puis « +5, +3, +3, +1 » ici, est faux deux fois. Rejoué le 2026-10-16 en appliquant chaque
+réparation à une copie d'`AGENTS.md` et en comptant le fichier entier en `o200k` : `F2` **+5**,
+« that is » **+2**, `F1` **+1**, `F3` **+1**, soit **+9** jetons sur 1 768 (1 777, 0,51 %), et non
++12. Le fragment « ·pragmatic…reliable » fait bien 18 jetons, mais la ligne d'`INVARIANTS` porte
+**huit** adjectifs, non neuf : deux ont un domicile (`concise` → `R4`, `robust` → `R8`), il en reste
+**six**. Le document de delta et la mémoire `f4a7c389` sont rectifiés dans le même sens.
+
+**Livrable.** `docs/contracts/candidat/2026-10-15-223732-delta-v13-contre-etat-avant-application.md`,
+et `docs/contracts/README.md` à jour. Rien de commité, rien de poussé.
+
+**Mémoire.** `f4a7c389`.
+
+## Séance 4 — 2026-10-16 (corriger le contrat en v14, puis l'auditer contre le projet)
+
+**Objectif.** Deux demandes du relecteur, dans cet ordre : « corrige la V13 » ; puis « audit la V13 :
+elle doit bien prendre en compte le projet et le servir de façon optimale ».
+
+**Fait.** v14 = v13 plus **exactement** les quatre réparations que le [delta du
+2026-10-15-223732](contracts/candidat/2026-10-15-223732-delta-v13-contre-etat-avant-application.md) §9
+avait chiffrées, et rien d'autre : `F2` rendue à `RECOVERY` (**+5**), le verbe de la règle d'ADR-010
+(**+2**), `F1` (**+1**), `F3` (**+1**), soit **+9 jetons**. Prix mesuré sur le fichier entier
+(`o200k_base`), pas sur des fragments. Application : `cp candidat/v14.md AGENTS-source.md`, puis
+`sed -n '1,/^# SKILLS$/p' … | head -n -2 > AGENTS.md` et le rendu des trois blocs avec leur
+frontmatter conservé. Écrits : [v14.md](contracts/candidat/v14.md),
+[v14-analyse.md](contracts/candidat/v14-analyse.md), l'[audit du
+2026-10-16-063502](contracts/candidat/2026-10-16-063502-audit-v14-service-du-projet.md), et le
+[README du dossier](contracts/README.md) à jour. L'audit mesure le contrat contre l'arbre : foyers
+non nommés, `docs/archive/` nommé mais absent, faille de `BOUNDARY` §8 non couverte par un skill,
+contradiction avec ADR-012, doublon `v14.md` ↔ `AGENTS-source.md`, et **six réparations chiffrées,
+non appliquées**.
+
+**Vérifié.** `cmp candidat/v14.md AGENTS-source.md` → identiques ; noyau de la source contre
+`AGENTS.md` → `diff` muet ; trois blocs contre les trois `SKILL.md` → trois `diff` muets ; trois
+`description` égales aux phrases de tête. `diff -u v13 v14` → **quatre lignes**, lu en entier. Jetons
+appliqués : source 3 206 (13 797 caractères), noyau **1 777**, skills 802 + 294 + 293. `git status`
+ne voit **aucun** `SKILL.md` modifié : les quatre réparations tombent toutes dans le noyau. Les deux
+arbres cités par `TERRITORY` existent (`framework-origin`, terrain).
+
+**Dérives signalées, non corrigées.** `ADR-012` ordonne « un seul contrat, sans skills, sans copie »
+et n'est remplacée par aucune ADR postérieure ; l'arbre porte trois skills et une copie.
+`README.md` (racine) appelle `AGENTS.md` « autonome », ce qu'il n'est plus. `CONSIGN` nomme
+`docs/archive/`, qui n'existe pas. `v11-analyse.md`, `v12-analyse.md` et `v13-analyse.md` ne portent
+pas le frontmatter que `CONSIGN` exige. `candidat/v14.md` et `AGENTS-source.md` sont octet pour octet
+identiques (`sha256 04a2dc7a…`), contre la règle du doublon.
+
+**Rectifications.** Le premier brouillon de l'audit affirmait que le contrat « ne nomme aucun objet
+du projet » ; c'était faux et corrigé avant écriture : `TERRITORY` nomme « this-repo — **the
+device** ». Ce qui est mesuré est plus étroit : aucun **foyer** de l'arbre n'est nommé.
+
+**Prochaines étapes.** Décider les réparations du §5 de l'audit — les deux qui touchent le texte
+coûtent **+66 jetons** sur 1 777 — et arbitrer ADR-012, qui ne se répare pas dans le contrat.
+
+**Mémoires.** `5991a1a4` (correction en v14, relue) ; `5f11c156` (audit du contrat contre le projet,
+relue).
+
+## Séance 4 — 2026-10-16 (suite) : le paragraphe supprimé, et l'audit antagoniste
+
+**Objectif.** Deux demandes du relecteur : « supprime ce paragraphe » ; et, sur la foi d'une erreur
+que j'avais reconnue, « tes audit et analyses sont fausses, il faut réellement faire un audit
+antagoniste poussé et détaillé ».
+
+**Fait.** v15 = v14 moins le paragraphe de tête du bloc `# SKILLS` (« Ce qui ne décrit que ce dépôt.
+Chargé à la pertinence, jamais à chaque tour. Le nom de chaque bloc est celui du répertoire qui le
+porte. »). Écrit [l'audit antagoniste](contracts/candidat/2026-10-16-064440-audit-antagoniste.md) :
+**17 objections**, chacune avec son falsificateur et un verdict — `TOMBE`, `CONTREDIT`, `AFFAIBLI`,
+`TIENT`, `NON_TRANCHABLE`. [README du dossier](contracts/README.md) corrigé sur deux de ses propres
+faux comptes.
+
+**Vérifié.** Le retrait : **−36 jetons** (source 3 206 → 3 170 ; 13 797 → 13 659 caractères), noyau
+`AGENTS.md` **1 777 inchangé** — et c'est prouvé, pas déduit : `sha256sum -c` des quatre artefacts
+contre leurs empreintes prises **avant** la suppression rend quatre « Réussi », donc **aucun artefact
+ne bouge**. `cmp v15.md` ↔ source identiques ; noyau et trois blocs muets. L'audit antagoniste a
+mesuré ses quatre chutes : « +3 jetons » de `v14-analyse.md` faux, mesuré **+2** (et la phrase
+d'origine coûte **−4**) ; « trois écarts » du README contre les **neuf trouvailles** de la relecture ;
+« aucun foyer nommé » contre **quatre** foyers réellement nommés (`docs/`, `docs/trace.md` ×2,
+`docs/tasks/…` ×2, `docs/archive` ×1, en occurrences) ; « trois documents sans frontmatter » contre
+**21 sur 45**.
+
+**Dérives signalées, non corrigées.** Les trois documents datés que l'audit antagoniste prend en
+défaut — `v14-analyse.md`, l'audit du 2026-10-16-063502, et la réparation `TERRITORY` que
+`INVARIANTS` contredit (« Name by intention, not mechanism ») — ne sont **pas** réécrits : un relevé
+daté ne se réécrit pas, le correctif est l'audit antagoniste lui-même, qui les cite. `ADR-012`
+reste contredite sans acte. Le README racine dit encore « autonome ».
+
+**Rectifications.** La mienne de la veille, déjà dite : « la campagne v0→v13 a retiré l'emballage »
+était faux — les v0→v9 ne touchaient que le noyau (`v0-REFERENCE-v6.md` : 0 occurrence de `SKILLS`).
+Et celle-ci : ma phrase « fausses » à moi ne tient pas non plus dans l'autre sens, l'audit
+antagoniste le dit et le chiffre.
+
+**Prochaines étapes.** Repenser la réparation de `TERRITORY` en responsabilité, pas en recette ;
+arbitrer ADR-012 ; et, pour que « le contrat sert-il ce projet ? » devienne décidable, un run où une
+règle manque — aucune de ces objections ne porte sur l'effet.
+
+**Mémoires.** `200d1845` (v15, relue) ; `51b1372b` (audit antagoniste, relue).
+
+## Séance 4 — 2026-10-16 (suite 2) : la description d'un skill, puis la couture noyau ↔ skills
+
+**Objectif.** Deux demandes du relecteur. « Ce n'est pas redondant ? », en montrant la `description`
+de `02-memory` et sa section `MEMORY`. Puis, sur la comparaison que j'avais faite : « quand je te dis
+de comparer `AGENTS.md` et `.agents/skills`, ce n'est pas une comparaison bête, mais c'est pour
+trouver les régressions, les effets de bord, les manques ».
+
+**Fait.** *Redondance* : mesuré que la `description` des trois skills étale son propre corps — 62
+jetons sur 178 (35 %), sans une seule phrase copiée (0 fenêtre de 5 mots commune, contre 6 sur 51
+pour les `SKILL.md` du framework). Verdict : la redondance est **propositionnelle** ; `02-memory` est
+le seul des trois dont l'étalement n'a aucune fonction de chargement (il énumère des règles, quand
+`01-consign` et `03-boundaries` énumèrent des sujets). Réparation de 20 jetons proposée, **non
+appliquée**.
+*Couture* : écrit [l'audit de la couture](contracts/candidat/2026-10-16-070456-audit-couture-noyau-skills.md),
+sept constats plus une tension préexistante, chacun avec sa commande.
+
+**Vérifié.** Aucune régression de règle : `AGENTS.md` est le noyau de `AGENTS-source.md` (un `diff` à
+une ligne vide), et le corps des trois skills y est reproduit tel quel — 9 + 4 sections = 13, le
+compte du contrat d'avant la découpe. Les sept constats : `F1` la condition de clôture de la séance a
+quitté le fichier d'entrée (`grep -c` sur `AGENTS.md` : `séance` 0, `docs/trace.md` 0) ; `F2` le noyau
+l.85 dit « a dated file in its home » et « home » n'est défini que par `01-consign` l.10, contre
+`OUTPUT` R5 l.81 « no internal code or label without its one-sentence definition at first use » ; `F3`
+le préambule nomme les trois skills par dossier quand `INVARIANTS` l.23 interdit de nommer le
+mécanisme ;
+`F4` aucun chargeur (`ls -a1` : sept entrées, aucun script ; `find` sur `*.mjs`/`*.sh`/`package.json`
+: rien) alors que le README du dossier l.23 dit le skill « lisible **par le chargeur** » et qu'ADR-012
+l.294 dit « faute de chargeur on-demand dans ce dépôt » ; `F5` la loi MEMORY a trois maisons
+(`~/.AGENTS.md` l.3-9, `~/.agents/skills/mnemolite-mem-first`, `.agents/skills/02-memory`) et celle
+d'ici répète la procédure que la globale lui interdit de répéter ; `F6` les mêmes chemins absolus dans
+la règle vivante (`03-boundaries` l.9, l.13) et le relevé gelé (`BOUNDARY.md` l.19, l.21) ; `F7` le
+même artefact déclare son déclencheur deux fois, et le noyau ne couvre pas « running anything that
+executes ». Poids de la couture : noyau 1 777 jetons / 91 lignes, les trois skills 1 389 / 55, soit
+**43 % hors du fichier d'entrée**.
+
+**Dérives signalées, non corrigées.** Les sept constats ne sont pas réparés : quatre d'entre eux
+(`F1`, `F2`, `F3`, `F7`) demandent une décision de forme sur ce qu'est un fichier d'entrée, pas une
+retouche. `F4` ne se répare pas dans le contrat : il demande soit un chargeur, soit l'acceptation
+écrite que le pointeur en prose est le chargeur. Le README du dossier disait « chargeur » comme une
+évidence : sa phrase est corrigée au même tour, et nomme désormais la convention sans lui prêter un
+mécanisme absent. `F8` est antérieur à la découpe et reste entier : quatre fichiers modifiés et six non
+suivis, donc, par `01-consign` l.15, rien qui « survive ». `ADR-012` reste contredite sans acte.
+
+**Rectifications.** Trois citations de mon propre audit, fausses au contrôle final et corrigées sur
+place avant d'annoncer le livrable : R5 appartient à `OUTPUT` l.81, non à `INVARIANTS` l.82 ;
+« Name by intention » est à `INVARIANTS` l.23, non l.12 ; et « A séance without its section does not
+exist » est à `01-consign` l.8, non l.9. Une suspicion à moi, morte par la mesure avant écriture : le
+corps de
+`01-consign` n'est pas identique entre `AGENTS-source.md` et le fichier appliqué (`sha256` `1880d4aa…`
+contre `b99cf70c…`) — mais `diff` ne montre que le niveau de titre, `###` dans la copie contre `##`
+dans le fichier, et le contrôle n° 2 du README normalise déjà ce niveau. Zéro règle. C'est écrit au
+§4 de l'audit, pas tu. Deuxième rectification : la première version du §1 de l'audit annonçait « quatre
+manques et trois effets de bord » pour sept constats ; le compte est trois manques, une dépendance,
+trois effets de bord.
+
+**Prochaines étapes.** Décider la réparation de 20 jetons sur `02-memory` ; arbitrer `F4` (chargeur,
+ou pointeur assumé) ; et instruire ADR-004, interrompu deux fois.
+
+### Étude de KERNEL.md (suite de la Séance 4, 2026-10-16 07:18)
+
+**Objectif.** « La compression sémantique, heuristique, symbolique, méta-langage cognitif afin de
+trouver les meilleures façons de compresser et optimiser ? Regarde et étudie KERNEL.md. »
+
+**Fait.** Lu `truth-engine-v2/KERNEL.md` (797 lignes, 77 174 octets, v2.10.7) et mesuré son appareil :
+modules possédés 163 854 octets (`definitions`, `protocol`, `forensic`, `search`, `output`, `clusters`),
+exécuteur `tools/verify/verify.py` 2 747 l. et `tools/runtime/run_state.py` 2 994 l. Contrat :
+241 028 octets contre nos 13 823, soit **17,4×** ; 3 339 lignes contre 146. Onze opérateurs de modalité
+nommés, 246 occurrences (`NEVER` 94, `CHECKPOINT` 33, `ENFORCE` 30, `MUST` 25, `BLOCK_IF` 24,
+`ON_FAIL` 12…) ; notre contrat en porte zéro nommé, mais 45 `NEVER` en prose, 30 `→`, 17 `!=`.
+Écrit [l'étude](contracts/candidat/2026-10-16-071827-etude-compression-symbolique-kernel.md).
+
+**Vérifié.** Les dix tests de compression de la campagne sont rappelés avec leur verdict (dense −2 %
+rejeté, MCO `OUTPUT` −3 % et noyau −0,2 % rejetés, découpe −27 %/tour retenue, niveau 1 des descriptions
+−14 % retenu), et le motif du plancher est mesuré : `MCO/AGENTS.md` 525 caractères par puce → −54 %,
+`aidd-device/AGENTS.md` 145 caractères par puce → −0,2 % ; le projet MCO a lui-même rendu son DSL
+(◉ → △ ◆ ⊙ ⟐) pour du « langage naturel dense » en v7.1, parce qu'une légende coûte ce qu'elle
+économise. Quatre dispositifs chiffrés sur nos fichiers (`o200k`) : propriété + précédence **81 j** contre
+la phrase de renvoi **67 j** = **net +14 j** ; échec de lecture **+36 j**, une règle absente aujourd'hui ;
+chargement par module `AUDIT`+`RECOVERY`+`STOP` **191 j bruts**, charges du skill **54 j mesurés**,
+**net −137 j** sur un noyau de 1 777 ; registre machine + porte non chiffrés.
+
+**Rectifications.** Ma mesure de `D` (chargement par module) **départage deux chiffres antérieurs du
+dossier qui ne portent pas la même grandeur** : la veille du 2026-10-15 annonce « −182 jetons » (poids
+brut, v13, sans le prix du skill), le test 5 de la campagne annonce « `STOP` : −18 o » (octets nets du
+niveau 1, sur un noyau de 8 560 caractères). Recomputé sur le noyau courant, **charges comprises** :
+191 bruts, 54 de charges, 137 nets. Et le §`F4` de l'audit de la couture est **rétréci** : j'y écrivais
+« aucun chargeur » sans borne ; le dossier portait déjà la borne (veille §7, mémoire `ec04b064` sur le
+binaire 0.0.173 contre 0.0.186 en service). Mesuré : aucun chargeur **dans le dépôt** ; le client, `OPEN`.
+Le README du dossier est corrigé dans le même sens.
+
+**Ce qui n'est pas établi.** Aucune mesure d'application des règles : les gains sont en jetons, jamais en
+conformité. La transférabilité de KERNEL n'est pas mesurée, aucun de ses dispositifs n'a tourné ici. La
+grandeur « 62-81 % » de MetaGlyph reste `OPEN`. `D` n'est pas chiffré et ne le sera pas avant l'arbitrage
+de la classe de dérive.
+
+**Mémoires.** `46602ce4` (étude KERNEL, relue) ; `ab424e2c` (couture, §`F4` rétréci, relue).
+
+**Mémoires.** `a06b9567` (description des trois skills, relue) ; `ab424e2c` (couture noyau ↔ skills,
+relue).
+
+### Candidat v16 (suite de la Séance 4, 2026-10-16 07:34)
+
+**Objectif.** « Et ? as-tu essayé d'optimiser et compresser AGENTS.md ? Où est le résultat, où est
+l'analyse ? » Le tour précédent avait chiffré et conseillé sans produire ; ce tour produit.
+
+**Fait.** Construit [v16](contracts/candidat/v16.md) depuis `docs/contracts/AGENTS-source.md` par
+transformation textuelle (aucun texte déplacé n'est retapé) : `A` la phrase de renvoi devient propriété
+et précédence, `B` une règle nouvelle refuse de faire semblant quand un propriétaire est illisible, `C`
+`AUDIT`;`RECOVERY`;`STOP` sortent du noyau dans un quatrième bloc `04-recovery` (titres passés de `##` à
+`###`, texte inchangé), `D` la phrase de tête de `02-memory` cesse de recopier ses règles. Écrit
+[l'analyse](contracts/candidat/2026-10-16-073347-v16-analyse.md), naissance mesurée `07:33:47`, et
+[l'entrée du README](contracts/README.md).
+
+**Vérifié.** Noyau **1 777 → 1 669 jetons (−108, −6,1 %)** ; niveau 1 (phrases de tête) 190 → 216 ;
+**par tour au repos 1 967 → 1 885 (−82, −4,2 %)** ; corps des skills 1 392 → 1 615 ; contrat entier
+3 170 → 3 285 (**+115**) ; caractères 13 659 → 14 146 ; lignes 159 → 167 ; sections du noyau 9 → 6 ;
+blocs `# SKILLS` 3 → 4. **Couverture : 83 puces dans v15, 83 retrouvées mot pour mot, 0 perdue, 1
+nouvelle.** Réconciliation par opération : `C` −141, `A`+`B` +82, `D` −24, somme **−83** contre **−82**
+mesuré. `sha256` du candidat `bd9bee66…`, distinct de la source `ba724bee…` ; `AGENTS.md` et les trois
+`SKILL.md` **intacts**, rien d'appliqué.
+
+**Ce qui n'est pas expliqué.** Le jeton d'écart entre la somme (−83) et la mesure (−82) : `OPEN`, écrit
+dans l'analyse, pas lissé.
+
+**Rectifications.** L'étude du matin chiffrait `A` à 81 jetons et `B` à 36, donc `A`+`B` à `+50` net ;
+le texte **assemblé** coûte 149 jetons contre 67 retirés, soit **+82**. Les brouillons de l'étude étaient
+plus légers que le contrat qui les réunit, et l'analyse porte la correction.
+
+**Dérives signalées, non corrigées.** `C` ne vaut que si un chargeur existe : il est `OPEN` (`F4`).
+`F1` (la condition de clôture de séance reste dans `01-consign` seul) n'est pas réparé. `A` nomme quatre
+dossiers quand `INVARIANTS` l.23 dit « never the tool or the format » : l'irrégularité est choisie, pas
+subie, et l'arbitrage est à rendre. `ADR-012` reste contredite sans acte. Rien n'est commité.
+
+**Prochaines étapes.** Arbitrer : appliquer `A`+`B` sans `C` (le noyau **grossit** alors de 82 jetons),
+appliquer le paquet entier, ou refuser sur `INVARIANTS` l.23.
+
+**Mémoires.** `5b044e99` (v16, relue).
+
+### DSL v19 (suite de la Séance 4, 2026-10-16 07:45)
+
+**Objectif.** Le relecteur, après `v16` : « tu n'as rien compris, rien appris !!!! […] `## 02-memory`
+Mnemolite, the canonical memory of facts… poubelle. Où est le DSL, où la COMPRESSION, l'OPTIMISATION, le
+REFACTORING ? » Deux reproches, tous deux fondés : la phrase de tête de `02-memory` avait perdu ses
+verbes (`search`, `writeback`, `dedup`, `readback`), qui sont la surface de chargement du skill ; et les
+tours précédents avaient chiffré la notation sans livrer de contrat écrit en notation.
+
+**Fait.** Trois candidats produits, chacun mesuré, aucun appliqué.
+`v17` écrit le contrat en **DSL** — mots-clés en capitales, `→`, `|`, `&`, `!` — et son analyse est
+[écrite](contracts/candidat/2026-10-16-073820-v17-analyse.md).
+`v18` refait `v17` sur la tête de `v15` (l'agnostique de l'axe structurel) avec les trois phrases de tête
+**restaurées** et une légende réduite.
+`v19` retire de `v18` les appareils morphologiques qui **coûtent**, puis quinze réparations à la main.
+Écrit [l'analyse de v19](contracts/candidat/2026-10-16-074335-v19-analyse.md) et [l'entrée du
+README](contracts/README.md). Son préfixe porte `074335` quand sa naissance mesurée (`stat -c %w`) est
+`07:43:58` : **écart de 23 s**, nominal, laissé nommé plutôt que corrigé.
+
+**Vérifié.** `o200k_base`, texte appliqué `v15` (`ba724bee…`) contre `v19.md` (`cd89d20d…`, naissance
+mesurée `07:41:03`). Noyau **1 777 → 1 599 (−178, −10,0 %)** ; phrases de tête 190 → 177 ; **par tour au
+repos 1 967 → 1 776 (−191, −9,7 %)** ; contrat entier 3 170 → 2 921 (−249, −7,9 %) ; caractères
+13 750 → 11 927 ; `cl100k` 3 182 → 2 927. Somme des deltas de corps = **−249**, égal au delta du fichier.
+Appareils du DSL mesurés isolément : la jointure `_` coûte (8 j contre 4), les parenthèses d'appel coûtent
+(4 contre 2), `NO_REGRESSION` coûte (4 contre 2), la barre paie (8 contre 7), la flèche est neutre.
+Couverture : `78` puces sur `83` au-dessus de 60 % de mots retrouvés, les cinq autres entièrement
+littérales et vérifiées au `grep -c` (=1) ; littéraux recopiés à l'octet ; `AGENTS.md` et les trois
+`SKILL.md` intacts (`mtime` `06:41:44`, `sha256` `2ec8917b…`) ; rien de commité.
+
+**Rectifications.** Mon analyse de `v17` affirme « v17 = v15 + DSL, une seule variable » : **faux,
+mesuré** — `v17` reprend aussi le bloc d'en-tête de `v16`. La grandeur attribuable au DSL seul est celle
+de `v18`/`v19`, et c'est celle que je publie. Ma légende de `v18` était payée 38 jetons pour un appareil
+(`CAPS(...)`, jointures `_`) qui coûtait plus qu'il n'économisait ; celle de `v19` en coûte 32 et ne
+déclare plus que ce qui reste non évident. Deux identifiants avaient été dégradés en prose par le passage
+mécanique — `duplicate_warning` et les sept noms de blocs `N2` — et sont rétablis : ce sont des
+identifiants, pas des phrases.
+
+**Dérives signalées, non corrigées.** Rien n'est appliqué : quatre fichiers plus la source à réécrire, et
+la **relecture règle par règle n'est pas faite**, ce qui est la faiblesse nommée du candidat. `SCOPE`
+gagne **+3** jetons, seule hausse. `ADR-012` reste contredite sans acte ; `F4` (`OPEN`), `F1`, la tension
+`A` contre `INVARIANTS` l.23 et le paquet `v16` restent en attente d'arbitrage.
+
+**Ce qui n'est pas établi.** Qu'une réécriture garde le sens : aucun script ne l'établit. Qu'un modèle
+suive mieux un contrat plus court : le gain est en jetons, jamais en conformité. La lisibilité d'un DSL
+par un modèle n'est pas mesurée ici.
+
+**Prochaines étapes.** Arbitrer : appliquer `v19` (−191 par tour), l'appliquer sans sa légende
+(−223, mais `OUTPUT` R5 violée), ou rejeter. Puis, si `v19` passe, la relecture règle par règle avant les
+quatre réécritures.
+
+**Mémoires.** `ee8e7bb8` (v19 : mesures, appareils, limites, rectifications, relue).
+
+### Notation dense contre prose : ce que la littérature mesure (suite de la Séance 4, 2026-10-16 08:05)
+
+**Objectif.** « Tu ne trouves pas ça plus efficace quand tu le lis ? Cela n'induit-il pas moins
+d'interprétation ? N'est-ce pas plus directif, plus efficient ? » La question porte sur un effet
+**mesurable** (compréhension et adhérence par un modèle), pas sur une impression de lecture.
+
+**Fait.** Mnemolite d'abord (deux mémoires relues : `13aab1a5`, symboles et glyphes, evidence négative) ;
+puis trois recherches web en parallèle, pages lues et URLs citées ; puis écrit la mémoire `bac7d811`.
+
+**Vérifié, avec sources.** Sur la question exacte — instructions **télégraphiques** contre prose
+complète, sens et tâche constants, accuracy mesurée — **aucune étude n'existe : `UNKNOWN`**. Les
+travaux voisins, eux, sont chiffrés et ils ne vont pas tous dans le sens de l'intuition :
+*Format* : Sclar et al., ICLR 2024 (arXiv 2310.11324) « up to 76 accuracy points » d'écart selon la
+forme ; leurs libellés en minuscules font 0,714 contre 0,614 en capitales ; He et al. (arXiv 2411.10541)
+HumanEval JSON 57,9 contre texte brut 37,2 ; Voronov et al., Findings ACL 2024, « a poor choice of the
+template can reduce the performance of the strongest models … to a random guess level ».
+*Concision* : Atreja et al., ICWSM 2025 (DOI 10.1609/icwsm.v19i1.35807) « Concise prompts can
+significantly reduce prompting costs but **also lead to lower accuracy** on tasks like toxicity ».
+*Compression* : LLMLingua, EMNLP 2023, GSM8K 77,33 à 20× contre 78,85, mais BBH 56,85 à 7× contre 70,07
+(**−13,22**) ; LLMLingua‑2, Findings ACL 2024, BBH 70,02 à 3× contre 70,07 puis 61,94 à 5× ; Zhang et al.
+(arXiv 2505.00019) « performance decreases with increasing compression ratios for **short** contexts ».
+*Longueur* : Levy et al. (arXiv 2402.14848) 0,92 → 0,68 à 3 000 jetons ; Du et al. (arXiv 2510.05381)
+13,9 %–85 % de baisse *malgré* une récupération parfaite.
+*Nombre d'instructions* : ManyIFEval, EMNLP 2025, GPT‑4o 0,574 à 5 instructions contre 0,213 à 10 ;
+IFScale, 100 % à 10 → 68,9 % à 500 ; StyleMBPP, une contrainte passe de 99 % à 20 % (Gemini 1.5 Pro)
+quand cinq autres l'accompagnent.
+*Répétition* : Leviathan et al. (arXiv 2512.14982) répéter le prompt entier gagne 47 tests sur 70,
+0 perte, sur modèles non raisonnants ; pas de gain significatif pour une question reformulée (2412.07923).
+*Capitales et opérateurs définis par légende* : `UNKNOWN`, aucune mesure isolée.
+
+Les trois citations décisives ont été **contrôlées par mes propres lectures** (`read_url`, ce jour) :
+arXiv 2310.11324 (ICLR 2024 camera ready, « performance differences of up to 76 accuracy points »),
+la page AAAI du DOI `10.1609/icwsm.v19i1.35807` (phrase « Concise prompts … lower accuracy » au mot),
+et arXiv 2510.05381 (Findings EMNLP 2025, « degrades substantially (13.9%--85%) »). Les autres chiffres
+viennent des trois agents de recherche, qui déclarent avoir lu leurs pages : `SUPPOSÉ(agents web)`.
+
+**Rectifications.** Deux, dont une qui change le dossier.
+1. J'ai cité « symbol tuning = arXiv 2305.17446 » : **faux**. Symbol tuning est Wei et al.,
+arXiv **2305.08298**, et il exige un **entraînement** ; 2305.17446 est un papier sur les sous-espaces de
+fine-tuning (Zhang, Liu, Shao).
+2. « Pas d'accès à un modèle ici », écrit dans `v13-analyse.md` l.138, la veille l.225 et l'étude KERNEL
+l.140 : **faux, vérifié à l'instant**. `ollama` est installé et sert sur `http://localhost:11434`
+(HTTP 200) avec `qwen3.6-131k:35B` (MoE, 23,9 Go), `gemma3:12b` et d'autres. La campagne a donc
+affirmé trois fois une incapacité qu'elle n'avait pas : un banc A/B local est possible, et aucune
+expérience n'a encore été lancée. Les trois documents datés ne sont pas réécrits (règle du dépôt) ;
+la dérive est signalée ici.
+
+**Ce qui n'est pas établi.** Que la notation dense améliore quoi que ce soit. Mon impression de lecture
+de `v19` — plus scannable, une règle par ligne — est une **introspection**, pas une mesure, et elle est
+compromise : j'en suis l'auteur. La littérature interdit d'extrapoler dans les deux sens : rien ne
+prouve que la forme dense aide, rien ne prouve qu'elle nuit.
+
+**Prochaines étapes.** Banc A/B local sur `qwen3.6-131k:35B` ou `gemma3:12b` : mêmes règles, une
+question vérifiable par règle, v15 contre v19, à l'aveugle, N répétitions. C'est la seule mesure qui
+trancherait la question posée.
+
+**Mémoires.** `bac7d811` (littérature, chiffres, sources, correction `ollama`, relue).

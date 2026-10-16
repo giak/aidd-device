@@ -411,59 +411,53 @@ relit alors les mêmes pièces que lui, et rien ne distingue un manifeste rééc
 et `collect` ne vérifie pas que l'arbre `travail` est encore dans l'état gelé, ce que la porte (ADR-018)
 puis le reçu mesurent.
 
-## ADR-021 — Le contrôle mécanique qu'une dérive démontrée rend exigible (proposée le 2026-10-16, à arbitrer)
+## ADR-021 — Le contrôle qu'une dérive démontrée rend exigible : le volet séance seul, retenu (acceptée le 2026-10-16)
 
-**Contexte** : ADR-004 n'a pas écarté le contrôle mécanique, elle l'a **conditionné** (« une vérification
-mécanique ne sera **méritée** que par une dérive démontrée »), et sa conséquence exige d'une future règle
-mécanique qu'elle dise **sa classe, sa commande et son contrôle négatif avant usage**. La dérive est là,
-deux fois le même jour, même cause, mesurée : les outils de fichiers du client résolvent un chemin relatif
-contre la racine du projet du client, jamais contre ce dépôt, donc une écriture relative née d'ici atterrit
-dans `framework-origin` (BOUNDARY §8 ; journal, 2026-10-15, occurrences `13:0x` et `13:34`, repérées les
-deux fois par la même commande et réparées à la main). Ce que la dérive laisse derrière elle n'est pas un
-dégât mais un **fait faux** : l'arbre que le gel déclare ne pas toucher porte une ligne de plus, et rien
-dans le dépôt ne la lit.
+**Contexte** : ADR-004 conditionne le contrôle mécanique à une dérive démontrée, et sa conséquence exige de
+toute règle mécanique qu'elle dise **sa classe, sa commande et son contrôle négatif avant usage**. La dérive
+est là, deux fois le 2026-10-15 (`13:0x` et `13:34`) : les outils de fichiers du client résolvent un chemin
+relatif contre la racine du projet du client, qui est le framework, donc une écriture relative née d'ici
+atterrit dans `framework-origin` (BOUNDARY §8 ; journal, Séance 1) et y laisse un **fait faux** que rien ne
+lit.
 
-**Choix** (à arbitrer) : le contrôle est une **mesure**, jamais un crochet, et il tient aux deux moments où
-la paire d'états existe déjà ou peut exister d'une seule commande.
+**Fait mesuré, commun aux deux variantes** : la paire d'états avant/après est déjà écrite dans le reçu
+(`run.mjs` l.788, `arbres.avant` / `arbres.apres`) et rien ne la lit pour l'origine : `memeArbre` n'est
+appelé que pour l'arbre `travail` (l.487 la porte, l.748 le reçu). Le **crochet est écarté**, et par trois
+raisons structurelles, pas par goût : la dérive n'écrit aucun événement git dans le dispositif ; le seul
+arbre où un crochet la verrait est l'origine, que BOUNDARY §1 interdit d'écrire ; la résolution du chemin
+appartient à l'outil du client, hors des deux dépôts, donc la détection est après coup de toute façon.
 
-**Au reçu**, parce que la moitié de la paire y est prise et l'autre moitié y est déjà mesurée. Classe :
-état d'un arbre, sur une paire que le harnais écrit sans la lire. `receipt` mesure les quatre arbres avant
-et après (`arbres.avant`, `arbres.apres`, `run.mjs` l.788) mais ne les **compare** que pour l'arbre
-`travail` (`memeArbre`, l.748, falsificateur `arbre_de_travail_inchange`) : un déplacement de
-`framework-origin` pendant le run ne produit aujourd'hui aucun mot dans le reçu. Commande :
-`node docs/device/harness/run.mjs receipt …`, sans option ni commande nouvelle, la comparaison étant
-`memeArbre(avant, apres)` sur les arbres autres que `travail`. Forme : l'écart s'écrit en **limite** du
-reçu, jamais en refus, parce qu'un run dont l'origine a bougé reste un run lisible et que le §7 ne fait
-tomber le verdict que sur ce qui rend le produit illisible ; la limite nomme le label, le `HEAD` et les
-lignes de `porcelain` apparues. Contrôle négatif, à coder avec la mesure et jamais avant : dans le banc, un
-run dont aucun arbre ne bouge n'écrit pas cette limite, et un run où `framework-origin` reçoit un fichier
-pendant la session l'écrit avec la ligne exacte, soit deux contrôles de plus que les **46** d'ADR-020.
+**Réponse : `A`, le 2026-10-16**, le jour même où la fiche a été réduite à deux variantes (Séance 11).
+`B` reste décrit ci-dessous, **non retenu** : son jour reviendrait si un arbre voisin était un jour
+constaté déplacé pendant un run, ce qu'aucune mesure n'a montré.
 
-**À la séance**, parce que les deux incidents datés n'ont vu aucun run ouvert (le premier run ouvre à
-`17:15:59`, `horodatage_debut` de son `faits.json` ; les incidents sont à `13:0x` et `13:34`). Classe : relevé de la même paire, hors run. Commande,
-une seule, celle qui a établi le retour les deux fois :
-`git -C /home/giak/projects/framework status --porcelain`, comparée aux deux lignes déjà documentées
-(`.freebuff/`, `aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, BOUNDARY §5). Forme : le relevé et son écart vont
-dans le `Vérifié` de la séance ; une troisième ligne non suivie, ou un fichier suivi modifié, s'y nomme,
-jamais ne se répare en silence. Contrôle négatif, couru le 2026-10-16 pour cette fiche : la commande rend
-exactement ces deux lignes, `exit 0` ; le jour où elle en rendra trois, le contrôle aura mordu.
+**Variante A — le volet séance seul.** Classe : relevé d'état d'arbre, hors run. Commande, une seule, celle
+qui a établi le retour les deux fois : `git -C /home/giak/projects/framework status --porcelain`, comparée
+aux deux lignes déjà documentées (BOUNDARY §5), en clôture de toute séance capable d'écrire, le relevé et
+son écart allant au `Vérifié` de la séance ; une troisième ligne non suivie, ou un fichier suivi modifié,
+s'y nomme, jamais ne se répare en silence. Contrôle négatif **couru** le 2026-10-16 : les deux lignes,
+`exit 0`. Prix : **aucune ligne de code**, deux lignes de prose dans BOUNDARY §5 et le geste. Portée :
+exactement la classe qui a mordu.
 
-**Pourquoi pas un crochet**, et les trois raisons se vérifient. Un crochet vit dans le dépôt qu'il
-surveille, or la dérive n'écrit **aucun** événement git dans le dispositif : aucun commit, aucun checkout,
-aucun chemin du dépôt touché, donc un crochet d'ici ne la voit pas passer. Le seul arbre où un crochet la
-verrait est l'origine, et l'y poser serait écrire dans un arbre que le dispositif observe seulement
-(BOUNDARY §1) ; de plus l'installation d'un tel crochet apparaîtrait dans la paire de `porcelain` qui sert
-précisément à constater les dérives, et la fausserait. Enfin la détection est de toute façon après coup :
-c'est l'outil du client, hors des deux dépôts, qui résout le chemin, donc le dépôt ne peut comparer que les
-états encadrant un moment qu'il maîtrise. La parade tenue reste ce qu'elle est : écriture en chemin
-absolu, et racine du projet du client posée sur l'arbre où l'on veut écrire.
+**Variante B — les deux volets.** A, plus le volet reçu : `receipt` compare, avec `memeArbre`, `avant` et
+`apres` pour les arbres autres que `travail`, et écrit l'écart en **limite**, jamais en refus, parce qu'un
+run dont l'origine a bougé reste un run lisible et que le §7 ne fait tomber le verdict que sur ce qui rend
+le produit illisible. Prix : une comparaison et une limite dans le harnais, et **deux contrôles** au banc
+(`46` → `48`, dont un run propre qui n'écrit pas la limite et un run où l'origine reçoit un fichier qui
+l'écrit avec la ligne exacte). Portée : A, plus la classe voisine, un arbre déplacé **pendant** un run. À
+dire dans les deux cas : cette classe voisine **n'est pas** celle des deux incidents datés, puisqu'aucun run
+n'était ouvert alors, le premier ouvrant à `17:15:59`.
 
-**Conséquences** : la mesure est méritée par ADR-004, pas ajoutée par envie, et aucune règle parallèle
-n'apparaît, celle-ci exécutant la conséquence qu'ADR-004 annonçait. Ce qu'elle **ne** couvre pas se dit
-avec elle : un écart réparé avant le relevé ne laisse rien à lire, et rien dans le dépôt n'empêche
-l'écriture, seulement son silence, donc un aller-retour entre deux relevés reste invisible. Tant que le
-relecteur n'a pas arbitré, rien n'est codé : cette fiche est une proposition, le harnais reste à 882 lignes
-et le banc à 46 contrôles.
+**Ce que le choix ne change pas**, dans les deux variantes : la parade reste l'écriture en chemin absolu et
+la racine du projet du client posée sur l'arbre visé ; un écart réparé avant le relevé ne laisse rien à
+lire ; rien dans le dépôt n'empêche l'écriture, seulement son silence.
+
+**Conséquences.** Appliquée le jour de la réponse : le geste du §5 et ses deux lignes y sont écrits, et
+BOUNDARY §8 ne dit plus que « rien dans le dépôt ne la contrôle » mais que la dérive est **lue**, jamais
+empêchée. Aucune ligne de code : le harnais reste à 882 lignes et le banc à 46 contrôles, et le banc n'y
+gagne rien, il éprouve le harnais, pas le client. `B` n'est pas codé ; si un jour un run montre un arbre
+voisin déplacé, la variante est reprise telle qu'elle est écrite ici, comparaison au reçu, écart en limite,
+deux contrôles au banc (`46` → `48`).
 
 ## ADR-022 — Le banc du harnais vit dans le dépôt, et n'est pas un contrôle du dépôt (2026-10-16)
 

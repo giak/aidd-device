@@ -83,6 +83,11 @@ git -C /home/giak/projects/framework rev-parse --short HEAD
 git -C /home/giak/projects/framework status --porcelain
 ```
 
+Depuis l'[ADR-021](../DECISIONS.md) (variante A, 2026-10-16), la même commande se relève aussi **en
+clôture de toute séance capable d'écrire**, et son écart va au `Vérifié` de la séance : c'est le seul
+contrôle qui attrape la classe des deux incidents de `13:0x` et `13:34`, nés hors run. Il constate, il ne
+prévient pas : une dérive réparée avant le relevé ne laisse rien à lire.
+
 Relevé **avant** (2026-10-15, 13:18) : HEAD `fe48de12` ; porcelain, 2 lignes — `?? .freebuff/` et
 `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`. La paire identique est la preuve ; le relevé dit aussi ce
 qu'elle ne couvre pas, puisque ces deux lignes préexistaient à tout run et ne viennent pas du
@@ -183,6 +188,9 @@ ligne — `?? .freebuff/`, écrit par le client dans un arbre déclaré read-onl
   écrit là : les outils de fichiers du client résolvent un **chemin relatif** contre la racine du
   projet du client, qui est le framework. Deux fois le 2026-10-15 (`docs/tasks` vers 13:0x,
   `docs/device/CASES` à 13:34), deux fois réparé à la main — jamais par le dispositif lui-même. La
-  parade tenue est d'écrire en chemin absolu, et rien dans le dépôt ne la contrôle. La paire de
-  `porcelain` du §5 le montrerait, mais elle le constaterait après coup : ce contrôle constate, il
-  ne prévient pas.
+  parade tenue est d'écrire en chemin absolu. Depuis le 2026-10-16, la paire de `porcelain` du §5 se
+  relève aussi en clôture de toute séance capable d'écrire ([ADR-021](../DECISIONS.md), variante A) :
+  la dérive est désormais **lue**, jamais empêchée ; un écart réparé avant le relevé ne laisse rien à
+  lire, et rien dans le dépôt n'empêche l'écriture, seulement son silence. Le volet reçu de l'ADR-021
+  (variante B) n'a pas été retenu : un arbre voisin déplacé **pendant** un run n'a encore jamais été
+  constaté.

@@ -1027,3 +1027,121 @@ commit vit ici.
 
 **Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
 bloc daté qui la cite. Elle se ferme sur `0d2f012`, arbre propre, dépôt devant `origin/main` d'un commit.
+
+## Séance 10 — 2026-10-16 (les chiffres de la clôture de la Séance 6, rejoués)
+
+**Objectif.** Rejouer d'un bout à l'autre les chiffres de la clôture de la Séance 6, rapporter ce qui ne
+correspond plus, et ne rien corriger en silence.
+
+**Fait.** Chaque figure rejouée par sa propre commande :
+
+| Figure de la clôture | Commande | Résultat |
+| --- | --- | --- |
+| `ARCHITECTURE.md`, 262 lignes, neuf sections, cinq schémas | `wc -l` ; `grep -c '^## '` ; le compte des blocs mermaid | 262 ; 9 ; 5 : **tient** |
+| la relecture, 111 lignes, six décrochages | `wc -l` ; `grep -n '^### '` | 111 ; les décrochages 1 à 6 : **tient** |
+| « cinq blocs, plus cette clôture » | `grep -c 'Tour suivant'` plus le premier tour | 5 : **tient**, mais la même séance écrit « Cinq tours » à sa clôture et « les cinq blocs mermaid » à son deuxième tour : le mot y porte deux sens |
+| cinq fichiers, +77 / −49 | `git diff --numstat d239b08 0d2f012` sur les cinq fichiers ; les deux hunks du banc lus dans le `git diff` de `DEVICE.md` | +82 / −52 moins +5 / −3, soit **+77 / −49** : **tient**, reconstitué |
+| `git status -uall` rend deux fichiers neufs | `git status -uall --porcelain` | **0 ligne** : les deux fichiers sont commités (`0d2f012`) |
+| « aucun code touché », le harnais rend le même `git diff` muet | `git diff --quiet d239b08 HEAD -- docs/device/harness/run.mjs` | `exit 0` : **tient** |
+| trois mémoires, dont `11210a41` mise à jour deux fois | lecture des trois | les trois existent ; `11210a41` porte `updated_at` `11:32:39` contre `created_at` `11:21:50`, donc au moins une mise à jour ; le compte « deux fois » n'est pas exposé par l'outil, `UNKNOWN` |
+| la clôture se ferme sur un `HEAD` inchangé, `d239b08` | `git log -1` | **`1235c5a`** : `d239b08` était le HEAD du moment, et la clôture le dit comme tel |
+
+**Vérifié.** Les trois points ouverts qu'elle laissait tiennent encore, mesuré : `NEGATIVE.md` et `ECART.md`
+absents ; `AGENTS.md` ne nomme ni remote ni `github.com` (0 occurrence) ; `BOUNDARY.md` §7 cite toujours
+`39750fe` ; les trois skills n'ont ni `type:` ni `status:` (l'`OPEN` de la Séance 5) ; les six décrochages
+restent non corrigés, contrôle fait sur le deuxième (« AIDD » employé sans définition) et le sixième
+(`EXPLICATION` annonce « 21 commits » quand l'arbre en compte **38**). Un des cinq arbitrages du point 2 est
+fait : le commit de la journée, `0d2f012`, porté au journal par `1235c5a`. Les deux hunks de la Séance 8
+sur `DEVICE.md` ont été reconnus par leur contenu (`−2/+3` et `−1/+2`, leurs retraits étant restés ceux de
+`d239b08`) : c'est ce qui rend le +77 / −49 reconstruit, et non supposé.
+
+**Dérives signalées, non corrigées.** `docs/DASHBOARD.md` ligne 44 parle encore d'un « banc **jetable** » :
+le compte qu'elle donne (46/46) est juste, l'adjectif est faux depuis la Séance 8, où le banc est entré dans
+le dépôt (`harness/banc-harnais.sh`, [ADR-022](DECISIONS.md)). Signalé ici, pas réécrit : ce rapport n'était
+pas un mandat de correction.
+
+**Rectifications.** Aucune **figure** : aucune n'était fausse, ni au moment, ni aujourd'hui ; les deux
+écarts (`git status -uall`, `HEAD`) sont des états datés que du travail postérieur a légitimement dépassés.
+Deux de **forme**, corrigées dans la foulée : la première rédaction citait `--numstat` avant qu'il ne soit
+couru (il rend le même total que le `--stat`, 82 / 52, vérifié depuis), et elle portait un triple accent
+grave dans une cellule de tableau, qui aurait cassé le rendu. Les cinq rendus mermaid vivent encore dans
+`/tmp/arch/block-1.svg` à `block-5.svg`, mais relire un libellé dans un SVG n'est pas une mesure rejouable :
+c'est un acte daté, attesté par le journal seul.
+
+**Prochaines étapes.** Le mot du relecteur sur les deux points nommés (les six décrochages, l'adjectif du
+`DASHBOARD`) ; puis, inchangée, l'étape 3 du bilan §11, la sonde du client.
+
+**Mémoires.** `2a354eb2` — le rejeu intégral, ce qui tient, ce qui a été dépassé, et la dérive signalée ;
+`11210a41` corrigée à la source, elle disait « travail NON COMMITÉ » et « 36 commits ».
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur `1235c5a`, un journal qui porte ce rapport **non commité**, et une
+clôture ancienne dont aucune figure n'est tombée.
+
+## Séance 11 — 2026-10-16 (l'ADR-021 réduite à un choix : A, le volet séance, ou B, les deux volets)
+
+**Objectif.** Rendre l'arbitrage de l'ADR-021 possible en un mot, sur la demande du relecteur.
+
+**Fait.** La fiche est réécrite au registre, même numéro, même place : elle porte maintenant deux variantes
+nommées, précédées du fait mesuré commun et des trois raisons qui écartent le crochet, suivies de ce que
+chaque réponse déclenche. `A`, le volet séance seul : la commande du §5 comparée aux deux lignes
+documentées, en clôture de toute séance capable d'écrire, prix **aucune ligne de code** et deux lignes de
+prose dans BOUNDARY §5. `B`, les deux volets : A plus la comparaison des arbres autres que `travail` au
+reçu, l'écart écrit en limite, prix une comparaison, une limite et deux contrôles au banc (`46` → `48`). La
+fiche dit aussi ce que `B` **n'attrape pas** : la classe des deux incidents datés, aucun run n'étant ouvert
+alors, le premier ouvrant à `17:15:59`.
+
+**Vérifié.** Le registre reste numéroté et continu : `grep -n '^## ADR-02'` → ADR-020 `l.379`, ADR-021
+`l.414`, ADR-022 `l.460`, cette dernière intacte après le remplacement. **Rien n'est codé** :
+`git diff --quiet docs/device/harness/run.mjs` → `exit 0` ; le harnais reste à 882 lignes et le banc à ses 46
+contrôles, aucun des deux n'ayant bougé.
+
+**Dérives signalées, non corrigées.** Aucune nouvelle ; celles de la Séance 10 tiennent (les six
+décrochages, l'adjectif du `DASHBOARD`).
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** La réponse `A` ou `B` ; si `B`, la passe de codage et ses deux contrôles. Restent en
+attente, hors de cette fiche : le mot sur les six décrochages et l'adjectif du `DASHBOARD`, l'étape 3 du
+bilan §11 (la sonde du client), et le commit de ce qui n'est pas commité.
+
+**Mémoires.** `42548adf` corrigée à la source : elle décrivait les deux volets en bloc, elle porte
+maintenant le choix `A` / `B` et ce que chaque réponse déclenche.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur `1235c5a`, deux fichiers modifiés et non commités (`docs/trace.md`,
+`docs/DECISIONS.md`), et une fiche qui n'attend plus qu'un mot.
+
+## Séance 12 — 2026-10-16 (l'ADR-021 tranchée : la variante A, et le geste écrit dans BOUNDARY §5)
+
+**Objectif.** Enregistrer l'arbitrage de l'ADR-021 rendu le 2026-10-16, appliquer ce que la variante
+retenue demande, et ne rien coder au-delà.
+
+**Fait.** Réponse : **`A`, le volet séance seul.** Trois pages touchées : le registre, où l'ADR-021 passe
+d'« à arbitrer » à **acceptée**, la réponse et ses conséquences écrites, `B` décrit comme non retenu ;
+`BOUNDARY.md` §5, qui porte le geste (la paire de `porcelain` de l'origine relevée aussi en clôture de
+toute séance capable d'écrire, l'écart allant au `Vérifié`) ; et `BOUNDARY.md` §8, dont le dernier point ne
+dit plus « rien dans le dépôt ne la contrôle » mais que la dérive est **lue**, jamais empêchée.
+
+**Vérifié.** **Aucune ligne de code** : `git diff --quiet docs/device/harness/run.mjs` → `exit 0` ; le
+harnais reste à 882 lignes et le banc à ses 46 contrôles, la variante `B` seule en aurait ajouté deux. Le
+geste n'est pas une mesure neuve : sa commande et son contrôle négatif ont été courus le 2026-10-16
+(`git -C /home/giak/projects/framework status --porcelain` → les deux lignes documentées, `exit 0`).
+`git status --porcelain` → trois fichiers modifiés : `docs/DECISIONS.md`, `docs/device/BOUNDARY.md`,
+`docs/trace.md`.
+
+**Dérives signalées, non corrigées.** Celles de la Séance 10 tiennent : les six décrochages de la relecture
+et l'adjectif « jetable » du `DASHBOARD` attendent toujours un mot.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Le commit des trois fichiers, dans la foulée. Restent ouverts, hors de cette fiche :
+les deux dérives ci-dessus, l'étape 3 du bilan §11 (la sonde du client), et la variante `B`, si un jour un
+run montre un arbre voisin déplacé.
+
+**Mémoires.** `42548adf` — l'ADR-021 : réponse `A`, ce qu'elle applique, ce que `B` aurait coûté et ce qui
+la rappellerait.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur `1235c5a`, trois fichiers qui portent l'arbitrage, rien de codé, et
+une dérive devenue lue sans être empêchée.

@@ -20,7 +20,7 @@ status: in-progress
 | Phrase fausse dans `AGENTS.md` | 🟢 corrigée sur place (659 parts d'outils ; [ADR-006](DECISIONS.md)) |
 | Journal des séances | 🟢 recréé ([trace.md](trace.md), Séance 1) |
 | Boucle 2 : gestion de projet | 🟨 spec écrite, en itération ([ADR-005](DECISIONS.md)) |
-| Cadre d'output de l'agent | 🟢 appliqué à `AGENTS.md` §OUTPUT ([ADR-009](DECISIONS.md)) |
+| Cadre d'output de l'agent | 🟢 appliqué à `AGENTS.md` §OUTPUT |
 | Le protocole de test (MEGA-PROMPT v6) | 🔲 rien construit — le vrai travail |
 | Le dispositif (v6 §10) | 🟨 `DEVICE.md`, `BOUNDARY.md`, le harnais et le premier `CASES/` complet et gelé ([docs/device/](device/DEVICE.md), [ADR-013](DECISIONS.md), [ADR-014](DECISIONS.md)) ; **un premier run a eu lieu** le 2026-10-15 — la session a lu le dépôt et **n'a rien produit**, verdict `non concluant` ([son PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)) |
 
@@ -78,4 +78,4 @@ status: in-progress
 | --- | --- |
 | `1bbb9d2` | fondation documentaire B1–B6, journal recréé, phrase corrigée, appareil du 14 retiré |
 | `326a5be` | structure deuteros : VISION, PFD, DECISIONS, DASHBOARD, spec boucle 2 |
-| `9768b4c` | `AGENTS.md` contrat autonome (audit de pollution) et cadre d'output implémenté |
+| `9768b4c` | `AGENTS.md` en contrat autonome, et cadre d'output implémenté |

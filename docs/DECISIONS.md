@@ -410,3 +410,84 @@ disparue : accepté) et la limite de cette dernière relue dans le reçu écrit.
 relit alors les mêmes pièces que lui, et rien ne distingue un manifeste réécrit d'un manifeste né ainsi ;
 et `collect` ne vérifie pas que l'arbre `travail` est encore dans l'état gelé, ce que la porte (ADR-018)
 puis le reçu mesurent.
+
+## ADR-021 — Le contrôle mécanique qu'une dérive démontrée rend exigible (proposée le 2026-10-16, à arbitrer)
+
+**Contexte** : ADR-004 n'a pas écarté le contrôle mécanique, elle l'a **conditionné** (« une vérification
+mécanique ne sera **méritée** que par une dérive démontrée »), et sa conséquence exige d'une future règle
+mécanique qu'elle dise **sa classe, sa commande et son contrôle négatif avant usage**. La dérive est là,
+deux fois le même jour, même cause, mesurée : les outils de fichiers du client résolvent un chemin relatif
+contre la racine du projet du client, jamais contre ce dépôt, donc une écriture relative née d'ici atterrit
+dans `framework-origin` (BOUNDARY §8 ; journal, 2026-10-15, occurrences `13:0x` et `13:34`, repérées les
+deux fois par la même commande et réparées à la main). Ce que la dérive laisse derrière elle n'est pas un
+dégât mais un **fait faux** : l'arbre que le gel déclare ne pas toucher porte une ligne de plus, et rien
+dans le dépôt ne la lit.
+
+**Choix** (à arbitrer) : le contrôle est une **mesure**, jamais un crochet, et il tient aux deux moments où
+la paire d'états existe déjà ou peut exister d'une seule commande.
+
+**Au reçu**, parce que la moitié de la paire y est prise et l'autre moitié y est déjà mesurée. Classe :
+état d'un arbre, sur une paire que le harnais écrit sans la lire. `receipt` mesure les quatre arbres avant
+et après (`arbres.avant`, `arbres.apres`, `run.mjs` l.788) mais ne les **compare** que pour l'arbre
+`travail` (`memeArbre`, l.748, falsificateur `arbre_de_travail_inchange`) : un déplacement de
+`framework-origin` pendant le run ne produit aujourd'hui aucun mot dans le reçu. Commande :
+`node docs/device/harness/run.mjs receipt …`, sans option ni commande nouvelle, la comparaison étant
+`memeArbre(avant, apres)` sur les arbres autres que `travail`. Forme : l'écart s'écrit en **limite** du
+reçu, jamais en refus, parce qu'un run dont l'origine a bougé reste un run lisible et que le §7 ne fait
+tomber le verdict que sur ce qui rend le produit illisible ; la limite nomme le label, le `HEAD` et les
+lignes de `porcelain` apparues. Contrôle négatif, à coder avec la mesure et jamais avant : dans le banc, un
+run dont aucun arbre ne bouge n'écrit pas cette limite, et un run où `framework-origin` reçoit un fichier
+pendant la session l'écrit avec la ligne exacte, soit deux contrôles de plus que les **46** d'ADR-020.
+
+**À la séance**, parce que les deux incidents datés n'ont vu aucun run ouvert (le premier run ouvre à
+`17:15:59`, `horodatage_debut` de son `faits.json` ; les incidents sont à `13:0x` et `13:34`). Classe : relevé de la même paire, hors run. Commande,
+une seule, celle qui a établi le retour les deux fois :
+`git -C /home/giak/projects/framework status --porcelain`, comparée aux deux lignes déjà documentées
+(`.freebuff/`, `aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, BOUNDARY §5). Forme : le relevé et son écart vont
+dans le `Vérifié` de la séance ; une troisième ligne non suivie, ou un fichier suivi modifié, s'y nomme,
+jamais ne se répare en silence. Contrôle négatif, couru le 2026-10-16 pour cette fiche : la commande rend
+exactement ces deux lignes, `exit 0` ; le jour où elle en rendra trois, le contrôle aura mordu.
+
+**Pourquoi pas un crochet**, et les trois raisons se vérifient. Un crochet vit dans le dépôt qu'il
+surveille, or la dérive n'écrit **aucun** événement git dans le dispositif : aucun commit, aucun checkout,
+aucun chemin du dépôt touché, donc un crochet d'ici ne la voit pas passer. Le seul arbre où un crochet la
+verrait est l'origine, et l'y poser serait écrire dans un arbre que le dispositif observe seulement
+(BOUNDARY §1) ; de plus l'installation d'un tel crochet apparaîtrait dans la paire de `porcelain` qui sert
+précisément à constater les dérives, et la fausserait. Enfin la détection est de toute façon après coup :
+c'est l'outil du client, hors des deux dépôts, qui résout le chemin, donc le dépôt ne peut comparer que les
+états encadrant un moment qu'il maîtrise. La parade tenue reste ce qu'elle est : écriture en chemin
+absolu, et racine du projet du client posée sur l'arbre où l'on veut écrire.
+
+**Conséquences** : la mesure est méritée par ADR-004, pas ajoutée par envie, et aucune règle parallèle
+n'apparaît, celle-ci exécutant la conséquence qu'ADR-004 annonçait. Ce qu'elle **ne** couvre pas se dit
+avec elle : un écart réparé avant le relevé ne laisse rien à lire, et rien dans le dépôt n'empêche
+l'écriture, seulement son silence, donc un aller-retour entre deux relevés reste invisible. Tant que le
+relecteur n'a pas arbitré, rien n'est codé : cette fiche est une proposition, le harnais reste à 882 lignes
+et le banc à 46 contrôles.
+
+## ADR-022 — Le banc du harnais vit dans le dépôt, et n'est pas un contrôle du dépôt (2026-10-16)
+
+**Contexte** : les ADR-018 et 020 chiffrent leurs refus par un banc cité six fois dans les pages datées,
+`/tmp/banc-porte.sh`, 46 contrôles, et ce fichier n'existait nulle part dans le dépôt. La dérive est
+démontrée au sens d'ADR-004 : **une preuve citée sans son artefact**, dans un dossier qui ne survit pas à
+un redémarrage, quand [REPLAY.md](device/REPLAY.md) promet déjà de rejouer le gel depuis un clone neuf. Un
+tiers pouvait relire chaque chiffre annoncé (63 refus, 46 contrôles) sans pouvoir en rejouer un seul.
+
+**Choix** : le banc entre dans le dépôt, `docs/device/harness/banc-harnais.sh`, avec son mode d'emploi
+[BANC.md](device/BANC.md). Il est **renommé avec son foyer** : « porte » ne nomme que la première des cinq
+commandes qu'il éprouve depuis ADR-020 ; les ADR-018 et 020, datées, gardent l'ancien nom tel qu'elles
+l'ont écrit, et ne se réécrivent pas. Ses faits de machine sont lus **au gel**
+(`racine_espace_de_travail`, `arbres[].chemin`, ADR-019) au lieu d'être écrits en clair, son dossier de
+travail vient de `mktemp`, et trois arrêts `exit 2` le font taire quand le gel ou l'espace de travail
+manquent : un banc dont la pièce est absente compterait des accidents comme des refus.
+
+**Ce qu'il n'est pas**, dit ici parce qu'ADR-004 et ADR-012 tiennent encore : ni un crochet, ni une CI, ni
+un contrôle du dépôt. Rien ne le déclenche seul ; il n'éprouve que le harnais, jamais l'arbre, et
+n'énonce aucune règle sur lui. Ce que la dérive démontrée a mérité, c'est **l'artefact de la preuve**, pas
+un automatisme.
+
+**Conséquences** : 46 contrôles, **46/46 PASS** depuis le dépôt, rejoué aussi depuis la racine du système
+(le script retrouve le dépôt par sa propre position), et les trois garde-fous éprouvés un par un (`exit 2`
+chacun). Le banc se lit et se corrige avec le harnais qu'il éprouve, et les contrôles à venir (les deux du
+volet reçu d'ADR-021) prennent place dans ce même compte. Ce qu'il ne couvre pas reste ce qu'il ne
+couvrait pas : aucun run, aucune qualité du cas, rien de ce qui est propre à une machine.

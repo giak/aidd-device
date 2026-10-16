@@ -5,9 +5,12 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 ## Entrées
 
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — **la vue d'ensemble** : les acteurs et ce que chacun ne
+  voit jamais, les arbres et qui écrit où, les cinq commandes du harnais, la vie des artefacts, les
+  falsificateurs et le plafond du verdict, en cinq schémas. C'est par ici qu'un nouveau lecteur commence.
 - [AGENTS.md](AGENTS.md) — le contrat de travail, autonome : il vaut pour tout ce qui s'écrit ici.
-- [docs/device/DEVICE.md](docs/device/DEVICE.md) — le dispositif en une page : ce qu'il fait, qui fait
-  quoi, ce qui part, ce qui revient, comment le récupérer et le lancer.
+- [docs/device/DEVICE.md](docs/device/DEVICE.md) — le dispositif en une page : ce qu'il fait, ce qu'il ne
+  fait pas, ce qui part, ce qui revient, comment le récupérer et le lancer.
 - [docs/device/BOUNDARY.md](docs/device/BOUNDARY.md) — la frontière : les quatre arbres, les chemins
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel

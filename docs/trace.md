@@ -638,3 +638,362 @@ est `AGENTS.md` » n'a plus de base. Reste `OPEN`, non actionné : le frontmatte
 lecture la plus plausible, cette règle vise les pièces datées, pas les skills, donc aucun `drift` établi.
 
 **Mémoires.** `84f550b7`.
+
+## Séance 6 — 2026-10-16 (le tableau de bord et le PFD remis au vrai)
+
+**Objectif.** Demande du relecteur : mettre `docs/DASHBOARD.md` et `docs/PFD.md` au vrai de l'état
+mesuré — gel `0d9a2180`, harnais à cinq commandes, dossier du contrat retiré — et consigner la dérive
+dans une section de séance. Rien d'autre : ni le dispositif, ni les pièces d'un run.
+
+**Fait.** Le point d'état a été **rejoué avant d'écrire**, jamais recopié d'un document.
+
+- `docs/DASHBOARD.md` : en-tête daté `2026-10-16` (Séance 6) ; ligne du journal (« Séance 6 », les
+  séances 2 et 4 étant sorties avec le dossier) ; une ligne **Dossier du contrat** ajoutée (retiré du
+  dépôt, `8b52313` : 43 fichiers, 479 189 octets de contenu, les ADR-007, 008, 009, 010 et 012 partis, `AGENTS.md` et les
+  trois skills désormais seules copies, l'historique intact et `git restore --source=8b52313~1` nommé) ;
+  la ligne du dispositif porte les trois trous fermés et le second run qui n'attend que la sonde du
+  client ; `EXPLICATION.md` passe de « non commité » à commité (`41f531c`, revu `6789bec`) ; le bilan du
+  premier run passe de 🟨 à 🟢 (`d0d894b`) ; la ligne du run 1 dit le trou comblé **côté outil** et laissé
+  tel quel **côté pièce** ;  la ligne du cas porte `gele_le` à la seconde, les deux `sha256`, `2 fichiers`,
+  `8 références` et la porte rejouée le 2026-10-16 ; la ligne `BOUNDARY.md` portait 1 563 mots, la mesure
+  en rend **1 686** ; la ligne `PFD` suit la version de la page (v0.2) ; **le §3 est réécrit** sur la chaîne §11 du bilan
+  (sonde du client, second run, `output.json`, `NEGATIVE.md` puis `ECART.md`, arbitrages ouverts) ;
+  **le §4** gagne quatre commits (`41f531c`, `6789bec`, `8b52313`, `d239b08`).
+- `docs/PFD.md` : version `0.2` ; `status` de `pending` à `in-progress` ; la ligne `CASES/` dit la
+  rectification et le gel `0d9a2180` au lieu d'« attend une rectification » ; la ligne
+  `runs/…/output.json` dit que le harnais sait écrire un run sans produit et que le fichier attend le
+  second run ; la ligne `DEVICE.md` dit 895 mots et le lancement écrit (six gestes, pas de commande
+  unique) ; la ligne `BOUNDARY.md` ne promet plus des relevés « du run à venir » mais porte ses
+  1 686 mots et la règle de preuve en paires ([ADR-014](DECISIONS.md)) ; la phase 2 et le remote portent
+  l'état mesuré.
+- Ce qui n'a **pas** été touché, et pourquoi : `docs/device/DEVICE.md`, `docs/device/REPLAY.md`, la spec
+  de la boucle 2 et les documents datés. Leurs écarts sont nommés aux dérives ci-dessous ; les réparer
+  n'était pas demandé.
+
+**Vérifié.** Chaque chiffre écrit dans les deux documents a été mesuré dans cette séance :
+
+| Contrôle | Commande | Résultat |
+| --- | --- | --- |
+| dépôt | `git rev-parse HEAD origin/main`, `git status --short`, `git rev-list --count HEAD` | `d239b08` des deux côtés, arbre vide, **36** commits, HEAD daté `2026-10-16T09:16:08+02:00` |
+| gel | lecture de `CASES/*.freeze.json` | `0d9a2180…`, `gele_le` `2026-10-15T22:11:24.782242943+0200`, racine `…/aidd-device-work`, 4 arbres (`fe48de12`/2 lignes `porcelain`, `416ec1f`/1, `4c39e5c5`/0, `416ec1f`/0), `2 fichiers`, `8 références` |
+| cas | `sha256sum`, `wc -c` | demande `5aac04fb…` 13 413 o, attendu `ae4914c5…` 15 423 o |
+| texte remis | substitution du §5 puis `cmp` avec `texte-a-remettre.txt` | `832036f7…`, 254 octets, identique |
+| porte | `run.mjs preflight --case … --repertoire <W>/terrain --texte …` | « ouverture autorisée … gel `0d9a2180` re-haché, 2 fichier(s) du cas et 8 référence(s) ; texte `832036f7` conforme », **exit 0** |
+| prémisse du cas | `ls <W>/terrain/aidd_docs`, `find <W> -name .freebuff` | absent, aucun `.freebuff` |
+| harnais | `wc -l`, `usage` | 882 lignes, cinq commandes, `collect --sans-produit` exposé |
+| refus comptés | `grep -c 'refuse('`, puis comptage des appels | 63 lignes contenant le motif, dont la définition `function refuse(message)` : **62 sites d'appel** ; la convention du projet est constante (`grep -c` rend 29 pour 448 lignes, 40 pour 598, 63 pour 882) |
+| origine du second run | `select root_path from projects` sur les onze bases `~/.config/freebuff-desktop/projects/*/desktop-v2.db` | aucun projet sur `<W>/terrain` ; les deux `audio-sync-tool-*` pointent le terrain **original** |
+| mots des deux pages | `wc -w` sur `DEVICE.md` et `BOUNDARY.md` | 895 et **1 686** mots (la page du tableau de bord annonçait 1 563 pour la seconde) |
+| DEVICE | §« Récupérer et lancer » | six gestes écrits, aucune commande unique de lancement |
+| dossier du contrat retiré | `git ls-tree -r 8b52313~1 -- docs/contracts`, puis somme des `%(objectsize)` | 43 fichiers, **479 189** octets ; le message du commit en annonçait « 564 Ko », chiffre non reproduit ici |
+
+**Dérives signalées, non corrigées.** Hors du périmètre demandé, nommées ici :
+
+- `DEVICE.md` §« Récupérer et lancer » cite `1d471a5` (« relevé du 2026-10-15 ») : daté, donc pas faux,
+  mais l'arbre est à `d239b08` et un lecteur qui clone aujourd'hui l'y lit périmé.
+- `DEVICE.md` §« Ce qui revient » énumère `raw/<cas>/`, `last-message.md`, `trace/`, `receipt.json` et
+  conclut « Rien d'autre » : `compare` écrit aussi `output.json` dans le dossier du run (`run.mjs:849`),
+  la liste est incomplète.
+- `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` laisse **P6** à trancher alors que le remote
+  existe et porte `main` depuis le 2026-10-15 ([ADR-017](DECISIONS.md)) ; la ligne du tableau de bord qui
+  le comptait parmi les arbitrages ouverts est rectifiée par cette séance, la spec ne l'est pas.
+
+**Rectifications.** Deux de mes propres énoncés, corrigés dans la foulée, pas lissés :
+
+- ma première commande de porte portait `--case docs/device/CASES/…request.md` (le **fichier**, pas
+  l'identifiant du cas) : refus attendu, et mon relevé l'a rendu `exit=0` parce que je lisais le code de
+  sortie à travers un tube (`| tail`). Rejouée avec l'identifiant et sans tube : « ouverture autorisée »,
+  `exit 0`.
+- le chiffre de refus publié (47 par l'[ADR-018](DECISIONS.md), 63 par l'[ADR-020](DECISIONS.md) et par
+  [EXPLICATION](EXPLICATION.md)) est un compte de **lignes** contenant `refuse(` : la ligne de définition
+  en fait partie, les sites d'appel sont 62. Le chiffre publié est conservé, la méthode est dite.
+
+**Limites.** Rien n'est commité par cette séance : les deux documents et cette section vivent dans
+l'arbre de travail. La mise au vrai porte sur l'état **mesuré ce jour** ; ce qui bougera ensuite (second
+run, nouveau gel) les rendra faux à leur tour, comme les séances précédentes l'avaient fait pour ceux-ci.
+
+**Prochaines étapes.** L'étape 3 du [bilan §11](brainstorm/2026-10-15-201458-bilan-premier-run.md) : la
+sonde du client Freebuff — poser la racine de projet sur `<W>/terrain`, la remise du texte à l'octet,
+l'export de trace — puis le second run sur le gel `0d9a2180`.
+
+**Mémoires.** `11210a41`, mise à jour dans la même foulée : elle portait la dérive comme non corrigée.
+
+**Tour suivant : l'architecture sur une page.** Demande du relecteur : le protocole lui paraît dispersé et
+il ne voit plus qui fait quoi ni comment ; il demande une page qui rassemble l'architecture détaillée,
+avec des schémas.
+
+**Fait.** Une page neuve, `docs/ARCHITECTURE.md`, neuf sections et cinq schémas mermaid, qui ne recopie
+pas les autres pages : elle assemble les acteurs et leur séparation de contexte, les arbres et qui écrit
+où, les cinq commandes du harnais avec ce que chacune lit, écrit et refuse, la vie des artefacts (chaque
+pièce a un seul écrivain), les neuf falsificateurs `F1` à `F9` et les quatre `E1` à `E4`, le plafond du
+verdict, puis les limites nommées. Elle dit d'entrée où est le piège du vocabulaire : **deux ensembles
+portent le nom « les quatre arbres »** ([BOUNDARY](device/BOUNDARY.md) §1 liste les sources et le dépôt,
+le gel enregistre quatre labels dont les deux copies dérivées). Chaque chiffre de la page vient d'une
+pièce du dépôt : gel `0d9a2180` et ses quatre labels, `run.mjs` (882 lignes, cinq commandes, sorties `0`
+fait, `1` refus, `2` usage), [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md)
+§6 et §8, [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
+§3.3, et l'attendu lu par script pour les falsificateurs. Contre la duplication, `DEVICE.md` gagne une
+ligne de renvoi au-dessus de « Ce qu'il fait » et le tableau de bord une ligne dans ses documents.
+
+**Vérifié.** Les cinq blocs mermaid extraits et rendus un par un : `mmdc` 11.4.2
+(`PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome`) rend **exit 0 sur les cinq** (SVG de 24 336,
+11 918, 14 101, 19 367 et 16 149 octets). Le contrôle qui compte, celui du [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)
+§9, un exit 0 ne prouvant pas un rendu : les libellés attendus ont été relus dans chaque SVG (acteurs et
+`output.json` pour la séquence ; `framework-origin`, `revision sous test`, `travail`, `le dispositif`
+pour les arbres ; `freeze`, `preflight`, `autorise`, `refuse` pour la chaîne ; `CASES cas.request.md`,
+`trace/`, `ECART.md` pour les artefacts ; `non concluant`, `verdict possible`, `cloisonnement` pour le
+plafond), **aucun manquant**, zéro élément `<g class="error-icon">` et zéro « Syntax error » : l'unique
+occurrence de `error-icon` est une règle CSS du gabarit. Contrôle des liens des trois pages touchées :
+aucun mort.
+
+**Rectification.** La page neuve n'écrit **aucun tiret cadratin dans sa prose** (R4) : les trois
+occurrences que le compte rend (`grep -c '—'` => 3) sont au `name`, au titre et à la ligne de version,
+la convention des autres pages. Les passages écrits plus tôt dans la journée, cette séance et le tableau
+de bord, en portent dans leur prose, comme le reste du corpus. Signalé, non réécrit : une réécriture de
+forme sur des relevés datés n'était pas demandée.
+
+**Limites.** Rien n'est commité. La page est une V0.1 : ses chiffres sont datés (gel `0d9a2180`, `HEAD`
+du dispositif `d239b08`), et le second run périmera ceux qui en dépendent.
+
+**Prochaines étapes.** Inchangées : l'étape 3 du bilan §11, la sonde du client Freebuff, puis le second
+run sur le gel `0d9a2180`.
+
+**Mémoires.** `7a8ffaeb`, plus `11210a41` mise à jour dans la même foulée.
+
+**Tour suivant : les trois dérives réparées.** Demande du relecteur : réparer les trois dérives
+nommées plus haut.
+
+**Fait.**
+
+- `DEVICE.md` §« Récupérer et lancer » : le relevé `1d471a5` (2026-10-15) devient **`d239b08`**
+  (2026-10-16), et la cause est réparée avec le chiffre : deux lignes disent que ce nombre est un
+  relevé, jamais une constante, et qu'il se relève au moment où on le cite. L'autre occurrence de
+  `1d471a5` dans la page (ligne 55) reste : c'est le **nom du dossier du premier run**,
+  `runs/2026-10-15-171559-4c39e5c5-1d471a5/`, un chemin et non un relevé.
+- `DEVICE.md` §« Ce qui revient » : la liste gagne **`output.json`**, avec son écrivain (`compare`, le
+  juge, jamais l'opérateur) et la ligne de code qui le pose (`join(runDir, "output.json")`,
+  `run.mjs:849`).
+- `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` : une **note datée** sous P6, et la ligne
+  « À décider par le relecteur » ne porte plus que la **déclaration** du remote dans `AGENTS.md`, le
+  remote lui-même étant mesuré.
+
+**Vérifié.** `git remote -v` => `origin https://github.com/giak/aidd-device.git` ;
+`git ls-remote https://github.com/giak/aidd-device.git main` **sans authentification** =>
+`d239b08b8b36852aad5ec36237b90ab837a593d3`, exit 0, donc lisible hors machine et sans clé ;
+`git log -1 origin/main` => `d239b08`, `2026-10-16T09:16:08+02:00` ; `grep -c -i 'remote\|github' AGENTS.md`
+=> **0**, ce qui établit la partie de P6 qui reste ; liens des pages réparées : **aucun mort**.
+
+**Rectification.** La liste des dérives de ce bloc annonçait ces trois-là comme « non corrigées » : elles
+le sont à partir de ce tour, et cette phrase ne vaut plus que pour les dérives qui restent. Une dérive de
+même nature est laissée en place, nommée : `BOUNDARY.md` §7 cite `39750fe` pour la révision du dispositif
+au 2026-10-15. C'est un relevé daté, sur une page qui prévient déjà qu'« un HEAD qui bouge invalide
+celles-ci », et il est la preuve de l'état de ce jour-là, pas une affirmation sur aujourd'hui.
+
+**Limites.** Rien n'est commité. La déclaration du remote dans `AGENTS.md` reste un arbitrage du
+relecteur : c'est son contrat, je n'y ajoute pas une clause de mon chef.
+
+**Prochaines étapes.** Inchangées : l'étape 3 du bilan §11, la sonde du client Freebuff, puis le second
+run sur le gel `0d9a2180`.
+
+**Mémoires.** `11210a41`, corrigée : elle portait ces trois dérives comme non réparées.
+
+**Tour suivant : l'entrée du README.** Demande du relecteur : qu'un nouveau lecteur commence par la vue
+d'ensemble.
+
+**Fait.** `README.md` : [docs/ARCHITECTURE.md](ARCHITECTURE.md) passe **en tête des entrées**, avant
+`AGENTS.md` (le contrat), avec une ligne qui dit ce qu'on y trouve. La ligne de `DEVICE.md` perd « qui
+fait quoi », que la page d'architecture possède désormais, et gagne « ce qu'il ne fait pas ».
+
+**Vérifié.** `grep -n '^- \[' README.md` => l'entrée d'architecture est la première (ligne 8) ; liens du
+README rejoués, **aucun mort**. Le reste du README n'est pas touché : sa section « État » reste le relevé
+du 2026-10-15 (`882 lignes, cinq commandes`, empreinte `0d9a2180`), vrai tel quel.
+
+**Limites.** Rien n'est commité.
+
+**Mémoires.** Aucune : un rangement n'est pas un fait mesuré ; cette séance le porte et `11210a41` garde
+l'état.
+
+**Tour suivant : la relecture à froid des entrées.** Demande du relecteur : parcourir le README et ses
+entrées comme un inconnu, et dire où la lecture décroche.
+
+**Fait.** Un document daté,
+[2026-10-16-133942-relecture-a-froid-des-entrees.md](brainstorm/2026-10-16-133942-relecture-a-froid-des-entrees.md) :
+la marche en huit étapes, **six décrochages mesurés** avec leur plus petite réparation, ce qui manque aux
+huit entrées, et les limites de la relecture. Aucun correctif appliqué. Les six : l'ordre ouvre par le
+dedans (ARCHITECTURE en tête, la VISION en l.19) ; « AIDD » jamais défini (`grep -i aidd` sur les quatre
+pages d'entrée : des emplois, aucune définition) ; « run » et « cas » absents du lexique (§14 en définit
+quatorze, pas eux) ; `framework-origin` nomme **deux arbres** (la source BOUNDARY §1 l.19, le dossier de
+la copie l.20) ; ce qui n'existe pas encore n'est pas dit (`NEGATIVE.md` : 0 occurrence dans le README et
+ARCHITECTURE) ; EXPLICATION annonce 21 commits quand l'arbre est au 36e.
+
+**Rectifications.**
+
+- La relecture **n'est pas indépendante** : même main que la page d'architecture et l'entrée du README,
+  écrites le même jour. Le document le dit en tête, et aucun second relecteur n'existe ici.
+- Le fichier a d'abord été nommé `2026-10-16-133919-...`, l'horodatage lu **avant** l'écriture ; sa
+  naissance mesurée est `13:39:42`, vingt-trois secondes plus tard. Renommé sur la naissance mesurée,
+  comme la règle de nommage l'exige, le premier nom est dit ici, jamais corrigé en silence.
+- Un lien mort de ma main, trouvé en vérifiant : `[README](../README.md)` depuis `docs/brainstorm/` ne
+  désignait rien. Réparé en `../../README.md` et rejoué.
+
+**Limites.** Rien n'est commité. Les six constats sont mesurés mais **non arbitrés** ; la marche a lu,
+jamais exécuté (ni la recette de [REPLAY](device/REPLAY.md), ni la séquence de [DEVICE](device/DEVICE.md)).
+
+**Prochaines étapes.** Inchangées pour le dispositif : l'étape 3 du bilan §11, la sonde du client
+Freebuff, puis le second run. Ce que cette relecture ajoute est un choix : les six constats se réparent
+en une poignée de lignes, ou restent nommés.
+
+**Mémoires.** `db325302`.
+
+**Clôture de la séance, 2026-10-16 (13:41).** Cinq tours, tous sur les mêmes documents, et aucun code
+touché : le harnais rend le même `git diff` muet qu'à l'ouverture. La séance se ferme ici.
+
+**Ce qu'elle a produit.**
+
+| Pièce | État après la séance |
+| --- | --- |
+| `docs/ARCHITECTURE.md` | **neuve** : 262 lignes, neuf sections, cinq schémas mermaid rendus et leurs libellés relus dans les SVG |
+| `docs/brainstorm/2026-10-16-133942-relecture-a-froid-des-entrees.md` | **neuve** : 111 lignes, six décrochages mesurés, aucun corrigé |
+| `docs/DASHBOARD.md` | remis au vrai (en-tête, statut global, ligne du dossier du contrat, ligne du cas, §3 réécrit, §4 complété) |
+| `docs/PFD.md` | v0.2, `status` de `pending` à `in-progress`, lignes `CASES/`, `runs/`, `DEVICE.md`, phase 2 et remote au mesuré |
+| `docs/device/DEVICE.md` | relevé `d239b08`, `output.json` dans « Ce qui revient », renvoi vers ARCHITECTURE, ligne d'entrée du README resserrée |
+| `docs/brainstorm/2026-10-15-081511-gestion-de-projet.md` | note datée sous P6, ligne « À décider par le relecteur » réduite à la déclaration du remote |
+| `README.md` | ARCHITECTURE en tête des entrées, avant `AGENTS.md` |
+| `docs/trace.md` | cette séance : cinq blocs, plus cette clôture |
+
+Mesuré, **le journal exclu** (il est la trace, pas la pièce) : `git diff --stat -- README.md docs
+':!docs/trace.md'` => **cinq fichiers, +77 / −49** ; et `git status -uall` => **deux fichiers neufs**,
+262 lignes pour l'architecture, 111 pour la relecture. Mémoires de la séance : `11210a41` (l'état mesuré,
+mise à jour deux fois), `7a8ffaeb` (la page d'architecture), `db325302` (la relecture à froid).
+
+**Ce qui reste ouvert.**
+
+1. **Le dispositif**, chaîne §11 du [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) : la sonde du
+   client Freebuff (étape 3), le second run sur le gel `0d9a2180` (4), le reçu et l'`output.json` (5 et 6),
+   puis `NEGATIVE.md` et `ECART.md` (7, jamais ouverts).
+2. **Cinq arbitrages du relecteur**, aucun ne bloquant les étapes 3 et 4 : le commit debout de la boucle 2
+   (P5) ; la **déclaration** du remote dans `AGENTS.md` ; les six décrochages de la relecture, réparables en
+   une poignée de lignes ; le frontmatter des trois skills, `OPEN` depuis la Séance 5 ; et le **commit de la
+   journée**, dont le contenu est le tableau ci-dessus.
+3. **Nommé, non corrigé** : `BOUNDARY.md` §7 cite `39750fe` (relevé du 2026-10-15), de même nature que le
+   bloc de clonage réparé, laissé tel quel parce que la page assume qu'« un HEAD qui bouge invalide
+   celles-ci ».
+
+**Ordre de reprise.** Le commit de la journée d'abord : rien de cette séance n'est commité, et un document
+non commité ne survit pas à la mémoire du dépôt. Ensuite l'étape 3 (la sonde du client), puis le second run.
+Les arbitrages du point 2 se prennent quand le relecteur le décide ; aucun ne bloque le run.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite, jamais dans les cinq blocs ci-dessus. Elle se ferme sur un `HEAD` inchangé,
+`d239b08` (`2026-10-16T09:16:08+02:00`), et un arbre qui porte tout son travail.
+
+## Séance 7 — 2026-10-16 (le contrôle qu'une dérive démontrée rend exigible, proposé et non codé)
+
+**Objectif.** Répondre à la question que BOUNDARY §8 laisse ouverte et qu'ADR-004 conditionne : la dérive
+d'écriture constatée deux fois le 2026-10-15 rend-elle un contrôle mécanique exigible, et ce contrôle
+vaut-il un crochet ou reste-t-il une mesure de run ?
+
+**Fait.** Une pièce produite : **ADR-021**, proposée et non codée,
+[DECISIONS.md](DECISIONS.md#L414) l.414. Aucun fichier de code touché, aucune commande du harnais ajoutée.
+Mesures de la séance :
+
+| Mesure | Commande | Résultat |
+| --- | --- | --- |
+| la paire est prise et non lue | `grep -n 'memeArbre' docs/device/harness/run.mjs` | 3 lignes : l.317 la définition, l.487 la porte (arbre `travail` seul), l.748 le reçu (falsificateur `arbre_de_travail_inchange`, `travail` seul) |
+| ce que le reçu écrit de la paire | `run.mjs` l.788 | `const arbres = { avant: gel.arbres, apres };` : les quatre arbres sont mesurés, comparaison sur `travail` seulement |
+| le code n'a pas bougé | `git diff --quiet docs/device/harness/run.mjs` | `exit 0` |
+| contrôle négatif du volet séance, couru aujourd'hui | `git -C /home/giak/projects/framework status --porcelain` | 2 lignes, `?? .freebuff/` et `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, `exit 0` : la ligne de base de BOUNDARY §5 tient |
+
+**Vérifié.** Le verdict est **mesure, jamais crochet**, et les trois raisons se vérifient : la dérive
+n'écrit aucun événement git dans le dispositif (aucun commit, aucun checkout, aucun chemin du dépôt
+touché) ; le seul arbre où un crochet la verrait est l'origine, que BOUNDARY §1 interdit d'écrire, et son
+installation apparaîtrait dans la paire de `porcelain` censée constater les dérives ; et c'est l'outil du
+client, hors des deux dépôts, qui résout le chemin, donc la détection est après coup de toute façon. Le
+contrôle proposé a ses deux volets, chacun avec sa classe, sa commande et son contrôle négatif, comme la
+conséquence d'ADR-004 l'exige : au reçu la comparaison des arbres autres que `travail`, écrite en
+**limite** ; à la séance la paire de `porcelain` de l'origine, au `Vérifié`. `OPEN` sur deux points, dits
+pour ce qu'ils sont : les deux incidents datés (`13:0x` et `13:34`) n'auraient **pas** été attrapés par le
+volet reçu, puisqu'aucun run n'était ouvert et que le premier ouvre à `17:15:59` (`faits.json` du run,
+`horodatage_debut`) ; et le chiffre du banc
+(**46** contrôles, ADR-020) reste celui d'hier, les deux contrôles de plus étant une exigence du codage, pas
+une mesure.
+
+**Dérives signalées, non corrigées.** Aucune nouvelle. `BOUNDARY.md` §8 et la Séance 1 portent la dérive
+pour ce qu'elle est, et l'ADR-021 les cite sans les réécrire.
+
+**Rectifications.** Une, de la séance même, mesurée **après** son écriture : l'ADR-021 et le bloc ci-dessus
+datèrent d'abord l'ouverture du premier run à `15:43`, qui est la **naissance de la conduite**
+(`stat -c %w`, `15:43:03`), jamais le run. Les pièces du run portent `horodatage_debut`
+`2026-10-15T17:15:59+02:00` et `session.ouverte_le` `17:16:12+02:00`
+(`docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/faits.json`), et les deux textes ont été corrigés sur
+ce chiffre. L'inférence « la conduite est née à 15:43 donc le run ouvre à 15:43 » ne tenait pas : un document
+né à 15:43 peut décrire un run qui ouvre deux heures plus tard. Le verdict de la fiche n'en bouge pas, les
+deux incidents restant antérieurs à toute ouverture.
+
+**Prochaines étapes.** 1. L'arbitrage de l'ADR-021 : mesure acceptée, mesure refusée, ou crochet malgré les
+trois raisons. 2. Si la mesure est acceptée, une passe de codage : une comparaison, une limite, deux
+contrôles de banc. 3. Le reste est celui de la Séance 6, inchangé : le commit de la journée d'abord, puis
+l'étape 3 (la sonde du client), puis le second run.
+
+**Mémoires.** `42548adf` — l'ADR-021 proposée, ses deux volets, le verdict et ce qu'elle ne couvre pas.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite, jamais dans les blocs ci-dessus. Elle se ferme sur un `HEAD` inchangé, `d239b08`, un
+arbre qui porte toujours tout le travail de la journée, et une décision proposée que personne n'a encore
+arbitrée.
+
+## Séance 8 — 2026-10-16 (le banc du harnais entre dans le dépôt)
+
+**Objectif.** Rapatrier dans le dépôt le banc qui éprouve le harnais, avec son mode d'emploi, pour que les
+46 contrôles ne vivent plus dans `/tmp`.
+
+**Fait.** Deux pièces neuves : `docs/device/harness/banc-harnais.sh` (ex `/tmp/banc-porte.sh`, renommé
+puisque « porte » ne nommait que la première des cinq commandes qu'il éprouve depuis ADR-020) et
+[docs/device/BANC.md](device/BANC.md), son mode d'emploi en six sections. Deux lignes ajoutées à
+[DEVICE.md](device/DEVICE.md) (`L'état`, `Récupérer et lancer`) et l'ADR-022 au registre. Mesures :
+
+| Mesure | Commande | Résultat |
+| --- | --- | --- |
+| la base, avant de toucher à rien | `bash /tmp/banc-porte.sh` | **46/46 PASS**, `exit 0` |
+| le banc du dépôt | `bash docs/device/harness/banc-harnais.sh` | **46/46 PASS**, `exit 0`, même compte |
+| plus de dépendance au répertoire courant | `cd / && bash /home/giak/projects/aidd-device/docs/device/harness/banc-harnais.sh` | **46/46 PASS**, `exit 0` |
+| les trois garde-fous, dans un faux dépôt jetable | `bash <faux>/docs/device/harness/banc-harnais.sh` | trois `ARRET`, `exit 2` chacun (gel absent ; gel sans `racine_espace_de_travail` ; espace de travail absent) |
+
+Ce qui a changé dans le script, et rien d'autre : le dépôt se retrouve par sa propre position
+(`BASH_SOURCE`, comme `run.mjs`) ; la racine des espaces de travail et les quatre arbres se lisent **au
+gel** (`racine_espace_de_travail`, `arbres[].chemin`) au lieu d'être écrits en clair ; le dossier jetable
+vient de `mktemp -d` ; le `HEAD` du terrain du contrôle 10 vient du gel au lieu d'un `sha` en dur ;
+l'ancien foyer s'écrit `$HOME/runs/...`, et le libellé du contrôle 5 a perdu ce même chemin ; les
+commentaires passent en anglais (code en anglais, prose des pages en français), les noms des contrôles
+restent en français, c'est le rapport. Les 46 contrôles, leur ordre et leurs issues attendues sont
+inchangés.
+
+**Vérifié.** Le compte est identique avant et après le déplacement, et il est **46**, pas davantage : les
+deux contrôles qu'ADR-021 demande pour le volet reçu restent à écrire. Le banc touche un dossier jetable
+sous `$TMPDIR` et **un lien symbolique écrit puis retiré** dans l'espace de travail du cas (contrôles 40
+et 41, le 41 échouant si l'espace n'est pas rendu propre) ; jamais le dépôt, jamais les quatre arbres,
+aucune session, `run.mjs` intact. `grep -n '/home/giak'` sur le script → **aucun**, et le banc est rejoué
+complet après la retouche du libellé : 46/46, `exit 0`.
+
+**Dérives signalées, non corrigées.** La copie superseded `/tmp/banc-porte.sh` est **laissée en place**,
+nommée ici : elle sort de la session sans qu'on l'efface, et c'est le fichier du dépôt qui fait foi
+désormais. Le dépôt porte maintenant un script (ADR-004 et ADR-012 parlaient d'absence de contrôle
+mécanique) : l'ADR-022 le tranche en le nommant **artefact de la preuve**, jamais automatisme, et le mode
+d'emploi dit à voix haute qu'il n'éprouve que le harnais.
+
+**Rectifications.** Une, de la séance même : la première rédaction de ce bloc affirmait « et rien
+d'autre » pour la liste des changements, alors que le **libellé** du contrôle 5 perdait ensuite son chemin
+de machine (`ancien foyer /home/giak/runs` → `ancien foyer ~/runs`). Le compte, l'ordre et les issues
+attendues n'ont pas bougé ; c'était le dernier chemin en clair du script, et le banc a été rejoué après la
+retouche.
+
+**Prochaines étapes.** 1. Le commit : tout ce travail est non commité, dont la journée entière. 2. Les
+deux contrôles d'ADR-021 quand l'arbitrage tombe ; ils prendront place dans ce même compte. 3. La copie de
+`/tmp`, à effacer ou à laisser, quand le relecteur le dit.
+
+**Mémoires.** `e65db0f3` — le banc entré dans le dépôt, ses chemins lus au gel, ses trois garde-fous, et ce
+qu'il ne couvre pas.
+
+**Fermeture.** La séance est close à cet instant : ce qui la touchera plus tard s'écrira dans un nouveau
+bloc daté qui la cite. Elle se ferme sur un `HEAD` inchangé, `d239b08`, et un banc qui passe ses 46
+contrôles depuis le dépôt.

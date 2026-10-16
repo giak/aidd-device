@@ -14,6 +14,10 @@ status: in-progress
 l'opérateur, et nomme l'écart entre ce qu'elle annonce et ce qu'elle produit — en gardant de quoi
 refaire le départ, jamais la réponse.
 
+**Comment c'est câblé** : les acteurs, le trajet des fichiers, les cinq commandes et le plafond du
+verdict sont sur [ARCHITECTURE.md](../ARCHITECTURE.md). Cette page-ci dit ce qu'il fait, ne fait pas,
+comment le lancer et où le lire.
+
 ## Ce qu'il fait
 
 - Il gèle les attendus **avant** tout run : `CASES/` haché, empreinte enregistrée.
@@ -44,8 +48,9 @@ l'objet qui la contredit le plus.
 
 ## L'état
 
-- **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`) et le
-  premier cas gelé (`CASES/` : demande, attendu, gel).
+- **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
+  (`harness/banc-harnais.sh`, 46 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
+  demande, attendu, gel).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
   ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
@@ -63,21 +68,26 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 ## Ce qui revient
 
 Sous `runs/<horodatage>-<framework@rev>-<dispositif@rev>/` : `raw/<cas>/` et son manifeste,
-`last-message.md`, `trace/`, `receipt.json`. Rien d'autre.
+`last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
+jamais par l'opérateur (`run.mjs` : son chemin est `join(runDir, "output.json")`). Rien d'autre.
 
 ## Récupérer et lancer
 
 ```text
 git clone https://github.com/giak/aidd-device.git
-git -C aidd-device rev-parse --short HEAD   → 1d471a5   (branche main, relevé du 2026-10-15)
+git -C aidd-device rev-parse --short HEAD   → d239b08   (branche main, relevé du 2026-10-16)
 ```
+
+Ce chiffre est un relevé, jamais une constante : il bouge à chaque séance poussée, et il se relève au
+moment où on le cite.
 
 D'une autre machine : oui — les quatre arbres du cas sont publiés (§3 de [BOUNDARY.md](BOUNDARY.md)), le
 gel se rejoue ([REPLAY.md](REPLAY.md)), et le cas ne nomme plus aucun chemin de machine : la racine se
 redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
-serait mentir. La séquence d'un run :
+serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
+`bash docs/device/harness/banc-harnais.sh` → `46/46 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces

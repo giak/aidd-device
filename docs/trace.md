@@ -603,14 +603,38 @@ la liste des mémoires. Le tableau de bord perd la mention « audit de pollution
 Restent, gardés comme faits du projet : la réécriture de `CONSIGN`, la phrase fausse corrigée sur place,
 les relevés de `BOUNDARY.md`, le brainstorm de fondation, et cet enregistrement-ci.
 
-**Dérive signalée, non corrigée.** Le dépôt avait tranché, le 2026-10-15, un contrat en **un seul
+**Mise au dépôt, sur ordre.** Ordre « commit », puis, devant l'état constaté, « les skills devraient
+être aussi commit ». Commit `8b52313` « Retirer du dépôt le dossier du contrat et ses traces » :
+**46 fichiers, +67 / −7 877**, les 43 `D` du dossier et trois réécritures (`trace.md`,
+`DECISIONS.md`, `DASHBOARD.md`). `git status --porcelain -uall` → **0** entrée après coup.
+Réversibilité mesurée, pas promise : `git ls-tree -r HEAD~1` compte **43** fichiers sous
+`docs/contracts/`, `HEAD` en compte **0**, donc `git restore --source=HEAD~1 docs/contracts` les rend
+tous. Puis `git push origin main` → `6789bec..8b52313`, `push_status=0`, avec `origin/main..HEAD` = **0**
+et `HEAD..origin/main` = **0**.
+
+**Les trois skills étaient déjà commités**, constat plutôt qu'acte : `git ls-files .agents` les liste,
+`git log --diff-filter=A -- .agents` les fait naître au commit `12ad625`, `git ls-tree -r 6789bec` les
+trouve **déjà** à `origin/main` avant ce push, et `git log -1 -- .agents/skills/*/SKILL.md` les donne
+revus par `cb14fbd` (v19). Ni ignorés (`git check-ignore` → exit **1**), ni ailleurs :
+`find . -name SKILL.md` ne rend que ces trois-là. Ce push les publie donc dans leur révision courante,
+`sha256` identiques au disque (`7f4ea4a2f737`, `ce62b53a3997`, `fb3f63ccbc4f`).
+
+**Rectifications de la séance.** Deux phrases ci-dessus ont cessé d'être vraies avec la mise au dépôt :
+« rien n'est commité par cette séance » (Limites), vraie au moment de la mesure, et
+« `git status --porcelain` → 43 entrées `D` » (Vérifié), qui décrit l'état d'avant le commit. L'arbre
+est propre depuis `8b52313`. Le reste tient.
+
+**Dérive signalée, puis tranchée.** Le dépôt avait tranché, le 2026-10-15, un contrat en **un seul
 fichier, sans skills** ; l'arbre porte de nouveau `.agents/skills/`, et la décision qui l'avait tranché
-part avec ce nettoyage — plus rien d'écrit ne s'y oppose. Il faudra soit un acte daté qui entérine les
-skills, soit leur retrait.
+part avec ce nettoyage — plus rien d'écrit ne s'y oppose. Le relecteur tranche le même jour : il les
+garde, et leur présence au dépôt depuis `12ad625` avec leur publication en v19 vaut l'acte daté
+demandé ; `AGENTS.md` ligne 4 les nomme déjà, rien n'est à retirer.
 
 **Limites.** L'historique git porte encore tout le dossier : aucun commit n'est touché, comme demandé, et
 rien n'est commité par cette séance. La suppression laisse les quatre artefacts **sans source** :
 `AGENTS.md` et les trois skills sont désormais les seules copies, et le contrôle « le noyau de la source
-est `AGENTS.md` » n'a plus de base.
+est `AGENTS.md` » n'a plus de base. Reste `OPEN`, non actionné : le frontmatter des trois skills porte
+`name` et `description`, là où la règle `CONSIGN` en nomme quatre (`name`;`description`;`type`;`status`) ;
+lecture la plus plausible, cette règle vise les pièces datées, pas les skills, donc aucun `drift` établi.
 
 **Mémoires.** `84f550b7`.

@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 102 contrôles qui éprouvent les refus et les acceptations de run.mjs et du contrôle de liens, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 112 contrôles qui éprouvent les refus et les acceptations de run.mjs et du contrôle de liens, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -12,21 +12,21 @@ status: in-progress
 > « porte » ne nomme que la première des six commandes qu'il éprouve aujourd'hui ; les ADR-018 et 020,
 > datées, gardent l'ancien nom tel qu'elles l'ont écrit.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 102 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 112 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve deux instruments du dossier `harness/` : `run.mjs`,
-le harnais du run (contrôles 1 à 60, puis 64 à 102), et `liens.mjs`, le contrôle de liens des documents du
+le harnais du run (contrôles 1 à 60, puis 64 à 112), et `liens.mjs`, le contrôle de liens des documents du
 dépôt (contrôles 61 à 63).
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 102/102 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 112/112 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `102/102 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `112/112 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -46,7 +46,7 @@ Trois arrêts, `exit 2`, avant le premier contrôle :
 
 Un banc dont la pièce est absente compterait des accidents comme des refus : il se tait plutôt.
 
-Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 et 66 à 102 lisent une base de client factice), un cas
+Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 et 66 à 112 lisent une base de client factice), un cas
 gelé et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf). Ces outils-là
 ne sont pas supposés : `run.mjs` les déclare au `--help` et les sonde au démarrage, et les contrôles 57 à
 60 lui donnent un `PATH` amputé pour l'entendre refuser ([ADR-026](../DECISIONS.md)). Le banc, lui, ne
@@ -58,13 +58,15 @@ une panne d'outil se voir dans un `FAIL`.
 - Un dossier jetable sous `$TMPDIR`, `mktemp -d`, imprimé au départ et conservé pour inspection.
 - **Un lien symbolique**, écrit puis retiré, dans l'espace de travail du cas (contrôles 40 et 41 ; le 41
   échoue si l'espace n'est pas rendu propre). C'est la seule écriture hors du dossier jetable.
-- Jamais le dépôt, jamais les quatre arbres, jamais `run.mjs`. Aucune session n'est ouverte.
+- Jamais le dépôt, jamais les quatre arbres, jamais `run.mjs`. Aucune session n'est ouverte. Aucune porte
+  n'est écrite à la main : les contrôles 104 à 108 et 112 partent d'un `gate.json` produit par `preflight`,
+  puis retouchent un seul champ.
 
-## 4. Les 102, par groupe
+## 4. Les 112, par groupe
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
-| 1 à 13 | la porte, `preflight` : le dossier que le gel nomme, et huit mauvais | ADR-018 |
+| 1 à 13 | la porte, `preflight` : le dossier que le gel nomme, huit mauvais, et le `gate.json` qu'elle écrit dans `--run` | ADR-018, ADR-034 |
 | 14 à 20 | non-régression du reste : le reçu sur le dossier gelé, les refus d'origine, `--help` | — |
 | 21 à 31 | la racine déclarée : gel, garde du cas, texte substitué | ADR-019 |
 | 32 à 46 | l'origine du produit : `collect` exige l'espace gelé, le reçu relit le manifeste | ADR-020 |
@@ -79,6 +81,7 @@ une panne d'outil se voir dans un `FAIL`.
 | 87 | `last-message.md`, écrit à la main sous `raw/<cas>/` après `collect` : admis et haché sous `produit.verifie` | ADR-030 |
 | 88 à 96 | l'export rejoué — deux acceptations, sept refus : intact (accepté, `trace_lue.sha256` égal au fichier et `rejoue_le` écrit), un octet ajouté, lignes permutées, requête retouchée, autre base citée, autre chemin d'export cité, message ajouté à la base après l'export (refus, les deux empreintes à l'appui), `compare` sur une trace intacte (accepté), `compare` sur une trace réécrite entre le reçu et le juge (refus) | ADR-032 |
 | 97 à 102 | le budget d'échanges mesuré contre les messages `user` du fil : un message sous le budget (accepté, `echanges{budget, utilises, epuise_par: null}`), trois messages pour un budget de trois (accepté, `epuise_par` nomme le seq 5 et son horodatage), quatre messages (refus nommant les deux chiffres, le seq en trop, et sans reçu écrit), le même avec `--verdict non concluant` (refus aussi : un dépassement n'est pas un plafond), attendu sans budget (refus), budget illisible (refus) — les deux derniers sur un cas recopié et **re-gelé** | ADR-033 |
+| 103 à 112 | la porte tracée et confrontée : un reçu sans `gate.json` (refus, « aucune porte »), une porte d'un autre cas, d'un autre gel (cas re-gelé), d'un autre arbre, datée avant le gel (refus nommés), un HEAD commité après la porte dans le clone du banc (refus), une porte intacte (acceptée, `porte.sha256`, `porte.gel_empreinte` et `porte.arbre.head_complet` au reçu, et le juge re-hache), une porte déjà là et un `--run` manquant (refus de `preflight`) | ADR-034 |
 
 Chaque groupe porte ses **acceptations** autant que ses refus : un banc qui ne saurait que refuser
 passerait en refusant tout.

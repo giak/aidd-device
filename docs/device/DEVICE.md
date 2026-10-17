@@ -48,7 +48,7 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 102 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
+  (`harness/banc-harnais.sh`, 112 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
   demande, attendu, gel).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
@@ -68,7 +68,7 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 
 Sous `runs/<horodatage>-<révision du framework>-<révision du dispositif>/` (des tirets, [ADR-023](../DECISIONS.md)) :
 `raw/<cas>/` et son manifeste,
-`last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
+`gate.json` (la porte, ADR-034), `last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
 jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`). Rien d'autre. La forme d'`output.json`
 et la phrase de verdict sont au §4 d'[ARCHITECTURE.md](../ARCHITECTURE.md).
 
@@ -87,13 +87,14 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `102/102 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `112/112 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
 de travail déclarée une seule fois, et l'état des arbres avant ;
-3. `preflight` — la porte : elle refuse d'autoriser l'ouverture si le dossier n'est pas l'espace de
-   travail que le gel nomme `travail`, encore dans l'état gelé (ADR-018) ;
+3. `preflight --run <dossier>` — la porte : elle refuse d'autoriser l'ouverture si le dossier n'est pas
+   l'espace de travail que le gel nomme `travail`, encore dans l'état gelé (ADR-018), puis elle écrit
+   `<dossier>/gate.json`, ce qu'elle vient de mesurer (ADR-034) ; le reçu refuse un run sans cette trace ;
 4. l'opérateur ouvre une session neuve et lui remet le texte verbatim — geste humain, sans commande ;
 5. `collect`, l'export, `faits` (les faits que le reçu lira, dérivés du fil et du gel), puis `receipt` —
    produit verbatim, manifeste, reçu écrit à chaud ; le reçu re-hache la copie, relit la base, y rejoue

@@ -123,13 +123,14 @@ sequenceDiagram
   Note over Dis: étape 7, verdict conforme, écart ou non concluant
 ```
 
-Le harnais — `docs/device/harness/run.mjs`, 1 460 lignes, aucune dépendance — n'a que six
+Le harnais — `docs/device/harness/run.mjs`, 1 636 lignes, aucune dépendance — n'a que six
 commandes : `freeze` (avant, qui déclare la racine des espaces de travail une seule fois et en dérive
-les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie aussi le texte
-remis), `collect`, `faits` (les seize valeurs exigées par le reçu, dérivées du fil du client et du gel), `receipt`,
+les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie le dossier et le texte
+remis, puis écrit `gate.json` dans le dossier du run), `collect`, `faits` (les seize valeurs exigées par le reçu, dérivées du fil du client et du gel), `receipt`,
 `compare`. Il **refuse** plutôt que de deviner :
-133 refus sont écrits dans son code (`grep -c 'refuse(' docs/device/harness/run.mjs`, mesuré le
-2026-10-17) — un produit déjà collecté, un lien symbolique dans la copie, un
+148 refus sont écrits dans son code (`grep -c 'refuse(' docs/device/harness/run.mjs`, mesuré le
+2026-10-17) — un produit déjà collecté, un lien symbolique dans la copie, une porte absente ou passée
+sur un autre arbre, un
 produit venu d'ailleurs que de l'espace de travail gelé, un reçu réécrit, un cas dont un fichier ne
 concorde plus avec le gel — au reçu comme au jugement —, une
 session qu'on s'apprête à ouvrir dans le mauvais dossier, un texte remis qui n'est pas celui du cas,
@@ -284,7 +285,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **102 contrôles**, `102/102 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **112 contrôles**, `112/112 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit

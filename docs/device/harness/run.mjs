@@ -14,6 +14,9 @@
 //            opens in must be the one the freeze names for the tree « travail », still
 //            in the state the freeze recorded (§3 "Ouverture dans le répertoire
 //            déclaré"). Without it, nothing before the run says where the run happens.
+//            It writes <run>/gate.json last — the instant, the HEAD and porcelain it just
+//            measured, and the freeze's fingerprint — and the receipt refuses a run that
+//            carries no such trace (ADR-034).
 //   collect  once the product is back — verbatim copy under runs/<id>/raw/<case>/,
 //            with sha256, size and birth per file (§4). The product is what the session
 //            wrote in the frozen workspace, so a --from that resolves outside it is
@@ -30,9 +33,11 @@
 //            the verdict ceiling of §7 enforced, the case re-hashed against the freeze,
 //            the copy under raw/ re-hashed (ADR-030), the client's base re-read (ADR-031),
 //            the export it cites rebuilt from that base, replayed and compared byte for
-//            byte to the file, which is then hashed into the receipt (ADR-032), and the
+//            byte to the file, which is then hashed into the receipt (ADR-032), the
 //            budget of exchanges the case declares measured against the thread's `user`
-//            messages, a run past it being refused (ADR-033)
+//            messages, a run past it being refused (ADR-033), and the gate of the run
+//            confronted to the gel, the tree and the run directory, a missing or foreign
+//            gate being refused (ADR-034)
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
 //            happened (§8: never the session) and the freeze for the premise, which it
 //            re-hashes before judging
@@ -73,7 +78,7 @@ const USAGE = `usage: run.mjs <commande> [options]
            par leur arbre : un tiers rejoue la formule sur son clone sans réécrire un chemin
            (--ref-root doit être l'un des --arbre) ; seul le chemin d'un arbre reste absolu,
            parce que « où cette machine a lu cet arbre » est un fait, pas un paramètre
-  preflight --case <id> [--repertoire <chemin>] [--cases <dir>] [--texte <fichier>]
+  preflight --case <id> --run <dir> [--repertoire <chemin>] [--cases <dir>] [--texte <fichier>]
            la porte d'avant la session : refuse d'autoriser l'ouverture si le dossier
            n'est pas celui que le gel nomme « travail », ou si cet arbre n'est plus dans
            l'état gelé (§3). Sans --repertoire, le dossier examiné est le répertoire
@@ -81,7 +86,12 @@ const USAGE = `usage: run.mjs <commande> [options]
            comme au reçu : autoriser sur un cas qui a bougé n'autoriserait rien. Avec
            --texte, elle refuse aussi un texte qui n'est pas le §5 du cas, $RACINE
            substitué par la racine du gel : c'est le texte qui part vers la session, et
-           une substitution ratée donnerait à lire un chemin qui n'existe pas
+           une substitution ratée donnerait à lire un chemin qui n'existe pas.
+           Elle écrit <run>/gate.json en dernier, après tous ses refus (ADR-034) :
+           l'instant en secondes, le dossier autorisé, l'empreinte du gel et l'arbre
+           mesuré, le texte remis s'il y en a un. --run est obligatoire, une porte ne
+           s'écrase pas, et un --run qui n'est pas un répertoire est refusé : une porte
+           qui ne laisse pas de trace ne serait plus une porte
   collect  --run <dir> --case <id> --from <fichier|dir>   (copie verbatim le contenu
            de --from sous raw/<case>/ : l'arbre du produit s'y reflète à l'identique,
            la source absolue de chaque fichier est dans le manifeste)
@@ -125,13 +135,19 @@ const USAGE = `usage: run.mjs <commande> [options]
            Il lit le budget d'échanges du cas dans son attendu et compte les messages
            user du fil (ADR-033) : au-delà du budget, un refus qui nomme les deux
            chiffres et le message en trop, un dépassement n'étant pas un plafond de
-           verdict ; à l'épuisement exact, le reçu nomme l'échange qui l'a épuisé
+           verdict ; à l'épuisement exact, le reçu nomme l'échange qui l'a épuisé.
+           Il lit enfin la porte du run (ADR-034) : absente, d'un autre cas, d'un autre
+           gel, d'un autre arbre que celui du gel, d'un autre dossier que celui du run,
+           antérieure au gel, d'un HEAD qui a bougé depuis elle, ou d'un texte qui n'est
+           pas le §5 substitué, elle est refusée — et porte figure au reçu avec son
+           sha256, que le juge relit
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
            refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
            dont le reçu cite une empreinte que le gel sur disque ne porte plus, ou dont
-           la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032)
+           la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032), ou dont
+           la porte citée ne rend plus le sien (ADR-034)
 
   prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
     git --version                  toutes les commandes — les quatre arbres, leur porcelain
@@ -149,7 +165,8 @@ const USAGE = `usage: run.mjs <commande> [options]
     (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
     fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
     (budget du cas, messages user du fil, et l'échange qui a épuisé le budget ;
-    un dépassement refuse au lieu de s'écrire), recu_ecrit_le,
+    un dépassement refuse au lieu de s'écrire), porte (le gate.json lu, son sha256,
+    son instant, l'empreinte du gel et l'arbre qu'il dit avoir mesuré), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
     re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
@@ -354,6 +371,27 @@ const empreinteDeGel = (fichiers, references) =>
 // The inverse of cheminPortable: a case file is named from the repository root, or by its
 // base name alone when the case sits beside its freeze (a throwaway bench).
 const cheminDuCas = (chemin, casesDir) => (chemin.includes(sep) ? resolve(REPO, chemin) : join(casesDir, chemin));
+// The §5 text handed to a session: the case's block with $RACINE substituted, so the case stays
+// portable and the session still receives an absolute path (the lesson of the first run). Written
+// once: preflight compares the file it hands over, and the receipt re-derives it to confront the
+// sha256 the gate recorded (ADR-034). Two copies of this derivation would drift the same way two
+// copies of the export template would have (ADR-032).
+function texteDuCas(gel, casesDir, ou) {
+  const racineEspace = gel.racine_espace_de_travail;
+  if (!racineEspace) {
+    refuse(`${ou} : le gel ne déclare aucune racine des espaces de travail (racine_espace_de_travail) — un gel d'avant la racine déclarée ne peut pas substituer $RACINE ; le refaire`);
+  }
+  const demande = (gel.fichiers ?? []).find((f) => f.role === "demande");
+  if (!demande) refuse(`${ou} : le gel ne nomme aucun fichier « demande » — le §5 du cas n'a alors aucune source, et rien ne l'invente`);
+  const chemin = cheminDuCas(demande.chemin, casesDir);
+  const lignes = readFileSync(chemin, "utf8").split("\n");
+  const debut = lignes.findIndex((l) => l.trim() === "<<<DEMANDE");
+  const fin = lignes.findIndex((l) => l.trim() === ">>>DEMANDE");
+  if (debut < 0 || fin <= debut) {
+    refuse(`${ou} : ${display(chemin)} ne porte pas de bloc §5 (« <<<DEMANDE » puis « >>>DEMANDE ») — il n'y a pas de texte à remettre`);
+  }
+  return { chemin, texte: lignes.slice(debut + 1, fin).join("\n").split("$RACINE").join(racineEspace) };
+}
 
 // A freeze is worth what its files are worth. Both moments that lean on it — the receipt
 // at run time, the judgment after — re-hash the case files and the references and refuse on
@@ -541,6 +579,20 @@ function cmdFreeze(a) {
 function cmdPreflight(a) {
   const cas = a.required("case");
   const casesDir = casesDirOf(a);
+  // H5 (ADR-034) : the gate writes what it measured, in the run directory, or it leaves no trace
+  // and the receipt cannot tell a run that passed it from one that skipped it. No default: a gate
+  // that guesses where to write attests a directory nobody chose.
+  const runDir = resolve(a.required("run"));
+  const gatePath = join(runDir, "gate.json");
+  if (existsSync(gatePath)) {
+    refuse(
+      `preflight : ${display(gatePath)} existe déjà — une porte ne s'écrase pas : le premier passage aurait disparu, ` +
+        `et un second passage est un autre acte ; faire un autre dossier de run (H5)`,
+    );
+  }
+  if (existsSync(runDir) && !statSync(runDir).isDirectory()) {
+    refuse(`preflight : le dossier du run (${runDir}) existe et n'est pas un répertoire — la porte s'écrit dans un dossier, et rien n'y serait écrit (H5)`);
+  }
   const gelPath = join(casesDir, `${cas}.freeze.json`);
   const gel = lireJson(gelPath, "preflight");
   if (!gel) {
@@ -591,35 +643,42 @@ function cmdPreflight(a) {
   // before the session opens.
   let texte = null;
   if (a.has("texte")) {
-    const racineEspace = gel.racine_espace_de_travail;
-    if (!racineEspace) {
-      refuse("preflight : le gel ne déclare aucune racine des espaces de travail (racine_espace_de_travail) — un gel d'avant la racine déclarée ne peut pas substituer $RACINE ; le refaire");
-    }
     const cheminTexte = resolve(a.one("texte"));
     if (!existsSync(cheminTexte)) refuse(`preflight : --texte ${cheminTexte} n'existe pas`);
-    const cheminDemande = cheminDuCas(gel.fichiers.find((f) => f.role === "demande").chemin, casesDir);
-    const lignes = readFileSync(cheminDemande, "utf8").split("\n");
-    const debut = lignes.findIndex((l) => l.trim() === "<<<DEMANDE");
-    const fin = lignes.findIndex((l) => l.trim() === ">>>DEMANDE");
-    if (debut < 0 || fin <= debut) {
-      refuse(`preflight : ${display(cheminDemande)} ne porte pas de bloc §5 (« <<<DEMANDE » puis « >>>DEMANDE ») — il n'y a pas de texte à remettre`);
-    }
-    const attendu = lignes.slice(debut + 1, fin).join("\n").split("$RACINE").join(racineEspace);
+    const derive = texteDuCas(gel, casesDir, "preflight");
     const recu = readFileSync(cheminTexte, "utf8");
-    if (recu !== attendu) {
+    if (recu !== derive.texte) {
       const octets = (t) => Buffer.byteLength(t, "utf8");
       refuse(
         `preflight : --texte n'est pas le §5 du cas, $RACINE substitué — ${sha256Text(recu).slice(0, 8)} reçu (${octets(recu)} octets), ` +
-          `${sha256Text(attendu).slice(0, 8)} attendu (${octets(attendu)} octets) ; la session lirait un chemin qui n'est pas celui du gel`,
+          `${sha256Text(derive.texte).slice(0, 8)} attendu (${octets(derive.texte)} octets) ; la session lirait un chemin qui n'est pas celui du gel`,
       );
     }
     texte = { chemin: display(cheminTexte), sha256: sha256Text(recu), octets: Buffer.byteLength(recu, "utf8") };
   }
 
+  // Written last, after every refusal: a gate that refuses leaves nothing, and a gate that writes
+  // has measured. One `date` call, so the label and the epoch of the same instant cannot straddle a
+  // second. The epoch is in seconds, like `gele_le_epoch` and `birth_epoch`, not milliseconds like
+  // the thread's `ts` (H5).
+  const pose = nowStamp();
+  const porte = {
+    type: "gate",
+    cas,
+    passe_le: pose.gele_le,
+    passe_le_epoch: pose.gele_le_epoch,
+    repertoire: declare,
+    gel: { chemin: display(gelPath), empreinte: gel.empreinte, gele_le_epoch: gel.gele_le_epoch },
+    arbre: mesure,
+    texte,
+  };
+  writeJson(gatePath, porte);
+
   console.log(
     `preflight ok — ${cas} : ouverture autorisée dans ${declare} (HEAD ${mesure.head}, porcelain ${mesure.porcelain.length} ligne(s)) ; ` +
       `gel ${String(gel.empreinte).slice(0, 8)} re-haché, ${gelVerifie.fichiers} fichier(s) du cas et ${gelVerifie.references} référence(s)` +
-      (texte ? ` ; texte ${texte.sha256.slice(0, 8)} (${texte.octets} octets) conforme au §5 substitué` : ""),
+      (texte ? ` ; texte ${texte.sha256.slice(0, 8)} (${texte.octets} octets) conforme au §5 substitué` : "") +
+      ` ; porte ${display(gatePath)}`,
   );
 }
 
@@ -986,6 +1045,109 @@ function cmdReceipt(a) {
   if (!statSync(travail).isDirectory()) {
     refuse(`receipt : le répertoire de travail déclaré (${travail}) n'est pas un répertoire — une session y écrit des fichiers`);
   }
+  // The tree the run was opened in, measured now: the gate confronts its own measurement to the
+  // gel's, and the receipt confronts the gate's to this one (the HEAD comparison below).
+  const apres = gel.arbres.map(gitTree);
+  const geleTravail = gel.arbres.find((t) => t.label === "travail");
+  const racineDeclaree = resolu(travail);
+  const apresTravail = apres.find((t) => racineDeclaree !== null && resolu(resolve(t.chemin)) === racineDeclaree);
+
+  // H5 (ADR-034) : preflight refuses a folder that is not the frozen one, then leaves nothing, so a
+  // run that skipped the gate produced a receipt indistinguishable from one that passed it (study
+  // §4, W5). The gate writes what it just measured, and the receipt confronts that trace to what it
+  // can establish itself: the gel it re-hashed, the tree it re-measures, the run directory faits
+  // names. Read here, after the fields and the paths and before the thread check: a gate is the
+  // precondition of a run, not one of its pieces.
+  const gatePath = join(runDir, "gate.json");
+  if (!existsSync(gatePath)) {
+    refuse(
+      `receipt : aucune porte ${display(gatePath)} — la porte d'avant la session n'a pas laissé de trace : ` +
+        `un reçu sans elle ne distingue plus un run qui a passé preflight d'un run qui l'a sauté (H5)`,
+    );
+  }
+  if (!statSync(gatePath).isFile()) {
+    refuse(`receipt : ${display(gatePath)} n'est pas un fichier — la porte est un fichier écrit par preflight, jamais un dossier, et rien n'y atteste un passage (H5)`);
+  }
+  const porte = lireJson(gatePath, "receipt");
+  if (porte.type !== "gate") {
+    refuse(
+      `receipt : ${display(gatePath)} ne porte pas type « gate » (${JSON.stringify(porte.type ?? null)}) — ` +
+        `un fichier d'une autre nature à ce chemin n'atteste pas un passage de porte (H5)`,
+    );
+  }
+  const casPorte = exigerChamp(porte, "cas", "receipt", "gate.json");
+  const repertoirePorte = exigerChamp(porte, "repertoire", "receipt", "gate.json");
+  const gelPorte = {
+    empreinte: exigerChamp(porte, "gel.empreinte", "receipt", "gate.json"),
+    gele_le_epoch: exigerChamp(porte, "gel.gele_le_epoch", "receipt", "gate.json"),
+  };
+  const arbrePorte = {
+    chemin: exigerChamp(porte, "arbre.chemin", "receipt", "gate.json"),
+    head: exigerChamp(porte, "arbre.head", "receipt", "gate.json"),
+    head_complet: exigerChamp(porte, "arbre.head_complet", "receipt", "gate.json"),
+    porcelain: exigerChamp(porte, "arbre.porcelain", "receipt", "gate.json"),
+  };
+  if (casPorte !== cas) {
+    refuse(`receipt : cette porte autorise le cas « ${casPorte} », le reçu traite « ${cas} » — elle a été passée pour un autre run (H5)`);
+  }
+  if (gelPorte.empreinte !== gel.empreinte) {
+    refuse(
+      `receipt : la porte cite l'empreinte du gel ${String(gelPorte.empreinte).slice(0, 8)}, le gel sur disque porte ` +
+        `${String(gel.empreinte).slice(0, 8)} — le cas a été regelé depuis la porte, ou la porte vient d'un autre gel (H5)`,
+    );
+  }
+  if (!geleTravail || resolu(resolve(arbrePorte.chemin)) !== resolu(resolve(geleTravail.chemin)) || !memeArbre(arbrePorte, geleTravail)) {
+    refuse(
+      `receipt : la porte dit avoir mesuré ${display(arbrePorte.chemin)} (HEAD ${arbrePorte.head}, porcelain ${JSON.stringify(arbrePorte.porcelain)}), ` +
+        `le gel nomme « travail » ${display(geleTravail?.chemin ?? "(aucun arbre « travail »)")} ` +
+        `(HEAD ${geleTravail?.head ?? "?"}, porcelain ${JSON.stringify(geleTravail?.porcelain ?? null)}) — ` +
+        `la porte n'a pas été passée sur l'arbre du run (H5)`,
+    );
+  }
+  if (resolu(repertoirePorte) !== resolu(travail)) {
+    refuse(
+      `receipt : la porte a autorisé ${repertoirePorte}, le run déclare ${travail} — ` +
+        `l'ouverture autorisée et le dossier du run ne sont pas le même (H5)`,
+    );
+  }
+  const passeLeEpoch = Number(porte.passe_le_epoch);
+  if (!Number.isFinite(passeLeEpoch) || passeLeEpoch < Number(gelPorte.gele_le_epoch)) {
+    refuse(
+      `receipt : la porte est datée ${JSON.stringify(porte.passe_le_epoch ?? null)} (${String(porte.passe_le ?? "").slice(0, 32)}), ` +
+        `le gel ${gelPorte.gele_le_epoch} — une porte antérieure au gel n'a rien pu mesurer, et une porte sans instant ne date aucun passage (H5)`,
+    );
+  }
+  if (!apresTravail) {
+    refuse(`receipt : ${travail} n'est pas un dépôt git lisible — la porte nomme un HEAD, et le reçu ne peut pas le mesurer (H5)`);
+  }
+  if (arbrePorte.head_complet !== apresTravail.head_complet) {
+    refuse(
+      `receipt : la porte a mesuré HEAD ${arbrePorte.head_complet}, le reçu mesure ${apresTravail.head_complet} — ` +
+        `l'arbre de travail a été commité pendant le run, et le produit n'est plus ce qu'une session écrit dans un dossier (H5)`,
+    );
+  }
+  if (porte.texte) {
+    const derive = texteDuCas(gel, casesDir, "receipt");
+    const shaTexte = sha256Text(derive.texte);
+    if (porte.texte.sha256 !== shaTexte) {
+      refuse(
+        `receipt : la porte dit avoir remis ${String(porte.texte.sha256 ?? "(aucune empreinte)").slice(0, 8)}, ` +
+          `le §5 substitué du cas porte ${shaTexte.slice(0, 8)} — le texte autorisé n'est pas celui du cas (H5)`,
+      );
+    }
+  }
+  const porteLue = {
+    chemin: gatePath,
+    sha256: sha256File(gatePath),
+    cas: casPorte,
+    passe_le: porte.passe_le,
+    passe_le_epoch: porte.passe_le_epoch,
+    repertoire: repertoirePorte,
+    gel_empreinte: gelPorte.empreinte,
+    gele_le_epoch: gelPorte.gele_le_epoch,
+    arbre: arbrePorte,
+    texte_sha256: porte.texte?.sha256 ?? null,
+  };
   const traceExportee = resolve(trace.chemin_exporte);
   if (!existsSync(dirname(traceExportee))) {
     refuse(
@@ -1226,18 +1388,14 @@ function cmdReceipt(a) {
     }
   }
 
-  const apres = gel.arbres.map(gitTree);
   // The working directory is the tree the freeze names « travail », not any tree it happens
   // to describe: the original terrain is one of the four, and a run opened there would write
-  // into the project the case means to leave untouched. Checked again at the receipt because
-  // the gate can be skipped, and a receipt stands on the gel alone. Compared after the links are
-  // resolved, as faits compares it: a session opened through a link into the frozen tree wrote in
-  // that tree, and refusing it would refuse the file faits itself wrote (ADR-025).
-  const geleTravail = gel.arbres.find((t) => t.label === "travail");
-  const racineDeclaree = resolu(travail);
+  // into the project the case means to leave untouched. Checked again at the receipt, because a
+  // gate authorises an opening and a receipt must stand on the gel alone. Compared after the links
+  // are resolved, as faits compares it: a session opened through a link into the frozen tree wrote
+  // in that tree, and refusing it would refuse the file faits itself wrote (ADR-025).
   const avantTravail =
     geleTravail && racineDeclaree !== null && resolu(resolve(geleTravail.chemin)) === racineDeclaree ? geleTravail : null;
-  const apresTravail = apres.find((t) => racineDeclaree !== null && resolu(resolve(t.chemin)) === racineDeclaree);
   if (!avantTravail) {
     refuse(
       `receipt : le répertoire de travail déclaré (${travail}) n'est pas celui que le gel nomme « travail » ` +
@@ -1362,6 +1520,7 @@ function cmdReceipt(a) {
     trace,
     trace_lue: traceLue,
     echanges,
+    porte: porteLue,
     arbres,
     produit,
     cloisonnement: { attendu_vu: attenduVu },
@@ -1421,6 +1580,23 @@ function cmdCompare(a) {
         refuse(
           `compare : la trace citée par le reçu ne rend plus son empreinte — ${empreinteDisque.slice(0, 8)} au disque, ` +
             `${String(recu.trace_lue.sha256).slice(0, 8)} au reçu (${display(traceCitee)}) ; le run jugé ne serait plus celui que le reçu a lu (H2)`,
+        );
+      }
+    }
+  }
+
+  // H5 (ADR-034) : the gate the receipt read is cited by its sha256, and the judge re-hashes it
+  // before judging, as it re-hashes the trace above: a receipt citing a gate that is no longer the
+  // one it read no longer judges the same run. Absent file: nothing to compare, the receipt already
+  // said the absence.
+  if (recu.porte?.sha256 && recu.porte.chemin) {
+    const porteCitee = resolve(recu.porte.chemin);
+    if (existsSync(porteCitee) && !statSync(porteCitee).isDirectory()) {
+      const empreintePorte = sha256File(porteCitee);
+      if (empreintePorte !== recu.porte.sha256) {
+        refuse(
+          `compare : la porte citée par le reçu ne rend plus son empreinte — ${empreintePorte.slice(0, 8)} au disque, ` +
+            `${String(recu.porte.sha256).slice(0, 8)} au reçu (${display(porteCitee)}) ; le run jugé ne serait plus celui que le reçu a lu (H5)`,
         );
       }
     }

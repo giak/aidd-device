@@ -893,3 +893,59 @@ refuser ; le reçu lit un scalaire de l'attendu, ce que la spec du protocole ré
 jamais le contenu), et cette porte tient par discipline ; aucune session réelle.
 **Falsificateur** : un fil à quatre messages `user` pour un budget de trois dont le reçu s'écrit — la règle
 est fausse ; le même fil à trois messages — le reçu doit s'écrire et `epuise_par.seq` nommer le troisième.
+
+## ADR-034 — `preflight` écrit une porte, et `receipt` la confronte (H5) (2026-10-17)
+
+**Contexte** : `preflight` est la seule commande qui refuse avant le fait — un dossier qui n'est pas celui
+que le gel nomme « travail », un arbre qui a bougé, un texte qui n'est pas le §5 substitué (banc 1 à 13 et
+27 à 31, éprouvés). Puis elle ne laissait rien : `grep -c "gate\.json" docs/device/harness/run.mjs` rendait
+**0**, et un run qui saute la porte produit un reçu indiscernable d'un run qui l'a passée (étude antagoniste
+§4, W5). En amont, le gel ne fixe pas la géométrie : `empreinteDeGel` ne hache que les fichiers du cas et
+les références, jamais `arbres`, donc « où le run a eu lieu » reste un champ que l'opérateur édite.
+
+**Options** : (a) faire signer la porte — une clé, un HMAC ; (b) demander à l'opérateur une déclaration
+`--porte` ; (c) écrire un `gate.json` dans le dossier du run, mesuré par la porte elle-même, et le
+confronter au gel, à l'arbre et au dossier du run.
+
+**Choix** : (c). (a) déplace la racine de confiance vers une clé posée sur la même machine, que rien ne
+protège contre qui écrit le fichier, et un tiers ne pourrait pas mieux la vérifier ; (b) remplacerait une
+mesure par une déclaration.
+
+La porte écrit ce qu'elle vient de vérifier, **en dernier**, après tous ses refus : `type`, `cas`,
+`passe_le` et `passe_le_epoch` (**secondes**, comme `gele_le_epoch` et `birth_epoch`, pas millisecondes comme
+les `ts` des messages), `repertoire`, `gel{chemin, empreinte, gele_le_epoch}`, `arbre` (la mesure `gitTree`
+entière, non retaillée), `texte` ou `null`. Pas de champ `commande` : rien ne la relirait. `--run` devient
+obligatoire — une porte qui ne laisse pas de trace n'est plus une porte —, une porte existante n'est pas
+écrasée, et un `--run` qui n'est pas un répertoire est refusé avant l'écriture, qui aurait sinon sorti en
+trace de pile.
+
+Le reçu la lit **après les champs et les chemins, avant le contrôle du fil** : elle est la condition
+préalable du run, pas une de ses pièces. Neuf refus : absente ; illisible ou d'un autre `type` ; d'un autre
+cas ; d'un autre gel (empreinte) ; d'un autre arbre que celui du gel (`memeArbre` et chemin résolu) ; d'un
+autre dossier que `faits.repertoire_de_travail` (liens résolus) ; antérieure au gel ; d'un `head_complet`
+qui n'est plus celui mesuré au reçu ; ou d'un `texte.sha256` qui n'est pas le §5 substitué, recalculé par la
+même fonction que la porte (`texteDuCas`). Le huitième est le seul qui confronte la porte à une mesure
+postérieure : un `git commit` dans l'arbre de travail déplace le HEAD, et rien ne le refusait jusqu'ici
+(`memeArbre(avant, apres)` ne se plaint que d'un arbre **inchangé**).
+
+**Ce que la porte ne prouve pas** : elle est forgeable. Recopier l'empreinte du gel, l'arbre et un instant
+plausible produit un fichier que le reçu accepte. H5 rend le saut visible et une porte étrangère réfutable,
+jamais le passage impossible : c'est la nature de `attendu_vu`, une discipline rendue visible et confrontée
+à ce qui peut l'être. Et l'ordre porte / session n'est pas mesuré : la seule borne indépendante serait le
+premier message `user`, c'est-à-dire la base du client, et la comparaison forcerait le banc à dater ses fils
+après la porte. La limite est dite dans la spec (§12) et dans ce que le reçu ne porte pas.
+
+**Conséquences** : `preflight` gagne `--run` obligatoire et écrit `<run>/gate.json` ; `receipt.json` gagne
+`porte{chemin, sha256, cas, passe_le, passe_le_epoch, repertoire, gel_empreinte, gele_le_epoch, arbre,
+texte_sha256}` ; `compare` re-hache la porte citée, comme il re-hache la trace depuis l'ADR-032. Le §5
+substitué est dérivé **une seule fois** (`texteDuCas`), employé par la porte et par le reçu : deux copies
+dériveraient comme deux copies du gabarit d'export auraient dérivé. Le banc passe de **102 à 112** : dix
+contrôles (103 à 112), cinq acceptations de `preflight` qui reçoivent `--run` (1, 2, 11, 13, 27), les refus
+de `preflight` qui le reçoivent aussi pour refuser pour la raison qu'ils nomment, et une porte par dossier de
+run (le helper `porte` du banc, 37 dossiers). Le contrôle 15 change de refus : la porte, lue avant le fil,
+nomme le dossier qu'elle a autorisé là où H3 nommait la base ; le refus de H3 reste éprouvé par 78. Limites :
+aucune session réelle, la porte d'un vrai run n'a jamais été écrite ; le contrôle 107 déplace un HEAD dans le
+clone du banc, jamais dans l'espace de travail, et n'éprouve donc pas un commit réel dans l'arbre gelé.
+
+**Falsificateur** : un reçu écrit pour un dossier de run sans `gate.json` — la règle est fausse ; une porte
+dont la `porcelain` diffère de celle du gel, acceptée — le refus de l'arbre est faux.

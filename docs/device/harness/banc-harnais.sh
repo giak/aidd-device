@@ -68,6 +68,21 @@ refus-nomme() { # exit attendu, texte attendu, commande... — un refus explicit
 mkdir -p "$B/cases" "$B/cases2" "$B/trace" "$B/run"
 cp "$GEL" "$B/cases/$CAS.freeze.json"
 
+# H5 (ADR-034) : a gate writes what preflight measured, and every receipt now demands one. It must be
+# passed with the same --cases as the receipt that will read it: the empreinte of the gel is compared,
+# and the re-geled controls 101 and 102 carry another one. preflight refuses to overwrite a gate, so
+# one gate per run directory, and none is written by hand.
+porte() { # dossier-de-run [dossier-des-cas]
+  local cases="${2:-}"
+  if [ -n "$cases" ]; then
+    node "$H" preflight --run "$1" --case "$CAS" --cases "$cases" --repertoire "$W/terrain" >/dev/null 2>&1 \
+      || { echo "ARRET — la porte de $1 ne s'écrit pas (cas $cases)"; exit 2; }
+  else
+    node "$H" preflight --run "$1" --case "$CAS" --repertoire "$W/terrain" >/dev/null 2>&1 \
+      || { echo "ARRET — la porte de $1 ne s'écrit pas"; exit 2; }
+  fi
+}
+
 # The client's base and its thread, before the first receipt: H3 re-reads them (ADR-031). The two
 # instants are derived as faits derives them (`date -d @<seconde>`), so the fixture and the harness
 # compare the same string, whatever the local zone.
@@ -81,21 +96,21 @@ insert into threads values('banc','$W/terrain','local','','','codebuff','aucun',
 insert into messages values('banc',1,'user',$D0,'[]');"
 
 # 1-2 : l'ouverture autorisée, sur le gel réel
-controle "1 porte, dossier gelé (--repertoire)"  0 node "$H" preflight --case "$CAS" --repertoire "$W/terrain"
-controle "2 porte, répertoire courant"           0 bash -c "cd '$W/terrain' && node '$H' preflight --case '$CAS'"
+controle "1 porte, dossier gelé (--repertoire)"  0 node "$H" preflight --case "$CAS" --repertoire "$W/terrain" --run "$B/p1"
+controle "2 porte, répertoire courant"           0 bash -c "cd '$W/terrain' && node '$H' preflight --case '$CAS' --run '$B/p2'"
 
 # 3-7 : les mauvais dossiers
-controle "3 refus, terrain original"             1 node "$H" preflight --case "$CAS" --repertoire "$TERRAIN"
-controle "4 refus, révision sous test"           1 node "$H" preflight --case "$CAS" --repertoire "$W/framework-origin"
-controle "5 refus, ancien foyer ~/runs"          1 node "$H" preflight --case "$CAS" --repertoire "$HOME/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain"
-controle "6 refus, répertoire courant = dépôt"   1 node "$H" preflight --case "$CAS"
-controle "7 refus, cas sans gel"                 1 node "$H" preflight --case cas-inexistant
+controle "3 refus, terrain original"             1 node "$H" preflight --case "$CAS" --repertoire "$TERRAIN" --run "$B/p3"
+controle "4 refus, révision sous test"           1 node "$H" preflight --case "$CAS" --repertoire "$W/framework-origin" --run "$B/p4"
+controle "5 refus, ancien foyer ~/runs"          1 node "$H" preflight --case "$CAS" --repertoire "$HOME/runs/aidd-device/2026-10-15-133335-promesse-memoire-avant-ecriture/terrain" --run "$B/p5"
+controle "6 refus, répertoire courant = dépôt"   1 node "$H" preflight --case "$CAS" --run "$B/p6"
+controle "7 refus, cas sans gel"                 1 node "$H" preflight --case cas-inexistant --run "$B/p7"
 
 # 8 : l'arbre « travail » du gel pointe dans le dépôt du dispositif
 node -e "const fs=require('fs'),p='$B/cases/$CAS.freeze.json'; const g=JSON.parse(fs.readFileSync(p,'utf8'));
 g.arbres.find(a=>a.label==='travail').chemin='$REPO/docs';
 fs.writeFileSync(p, JSON.stringify(g,null,2)+'\n');"
-controle "8 refus, arbre travail dans le dépôt"  1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$REPO/docs"
+controle "8 refus, arbre travail dans le dépôt"  1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$REPO/docs" --run "$B/p8"
 
 # 9 : l'arbre « travail » du gel n'est pas un dépôt git
 mkdir -p "$B/pas-un-depot"
@@ -103,7 +118,7 @@ cp "$GEL" "$B/cases/$CAS.freeze.json"
 node -e "const fs=require('fs'),p='$B/cases/$CAS.freeze.json'; const g=JSON.parse(fs.readFileSync(p,'utf8'));
 g.arbres.find(a=>a.label==='travail').chemin='$B/pas-un-depot';
 fs.writeFileSync(p, JSON.stringify(g,null,2)+'\n');"
-controle "9 refus, arbre travail non-git"        1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/pas-un-depot"
+controle "9 refus, arbre travail non-git"        1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/pas-un-depot" --run "$B/p9"
 
 # 10 : bonne révision, porcelain d'un autre état
 rm -rf "$B/faux-travail"
@@ -115,9 +130,9 @@ node -e "const fs=require('fs'),p='$B/cases/$CAS.freeze.json'; const g=JSON.pars
 g.arbres.find(a=>a.label==='travail').chemin='$B/faux-travail';
 fs.writeFileSync(p, JSON.stringify(g,null,2)+'\n');"
 echo "note" > "$B/faux-travail/ecrit-par-derive.txt"
-controle "10 refus, porcelain changé"            1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/faux-travail"
+controle "10 refus, porcelain changé"            1 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/faux-travail" --run "$B/p10"
 rm -f "$B/faux-travail/ecrit-par-derive.txt"
-controle "11 porte, même arbre sans la dérive"   0 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/faux-travail"
+controle "11 porte, même arbre sans la dérive"   0 node "$H" preflight --case "$CAS" --cases "$B/cases" --repertoire "$B/faux-travail" --run "$B/p11"
 
 # 12-13 : un fichier du cas a bougé depuis le gel (gel copié, chemins par nom de base)
 node -e "const fs=require('fs'),path=require('path'); const g=JSON.parse(fs.readFileSync('$GEL','utf8'));
@@ -126,14 +141,15 @@ g.arbres.find(a=>a.label==='travail').chemin='$W/terrain';
 for (const f of g.fichiers) fs.copyFileSync(path.join('$REPO/docs/device/CASES', f.chemin), path.join('$B/cases2', f.chemin));
 fs.writeFileSync('$B/cases2/$CAS.freeze.json', JSON.stringify(g,null,2)+'\n');
 fs.appendFileSync(path.join('$B/cases2', g.fichiers.find(f=>f.role==='demande').chemin), '\nretouche apres le gel\n');"
-controle "12 refus, fichier du cas qui a bougé"  1 node "$H" preflight --case "$CAS" --cases "$B/cases2" --repertoire "$W/terrain"
+controle "12 refus, fichier du cas qui a bougé"  1 node "$H" preflight --case "$CAS" --cases "$B/cases2" --repertoire "$W/terrain" --run "$B/p12"
 node -e "const fs=require('fs'),path=require('path');
 for (const f of JSON.parse(fs.readFileSync('$B/cases2/$CAS.freeze.json','utf8')).fichiers)
   fs.copyFileSync(path.join('$REPO/docs/device/CASES', path.basename(f.chemin)), path.join('$B/cases2', f.chemin));"
-controle "13 porte, gel rejoué d'un banc"        0 node "$H" preflight --case "$CAS" --cases "$B/cases2" --repertoire "$W/terrain"
+controle "13 porte, gel rejoué d'un banc"        0 node "$H" preflight --case "$CAS" --cases "$B/cases2" --repertoire "$W/terrain" --run "$B/p13"
 
 # 14-19 : non-régression du reste du harnais (le reçu sur le dossier gelé, et les refus d'origine)
 controle "14 collect --sans-produit"             0 node "$H" collect --run "$B/run" --case "$CAS" --sans-produit
+porte "$B/run"
 # The bench's faits.json is written by faits, never by hand: H2 compares the command the piece cites
 # to the one the receipt rebuilds, and a hand-written command differs by its SQL (ADR-032). The
 # export is made before faits, as §1.5 orders it, and is the thread's own output — here empty,
@@ -144,7 +160,7 @@ node "$H" faits --case "$CAS" --base "$DBF" --fil banc --trace "$B/trace/echange
 node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-banc.json','utf8'));
 t.repertoire_de_travail='$TERRAIN';fs.writeFileSync('$B/faits-mauvais.json',JSON.stringify(t,null,2)+'\n')"
 cp "$B/faits-banc.json" "$B/faits-bon.json"
-controle "15 receipt refus, base d'un autre arbre" 0 refus-nomme 1 "ouvre" node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-mauvais.json"
+controle "15 receipt refus, porte et dossier diffèrent" 0 refus-nomme 1 "la porte a autorisé" node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-mauvais.json"
 controle "16 receipt, dossier gelé"              0 node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-bon.json"
 controle "17 compare, depuis le reçu seul"       0 node "$H" compare --run "$B/run" --case "$CAS" --difference "banc : rien produit" --phrase "banc" --verdict "non concluant" --limites "ne mord pas"
 controle "18 second collect refusé"              1 node "$H" collect --run "$B/run" --case "$CAS" --sans-produit
@@ -179,13 +195,13 @@ const g=require('$B/cases-lint/$CAS.freeze.json'); const ok=g.racine_espace_de_t
 T=$(sed -n '/^<<<DEMANDE$/,/^>>>DEMANDE$/p' "$REPO/docs/device/CASES/$CAS.request.md" | sed '1d;$d' | sed "s|\$RACINE|$RACINE|g")
 printf '%s' "$T" > "$B/texte-juste.txt"; printf '%s\n' "$T" > "$B/texte-saut.txt"
 sed "s|$RACINE|$RACINE-ailleurs|" "$B/texte-juste.txt" > "$B/texte-faux.txt"
-controle "27 preflight --texte, substitute juste" 0 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-juste.txt"
-controle "28 preflight refus, saut de ligne final" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-saut.txt"
-controle "29 preflight refus, chemin d'un autre foyer" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-faux.txt"
-controle "30 preflight refus, texte absent" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/aucun-texte.txt"
+controle "27 preflight --texte, substitute juste" 0 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-juste.txt" --run "$B/p27"
+controle "28 preflight refus, saut de ligne final" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-saut.txt" --run "$B/p28"
+controle "29 preflight refus, chemin d'un autre foyer" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-faux.txt" --run "$B/p29"
+controle "30 preflight refus, texte absent" 1 node "$H" preflight --case "$CAS" --repertoire "$RACINE/$CAS/terrain" --texte "$B/aucun-texte.txt" --run "$B/p30"
 mkdir -p "$B/cases-sans-racine"
 node -e "const fs=require('fs');const g=JSON.parse(fs.readFileSync('$GEL','utf8'));delete g.racine_espace_de_travail;fs.writeFileSync('$B/cases-sans-racine/$CAS.freeze.json',JSON.stringify(g,null,2)+'\n');"
-controle "31 preflight refus, gel sans racine déclarée" 1 node "$H" preflight --case "$CAS" --cases "$B/cases-sans-racine" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-juste.txt"
+controle "31 preflight refus, gel sans racine déclarée" 1 node "$H" preflight --case "$CAS" --cases "$B/cases-sans-racine" --repertoire "$RACINE/$CAS/terrain" --texte "$B/texte-juste.txt" --run "$B/p31"
 
 # 32-45 : l'origine du produit (ADR-020) — collect exige l'espace gelé, le reçu relit le manifeste
 FROM_OK="$W/terrain/README.md"
@@ -215,6 +231,7 @@ process.exit(execFileSync('git',['-C','$W/terrain','status','--porcelain'],{enco
 # 42-45 : le reçu relit l'origine — la porte de collect peut être sautée
 mk() { # nom-du-run, source déclarée — la copie est réelle, seule la provenance déclarée change (H1, ADR-030)
   node "$H" collect --run "$B/$1" --case "$CAS" --sans-produit >/dev/null 2>&1
+  porte "$B/$1"
   cp "$W/terrain/README.md" "$B/$1/raw/$CAS/produit.md"
   node -e "const fs=require('fs'),crypto=require('crypto'),p='$B/$1/raw/$CAS/manifest.json',copie='$B/$1/raw/$CAS/produit.md';
 const m=JSON.parse(fs.readFileSync(p,'utf8'));const src='$2';
@@ -245,7 +262,10 @@ sqlite3 "$DBF" "update threads set project_path='$W/terrain', branch='freebuff/b
 controle "50 faits refus, fil en worktree"         1 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/f50.json" --par banc --fin "$(date -Is)" --temoignage "banc"
 
 # 51-56 : receipt situe les chemins de faits.json, et les compare comme faits les compare (ADR-025)
-vide() { node "$H" collect --run "$B/$1" --case "$CAS" --sans-produit >/dev/null 2>&1; }
+vide() { # nom [dossier-des-cas] — un dossier de run vide, et sa porte (H5)
+  node "$H" collect --run "$B/$1" --case "$CAS" --sans-produit >/dev/null 2>&1
+  porte "$B/$1" "${2:-}"
+}
 faits-en() { # travail, trace, sortie — depuis le faits.json du banc, seules les deux valeurs changent
   # The redirect at the end of trace.commande moves with the exported path, otherwise H2 would
   # refuse the piece for citing another export before reaching the control it serves (ADR-032).
@@ -308,7 +328,7 @@ faits-ident() { # identifiant, commande, sortie
 t.session.identifiant=process.argv[1];t.trace.commande=process.argv[2];
 fs.writeFileSync(process.argv[3],JSON.stringify(t,null,2)+'\n')" "$1" "$2" "$3"
 }
-for r in r64 r65; do node "$H" collect --run "$B/$r" --case "$CAS" --sans-produit >/dev/null 2>&1; done
+for r in r64 r65; do node "$H" collect --run "$B/$r" --case "$CAS" --sans-produit >/dev/null 2>&1; porte "$B/$r"; done
 faits-ident "fil-a" "sqlite3 -readonly base \"select json_object('seq', m.seq) from messages m where m.thread_id='banc'\"" "$B/f64.json"
 controle "64 receipt refus, identifiant d'un autre fil" 0 refus-nomme 1 "session.identifiant vaut" node "$H" receipt --run "$B/r64" --case "$CAS" --faits "$B/f64.json"
 faits-ident "banc" "banc" "$B/f65.json"
@@ -350,6 +370,7 @@ process.exit(r.falsificateurs.trace_sans_echange_dans_la_fenetre===true && r.lim
 # 68-86 : H1 re-hache la copie (ADR-030), H3 relit la base (ADR-031)
 produit-run() { # nom — un run dont le produit est réellement copié depuis l'espace gelé
   node "$H" collect --run "$B/$1" --case "$CAS" --from "$W/terrain/README.md" >/dev/null 2>&1
+  porte "$B/$1"
 }
 faits-fil() { # fil, sortie — copie de faits-bon, identifiant et commande d'export au même fil
   node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));
@@ -555,10 +576,72 @@ cas-budget() { # nom, retouche de l'attendu — un cas recopié, modifié, re-ge
 }
 cas-budget cases-sans-budget "delete a.demande.budget_echanges"
 cas-budget cases-budget-zero "a.demande.budget_echanges=0"
-vide r101
-vide r102
+vide r101 "$B/cases-sans-budget"
+vide r102 "$B/cases-budget-zero"
 controle "101 receipt refus, attendu sans budget"  0 refus-nomme 1 "ne déclare aucun budget" node "$H" receipt --run "$B/r101" --case "$CAS" --cases "$B/cases-sans-budget" --faits "$B/f97.json"
 controle "102 receipt refus, budget illisible"     0 refus-nomme 1 "un entier positif" node "$H" receipt --run "$B/r102" --case "$CAS" --cases "$B/cases-budget-zero" --faits "$B/f97.json"
+
+# 103-112 : la porte laisse une trace, et le reçu la confronte (H5, ADR-034). 104 à 108 et 112 partent
+# d'une porte réelle produite par preflight, puis retouchent un seul champ : le motif des contrôles
+# 21-26 et 101-102. Aucune porte n'est écrite à la main, sinon la forme que le contrôle 103 éprouve.
+node "$H" collect --run "$B/r103" --case "$CAS" --sans-produit >/dev/null 2>&1 || { echo "ARRET — r103 ne se monte pas"; exit 2; }
+controle "103 receipt refus, aucune porte"        0 refus-nomme 1 "aucune porte" node "$H" receipt --run "$B/r103" --case "$CAS" --faits "$B/faits-bon.json"
+
+vide r104
+node -e "const fs=require('fs'),p='$B/r104/gate.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
+g.cas='un-autre-cas';fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
+controle "104 receipt refus, porte d'un autre cas" 0 refus-nomme 1 "autorise le cas" node "$H" receipt --run "$B/r104" --case "$CAS" --faits "$B/faits-bon.json"
+
+vide r105
+controle "105 receipt refus, porte d'un gel regelé" 0 refus-nomme 1 "cite l'empreinte du gel" node "$H" receipt --run "$B/r105" --case "$CAS" --cases "$B/cases-budget-zero" --faits "$B/faits-bon.json"
+
+vide r106
+node -e "const fs=require('fs'),p='$B/r106/gate.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
+g.arbre.porcelain=['?? ajoute-apres-la-porte'];fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
+controle "106 receipt refus, porte d'un autre arbre" 0 refus-nomme 1 "n'a pas été passée sur l'arbre" node "$H" receipt --run "$B/r106" --case "$CAS" --faits "$B/faits-bon.json"
+
+# 107 : le seul refus qui confronte la porte à une mesure postérieure. Il faut donc un arbre qui bouge
+# vraiment entre les deux, et pas dans l'espace de travail : le clone des contrôles 10-11, un gel copié
+# qui le nomme « travail », et un commit vide qui déplace le HEAD sans toucher au porcelain.
+mkdir -p "$B/cases-h5"
+cp "$GEL" "$B/cases-h5/$CAS.freeze.json"
+node -e "const fs=require('fs'),p='$B/cases-h5/$CAS.freeze.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
+g.arbres.find(a=>a.label==='travail').chemin='$B/faux-travail';fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
+sqlite3 "$DBF" "insert into threads values('banc-h5','$B/faux-travail','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-h5',1,'user',$D0,'[]');"
+: > "$B/trace-h5.jsonl"
+node "$H" faits --case "$CAS" --cases "$B/cases-h5" --base "$DBF" --fil banc-h5 --trace "$B/trace-h5.jsonl" \
+  --out "$B/f107.json" --par banc --fin "$ISO1" --temoignage "banc : aucun run reel" >/dev/null \
+  || { echo "ARRET — les faits de 107 ne s'écrivent pas"; exit 2; }
+node "$H" collect --run "$B/r107" --case "$CAS" --cases "$B/cases-h5" --sans-produit >/dev/null 2>&1 \
+  || { echo "ARRET — r107 ne se monte pas"; exit 2; }
+node "$H" preflight --run "$B/r107" --case "$CAS" --cases "$B/cases-h5" --repertoire "$B/faux-travail" >/dev/null 2>&1 \
+  || { echo "ARRET — la porte de r107 ne s'écrit pas"; exit 2; }
+git -C "$B/faux-travail" -c user.email=banc@exemple -c user.name=banc commit --allow-empty --quiet -m "banc : un commit apres la porte" \
+  || { echo "ARRET — le commit de 107 ne s'écrit pas"; exit 2; }
+controle "107 receipt refus, HEAD bougé depuis la porte" 0 refus-nomme 1 "a été commité pendant le run" node "$H" receipt --run "$B/r107" --case "$CAS" --cases "$B/cases-h5" --faits "$B/f107.json"
+
+vide r108
+node -e "const fs=require('fs'),p='$B/r108/gate.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
+g.passe_le_epoch=g.gel.gele_le_epoch-1;fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
+controle "108 receipt refus, porte antérieure au gel" 0 refus-nomme 1 "antérieure au gel" node "$H" receipt --run "$B/r108" --case "$CAS" --faits "$B/faits-bon.json"
+
+vide r109
+controle "109 receipt, porte intacte citée"       0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
+execFileSync('node',['$H','receipt','--run','$B/r109','--case','$CAS','--faits','$B/faits-bon.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r109/receipt.json','utf8'));
+const g=JSON.parse(fs.readFileSync('$B/r109/gate.json','utf8'));
+const sha=crypto.createHash('sha256').update(fs.readFileSync('$B/r109/gate.json')).digest('hex');
+process.exit(r.porte && r.porte.sha256===sha && r.porte.gel_empreinte===g.gel.empreinte && r.porte.arbre.head_complet===g.arbre.head_complet && r.porte.passe_le_epoch===g.passe_le_epoch ?0:1)"
+
+node "$H" preflight --case "$CAS" --run "$B/p110" --repertoire "$W/terrain" >/dev/null 2>&1 || { echo "ARRET — la porte de p110 ne s'écrit pas"; exit 2; }
+controle "110 preflight refus, porte déjà là"     0 refus-nomme 1 "existe déjà" node "$H" preflight --case "$CAS" --run "$B/p110" --repertoire "$W/terrain"
+controle "111 preflight refus, --run manquant"    2 node "$H" preflight --case "$CAS" --repertoire "$W/terrain"
+
+node -e "const fs=require('fs'),p='$B/r109/gate.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
+g.passe_le_epoch=g.passe_le_epoch+1;fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
+controle "112 compare refus, porte réécrite"      0 refus-nomme 1 "ne rend plus son empreinte" node "$H" compare --run "$B/r109" --case "$CAS" --difference x --phrase y --verdict "non concluant" --limites "ne mord pas"
 
 echo
 echo "$PASS/$TOTAL PASS"

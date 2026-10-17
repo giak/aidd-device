@@ -3208,3 +3208,52 @@ quand la forme mécanique du tableau sera écrite.
 
 **Mémoires.** `cbacbc35` (2026-10-17 19:08:48 UTC) : la spec H5, ses mesures, ses décisions, ses limites.
 
+## Séance 52 — 2026-10-17 (H5 appliqué : la porte écrit gate.json, le reçu la confronte)
+
+**Objectif.** Appliquer H5, la spec de la Séance 51 : la porte laisse une trace, et le reçu la refuse
+absente, étrangère, périmée ou contredite. ADR-034, contrôles 103 à 112.
+
+**Fait.** `run.mjs` (1 460 → **1 636** lignes, 133 → **148** refus). `preflight` gagne `--run` obligatoire
+(`exit 2` sans lui), refuse un `gate.json` déjà là et un `--run` qui n'est pas un répertoire, et écrit
+`<run>/gate.json` **en dernier**, après tous ses refus : `type`, `cas`, `passe_le` et `passe_le_epoch` (un
+seul appel à `date` par `nowStamp()`, epoch en secondes), `repertoire`, `gel{chemin, empreinte,
+gele_le_epoch}`, `arbre` (la mesure `gitTree` entière), `texte` ou `null`. Le §5 substitué est dérivé une
+seule fois (`texteDuCas`), par la porte et par le reçu. `receipt` lit la porte après les champs et les
+chemins, avant le contrôle du fil (ADR-028) : neuf refus, et `porte{chemin, sha256, cas, passe_le,
+passe_le_epoch, repertoire, gel_empreinte, gele_le_epoch, arbre, texte_sha256}` au reçu ; `compare` re-hache
+la porte citée. Le banc : helper `porte()` (une porte par dossier de run), `--run` sur les acceptations 1, 2,
+11, 13, 27 et sur les refus 3 à 10, 12, 28 à 31, dix contrôles neufs (103 à 112). Pages remises à 112
+(BANC avec sa ligne de groupe, DEVICE, ARCHITECTURE, EXPLICATION, DASHBOARD, README) ; ADR-034.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **112/112 PASS**, `exit 0`, 0 `FAIL` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 34 fichiers, **361** liens, **0 mort** |
+| contrôle 107, mesuré à la main | le clone `$B/faux-travail` à `HEAD 416ec1f`, commit vide, puis refus « la porte a mesuré HEAD 416ec1f…, le reçu mesure …a été commité pendant le run » |
+| contrôle 109 | `porte.sha256` = sha256 du `gate.json`, `porte.gel_empreinte` = `0d9a2180…`, `porte.arbre.head_complet` = `416ec1fa…` |
+
+**Dérives signalées, non corrigées.** L'étude chiffre H5 à « ~20 lignes ». Le code en fait 148 lignes de
+diff, la fixture 37 portes et cinq acceptations réécrites : le §10 de la spec l'avait mesuré avant le code.
+Aucune autre.
+
+**Rectifications.** Deux, sur mes propres pièces, mesurées avant d'être écrites au §14 de la spec. Le
+contrôle 15 ne refuse plus par H3 : la porte, lue plus tôt, nomme le dossier qu'elle a autorisé, et le
+contrôle attend cette phrase. Et le contrôle 107, écrit d'abord comme le §9 le décrivait (retoucher
+`arbre.head_complet` dans un `gate.json`), **échouait** : retoucher ce champ fait aussi différer l'arbre de la
+porte de celui du gel, et le refus de l'arbre tombe avant celui du HEAD (mesuré, 111/112). Il déplace
+désormais un vrai HEAD dans le clone du banc, avec un gel copié qui le nomme « travail ».
+
+**OPEN.** La porte est forgeable : recopier l'empreinte du gel, l'arbre et un instant plausible produit un
+fichier que le reçu accepte. L'ordre porte / session n'est pas mesuré. Le commit du contrôle 107 n'a pas lieu
+dans l'arbre gelé, donc ce cas n'est pas éprouvé là où il compte. Aucune session réelle. **Rien n'est
+commité.**
+
+**Prochaines étapes.** H6 quand la forme mécanique du tableau sera écrite, puis un second run réel, qui sera
+le premier à porter une porte.
+
+**Mémoires.** `1a6bc039` (2026-10-17 19:29:34 UTC) : la porte et ses champs, les neuf refus du reçu, les dix
+contrôles, les deux écarts, les limites.
+

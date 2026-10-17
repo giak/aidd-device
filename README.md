@@ -19,7 +19,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
-- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 102 contrôles qui éprouvent ses
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 112 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/EXPLICATION.md](docs/EXPLICATION.md) — le projet raconté simplement, pour qui n'en
   connaît rien : analogies, schémas, état réel au 2026-10-15, échecs compris.
@@ -34,7 +34,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 Un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, session `opencode`) et s'est conclu
 **`non concluant`** : la session n'a rendu aucun tableau et n'a rien écrit. Le harnais est écrit
-([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 1 460 lignes, six commandes : `freeze`
+([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 1 636 lignes, six commandes : `freeze`
 — qui déclare une seule fois la racine des espaces de travail, dont dérivent les deux copies du cas —,
 `preflight` — la porte qui refuse d'ouvrir une session ailleurs que dans l'espace de travail gelé, et
 vérifie le texte remis —, `collect` — qui ne prend pour produit que ce que la session a écrit dans cet

@@ -2253,3 +2253,44 @@ avec le fil et la date de fin, puis `collect` (deux branches), `last-message.md`
 
 **Fermeture.** Séance close à cet instant. Le dépôt gagne `run.mjs` et son banc, l'ADR-024, la liste de
 contrôle réparée et sept pages remises au vrai ; rien n'est commité, aucun des quatre arbres n'a été touché.
+
+## Séance 33 — 2026-10-17 (la journée poussée : commit `1f7ea2b`, quinze blobs relus sur `origin/main`)
+
+**Objectif.** Consigner la journée du 2026-10-17 dans un commit, pousser, et vérifier sur le distant que ce
+qui est lu là est bien ce qui est écrit ici.
+
+**Fait.** Commit `1f7ea2b168c5c0a5a6e45277746288af4af0256f`, **15 fichiers, 783 insertions, 42 suppressions** :
+`NEGATIVE.md`, l'`ECART.md` du premier run rangé dans son dossier de run, la répétition à blanc, la liste
+réparée (§4.7), l'ADR-024 et la commande `faits` avec son banc, et les pages de suivi — README, ARCHITECTURE,
+DASHBOARD, DECISIONS, EXPLICATION, PFD, BANC, DEVICE. Poussée `6f7f583..1f7ea2b` sur `origin/main`.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le banc passe avant le commit | `bash docs/device/harness/banc-harnais.sh` | `50/50 PASS` — `exit 0` |
+| le harnais est syntaxiquement sain | `node --check docs/device/harness/run.mjs` | `exit 0`, sans sortie |
+| aucun lien mort dans les quinze fichiers | lecture des `](../…)` relatifs des fichiers `-m -o` | **241 liens, 0 mort** |
+| aucun caractère invisible | recherche de `U+00AD`, `U+200B`, `U+FEFF` | aucun |
+| aucun secret dans le diff | motifs `sk-`, `ghp_`, `PRIVATE KEY`, `api_key=` | aucun |
+| la poussée est acceptée | `git push origin main` | `6f7f583..1f7ea2b`, `exit 0` |
+| les têtes concordent | `rev-parse HEAD` · `rev-parse origin/main` · `ls-remote origin main` | trois fois `1f7ea2b168c5c0a5a6e45277746288af4af0256f` |
+| les blobs du distant sont ceux du disque | pour les 15 chemins : `rev-parse origin/main:<chemin>` contre `hash-object` | **15 identiques, 0 divergent** |
+| l'arbre est propre | `git status --porcelain` | **0** avant et après la poussée |
+
+**Dérives signalées, non corrigées.** Deux. (1) Les Séances 31 et 32 se ferment sur « rien n'est commité » :
+c'était vrai à leur instant, et ce paragraphe est la suite datée qui le clôt, sans réécrire leur texte. (2) La
+preuve des blobs lit le `tree` de `origin/main` après `fetch`, pas l'API GitHub : un reflet forcé côté serveur
+ne serait pas vu par ce contrôle.
+
+**Rectifications de ses propres affirmations.** Une, sur le même jour : les pages annonçaient « neuf champs »
+là où `receipt` en exige **quinze** ; le code les remplissait tous. Corrigé dans DECISIONS, EXPLICATION,
+DASHBOARD, le titre de la Séance 32 et la mémoire `85c25441`.
+
+**Prochaines étapes.** `receipt` accepte encore un `faits.json` dont les chemins ne résolvent pas, alors que
+`faits` les refuse : deux commandes qui ne croient pas la même chose.
+
+**Mémoires.** `d97d9a8e` — le commit, la poussée, les quinze blobs, et la correction des « neuf champs ».
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne ce paragraphe ; il part dans le commit qui le porte,
+dont l'empreinte ne peut donc pas figurer ici. Aucun des quatre arbres n'a été touché.

@@ -2531,3 +2531,35 @@ d'export, que le nouveau refus rejette à juste titre. La fixture a été corrig
 vingt-deux contrôles de plus que le banc d'il y a trois jours, et pas une session ouverte.
 
 **Mémoires.** `381402b7` — les quatre reçus identiques d'avant, les deux contrôles, la fixture corrigée.
+
+## Séance 39 — 2026-10-17 (la journée poussée : commit `b2d531e`)
+
+**Objectif.** Consigner et pousser la journée du 2026-10-17, ADR-025 et sa suite comprises, blobs vérifiés sur
+le distant.
+
+**Fait.** Commit `b2d531e99a1badba6e0413b54f862a32e76c5b8f`, **11 fichiers, 831 insertions, 32 suppressions**,
+dont `docs/device/harness/liens.mjs` en création : les ADR-025 à 029, `run.mjs` (1 006 → 1 150 lignes, 86 → 96
+refus), le banc (50 → 67 contrôles), les pages de suivi et les séances 34 à 38. Poussée `938163c..b2d531e`.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le banc passe avant le commit | `bash docs/device/harness/banc-harnais.sh` | **67/67 PASS**, `exit 0` |
+| les liens du dépôt tiennent | `node docs/device/harness/liens.mjs` | 317 hors code, **0 mort**, `exit 0` |
+| les deux scripts sont sains | `node --check` × 2 | `exit 0` |
+| aucun caractère invisible, aucun secret | balayage des fichiers du diff | aucun |
+| la poussée est acceptée | `git push origin main` | `938163c..b2d531e`, `exit 0` |
+| les têtes concordent | `rev-parse HEAD` · `origin/main` · `ls-remote` | trois fois `b2d531e99a1badba6e0413b54f862a32e76c5b8f` |
+| les blobs du distant sont ceux du disque | 11 chemins : `rev-parse origin/main:<chemin>` contre `hash-object` | **11 identiques, 0 divergent** |
+| l'arbre est propre | `git status --porcelain` | **0** |
+
+**Dérives signalées, non corrigées.** Une. La demande nommait « l'ADR-025, les six contrôles et la séance 34 » ;
+le lot poussé va jusqu'à l'ADR-029 et 67 contrôles, parce que les quatre travaux suivants ont été demandés et
+faits avant ce commit. Le message de commit le dit, plutôt que de laisser croire que la demande en couvrait
+moins.
+
+**Fermeture.** Séance close à cet instant. Ce paragraphe part dans le commit qui le porte, dont l'empreinte ne
+peut donc pas figurer ici. Aucun des quatre arbres n'a été touché.
+
+**Mémoires.** `MEMOIRE_A_COMPLETER``558e0a85` — le commit, la poussée, les onze blobs.

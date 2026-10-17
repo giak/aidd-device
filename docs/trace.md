@@ -1982,3 +1982,61 @@ chargement, restaurer `~/.agents/mcp.json.bak-2026-10-16-213955`.
 environnements validés.
 
 **Fermeture.** Suite close à cet instant. Rien d'autre que ce paragraphe et le lanceur corrigé.
+
+## Séance 28 — 2026-10-17 (l'ouverture du second run, vérifiée avant le geste)
+
+**Objectif.** Préparer l'ouverture du second run : vérifier la copie du cas contre la conduite §1.7 — la
+racine de projet, le mode direct, l'absence de worktree, le texte à remettre — puis écrire la liste de
+contrôle du geste.
+
+**Fait.** Une liste de contrôle datée, née à `09:56:43` (`stat -c %w`) :
+[2026-10-17-095643-liste-de-controle-ouverture-second-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-17-095643-liste-de-controle-ouverture-second-run.md),
+cinq sections, l'état mesuré du jour, l'ordre du geste avec la valeur attendue de chaque contrôle, et ce que
+la liste ne prouve pas. Deux pages vivantes réparées : la conduite §1.7 (sa prédiction sur `?? .freebuff/`,
+et son ordre d'avant-ouverture) et le tableau de bord (l'en-tête, la ligne du dispositif, la ligne du §3.1
+qui disait qu'aucun projet Freebuff ne pointait `<W>/terrain`, une ligne de document).
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| la porte autorise la copie | `run.mjs preflight --case <cas> --repertoire $W/terrain --texte $W/texte-a-remettre.txt` | `ouverture autorisée … (HEAD 416ec1f, porcelain 0 ligne(s)) ; gel 0d9a2180 re-haché, 2 fichier(s) et 8 référence(s) ; texte 832036f7 (254 octets) conforme au §5 substitué` — **`exit 0`** |
+| le gel tient hors du harnais | formule du §1.1, `RACINE_FRAMEWORK=$W/framework-origin` | **11/11 `True`**, `empreinte True`, `0d9a2180…` — **`exit 0`** |
+| le texte n'a pas bougé | `sha256sum`, `wc -c` | `832036f7…`, **254** octets, mtime 2026-10-15 22:15 |
+| le texte que l'opérateur lira est le même | bloc `text` de `$W/mode-d-emploi.md`, comparé octet à octet | 254 octets, `832036f7…`, identique |
+| les quatre arbres | `rev-parse --short HEAD`, `status --porcelain` | `fe48de12`/2, `416ec1f`/1, `4c39e5c5`/0, `416ec1f`/**0** |
+| le projet pointe la copie | `select root_path, default_branch from projects` | `<W>/terrain` ; `origin/test/aidd-installation` (relevé du client) |
+| aucun fil, aucun worktree | `select count(*) from threads`, `git worktree list` | **0** fil, **0** message ; une seule entrée, `416ec1f (detached HEAD)` |
+| le marqueur du client est entré sans ligne git | `cat .freebuff/project-id`, `status --porcelain`, `check-ignore -v` | `38d8d3f1-…`, **0** ligne, `.git/info/exclude:7:.freebuff/` |
+| l'`exclude` de la copie n'est pas celui de l'original | `diff`, `cat -n` | 7 lignes contre 48 (les exclusions Kilo manquent), mtime **2026-10-15 21:44** |
+
+**Rectifications de ses propres affirmations.** Trois, toutes trouvées par cette vérification. (1) Le §1.7
+annonçait « une session ouverte sur `$W/terrain` y laissera donc une ligne, `?? .freebuff/` » : la prédiction
+est fausse, la copie ignore `.freebuff/` par son `.git/info/exclude`, et le marqueur écrit le 2026-10-17
+laisse la paire à **0 → 0** ; le §1.7 est rectifié sur place, avec la note datée en tête de la conduite.
+(2) Le tableau de bord affirmait encore que **le second run n'attendait que la sonde du client**, faite la
+veille : la ligne est remise au vrai. (3) Le même tableau de bord écrivait qu'**aucun projet Freebuff ne
+pointe l'espace de travail gelé** : c'était vrai au 2026-10-16, faux depuis le 2026-10-17 09:50:56, et la
+ligne porte désormais le projet, son marqueur et le compte de fils.
+
+**Dérives signalées, non corrigées.** Quatre. (1) L'ouverture a **commencé hors du dépôt et n'était
+consignée nulle part** : le client a créé le projet `terrain-38d8d3f1` à 09:50:56 et `$W/mode-d-emploi.md` a
+été écrit à 09:52:23, sans séance ni mémoire ; cette séance les nomme, elle n'en attribue pas l'auteur.
+(2) Le `.git/info/exclude` de la copie du cas a été **remplacé** le 2026-10-15 21:44 par une version de sept
+lignes qui ignore `.freebuff/` et perd les exclusions Kilo de l'original : aucun document ne dit qui l'a fait
+ni pourquoi, le gel ne le voit pas (ni `HEAD` ni `porcelain` ne changent), et la liste de contrôle le nomme
+sans l'expliquer. (3) `$W/mode-d-emploi.md` vit **hors du dépôt** : il n'est pas commité, donc il ne survit
+pas à la mémoire ; ce qui doit durer est dans la liste de contrôle, et le texte qu'il porte est le cas
+lui-même. (4) Le `default_branch` relevé par le client (`origin/test/aidd-installation`) n'a été comparé à
+aucun remote : `UNKNOWN`, et aucune décision du run n'en dépend.
+
+**Prochaines étapes.** Un fil neuf, vide, en mode direct, dans le projet `terrain-38d8d3f1` ; la ligne du fil
+lue avant de coller (`execution_mode` `local`, `branch` et `worktree_path` vides) ; le texte du §5 collé mot
+pour mot, budget de trois messages ; l'export de la trace avant tout autre geste ; puis `collect`, `receipt`,
+`compare`. Le détail et les valeurs attendues sont dans la liste de contrôle du 2026-10-17.
+
+**Mémoires.** `cb481add` — la vérification de la copie, la dérive du `info/exclude`, les deux pages réparées
+et ce qui reste à faire au geste.
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne la liste de contrôle, la conduite et le tableau de
+bord réparés, et ce paragraphe ; aucun fil n'est ouvert, aucune copie du cas touchée, rien de commité.

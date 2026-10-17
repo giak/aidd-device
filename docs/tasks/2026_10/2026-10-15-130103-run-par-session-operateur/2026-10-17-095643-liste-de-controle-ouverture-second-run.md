@@ -118,7 +118,125 @@ l'inverse.
 **4.7 Puis `collect`, `receipt`, `compare`.** L'ordre et les champs sont ceux de la
 [conduite](2026-10-15-154303-run.md) §3 ; cette liste ne les recopie pas, mais elle nomme les cinq gestes
 que la conduite dit et qu'un opérateur saute quand il suit la liste seule — chacun éprouvé le 2026-10-17
-([répétition à blanc](2026-10-17-100609-repetition-a-blanc-de-l-ouverture.md)) :
+([répétition à blanc](2026-10-17-100609-repetition-a-blanc-de-l-ouverture.md)).
+
+**Une commande les enchaîne, à partir du seul identifiant du fil** — elle est ici, et nulle part ailleurs ;
+le kit d'ouverture (`…/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/kit-ouverture.md`)
+§5 y renvoie sans la recopier. Elle cherche la base du client qui **contient** ce fil (un identifiant ne dit pas de quel
+projet il vient), lit la racine de l'espace de travail et la révision sous test **dans le gel** — jamais
+retapées —, nomme le dossier du run, mesure la fin, exporte la trace (avant tout autre geste, §4.5), puis
+appelle `faits`, `collect`, `receipt`, `compare`. Elle n'écrit **rien** si l'un des cinq faits humains
+manque, et s'arrête au premier refus du harnais en laissant les pièces déjà écrites : une pièce sans reçu
+est un brouillon de preuve, jamais un reçu. Le dossier des runs est `docs/device/runs/` (`RUNS_DIR` le
+déplace) ; `collect` prend la branche produit si `terrain/aidd_docs` existe, `--sans-produit` sinon.
+
+```bash
+FIL='<fil>' PAR='<qui a ouvert et cloture>' TEMOIGNAGE='<vos mots>' \
+DIFFERENCE='<ce qui differe de l attendu>' PHRASE='<la phrase du jugement>' \
+VERDICT='non concluant' bash <<'CHAINE'
+set -uo pipefail
+
+# The thread id arrives through the environment: a heredoc-fed script has no $1.
+FIL="${FIL:-}"
+case "$FIL" in
+  ""|*[!A-Za-z0-9_-]*)
+    echo "USAGE — FIL : l'identifiant du fil, lettres, chiffres, tirets et soulignés seulement" >&2
+    exit 2 ;;
+esac
+
+REPO=/home/giak/projects/aidd-device
+OUTILS=$REPO/docs/device/harness/run.mjs
+CAS=2026-10-15-133423-promesse-memoire-avant-ecriture
+GEL=$REPO/docs/device/CASES/$CAS.freeze.json
+RUNS=${RUNS_DIR:-$REPO/docs/device/runs}
+
+# The five facts only a person gives. Checked before the first byte is written: a run directory
+# without a receipt is a draft of evidence, and ADR-024 forbids inventing any of them.
+for outil in git node sqlite3 date; do
+  command -v "$outil" >/dev/null || { echo "REFUS — « $outil » introuvable ; la chaîne en a besoin pour dériver les faits" >&2; exit 1; }
+done
+PAR="${PAR:-}" ; TEMOIGNAGE="${TEMOIGNAGE:-}" ; ATTENDU_VU="${ATTENDU_VU:-non}"
+DIFFERENCE="${DIFFERENCE:-}" ; PHRASE="${PHRASE:-}" ; VERDICT="${VERDICT:-}" ; LIMITES="${LIMITES:-}"
+MANQUE=0
+[ -n "$PAR" ]        || { echo "REFUS — PAR vide : le reçu nomme qui a ouvert et clôturé, cela ne se devine pas (ADR-024)" >&2; MANQUE=1; }
+[ -n "$TEMOIGNAGE" ] || { echo "REFUS — TEMOIGNAGE vide : ce que l'opérateur atteste n'appartient à aucune machine (ADR-024)" >&2; MANQUE=1; }
+[ -n "$DIFFERENCE" ] || { echo "REFUS — DIFFERENCE vide : l'écart entre l'attendu et le produit se pèse, il ne s'extrait pas du reçu (spec §8)" >&2; MANQUE=1; }
+[ -n "$PHRASE" ]     || { echo "REFUS — PHRASE vide : la phrase du jugement est celle du juge (spec §8)" >&2; MANQUE=1; }
+# A value still wearing its grit « <…> » is the template, not the testimony: a paste left half-filled
+# would otherwise write a run directory naming « <qui a ouvert et cloture> ».
+for couple in "PAR=$PAR" "TEMOIGNAGE=$TEMOIGNAGE" "DIFFERENCE=$DIFFERENCE" "PHRASE=$PHRASE"; do
+  case "${couple#*=}" in "<"*">") echo "REFUS — ${couple%%=*} porte encore son gabarit « ${couple#*=} » : un gabarit n'est pas un témoignage (ADR-024)" >&2; MANQUE=1 ;; esac
+done
+case "$VERDICT" in conforme|ecart|"non concluant") ;; *) echo "REFUS — VERDICT vaut « $VERDICT », attendu conforme | ecart | non concluant" >&2; MANQUE=1 ;; esac
+case "$ATTENDU_VU" in oui|non) ;; *) echo "REFUS — ATTENDU_VU vaut « $ATTENDU_VU », attendu oui | non" >&2; MANQUE=1 ;; esac
+case "$LIMITES" in ""|mord|"ne mord pas"|"non évaluable") ;; *) echo "REFUS — LIMITES vaut « $LIMITES », attendu mord | ne mord pas | non évaluable" >&2; MANQUE=1 ;; esac
+[ "$MANQUE" = 0 ] || { echo "REFUS — rien n'a été écrit : ces cinq faits précèdent le premier geste." >&2; exit 1; }
+
+# 1. The client's base, found through the thread: an identifier does not say which project it comes from.
+BASES=()
+for db in "$HOME"/.config/freebuff-desktop/projects/*/desktop-v2.db; do
+  [ -f "$db" ] || continue
+  [ "$(sqlite3 -readonly "$db" "select count(*) from threads where id='$FIL';" 2>/dev/null)" = 1 ] && BASES+=("$db")
+done
+[ "${#BASES[@]}" -eq 1 ] || { echo "REFUS — le fil « $FIL » se lit dans ${#BASES[@]} base(s) du client, une seule attendue ; rien n'a été écrit" >&2; exit 1; }
+BASE="${BASES[0]}"
+
+# 2. The freeze: working-space root and revision under test are read, never retyped.
+GEL_LU=$(node -e '
+  const g = require(process.argv[1]);
+  const t = (g.arbres || []).find((a) => a.label === "revision-sous-test");
+  if (!t || !g.racine_espace_de_travail || !g.cas) { console.error("gel incomplet"); process.exit(1); }
+  console.log([g.racine_espace_de_travail, g.cas, t.head].join("\t"));
+' "$GEL") || { echo "REFUS — $GEL illisible ou incomplet ; rien n'a été écrit" >&2; exit 1; }
+IFS=$'\t' read -r RACINE CAS_G FW <<<"$GEL_LU"
+[ "$CAS_G" = "$CAS" ] || { echo "REFUS — le gel nomme le cas « $CAS_G », la chaîne « $CAS » ; rien n'a été écrit" >&2; exit 1; }
+W="$RACINE/$CAS" ; TRAVAIL="$W/terrain"
+[ -d "$TRAVAIL" ] || { echo "REFUS — $TRAVAIL n'est pas un répertoire ; le run n'aurait où écrire" >&2; exit 1; }
+
+# 3. The run directory, named to the second, gel revision then device revision (spec §4, ADR-023).
+DEV=$(git -C "$REPO" rev-parse --short HEAD) || { echo "REFUS — $REPO : révision illisible ; rien n'a été écrit" >&2; exit 1; }
+mkdir -p "$RUNS" || exit 1
+RUN=$RUNS/$(date +%Y-%m-%d-%H%M%S)-$FW-$DEV
+mkdir "$RUN" || { echo "REFUS — $RUN existe déjà ; un dossier de run ne se réutilise pas" >&2; exit 1; }
+mkdir "$RUN/trace"
+PORCELAIN=$(git -C "$REPO" status --porcelain)
+[ -z "$PORCELAIN" ] || echo "note — $DEV ne nomme pas les $(printf '%s\n' "$PORCELAIN" | wc -l) fichier(s) modifiés du dispositif : le dire au reçu (§1.3)"
+
+# 4. The trace first, its end measured before it: the only piece the operator does not write (§1.5, §4.5).
+FIN=$(date -Is)
+SQL="select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'\$.kind'),
+          'open', json_extract(value,'\$.open'), 'text', json_extract(value,'\$.text'), 'ts', m.ts)
+     from messages m, json_each(m.parts_json)
+    where m.thread_id='$FIL' order by m.seq, json_each.key;"
+sqlite3 -readonly "$BASE" "$SQL" > "$RUN/trace/echange.jsonl" || { echo "REFUS — l'export de la trace a échoué ; le reçu n'aurait rien à compter" >&2; exit 1; }
+echo "trace — $(grep -c '' "$RUN/trace/echange.jsonl") ligne(s) lues dans $BASE"
+
+# 5. The facts, derived; then the product, collected or its absence named (§4, §9).
+node "$OUTILS" faits --case "$CAS" --base "$BASE" --fil "$FIL" \
+  --trace "$RUN/trace/echange.jsonl" --out "$RUN/faits.json" \
+  --par "$PAR" --fin "$FIN" --temoignage "$TEMOIGNAGE" --attendu-vu "$ATTENDU_VU" || exit 1
+if [ -d "$TRAVAIL/aidd_docs" ]; then
+  node "$OUTILS" collect --run "$RUN" --case "$CAS" --from "$TRAVAIL/aidd_docs" || exit 1
+else
+  node "$OUTILS" collect --run "$RUN" --case "$CAS" --sans-produit || exit 1
+  echo "note — aucun aidd_docs sous $TRAVAIL : run sans produit (§9), ce qui suffit à « non concluant »"
+fi
+
+# 6. The hot receipt, then the judge on the receipt alone (§6, §8).
+node "$OUTILS" receipt --run "$RUN" --case "$CAS" --faits "$RUN/faits.json" --verdict "$VERDICT" || exit 1
+node "$OUTILS" compare --run "$RUN" --case "$CAS" --difference "$DIFFERENCE" --phrase "$PHRASE" \
+  --verdict "$VERDICT" ${LIMITES:+--limites "$LIMITES"} || exit 1
+
+printf 'chaîne ok — %s\n  reçu   %s\n  sortie %s\n' "$RUN" "$RUN/receipt.json" "$RUN/output.json"
+CHAINE
+```
+
+Ce que cette commande **ne** fait pas : `last-message.md` (geste 3 ci-dessous, à la main, verbatim), et la
+clôture des quatre arbres. Elle ne lance pas non plus `preflight` : cette porte se franchit **avant** la
+session, et un `terrain` déjà écrit la ferait refuser.
+
+Ce que chaque pièce prouve, et que la chaîne ne dispense pas de lire :
+
 
 1. **`faits.json`, écrit à chaud, par le harnais** ([ADR-024](../../../DECISIONS.md)) :
 
@@ -150,6 +268,9 @@ deux lignes de l'origine inchangées.
 
 - **Rien du candidat** : aucun fil n'est ouvert, aucune promesse n'est testée. Un projet créé n'est pas une
   session.
+- **La chaîne du §4.7 sur un vrai fil de `terrain`** : elle est éprouvée jusqu'au refus de `faits`, sur un
+  fil d'un autre projet, et refuse proprement un fil inconnu sans rien écrire ; elle n'a jamais atteint
+  `receipt` ni `compare`, faute d'un fil ouvert dans la copie du cas.
 - **Le mode direct avant l'ouverture** : il se lit dans la ligne du fil, donc **après** l'ouverture (§4.2).
   Le client ne l'expose pas avant.
 - **Le `default_branch` relevé par le client** (`origin/test/aidd-installation`) : aucune commande de cette

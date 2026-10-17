@@ -2612,3 +2612,54 @@ revenir ici.
 
 **Mémoires.** `abed7a80` — le kit, ses contrôles, les trois dérives corrigées, et la leçon du saut de ligne `sqlite3`.
 
+## Séance 41 — 2026-10-17 (la clôture en une commande : du fil au jugement)
+
+**Objectif.** La clôture demandait encore cinq appels recopiés de la conduite §3, plus le nom du dossier du
+run et l'export mesuré à la main : un opérateur qui suit la liste seule en saute la moitié. Une commande,
+partant du seul identifiant de fil, les enchaîne.
+
+**Fait.** Liste de contrôle §4.7 : un bloc `FIL=<fil> … bash <<'CHAINE'` — le script voyage dans le heredoc,
+aucun fichier à créer. Il cherche la base du client qui **contient** le fil (un identifiant ne dit pas de
+quel projet il vient), lit `racine_espace_de_travail` et la révision `revision-sous-test` **dans le gel**,
+nomme le dossier `runs/<horodatage>-<gel>-<dispositif>`, mesure la fin, exporte la trace (§4.5 : avant tout
+autre geste), puis appelle `faits`, `collect` (produit si `terrain/aidd_docs` existe, `--sans-produit`
+sinon), `receipt`, `compare`. Cinq faits humains — `PAR`, `TEMOIGNAGE`, `DIFFERENCE`, `PHRASE`, `VERDICT` —
+sont vérifiés **avant** le premier octet : refusés ensemble, rien n'est écrit. Le kit §5 ne recopie plus les
+cinq gestes : il renvoie au bloc, et nomme ce que la chaîne ne fait pas (`last-message.md`, clôture des
+quatre arbres, `preflight` qui se franchit avant la session).
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le bloc du document se lit comme du shell | `bash -n` sur le bloc extrait par script | `exit 0` |
+| le bloc du document est le script éprouvé | `diff` bloc interne / fichier essayé | **identique octet à octet**, 89 lignes |
+| cinq faits manquants n'écrivent rien | bloc collé, sans variables | 5 `REFUS`, **`exit 1`**, aucun dossier |
+| un fil inconnu n'écrit rien | bloc collé, `FIL=zzznothread` | `REFUS — le fil … se lit dans 0 base(s)`, **`exit 1`**, `/tmp/runs-p` absent |
+| l'export tourne et rend des lignes | bloc collé, fil réel d'un autre projet | `trace — 2003 ligne(s)`, `echange.jsonl` écrit |
+| la porte de `faits` tient | même essai | `REFUS — faits : le fil ouvre …/aidd-device, le gel nomme « travail » …/terrain`, **`exit 1`** |
+| la branche sans produit existe | `collect --sans-produit` dans `/tmp` | `collect ok — run sans produit (§9), 0 fichier`, **`exit 0`** |
+| les drapeaux de `receipt` et `compare` existent | appels sans reçu, sans faits | refus nommés, **`exit 1`** |
+| les liens tiennent | `node docs/device/harness/liens.mjs` | 319 liens, **0 mort**, `exit 0` ; 8 clôtures de bloc dans le document, paire |
+
+**Dérives signalées.** Le kit §5 portait les cinq gestes commande par commande : avec le bloc, il en serait
+devenu la copie. Il renvoie désormais au §4.7, et le §4.7 dit qu'il est le seul foyer. Aucune dérive de
+mesure cette fois — les essais ont tourné sur des copies sous `/tmp`, jamais dans `docs/device/runs/`.
+
+**Rectifications de mes propres gestes.** La première extraction du bloc, par `awk`, a rendu **0 ligne** et
+un `bash -n` vert sur un fichier vide : un `exit 0` qui ne prouvait rien. Refaite en `python3`, le bloc
+extrait est identique octet à octet au script essayé — c'est cette mesure-là qui compte. Second trou, trouvé
+au contrôle final : un collage laissé avec ses gabarits `« <…> »` passait le contrôle de vacuité, et aurait
+écrit un dossier de run nommant `« <qui a ouvert et cloture> »`. Le bloc refuse désormais une valeur qui garde
+son gabarit (`REFUS — PAR porte encore son gabarit …`, 4 refus, **`exit 1`**, rien d'écrit) ; `FIL` s'écrit
+`'<fil>'`, donc un bloc collé tel quel s'arrête au `USAGE`, jamais dans un dossier.
+
+**OPEN.** La chaîne n'a jamais atteint `receipt` ni `compare` : aucun fil n'existe dans le projet `terrain`
+(`threads` = 0). Éprouvée jusqu'au refus de `faits`, elle ne l'est pas jusqu'au reçu ; c'est écrit au §5 de
+la liste.
+
+**Prochaines étapes.** Ouvrir le fil neuf dans `terrain`, mode direct, coller le texte du kit §1, puis lancer
+le bloc du §4.7 avec les cinq faits.
+
+**Mémoires.** `5f473202` (2026-10-17 11:40:12) — la commande, son ordre, ses cinq portes mesurées, et
+la limite « jamais jusqu'au reçu ».

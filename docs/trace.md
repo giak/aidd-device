@@ -2305,3 +2305,229 @@ la mesure annoncée, jamais plus sévère.
 
 **Fermeture.** Cette suite part dans le commit qui la porte (`e1c292d` porte le paragraphe précédent).
 Aucun des quatre arbres n'a été touché.
+
+## Séance 34 — 2026-10-17 (`receipt` situe les chemins de `faits.json`)
+
+**Objectif.** Faire que `receipt` refuse un `faits.json` dont les chemins ne se situent pas, en reprenant les
+contrôles de `faits` — la faille que la Séance 32 avait laissée ouverte et nommée.
+
+**Fait.** [ADR-025](DECISIONS.md), écrite avant le code, puis `run.mjs` : trois refus de plus — `travail`
+absent, `travail` qui n'est pas un répertoire, dossier de `trace.chemin_exporte` absent — et la comparaison
+de l'arbre du run **après résolution des liens** (`racineDeclaree` par `resolu`), l'arbre « travail » du gel
+étant retrouvé de la même façon dans le relevé d'après. Le banc passe de **50 à 56 contrôles** (51 à 56) ; les
+pages qui comptent et décrivent sont remises au vrai : BANC, DEVICE, DASHBOARD, EXPLICATION, ARCHITECTURE
+(deux lignes et la ligne `receipt` du tableau des commandes), le falsificateur de l'ADR-024 — clos, daté — et
+le §4.5 de la liste de contrôle.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| avant : une trace sous un dossier absent est acceptée | `receipt` sur un `faits.json` variante, banc `/tmp/mesure-receipt.X9UBZr` | `receipt ok`, **`exit 0`**, 3 limites dont « trace machine introuvable » |
+| avant : un travail absent est refusé pour un mauvais motif | même banc | `exit 1`, mais « n'est pas celui que le gel nomme « travail » » |
+| avant : un travail par lien symbolique est refusé | même banc | `exit 1` — alors que `faits` écrit le même fichier en `exit 0` |
+| après : travail absent refusé | contrôle 51 | `exit 1` |
+| après : ce refus nomme la résolution | contrôle 52 | le message contient « ne résout pas » — `exit 0` |
+| après : dossier de trace absent refusé | contrôle 53 | `exit 1` |
+| après : ce refus nomme le dossier de la trace | contrôle 54 | le message contient « dossier du chemin exporté » — `exit 0` |
+| après : travail par lien accepté | contrôle 55 | `exit 0` |
+| après : trace absente sous un dossier présent reste une limite (§7) | contrôle 56 | `exit 0`, reçu portant « trace machine introuvable » |
+| le banc entier | `bash docs/device/harness/banc-harnais.sh` | **56/56 PASS**, `exit 0` |
+| les contrôles neufs distinguent l'ancien du nouveau | ancien `run.mjs` (`git show HEAD:…`) | 52 échoue, 53 échoue, 55 échoue ; 51 passe déjà (autre motif) ; 56 inchangé |
+| le harnais reste syntaxiquement sain | `node --check docs/device/harness/run.mjs` | `exit 0` |
+| aucun lien mort, aucune ancre morte | 139 liens hors code des neuf fichiers ; slugs des `##` de DECISIONS | 0 mort, 0 ancre manquante |
+| les pages qui comptent sont au vrai | `grep -c "refuse(" ; wc -l` | refus **86 → 89**, lignes **1 006 → 1 035**, banc **50 → 56** |
+
+**Dérives signalées, non corrigées.** Trois. (1) Le contrôle 51, seul, ne distingue pas l'ancien harnais du
+nouveau : il passait déjà, pour un autre motif ; c'est le 52, qui lit le message, qui l'éprouve. (2) Une
+différence subsiste avec `faits`, **voulue** et dite à l'ADR-025 : `faits` refuse d'écrire un `faits.json`
+dont la trace est absente, `receipt` accepte le même fichier quand le dossier existe et le note comme limite —
+le §7 demande que le reçu enregistre un export manqué, non qu'il fasse disparaître le run. (3) `receipt` ne
+vérifie toujours pas `session.identifiant` : aucune pièce du run ne nomme le fil, il reste donc recopié.
+
+**Rectifications de ses propres affirmations.** Une, de méthode. Le premier essai de falsification a échoué de
+ma main : la copie de l'ancien harnais, posée sous `/tmp`, déduit sa racine de dépôt de sa propre position et
+n'a trouvé ni gel ni cas — quatre contrôles rendus `exit 1` pour la mauvaise raison. Rejoué avec la copie à
+`docs/device/harness/.banc-ancien.mjs`, retirée dans le même appel, `porcelain` revérifié.
+
+**Prochaines étapes.** Rien n'est commité : neuf fichiers modifiés. Le second run reste le juge de tout ceci :
+ces six contrôles éprouvent l'instrument, pas une session.
+
+**Mémoires.** `cd738350` — les quatre mesures, les six contrôles, la falsification, et les trois dérives.
+
+## Séance 35 — 2026-10-17 (le harnais déclare ses prérequis, et les sonde avant la commande)
+
+**Objectif.** Faire vérifier et déclarer par le harnais ses prérequis (`sqlite3`, `date -d`), avec un refus
+explicite au démarrage.
+
+**Fait.** [ADR-026](DECISIONS.md), écrite avant le code, puis `run.mjs` : quatre prérequis sondés par l'appel
+réel — `git --version` et `date --iso-8601=seconds` pour toutes les commandes, `date -d @0` et
+`sqlite3 -version` pour `faits` seule — vérifiés après l'analyse des arguments et avant la commande, avec un
+refus qui nomme l'outil, la commande, l'usage et le remède ; un bloc « prérequis » au `--help`. Le banc gagne
+les contrôles 57 à 60 et passe à **60**. Pages remises au vrai : BANC (§2 et §4), DEVICE, DASHBOARD,
+EXPLICATION, ARCHITECTURE.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| avant : `sqlite3` absent | `faits` avec un `PATH` amputé, banc `/tmp/prerequis.dePd9W` | `REFUS — faits : sqlite3 introuvable…`, mais après les contrôles de `--out` — `exit 1` |
+| avant : `date` absent | `collect --sans-produit` | **trace Node** (`spawnSync` ENOENT), pas un refus — `exit 1` |
+| avant : `date` non GNU | `collect --sans-produit`, faux `date` | `date: illegal option -- -` puis **trace Node** — `exit 1` |
+| avant : `git` absent | `preflight` | refus **accusant le dossier** (« ouverture refusée dans … — le gel ouvre la session ailleurs ») — `exit 1` |
+| après : `sqlite3` absent | contrôle 57 | refus « « sqlite3 » est introuvable », `exit 1` — assertion tenue |
+| après : `date` qui n'obéit pas | contrôle 58 | refus « GNU coreutils requis », `exit 1` — assertion tenue |
+| après : `git` absent | contrôle 59 | refus « « git » est introuvable », `exit 1` — assertion tenue |
+| après : le `--help` déclare | contrôle 60 | `sqlite3 -version` présent dans la sortie, `exit 0` |
+| le banc entier | `bash docs/device/harness/banc-harnais.sh` | **60/60 PASS**, `exit 0` |
+| les quatre contrôles neufs distinguent l'ancien du nouveau | ancien `run.mjs` (`git show HEAD:…`) | les quatre assertions **échouent** : message autre, trace Node, refus qui accuse le dossier, `--help` muet |
+| le harnais reste sain | `node --check` | `exit 0` |
+| aucun lien mort, aucune ancre morte | 215 liens hors code ; slugs des `##` de DECISIONS | 0 mort, 0 ancre manquante |
+| les pages qui comptent sont au vrai | `wc -l`, `grep -c "refuse("` | lignes **1 035 → 1 082**, refus **89 → 90**, banc **56 → 60** |
+
+**Dérives signalées, non corrigées.** Trois. (1) Le contrôle 57 distingue l'ancien harnais par le **libellé**
+du refus, pas par son existence : l'ancien nommait déjà `sqlite3`, tard et sans guillemets — le gain réel est
+le moment, avant tout contrôle de chemin, et la déclaration. (2) Le banc ne sonde pas sa propre machine : si
+`git`, `date` ou `sqlite3` manquaient, les liens du banc échoueraient et les contrôles 57 à 60 rendraient
+`FAIL` au lieu d'un arrêt `exit 2` ; le §2 de BANC le dit. (3) Les sondes coûtent deux à quatre processus par
+invocation, devant les `git` déjà lancés.
+
+**Rectifications de ses propres affirmations.** Deux. (1) Un lien mort que j'avais écrit dans BANC,
+`../../DECISIONS.md` depuis `docs/device/` : corrigé en `../DECISIONS.md`, contrôle de liens rejoué, 0 mort.
+(2) Le même fichier portait, depuis la séance précédente, un paragraphe collé à la citation d'en-tête
+(« …l'ont écrit.**En une phrase.** ») : séparé, sans changer un mot.
+
+**Prochaines étapes.** Rien n'est commité : dix fichiers modifiés. Le second run reste le juge : ces quatre
+contrôles éprouvent l'instrument, pas une session.
+
+**Mémoires.** `231ab99e` — les quatre pannes d'avant, les quatre refus d'après, la contre-épreuve.
+
+## Séance 36 — 2026-10-17 (un contrôle de liens qui lit la prose, et imprime les deux comptes)
+
+**Objectif.** Écrire dans le dépôt un contrôle de liens qui écarte les segments de code et compare les deux
+comptes, pour que la mesure annoncée soit celle que la méthode rend.
+
+**Fait.** [ADR-027](DECISIONS.md), écrite avant le code, puis `docs/device/harness/liens.mjs` : sans
+dépendance, il lit tous les `.md` sous la racine hors dossiers cachés, écarte les blocs clôturés (` ``` `,
+`~~~`) et les segments entre backticks, résout chaque cible relative depuis le fichier qui la porte, ignore
+les schémas extérieurs et les ancres seules, accepte `--racine` et `--json`, et imprime **le compte strict,
+puis le naïf**, avec le nombre de motifs écartés. Il sort en `1` sur un lien mort en prose, `0` sinon, `2` sur
+usage. Le banc gagne les contrôles 61 à 63 et passe à **63**. Pages remises au vrai : BANC (en-tête, §1, §4),
+DEVICE, DASHBOARD, EXPLICATION, ARCHITECTURE.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| avant : le compte naïf fabrique des morts | balayage ad hoc, dépôt entier | **316** liens, **2** morts — deux citations `](../…)` entre backticks du journal ; strict **312**, **0** mort, écart **4** |
+| sur le dépôt | `node docs/device/harness/liens.mjs` | `28 fichier(s) : 315 lien(s) hors code, 0 mort(s) ; 11 motif(s)` écartés — **326** au compte naïf — `exit 0` |
+| un lien mort en prose est refusé et nommé | fixture `prose.md` → `absent.md` | `1 mort(s)`, `MORT …/prose.md -> absent.md`, `exit 1` |
+| une citation entre backticks est écartée | fixture `` `[faux](absent.md)` `` | `0 lien(s) hors code`, `1 motif(s)` écarté, `exit 0` |
+| un bloc clôturé est écarté | fixture ```text … ``` | `0 lien(s)`, `1 motif(s)` écarté, `exit 0` |
+| ancres seules et schémas extérieurs ignorés | fixture `#section`, `https://`, `mailto:` | `0 lien(s)`, `0 mort(s)`, `exit 0` |
+| le résultat machine est le même | `--json` | `fichiers`, `liens`, `morts`, `ecartes`, `naif`, `limites` |
+| le banc éprouve les trois cas | contrôles 61 à 63 | **63/63 PASS**, `exit 0` |
+| le script est syntaxiquement sain | `node --check docs/device/harness/liens.mjs` | `exit 0` |
+
+**Dérives signalées, non corrigées.** Quatre. (1) Les ancres (`#…`) ne sont pas vérifiées et un bloc de code
+**indenté** n'est pas écarté : c'est écrit dans l'aide du script, dans l'ADR et dans sa sortie. (2) Le compte
+naïf inclut les exemples de code légitimes : il sert de borne, pas de mesure. (3) L'ADR-027 a déplacé le compte
+naïf de 316 à 320 en s'écrivant elle-même — première démonstration de la dérive qu'elle mesure ; la ligne est
+dans l'ADR, datée. (4) Le banc compte désormais trois contrôles pour un instrument qui n'est pas le harnais du
+run ; l'en-tête de BANC et du script le disent.
+
+**Rectifications de ses propres affirmations.** Une. La mesure de l'ADR a d'abord été écrite « 316 / 4 » sans
+dire ce que le fichier de l'ADR ajoutait ; la ligne « 320 et 8 après l'écriture » l'a réparée le même jour.
+
+**Prochaines étapes.** Rien n'est commité : onze fichiers modifiés, dont un nouveau. Le contrôle mesure le
+dépôt, pas le run.
+
+**Mémoires.** `eb53855d` — la mesure des deux comptes, les quatre fixtures, le banc à 63.
+
+## Séance 37 — 2026-10-17 (`receipt` rattache `session.identifiant` à la trace)
+
+**Objectif.** Faire vérifier par `receipt` que `session.identifiant` correspond à une pièce du run, au lieu
+de le recopier tel quel.
+
+**Fait.** [ADR-028](DECISIONS.md), écrite avant le code. La pièce qui nomme le fil était là depuis le début :
+la commande d'export, que `faits` construit avec l'identifiant du run (`… where m.thread_id='<fil>' …`), et
+que la séance 34 avait déclarée « aucune pièce ne nomme le fil ». `receipt` en extrait les `thread_id='…'` et
+refuse : aucune mention, plusieurs fils, un fil différent de `session.identifiant`, et une commande sans
+`from messages`. Le banc gagne les contrôles 64 et 65, ses fixtures `faits-bon.json` et `faits-mauvais.json`
+portent désormais une commande qui nomme `banc`, et le banc passe à **65**. Pages remises au vrai : BANC,
+DEVICE, DASHBOARD, EXPLICATION, ARCHITECTURE (dont la ligne `receipt` du tableau des commandes).
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| avant : un identifiant qui n'est pas celui de la commande | banc `/tmp/mesure-ident.s5IH3U`, `identifiant=fil-a`, `thread_id='fil-b'` | **accepté**, `exit 0` |
+| avant : une commande qui ne nomme aucun fil | même banc, commande `"banc"` | **accepté**, `exit 0` |
+| avant : identifiant et commande d'accord | même banc | accepté, `exit 0` |
+| après : un autre fil est refusé et nommé | contrôle 64 | refus « session.identifiant vaut « fil-a », la trace exportée lit le fil « banc » », `exit 1` |
+| après : une commande sans fil est refusée | contrôle 65 | refus « ne nomme aucun fil », `exit 1` |
+| le banc entier | `bash docs/device/harness/banc-harnais.sh` | **65/65 PASS**, `exit 0` |
+| les deux contrôles neufs distinguent l'ancien du nouveau | ancien `run.mjs` (`git show HEAD:…`) | les deux acceptent encore (`exit 0`) : les contrôles échouent contre lui |
+| le harnais reste sain | `node --check` | `exit 0` |
+| les liens du dépôt | `node docs/device/harness/liens.mjs` | 316 hors code, **0 mort**, 327 au compte naïf, `exit 0` |
+| les pages qui comptent sont au vrai | `wc -l`, `grep -c "refuse("` | lignes **1 082 → 1 102**, refus **90 → 94**, banc **63 → 65** |
+
+**Dérives signalées, non corrigées.** Deux. (1) Un `faits.json` édité **sur les deux champs** (identifiant et
+commande) passe encore : c'est un contrôle de cohérence dans la pièce, pas un second témoin, et l'ADR le dit.
+(2) La forme de la commande n'est vérifiée qu'en surface — la présence de `from messages` et d'un
+`thread_id='…'` ; une requête qui exporterait autre chose que les messages du fil, tout en nommant ce fil,
+passerait.
+
+**Rectifications de ses propres affirmations.** Une, qui vient d'une séance précédente : la séance 34 écrivait
+« aucune pièce du run ne nomme le fil », et c'était faux — `trace.commande` le nomme, et c'est précisément ce
+qui a permis de rattacher l'identifiant sans lire la base du client.
+
+**Prochaines étapes.** Rien n'est commité : onze fichiers modifiés, un nouveau. Le second run reste le juge.
+
+**Mémoires.** `a7280791` — les trois mesures d'avant, les deux contrôles, la falsification.
+
+## Séance 38 — 2026-10-17 (`receipt` lit l'export, et la condition 2 cesse d'être une limite)
+
+**Objectif.** Faire lire par `receipt` la trace exportée au lieu de la constater : au moins un échange dans la
+fenêtre du run, pour que la condition 2 du §5 cesse d'être une limite.
+
+**Fait.** [ADR-029](DECISIONS.md), écrite avant le code. `receipt` lit l'export ligne à ligne (JSONL du §1.5,
+`ts` en epoch ms), compte les lignes, les illisibles, celles sans horodatage numérique et les échanges tombant
+entre `horodatage_debut` et `horodatage_fin`, écrit ce compte sous `trace_lue`, remplace le falsificateur en
+dur `trace_non_lue_par_le_harnais` par `trace_sans_echange_dans_la_fenetre`, et remplace la limite « ne lit
+aucune des trois sources » par ce que le fichier a de travers. Un dossier nommé comme la trace est refusé. Le
+banc gagne les contrôles 66 et 67 et passe à **67** ; deux fixtures pointent désormais un fichier de trace
+(`$B/trace/echange.jsonl`) au lieu du dossier `$B/trace`. Pages remises au vrai : BANC, DEVICE, DASHBOARD,
+EXPLICATION, ARCHITECTURE.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| avant : un échange hors fenêtre | banc `/tmp/mesure-trace.Qhvqm8` | accepté, `exit 0`, falsificateur `trace_non_lue_par_le_harnais: true` |
+| avant : un export vide | même banc | accepté, `exit 0`, même falsificateur |
+| avant : une ligne qui n'est pas du JSON | même banc | accepté, `exit 0`, même falsificateur |
+| avant : deux échanges dans la fenêtre | même banc | accepté, `exit 0`, **même falsificateur** — les quatre reçus sont identiques |
+| après : un échange dans la fenêtre | contrôle 66 | `trace_lue.echanges_dans_la_fenetre ≥ 1`, falsificateur **faux** |
+| après : un échange hors fenêtre | contrôle 67 | falsificateur **vrai**, limite « … condition 2 » écrite, `exit 0` |
+| le banc entier | `bash docs/device/harness/banc-harnais.sh` | **67/67 PASS**, `exit 0` |
+| les deux contrôles neufs distinguent l'ancien du nouveau | ancien `run.mjs` (`git show HEAD:…`) | `trace_lue` absent, falsificateur `trace_non_lue_par_le_harnais` : les deux contrôles échouent contre lui |
+| le harnais reste sain | `node --check` | `exit 0` |
+| les pages qui comptent sont au vrai | `wc -l`, `grep -c "refuse("` | lignes **1 102 → 1 150**, refus **94 → 96**, banc **65 → 67** |
+
+**Dérives signalées, non corrigées.** Trois. (1) La forme lue est celle de l'export du §1.5 (Freebuff
+Desktop) : un export d'une autre source du §5.1, dont les lignes ne portent pas `ts`, tombe dans « lignes sans
+horodatage » et la fenêtre ne le date pas — la limite le dit, la condition 2 mord. (2) Un échange se compte à
+la ligne, sans distinguer un message d'une part d'outil : la condition 2 demande « au moins un échange », pas
+un type. (3) Un export lisible mais **hors** fenêtre et un export **absent** mordent tous deux la condition 2 ;
+le reçu les distingue par la limite (« introuvable » ou non) et par `trace_lue.lignes`, pas par le
+falsificateur.
+
+**Rectifications de ses propres affirmations.** Une, pendant le travail : le premier passage du banc a rendu
+`66/67`, le contrôle 55 tombant en `exit 1` — sa fixture passait encore le **dossier** `$B/trace` comme chemin
+d'export, que le nouveau refus rejette à juste titre. La fixture a été corrigée, pas le contrôle.
+
+**Prochaines étapes.** Rien n'est commité : onze fichiers modifiés, un nouveau. Le second run reste le juge :
+vingt-deux contrôles de plus que le banc d'il y a trois jours, et pas une session ouverte.
+
+**Mémoires.** `381402b7` — les quatre reçus identiques d'avant, les deux contrôles, la fixture corrigée.

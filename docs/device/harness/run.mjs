@@ -100,12 +100,23 @@ const USAGE = `usage: run.mjs <commande> [options]
            (re-hachage, §3) : le gel est relu sur le disque, jamais cru sur parole. Refait
            aussi le contrôle d'origine du produit, sur le manifeste : toute source
            déclarée hors de l'arbre « travail » du gel est un refus — la porte de
-           collect peut être contournée, le reçu relit les pièces
+           collect peut être contournée, le reçu relit les pièces. Refuse enfin un
+           faits.json dont les chemins ne se situent pas : un répertoire de travail
+           absent ou qui n'est pas un répertoire, un dossier de trace absent ; l'arbre
+           du run se compare après résolution des liens, comme faits le compare
+           (ADR-025). Il rattache session.identifiant au fil que trace.commande lit
+           (ADR-028) : aucune mention, plusieurs fils, ou un autre fil, sont des refus
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
            refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
            dont le reçu cite une empreinte que le gel sur disque ne porte plus
+
+  prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
+    git --version                  toutes les commandes — les quatre arbres, leur porcelain
+    date --iso-8601=seconds        toutes les commandes — geler, collecter, recevoir, juger
+    date -d @<epoch>               faits seule — l'epoch du fil en date locale
+    sqlite3 -version               faits seule — la base du client, en -readonly
 
   faits.json (receipt) : session{application,identifiant,modele,ouverte_par,ouverte_le}
     horodatage_debut · horodatage_fin · repertoire_de_travail ·
@@ -113,7 +124,8 @@ const USAGE = `usage: run.mjs <commande> [options]
     temoignage{qui,quand,texte}
 
   receipt.json (spec §6) : les champs du §6, plus falsificateurs (les quatre
-    conditions du §5, dont celle que ce script ne peut pas évaluer), recu_ecrit_le,
+    conditions du §5, toutes lues ici — la 2e lit l'export ligne à ligne), trace_lue
+    (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
     re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
@@ -142,6 +154,46 @@ function refuse(message) {
 function usage(message) {
   console.error("USAGE — " + message + "\n\n" + USAGE);
   process.exit(2);
+}
+// The harness runs three tools outside node, and each one missing surfaces late and wrong: an absent
+// `date` used to come out as a stack trace from execFileSync, an absent `git` as a refusal accusing the
+// directory. The prerequisites are declared in USAGE and probed before the command runs, so a machine
+// that lacks one hears which tool, for which command, and what to do (ADR-026). A probe is the call the
+// harness will actually make: `date --iso-8601=seconds` is GNU coreutils, and a BSD `date` fails it.
+const PREREQUIS = [
+  { outil: "git", sonde: ["--version"], pour: "lit les quatre arbres et leur porcelain", remede: "installer git" },
+  {
+    outil: "date",
+    sonde: ["--iso-8601=seconds"],
+    pour: "horodate le gel, le manifeste, le reçu et le jugement",
+    remede: "GNU coreutils requis (date --iso-8601)",
+  },
+  {
+    outil: "date",
+    sonde: ["-d", "@0", "--iso-8601=seconds"],
+    pour: "convertit l'epoch du fil en date locale",
+    commandes: ["faits"],
+    remede: "GNU coreutils requis (date -d)",
+  },
+  {
+    outil: "sqlite3",
+    sonde: ["-version"],
+    pour: "lit la base du client en -readonly",
+    commandes: ["faits"],
+    remede: "installer sqlite3",
+  },
+];
+function verifierPrerequis(cmd) {
+  for (const { outil, sonde, pour, commandes, remede } of PREREQUIS) {
+    if (commandes && !commandes.includes(cmd)) continue;
+    try {
+      execFileSync(outil, sonde, { stdio: ["ignore", "ignore", "pipe"] });
+    } catch (e) {
+      const quoi =
+        e.code === "ENOENT" ? `« ${outil} » est introuvable` : `« ${outil} ${sonde.join(" ")} » échoue (${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"})`;
+      refuse(`prérequis : ${quoi} — « ${cmd} » ${pour} ; ${remede} avant de relancer`);
+    }
+  }
 }
 function parseArgs(argv) {
   const flags = new Map();
@@ -812,21 +864,101 @@ function cmdReceipt(a) {
     texte: exigerChamp(faits, "temoignage.texte", "receipt", "faits.json"),
   };
 
+  // faits refuses a path that does not resolve when it writes the file (ADR-024); the receipt reads
+  // that same file and must situate its paths, otherwise the check moves to whoever reads the
+  // receipt. A declared directory that is not there is a defect of the piece, not a condition of
+  // the run, and it is refused as such rather than reported as a difference of trees (ADR-025).
+  if (!existsSync(travail)) {
+    refuse(
+      `receipt : le répertoire de travail déclaré (${travail}) ne résout pas — ce n'est pas un arbre du gel, c'est un chemin absent : ` +
+        `la condition 3 du §5 ne se lirait sur rien`,
+    );
+  }
+  if (!statSync(travail).isDirectory()) {
+    refuse(`receipt : le répertoire de travail déclaré (${travail}) n'est pas un répertoire — une session y écrit des fichiers`);
+  }
+  const traceExportee = resolve(trace.chemin_exporte);
+  if (!existsSync(dirname(traceExportee))) {
+    refuse(
+      `receipt : le dossier du chemin exporté de la trace (${dirname(traceExportee)}) ne résout pas — faits refuse un chemin qui ne se situe pas ; ` +
+        `un reçu ne recopie pas ce qu'il ne peut pas situer (§7)`,
+    );
+  }
+  // The identifiant was copied from faits.json and compared to nothing. One piece does name the
+  // thread: the export command, which faits builds with the run's thread id (§1.5). The receipt reads
+  // it there and refuses a file that describes one run while its command reads another (ADR-028).
+  // A file edited on both fields still passes: this is consistency inside the piece, not a witness.
+  const filsNommes = [...new Set([...trace.commande.matchAll(/thread_id\s*=\s*'([^']+)'/g)].map((m) => m[1]))];
+  if (filsNommes.length === 0) {
+    refuse(`receipt : trace.commande ne nomme aucun fil (thread_id='…') — session.identifiant n'a alors aucune pièce à quoi se rattacher (§6)`);
+  }
+  if (filsNommes.length > 1) {
+    refuse(`receipt : trace.commande nomme plusieurs fils (${filsNommes.join(", ")}) — un run lit un fil, et le reçu ne choisit pas lequel`);
+  }
+  if (filsNommes[0] !== session.identifiant) {
+    refuse(
+      `receipt : session.identifiant vaut « ${session.identifiant} », la trace exportée lit le fil « ${filsNommes[0]} » — ce faits.json décrit un run, sa commande en décrit un autre (§6)`,
+    );
+  }
+  if (!/from\s+messages/i.test(trace.commande)) {
+    refuse(`receipt : trace.commande ne lit pas les messages (aucun « from messages ») — la pièce (1) du §5 ne vient pas d'une autre requête`);
+  }
+  // Condition 2 of §5 asks the trace to carry at least one exchange inside the run's window. The
+  // receipt asserted it could not read the export at all; it reads it now — a JSONL line per part,
+  // `ts` in epoch milliseconds as the §1.5 query writes it. What the file has wrong is counted and
+  // said, never passed over: an unreadable line is a line, not an exchange (ADR-029).
+  if (existsSync(traceExportee) && statSync(traceExportee).isDirectory()) {
+    refuse(
+      `receipt : le chemin exporté de la trace (${trace.chemin_exporte}) est un répertoire — l'export du §1.5 est un fichier JSONL, et un dossier ne s'atteste pas`,
+    );
+  }
+  const debutMs = Date.parse(horodatageDebut);
+  const finMs = Date.parse(horodatageFin);
+  if (!Number.isFinite(debutMs) || !Number.isFinite(finMs)) {
+    refuse(
+      `receipt : les horodatages du run (${horodatageDebut} → ${horodatageFin}) ne se lisent pas — la fenêtre du §5 ne se mesure pas, et la condition 2 avec elle`,
+    );
+  }
+  const traceLue = { lignes: 0, echanges_dans_la_fenetre: 0, sans_horodatage: 0, illisibles: 0 };
+  if (existsSync(traceExportee)) {
+    for (const ligne of readFileSync(traceExportee, "utf8").split("\n")) {
+      if (ligne.trim() === "") continue;
+      traceLue.lignes++;
+      let entree;
+      try {
+        entree = JSON.parse(ligne);
+      } catch {
+        traceLue.illisibles++;
+        continue;
+      }
+      const ts = Number(entree?.ts);
+      if (!Number.isFinite(ts)) {
+        traceLue.sans_horodatage++;
+        continue;
+      }
+      if (ts >= debutMs && ts <= finMs) traceLue.echanges_dans_la_fenetre++;
+    }
+  }
+
   const apres = gel.arbres.map(gitTree);
   // The working directory is the tree the freeze names « travail », not any tree it happens
   // to describe: the original terrain is one of the four, and a run opened there would write
   // into the project the case means to leave untouched. Checked again at the receipt because
-  // the gate can be skipped, and a receipt stands on the gel alone.
+  // the gate can be skipped, and a receipt stands on the gel alone. Compared after the links are
+  // resolved, as faits compares it: a session opened through a link into the frozen tree wrote in
+  // that tree, and refusing it would refuse the file faits itself wrote (ADR-025).
   const geleTravail = gel.arbres.find((t) => t.label === "travail");
-  const avantTravail = geleTravail && geleTravail.chemin === travail ? geleTravail : null;
-  const apresTravail = apres.find((t) => t.chemin === travail);
+  const racineDeclaree = resolu(travail);
+  const avantTravail =
+    geleTravail && racineDeclaree !== null && resolu(resolve(geleTravail.chemin)) === racineDeclaree ? geleTravail : null;
+  const apresTravail = apres.find((t) => racineDeclaree !== null && resolu(resolve(t.chemin)) === racineDeclaree);
   if (!avantTravail) {
     refuse(
       `receipt : le répertoire de travail déclaré (${travail}) n'est pas celui que le gel nomme « travail » ` +
         `(${geleTravail?.chemin ?? "aucun arbre « travail » au gel"}) — la condition 3 du §5 se lirait sur un autre arbre que celui du run`,
     );
   }
-  if (avantTravail.porcelain === null || apresTravail.porcelain === null) {
+  if (!apresTravail || avantTravail.porcelain === null || apresTravail.porcelain === null) {
     refuse(`receipt : ${travail} n'est pas un dépôt git lisible — la condition 3 du §5 ne peut pas être établie`);
   }
 
@@ -873,7 +1005,7 @@ function cmdReceipt(a) {
     produit_identique_a_une_empreinte_anterieure: manifeste.fichiers
       .filter((f) => [...gel.fichiers, ...gel.references].some((g) => g.sha256 === f.sha256))
       .map((f) => f.chemin),
-    trace_non_lue_par_le_harnais: true,
+    trace_sans_echange_dans_la_fenetre: traceLue.echanges_dans_la_fenetre === 0,
   };
 
   const motifRefus = [];
@@ -883,6 +1015,9 @@ function cmdReceipt(a) {
   if (falsificateurs.arbre_de_travail_inchange) motifRefus.push("le produit existe et l'arbre de travail est inchangé (§5, condition 3)");
   if (falsificateurs.produit_identique_a_une_empreinte_anterieure.length) {
     motifRefus.push(`le produit est identique à un fichier déjà présent avant le run : ${falsificateurs.produit_identique_a_une_empreinte_anterieure.join(", ")} (§5, condition 4)`);
+  }
+  if (falsificateurs.trace_sans_echange_dans_la_fenetre) {
+    motifRefus.push("la trace exportée ne porte aucun échange dans la fenêtre du run (§5, condition 2)");
   }
 
   if (motifRefus.length && verdict !== "non concluant") {
@@ -894,14 +1029,21 @@ function cmdReceipt(a) {
   if (ambigus.length) {
     limites.push(`naissance à une seconde du gel (résolution du birth) : ${ambigus.map((f) => f.chemin).join(", ")} — la condition 1 du §5 ne les distingue pas`);
   }
-  if (!existsSync(trace.chemin_exporte)) limites.push("trace machine introuvable au chemin exporté — pièce (1) absente (§7 : verdict possible, limite dite)");
+  if (!existsSync(traceExportee)) limites.push("trace machine introuvable au chemin exporté — pièce (1) absente (§7 : verdict possible, limite dite)");
   if (sourcesNonVerifiables.length) {
     limites.push(
       `source du produit non résolvable au reçu : ${sourcesNonVerifiables.map((f) => `${f.chemin} ← ${f.source}`).join(", ")} — ` +
         "l'origine de ce fichier ne se vérifie plus sur le disque (§4)",
     );
   }
-  if (falsificateurs.trace_non_lue_par_le_harnais) limites.push("le harnais ne lit aucune des trois sources du §5.1 : la pièce (1) est attestée par l'export, pas par ce script");
+  if (traceLue.illisibles) {
+    limites.push(
+      `${traceLue.illisibles} ligne(s) de la trace illisible(s) — l'export n'est pas celui du §1.5, et une ligne qu'on ne lit pas ne compte pas comme échange`,
+    );
+  }
+  if (traceLue.sans_horodatage) {
+    limites.push(`${traceLue.sans_horodatage} ligne(s) de la trace sans horodatage numérique — la fenêtre du §5 ne les date pas`);
+  }
   for (const m of motifRefus) limites.push(m);
 
   const produit = {
@@ -926,6 +1068,7 @@ function cmdReceipt(a) {
     horodatage_debut: horodatageDebut,
     horodatage_fin: horodatageFin,
     trace,
+    trace_lue: traceLue,
     arbres,
     produit,
     cloisonnement: { attendu_vu: attenduVu },
@@ -1003,4 +1146,5 @@ if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
 }
 const commande = COMMANDS[a.cmd];
 if (!commande) usage(`commande inconnue : ${a.cmd}`);
+verifierPrerequis(a.cmd);
 commande(a);

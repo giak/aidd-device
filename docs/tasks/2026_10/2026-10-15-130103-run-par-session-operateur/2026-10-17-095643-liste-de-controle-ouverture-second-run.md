@@ -93,9 +93,10 @@ différence se dit dans le témoignage, elle ne se corrige pas par un second col
 
 **4.5 À la fin, dans cet ordre.** (1) `date -Is` ; (2) **l'export de la trace**, avant tout autre geste
 (commande du §1.5, `$RUN/trace/echange.jsonl`) ; (3) rien dans `terrain` : ni fichier créé, ni supprimé, ni
-`.freebuff/` touché. Le chemin de ce fichier se recopie dans `faits.trace.chemin_exporte` (§4.7) : s'il ne
-le nomme pas, `receipt` ne refuse pas, il ajoute une limite « trace machine introuvable » — et la pièce (1)
-manque sans que personne ne l'ait vu.
+`.freebuff/` touché. Le chemin de ce fichier se recopie dans `faits.trace.chemin_exporte` (§4.7). Depuis
+l'[ADR-025](../../../DECISIONS.md), un **dossier** de trace absent est refusé (`exit 1`) ; un fichier absent
+sous un dossier présent reste une **limite** « trace machine introuvable », et la pièce (1) manque sans que
+personne ne l'ait vu — c'est cette limite-là qu'il faut lire au reçu.
 
 **4.6 Le dossier du run.** Nommé à l'ouverture, révisions du gel :
 

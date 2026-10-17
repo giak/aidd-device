@@ -560,3 +560,197 @@ inconnu, chemin qui ne résout pas, fil en worktree) ; les pages qui comptent le
 sont remises au vrai. Le format de `faits.json` ne change pas, donc `receipt` est intact.
 **Falsificateur** : un `faits.json` dont `repertoire_de_travail` n'est pas l'arbre `travail` du gel, ou
 dont `trace.chemin_exporte` ne résout pas — `receipt` l'accepte encore, `faits` le refuse.
+*Clos le même jour par l'[ADR-025](#adr-025--receipt-refuse-un-faitsjson-dont-les-chemins-ne-se-situent-pas-2026-10-17) :
+`receipt` refuse désormais un répertoire de travail absent et un dossier de trace absent.*
+
+## ADR-025 — `receipt` refuse un `faits.json` dont les chemins ne se situent pas (2026-10-17)
+
+**Contexte** : l'[ADR-024](#adr-024--le-harnais-écrit-faitsjson-et-refuse-de-linventer-2026-10-17) a nommé
+son propre falsificateur — « un `faits.json` dont `repertoire_de_travail` n'est pas l'arbre `travail` du gel,
+ou dont `trace.chemin_exporte` ne résout pas : `receipt` l'accepte encore, `faits` le refuse ». Deux commandes
+qui ne croient pas la même chose : le contrôle de ces chemins existe chez celle qui écrit le fichier, pas chez
+celle qui le lit.
+
+**Mesure, faite le même jour** sur un banc jetable (`/tmp/mesure-receipt.X9UBZr`), quatre `faits.json`
+variantes, même cas gelé, même run sans produit :
+
+| Ce que le fichier nomme | `receipt` avant | `faits` |
+| --- | --- | --- |
+| la trace sous un dossier absent | **accepté**, `exit 0`, 3 limites dont « trace machine introuvable » | refusé |
+| un répertoire de travail inexistant | refusé `exit 1`, mais « n'est pas celui que le gel nomme « travail » » — le diagnostic désigne l'arbre, pas le chemin | refusé |
+| le même arbre écrit `…/terrain/../terrain` | accepté `exit 0` (`resolve` normalise) | accepté |
+| le même arbre ouvert par un lien symbolique | **refusé** `exit 1` | **accepté** `exit 0` |
+
+La dernière ligne est la plus coûteuse : `faits` écrit un fichier que `receipt` refuse, un run se perd entre
+les deux commandes.
+
+**Options** : (a) laisser les deux commandes divergentes ; (b) refuser, comme `faits`, sur le fichier de trace
+lui-même — ce qui rend la branche du §7 (« la trace n'a pas été exportée : le manque est nommé dans le reçu »)
+inatteignable ; (c) refuser quand le chemin **ne se situe pas** — répertoire de travail absent ou non
+répertoire, dossier du chemin exporté absent — et comparer les arbres après résolution des liens, un fichier
+de trace absent sous un dossier présent restant une limite du §7.
+
+**Choix** : (c). `receipt` refuse `repertoire_de_travail` qui ne résout pas ou n'est pas un répertoire, refuse
+`trace.chemin_exporte` dont le dossier ne résout pas, et compare l'arbre gelé au chemin déclaré **après
+résolution des liens** (`resolu`), comme `faits` le compare.
+
+**Conséquences** : un `faits.json` que `faits` vient d'écrire n'est plus refusé par `receipt` (lien
+symbolique) ; le refus d'un répertoire absent nomme la résolution, plus une différence d'arbre ; le
+falsificateur de l'ADR-024 est fermé. Une différence subsiste, **voulue** : `faits` refuse d'écrire une trace
+absente, `receipt` la note comme limite quand son dossier existe — §7 demande que le reçu enregistre un export
+manqué, non qu'il fasse disparaître le run. Le banc passe de 50 à **56** contrôles (51-56).
+**Falsificateur** : un `faits.json` dont `trace.chemin_exporte` a un dossier absent, ou dont
+`repertoire_de_travail` n'existe pas — `receipt` doit refuser ; et un répertoire de travail ouvert par un lien
+vers l'arbre gelé — `receipt` doit accepter.
+
+## ADR-026 — Le harnais déclare ses prérequis et les vérifie avant la commande (2026-10-17)
+
+**Contexte** : `run.mjs` appelle trois outils hors de Node — `git` (les quatre arbres), `date` (les
+horodatages, en options GNU : `--iso-8601=seconds`, `-d @<epoch>`) et `sqlite3` (`faits` seul, en
+`-readonly`). Aucun n'était déclaré au `--help`, et un seul était vérifié, tard, dans `lireBase`.
+
+**Mesure, faite le même jour**, quatre PATH amputés sur la machine qui a gelé le cas (banc
+`/tmp/prerequis.dePd9W`, `PATH` ne gardant que les outils voulus, `node` appelé par son chemin absolu) :
+
+| Ce qui manque | Commande essayée | Ce que le harnais a rendu | `exit` |
+| --- | --- | --- | --- |
+| `sqlite3` | `faits` | `REFUS — faits : sqlite3 introuvable…` — déjà explicite, mais après les contrôles de `--out` | 1 |
+| `date` | `collect --sans-produit` | une **trace Node** (`spawnSync` ENOENT), pas un refus | 1 |
+| `date` non GNU (faux `date` refusant `--iso-8601`) | `collect --sans-produit` | `date: illegal option -- -` puis une **trace Node** | 1 |
+| `git` | `preflight` | un refus qui **accuse le dossier** : « ouverture refusée dans … — le gel de ce cas ouvre la session ailleurs » | 1 |
+
+Les quatre sortent en `1` : un banc qui ne lirait que le code de sortie n'y verrait rien. Deux cas sur quatre
+ne disent pas la vérité, et le quatrième l'inverse de la cause.
+
+**Options** : (a) laisser les pannes parler d'elles-mêmes ; (b) vérifier au démarrage les trois outils pour
+**toutes** les commandes, y compris celles qui n'en ont pas besoin ; (c) déclarer les prérequis au `--help`,
+et les vérifier au démarrage **par commande**, avec un refus qui nomme l'outil, la commande, l'usage et le
+remède.
+
+**Choix** : (c). Quatre entrées, sondées par l'appel réel que le harnais fera : `git --version` et
+`date --iso-8601=seconds` pour toutes les commandes, `date -d @0 --iso-8601=seconds` et `sqlite3 -version`
+pour `faits` seule. Une sonde `ENOENT` dit « introuvable » ; une sonde qui répond mal dit ce qu'elle a
+répondu et réclame la variante GNU. Le refus précède tout contrôle de chemin : c'est la machine qui manque,
+pas le run.
+
+**Conséquences** : deux à quatre processus de plus par invocation — négligeable devant les `git` déjà lancés ;
+le `--help` porte un bloc « prérequis » qui les déclare sans rien sonder ; le banc gagne quatre contrôles
+(57 à 60) : `sqlite3` absent, `date` qui n'obéit pas, `git` absent, et le `--help` qui les déclare. Le banc
+passe de 56 à **60**.
+**Falsificateur** : un PATH sans `sqlite3`, sans `git`, ou avec un `date` non GNU — le harnais doit refuser en
+nommant l'outil, jamais rendre une trace Node ni accuser le dossier.
+
+## ADR-027 — Un contrôle de liens du dépôt, qui lit la prose et pas les citations (2026-10-17)
+
+**Contexte** : la séance 34 a annoncé « 76 liens, 0 mort » puis mesuré 73 : l'expression qui comptait lisait
+aussi les motifs `](…)` écrits entre backticks, et un exemple de lien typographique (`](../…)`) a été compté
+comme un lien mort. La séance 35 a refait le contrôle à la main une troisième fois. Le dépôt n'a aucun script
+pour cela, et un chiffre annoncé à la main n'est vérifiable par personne.
+
+**Mesure, faite le même jour**, dépôt entier, deux comptes sur le même balayage (les fichiers d'un dossier
+caché exclus) :
+
+| Compte | Liens | Morts | Ce que les morts sont |
+| --- | --- | --- | --- |
+| naïf — tout motif `](…)`, code compris | **316** | **2** | deux citations `](../…)` entre backticks, dans le journal |
+| strict — blocs et segments de code écartés | **312** | **0** | — |
+
+L'écart est de 4 : le compte naïf ajoute des citations, et fabrique deux faux morts. Un même fichier ne peut
+donc pas être cité « 312 liens » et « 320 liens » sans dire lequel des deux comptes il parle — **320 et 8**
+après l'écriture de cette ADR, qui cite elle-même quatre fois le motif qu'elle décrit. Le compte strict ne
+bouge pas : c'est celui qu'on annonce.
+
+**Options** : (a) continuer au `grep` et au python jetable ; (b) un script qui ne distingue pas code et prose —
+c'est le compte naïf, dont on vient de voir qu'il ment ; (c) un script du dépôt, sans dépendance, qui écarte
+les blocs et segments de code, **imprime les deux comptes**, nomme l'écart, et sort en `1` seulement sur un
+lien mort en prose.
+
+**Choix** : (c), `docs/device/harness/liens.mjs`, à côté du banc qui l'éprouve. Il lit tous les `.md` du
+dépôt hors dossiers cachés, résout chaque cible relative depuis le fichier qui la porte, écarte `http(s)`,
+`mailto`, les ancres seules et les schémas extérieurs, et `--json` rend le même résultat en objet. Le compte
+annoncé est le **strict** ; le naïf est imprimé à côté, avec le nombre de motifs écartés, pour que l'écart se
+voie au lieu de se discuter.
+
+**Conséquences** : le banc gagne trois contrôles (61 à 63) — le dépôt sans lien mort, un lien mort en prose
+(refus), un lien mort écrit entre backticks (accepté, compté comme motif écarté) — et passe de 60 à **63**.
+Une limite est dite : les ancres (`#…`) ne sont pas vérifiées, et un bloc de code **indenté** n'est pas
+écarté, seul le bloc clôturé l'est.
+**Falsificateur** : un fichier dont un lien mort est écrit entre backticks — le script doit sortir en `0` et
+l'imprimer comme motif écarté ; le même lien en prose — il doit sortir en `1` et le nommer.
+
+## ADR-028 — `receipt` rattache `session.identifiant` au fil que la trace exporte (2026-10-17)
+
+**Contexte** : la séance 34 a nommé cette limite « `receipt` ne vérifie pas `session.identifiant` : aucune
+pièce du run ne nomme le fil, il reste donc recopié ». C'est faux à moitié : une pièce le nomme — la commande
+d'export, que `faits` construit avec l'identifiant du fil (`… where m.thread_id='<fil>' …`, §1.5). Le reçu ne
+la lisait pas, et recopiait `session.identifiant` de `faits.json` sans le comparer à rien.
+
+**Mesure, faite le même jour** (banc `/tmp/mesure-ident.s5IH3U`, cas gelé, runs sans produit, trois
+`faits.json`) :
+
+| Ce que le fichier dit | Ce que la commande d'export lit | `receipt` avant |
+| --- | --- | --- |
+| `session.identifiant` = `fil-a` | `thread_id='fil-b'` | **accepté**, `exit 0` |
+| `session.identifiant` = `fil-a` | aucun fil (`"banc"`) | **accepté**, `exit 0` |
+| `session.identifiant` = `fil-a` | `thread_id='fil-a'` | accepté, `exit 0` |
+
+Le premier cas est le plus coûteux : un `faits.json` recopié d'un autre run, ou édité sur un champ et pas
+l'autre, entre dans un reçu qui affirme « la session était `fil-a` » alors que la trace exportée est celle
+d'un autre fil.
+
+**Options** : (a) laisser le champ recopié ; (b) faire lire la base du client par `receipt` pour y retrouver
+le fil — mais `receipt` n'a pas le chemin de la base, il n'est que du texte dans `trace.source`, et il lui
+faudrait un prérequis de plus ; (c) lire les identifiants de fil **dans la commande d'export** et refuser
+quand `session.identifiant` n'est pas celui-là.
+
+**Choix** : (c). `receipt` extrait les `thread_id='…'` de `trace.commande` et refuse : aucune mention (rien à
+quoi rattacher l'identifiant), plusieurs fils distincts (un run lit un fil, le reçu ne choisit pas), un fil
+différent de `session.identifiant`, et une commande qui ne lit pas les messages (aucun `from messages` : la
+pièce (1) du §5 ne vient pas d'une autre requête).
+
+**Conséquences** : `faits` produit déjà cette forme, donc aucun run réel ne change ; un `faits.json` écrit à la
+main doit nommer le fil dans sa commande, ou il est refusé. Le banc gagne deux contrôles (64 et 65) et ses
+fixtures `faits-bon.json` / `faits-mauvais.json` portent désormais une commande qui nomme `banc` ; le banc
+passe de 63 à **65**. Limite dite : un fichier édité **sur les deux champs** passe encore — c'est un contrôle
+de cohérence dans la pièce, pas un second témoin.
+**Falsificateur** : un `faits.json` dont `session.identifiant` diffère du fil que `trace.commande` lit — le
+reçu doit refuser ; la même valeur des deux côtés — il doit accepter.
+
+## ADR-029 — `receipt` lit la trace exportée, et compte les échanges de la fenêtre (2026-10-17)
+
+**Contexte** : la condition 2 du §5 — « la trace machine ne porte aucun échange dans la fenêtre du run » —
+n'était pas évaluée. Le reçu portait en dur `falsificateurs.trace_non_lue_par_le_harnais: true` et une limite
+« le harnais ne lit aucune des trois sources du §5.1 » : il affirmait ne pas lire, et ne lisait pas.
+
+**Mesure, faite le même jour** (banc `/tmp/mesure-trace.Qhvqm8`, quatre exports, fenêtre 23:00–23:01) :
+
+| Export | Contenu | `receipt` avant |
+| --- | --- | --- |
+| `hors.jsonl` | un échange, **une heure avant** la fenêtre | accepté, `exit 0`, falsificateur `true` |
+| `vide.jsonl` | rien | accepté, `exit 0`, falsificateur `true` |
+| `boue.jsonl` | une ligne qui n'est pas du JSON | accepté, `exit 0`, falsificateur `true` |
+| `dans.jsonl` | deux échanges **dans** la fenêtre | accepté, `exit 0`, falsificateur `true` |
+
+Les quatre rendent le même reçu. Un export qui prouve le run et un export qui ne prouve rien sont
+indistinguables, et le falsificateur dit « non lue » même quand la trace est parfaitement lisible.
+
+**Options** : (a) laisser la limite et le falsificateur en dur ; (b) lire le fichier et refuser quand aucun
+échange n'y tombe — ce qui transformerait un falsificateur du §5 en refus, et retirerait au reçu la possibilité
+de conclure « non concluant » sur une trace vide ; (c) lire le fichier, compter les échanges de la fenêtre,
+porter la condition 2 comme falsificateur, et **dire** ce qui n'a pas pu être compté.
+
+**Choix** : (c). `receipt` lit l'export ligne à ligne (JSONL du §1.5, `ts` en epoch ms), compte les lignes,
+les illisibles, celles sans horodatage numérique et les échanges dans la fenêtre, écrit ce compte sous
+`trace_lue`, remplace le falsificateur en dur par `trace_sans_echange_dans_la_fenetre`, et remplace la limite
+« ne lit aucune source » par les limites qui disent ce que le fichier a de travers. Un export absent reste une
+limite du §7 et fait mordre la condition 2. Un dossier nommé comme la trace est un refus : ce n'est pas un
+export (ADR-025).
+
+**Conséquences** : le reçu distingue enfin « le run a eu lieu » de « le fichier est là » ; les quatre conditions
+du §5 sont toutes lues par le script, et `--help` ne dit plus le contraire. Le banc gagne deux contrôles (66 et
+67) et deux de ses fixtures pointent désormais un **fichier** (`$B/trace/echange.jsonl`) au lieu du dossier
+`$B/trace` ; il passe de 65 à **67**. Limite dite : la forme lue est celle de l'export du §1.5 (Freebuff
+Desktop) ; un export d'une autre source du §5.1, dont les lignes ne portent pas `ts`, est compté comme lignes
+sans horodatage, et la fenêtre ne le date pas.
+**Falsificateur** : un export dont les échanges tombent hors fenêtre — le reçu doit mordre la condition 2 et le
+dire ; le même export décalé dans la fenêtre — il doit passer la condition et laisser le falsificateur faux.

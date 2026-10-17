@@ -48,7 +48,7 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 50 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
+  (`harness/banc-harnais.sh`, 67 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
   demande, attendu, gel).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
@@ -87,7 +87,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `50/50 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `67/67 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces

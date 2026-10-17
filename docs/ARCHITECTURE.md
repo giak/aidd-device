@@ -111,8 +111,11 @@ graph TD
 
 `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 50 contrôles, sans ouvrir de session ni écrire dans le dépôt
-([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). Le banc n'est pas un automatisme pour autant : rien ne
+le dépôt, `docs/device/harness/banc-harnais.sh` : 67 contrôles, sans ouvrir de session ni écrire dans le dépôt
+([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
+compte strict hors code, compte naïf imprimé à côté, refus d'un lien mort en prose ([ADR-027](DECISIONS.md)). Ses trois outils hors de Node — `git`, `date` GNU,
+`sqlite3` pour `faits` seule — sont déclarés au `--help` et sondés au démarrage, avec un refus qui nomme
+l'outil, la commande, l'usage et le remède ([ADR-026](DECISIONS.md)). Le banc n'est pas un automatisme pour autant : rien ne
 le déclenche seul, et il n'éprouve que le harnais, jamais le dépôt. Son code de sortie est toujours le
 même trio : `0` fait, `1` refus (imprimé, jamais compté), `2` usage.
 
@@ -123,7 +126,7 @@ même trio : `0` fait, `1` refus (imprimé, jamais compté), `2` usage.
 | `collect` | le produit revenu | le gel, `--from` résolu (`realpath`) | `runs/<id>/raw/<cas>/` et son manifeste : `sha256`, taille, `birth`, source absolue de chaque fichier ([ADR-020](DECISIONS.md)) | un `--from` hors de l'arbre `travail`, un lien symbolique, un dossier déjà collecté, une copie dont le `sha256` diffère, `--from` vide |
 | `collect --sans-produit` | un run qui ne rend rien | le gel seul | le même manifeste, avec `fichiers: []` et `produit_absent: true` | `--sans-produit` **avec** `--from` (spec §9) |
 | `faits` | entre l'export et le reçu | la base du client (`threads`, `messages`), le gel, `--trace` | `faits.json` : `session`, `horodatage_debut` (premier message utilisateur), `repertoire_de_travail`, `trace`, `temoignage` | un fil absent, un modèle vide, un chemin qui ne résout pas, un fil hors de l'arbre `travail`, un fil en worktree, une fin antérieure au début, un `faits.json` déjà écrit ([ADR-024](DECISIONS.md)) |
-| `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json` | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un verdict que la preuve ne porte pas |
+| `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json` | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un `faits.json` dont les chemins ne se situent pas (répertoire de travail absent, dossier de la trace absent), un `session.identifiant` que la commande d'export ne lit pas, une trace exportée sans échange dans la fenêtre du run, un verdict que la preuve ne porte pas |
 | `compare` | après, par le juge | le **reçu seul** et le gel, re-haché | `runs/<id>/output.json` : `cas`, `attendu`, `produit_brut`, `difference`, `verdict`, `limites`, `ecarte_comme_non_testable`, `phrase`, `gel_verifie`, `juge_le`, `depuis_le_recu` | un cas qui ne concorde plus avec le gel, un reçu qui cite une empreinte que le gel sur disque ne porte plus |
 
 ```mermaid
@@ -279,7 +282,7 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 50 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| le banc qui éprouve le harnais, ses 67 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |

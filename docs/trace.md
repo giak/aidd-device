@@ -3101,3 +3101,110 @@ cette séance part après elle, donc le dernier `origin/main` n'est pas celui de
 
 **Mémoires.** `dcef65d7` (2026-10-17 20:54:09) : les quatre commits, la poussée et le hash lu sur le distant.
 
+## Séance 50 — 2026-10-17 (H4 appliqué : le budget d'échanges mesuré contre le fil)
+
+**Objectif.** Appliquer la spec H4 approuvée : compter les messages `user` du fil, les comparer au budget du
+cas, refuser un dépassement et nommer l'échange qui épuise un budget atteint.
+
+**Fait.**
+
+- `run.mjs` (1 460 lignes, contre 1 393 ; 133 refus, contre 127) : le bloc H4 (1136-1193) vient **après H2**
+  et **avant la fenêtre**. L'attendu se résout par le **rôle `attendu` du gel** (`cheminDuCas`, la fonction
+  que `verifierLeGel` emploie), jamais par `<casesDir>/<cas>.expected.json`. Un attendu absent, un
+  `demande.budget_echanges` absent ou non entier positif sont trois refus nommés. Une **seule requête** lit
+  le compte des messages `user` et le message de rang `budget` (sous-requêtes `offset budget-1`, nulles quand
+  le rang n'existe pas). `utilises > budget` refuse, `exit 1`, rien ne s'écrit, et `--verdict non concluant`
+  ne le sauve pas ; le refus nomme les deux chiffres, le `seq` du premier message au-delà et son horodatage.
+  Le reçu écrit `echanges{budget, utilises, epuise_par}` (champ en 1364), `epuise_par` n'étant non nul qu'à
+  l'épuisement exact. `--help` dit le champ et le refus.
+- `banc-harnais.sh` (565 lignes, contre 507) : six contrôles neufs (97 à 102). Trois fils neufs,
+  `banc-budget-1`, `banc-budget-3` (messages `user` aux seq 1, 3 et 5) et `banc-budget-4`, tous en
+  `parts_json = '[]'` avec la trace vide déjà là, donc H2 et la fenêtre sont muets et seul le budget
+  distingue. 101 et 102 recopient le cas, retirent ou abîment le budget, et le **re-gèlent** (le motif des
+  contrôles 21-26) : éditer l'attendu sans re-geler ferait refuser le gel, ce qui n'éprouverait pas le champ.
+- [ADR-033](DECISIONS.md) écrite. `BANC.md`, `DEVICE.md`, `ARCHITECTURE.md`, `EXPLICATION.md`,
+  `DASHBOARD.md` et `README.md` passent de 96 à **102**, avec les figures remises à 1 460 lignes et 133 refus.
+  La spec H4 passe à `status: done` et reçoit un §13.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **102/102 PASS**, `exit 0`, 0 `FAIL` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 33 fichiers, 350 liens (349 avant cette séance), **0 mort** |
+| contrôle 97, reçu | `echanges` = `{"budget":3,"utilises":1,"epuise_par":null}` |
+| contrôle 98, reçu | `{"budget":3,"utilises":3,"epuise_par":{"seq":5,"ts":1792098000000}}` |
+| contrôle 99, rejoué à la main | « le fil « banc-budget-4 » porte 4 messages utilisateur, le cas en autorise 3 — le premier au-delà du budget est le seq 4 (2026-10-15T23:00:00+02:00) », `exit 1`, aucun reçu écrit |
+| contrôle 101, rejoué à la main | « ne déclare aucun budget d'échanges (demande.budget_echanges) », `exit 1` |
+| contrôle 102, rejoué à la main | « demande.budget_echanges vaut 0, attendu un entier positif », `exit 1` |
+
+**Dérives signalées, non corrigées.** Aucune nouvelle. La règle « l'attendu est lu par le juge seul » est
+amendée, comme la spec l'annonçait : le reçu y lit `demande.budget_echanges`, un entier, et rien d'autre.
+
+**Rectifications.** Deux, sur mes propres pièces. La phrase ajoutée au `--help` portait des backticks dans le
+gabarit JavaScript de `USAGE` : `node --check` est sorti en `exit 1`, et le banc s'est arrêté au contrôle 14
+sur `ARRET — la fixture faits du banc ne s'écrit pas`, après 9 `PASS`. Backticks retirés, puis 102/102. Et le
+§13 de la spec affirmait d'abord que la résolution naïve de l'attendu aurait refusé les contrôles 16, 44, 45,
+55, 71, 85 et 88 à 96 : mesuré (`grep` des `receipt --run` du banc, 37 lignes, deux avec `--cases`), les seuls
+reçus qui passent `--cases` sont 101 et 102, et leur dossier **copie** l'attendu. Le vrai fait est que
+`$B/cases`, d'où la plupart des contrôles tirent leur gel, ne contient **que** le gel : aucun contrôle ne
+distingue les deux règles aujourd'hui, et le §13 dit cela.
+
+**OPEN.** Aucune session réelle ; la base reste la racine de confiance ; le budget compte les tours de
+l'opérateur, pas les questions de la session ; un fil continué après le run fait refuser ; le reçu lit un
+scalaire de l'attendu, la porte tient par discipline. **Rien n'est commité.**
+
+**Prochaines étapes.** H5 (`gate.json`), puis H6 quand la forme du tableau sera écrite ; la poussée quand
+elle est demandée.
+
+**Mémoires.** `364f984b` (2026-10-17 21:01:42) : le bloc H4, les trois refus, les six contrôles, le banc à 102
+et les limites.
+
+## Séance 51 — 2026-10-17 (spec H5 : ce que la porte trace, et ce que le reçu en refuse)
+
+**Objectif.** Spécifier H5 du §8 de l'étude antagoniste, rien de plus : ce que `gate.json` doit porter, et ce
+que `preflight` puis `receipt` doivent en refuser. Aucun code, conformément à la règle du dépôt (spec avant
+production).
+
+**Fait.** Une spec, [2026-10-17-210743-spec-h5.md](tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-17-210743-spec-h5.md),
+269 lignes, `status: pending`, nommée par la naissance mesurée (`stat -c %w` → `2026-10-17 21:07:43`). Elle
+décide : `preflight` gagne `--run` obligatoire et écrit `<run>/gate.json` en dernier (`type`, `cas`,
+`passe_le`, `passe_le_epoch` en secondes, `repertoire`, `gel{chemin, empreinte, gele_le_epoch}`, `arbre` = la
+mesure `gitTree` entière, `texte` ou `null`), refuse d'écraser une porte existante et un `--run` qui n'est
+pas un répertoire ; `receipt` refuse une porte absente, d'un autre `type`, d'un autre cas, d'un autre gel,
+d'un autre arbre, d'un autre répertoire, antérieure au gel, dont le `head_complet` a bougé, ou dont le
+`texte.sha256` n'est pas le §5 substitué recalculé ; `receipt.json` gagne `porte{…}` ; `compare` re-hache le
+`gate.json` cité. Dix contrôles prévus, 103 à 112, banc de 102 à 112.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `grep -c "gate\.json" docs/device/harness/run.mjs` | **0** : aucune porte n'existe aujourd'hui ; les 4 « gate » du fichier (13, 534, 1233, 1253) sont des commentaires sur `preflight` |
+| `grep -o 'receipt --run "[^"]*"' banc-harnais.sh \| sort \| uniq -c` | 38 appels sur **37** dossiers de run distincts (36 une fois, `$B/run` deux fois) : chacun devra porter une porte |
+| `stat -c %w` sur la spec | `2026-10-17 21:07:43.478375576 +0200` → préfixe `2026-10-17-210743` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 34 fichiers, **356** liens (350 avant), **0 mort** |
+| banc | non relancé : `run.mjs` et le banc n'ont pas été touchés par cette séance |
+
+**Dérives signalées, non corrigées.** L'étude chiffre H5 à « ~20 lignes ». Le code, peut-être ; la fixture,
+non : 37 dossiers de run à pourvoir d'une porte, quatre contrôles d'acceptation à réécrire, et une porte à
+re-geler pour les contrôles 101 et 102 dont le cas est recopié puis re-gelé. Le §10 de la spec le dit, et le
+§13 (décision 7) en tire la seule conséquence qui compte : dater la porte contre la session obligerait à
+dater ces trente-sept dossiers après elle, donc ne pas le faire et le dire.
+
+**Rectifications.** Deux, sur mon propre brouillon, mesurées avant consignation. La citation de W5 portait
+`164-166`, c'est-à-dire l'en-tête et une ligne de blanc (`sed -n "161,168p"`) : la phrase citée est en
+166-168. Et le §2 renvoyait à la « décision 7 du §14 » quand les décisions sont au §13 (`grep -n '^## '` de
+la spec).
+
+**OPEN.** La porte reste forgeable : recopier l'empreinte du gel et l'arbre produit un `gate.json` que le
+reçu accepte. L'ordre porte/session n'est pas mesuré. Un commit suivi d'un `reset` laisse `head_complet` où
+il était. Le texte remis n'est confronté qu'au §5, pas à ce que la session a lu (L2). Aucune session réelle.
+**Rien n'est commité.**
+
+**Prochaines étapes.** Approbation de la spec, puis le code avec **ADR-034** et les dix contrôles ; H6 ensuite,
+quand la forme mécanique du tableau sera écrite.
+
+**Mémoires.** `cbacbc35` (2026-10-17 19:08:48 UTC) : la spec H5, ses mesures, ses décisions, ses limites.
+

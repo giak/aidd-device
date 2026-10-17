@@ -29,8 +29,10 @@
 //   receipt  at run time, hot — receipt.json (§6), the four falsifiers of §5 checked,
 //            the verdict ceiling of §7 enforced, the case re-hashed against the freeze,
 //            the copy under raw/ re-hashed (ADR-030), the client's base re-read (ADR-031),
-//            and the export it cites rebuilt from that base, replayed and compared byte for
-//            byte to the file, which is then hashed into the receipt (ADR-032)
+//            the export it cites rebuilt from that base, replayed and compared byte for
+//            byte to the file, which is then hashed into the receipt (ADR-032), and the
+//            budget of exchanges the case declares measured against the thread's `user`
+//            messages, a run past it being refused (ADR-033)
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
 //            happened (§8: never the session) and the freeze for the premise, which it
 //            re-hashes before judging
@@ -119,7 +121,11 @@ const USAGE = `usage: run.mjs <commande> [options]
            chaîne que la pièce cite (ADR-032) : trace.commande doit être égale, caractère
            pour caractère, à la commande reconstruite, puis la requête s'exécute en
            -readonly et ses octets se comparent au fichier exporté. Une différence est un
-           refus ; trace_lue porte le sha256 du fichier et l'heure du rejeu
+           refus ; trace_lue porte le sha256 du fichier et l'heure du rejeu.
+           Il lit le budget d'échanges du cas dans son attendu et compte les messages
+           user du fil (ADR-033) : au-delà du budget, un refus qui nomme les deux
+           chiffres et le message en trop, un dépassement n'étant pas un plafond de
+           verdict ; à l'épuisement exact, le reçu nomme l'échange qui l'a épuisé
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
@@ -141,7 +147,9 @@ const USAGE = `usage: run.mjs <commande> [options]
   receipt.json (spec §6) : les champs du §6, plus falsificateurs (les quatre
     conditions du §5, toutes lues ici — la 2e lit l'export ligne à ligne), trace_lue
     (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
-    fichier exporté, heure du rejeu — nuls quand la trace est absente), recu_ecrit_le,
+    fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
+    (budget du cas, messages user du fil, et l'échange qui a épuisé le budget ;
+    un dépassement refuse au lieu de s'écrire), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
     re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
@@ -1125,6 +1133,64 @@ function cmdReceipt(a) {
     }
     traceRejouee = { sha256: empreinteFichier, rejoue_le: localIso() };
   }
+  // H4 (ADR-033) : the case fixes a budget of exchanges (request.md §8), and nothing measured it. A
+  // session that took thirty exchanges produced the same receipt (study §4, W4). The count comes from
+  // the base H3 has just opened and validated; the budget from the case's attendu, whose sha256
+  // verifierLeGel re-read at the top of this receipt. The attendu is resolved the way the gel names
+  // it, not from the cases directory: a bench replays a gel whose case files still live in the
+  // repository. No budget field lives in the gel on purpose — `empreinte` hashes the case files and
+  // the references, never a field of the gel itself, so a budget written there would be editable
+  // without a re-freeze. Order: after H2 (the pieces), before the window (the run's shape), and the
+  // window itself is untouched: the budget counts every `user` message of the thread, no filter.
+  const attenduPath = (() => {
+    const f = (gel.fichiers ?? []).find((x) => x.role === "attendu");
+    if (!f) refuse(`receipt : le gel ne nomme aucun fichier « attendu » — le budget d'échanges du cas se lit là, et un reçu ne le devine pas (H4)`);
+    return cheminDuCas(f.chemin, casesDir);
+  })();
+  const attendu = lireJson(attenduPath, "receipt");
+  if (!attendu) refuse(`receipt : aucun attendu ${display(attenduPath)} — le budget d'échanges du cas se lit là, et un reçu ne le devine pas (H4)`);
+  const budget = attendu.demande?.budget_echanges;
+  if (budget === undefined) {
+    refuse(
+      `receipt : l'attendu du cas (${display(attenduPath)}) ne déclare aucun budget d'échanges (demande.budget_echanges) — ` +
+        `le cas fixe ce chiffre avant le run ; sans lui, un dépassement ne se mesure pas (H4)`,
+    );
+  }
+  if (!Number.isInteger(budget) || budget < 1) {
+    refuse(`receipt : demande.budget_echanges vaut ${JSON.stringify(budget)}, attendu un entier positif — un budget illisible ne se mesure pas (H4)`);
+  }
+  // One query: how many `user` messages the thread carries, and the message of rank `budget`, which is
+  // the exchange that exhausts the budget when there is one. Null when the rank does not exist.
+  const mesuresBudget = lireBase(
+    base,
+    `select json_object('utilises', (select count(*) from messages where thread_id = '${session.identifiant}' and role = 'user'), ` +
+      `'epuise_seq', (select seq from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget - 1}), ` +
+      `'epuise_ts', (select ts from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget - 1}));`,
+    "receipt",
+  );
+  if (mesuresBudget === null || !Number.isInteger(mesuresBudget.utilises)) {
+    refuse(
+      `receipt : la base ${display(base)} n'a pas rendu le compte des messages utilisateur du fil « ${session.identifiant} » — ` +
+        `le budget d'échanges ne se mesure pas, et rien ne l'invente (H4)`,
+    );
+  }
+  if (mesuresBudget.utilises > budget) {
+    const auDela = lireBase(
+      base,
+      `select json_object('seq', seq, 'ts', ts) from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget};`,
+      "receipt",
+    );
+    refuse(
+      `receipt : le fil « ${session.identifiant} » porte ${mesuresBudget.utilises} messages utilisateur, le cas en autorise ${budget} — ` +
+        `le premier au-delà du budget est le seq ${auDela?.seq ?? "?"}${auDela ? ` (${isoDeMs(auDela.ts, "receipt")})` : ""} : ` +
+        `un run qui dépasse le budget d'échanges n'est pas celui que le cas décrit, ses réponses figées s'arrêtant à la ${budget}e (H4, §8 de la demande)`,
+    );
+  }
+  const echanges = {
+    budget,
+    utilises: mesuresBudget.utilises,
+    epuise_par: mesuresBudget.utilises === budget && mesuresBudget.epuise_seq !== null ? { seq: mesuresBudget.epuise_seq, ts: mesuresBudget.epuise_ts } : null,
+  };
   const debutMs = Date.parse(horodatageDebut);
   const finMs = Date.parse(horodatageFin);
   if (!Number.isFinite(debutMs) || !Number.isFinite(finMs)) {
@@ -1295,6 +1361,7 @@ function cmdReceipt(a) {
     horodatage_fin: horodatageFin,
     trace,
     trace_lue: traceLue,
+    echanges,
     arbres,
     produit,
     cloisonnement: { attendu_vu: attenduVu },

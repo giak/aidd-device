@@ -847,3 +847,49 @@ guillemets, donc un chemin avec espace casserait à la fois le rejeu et la compa
 que le fichier est l'export de cette base **à l'instant du reçu**, pas au bon moment.
 **Falsificateur** : un export dont un octet a été ajouté et un reçu qui sort en `0` — la règle est fausse ;
 le même export intact — le reçu doit sortir en `0` et écrire un `sha256` égal à celui du fichier.
+
+## ADR-033 — `receipt` mesure le budget d'échanges du cas contre les messages du fil (H4) (2026-10-17)
+
+**Contexte** : le cas fixe son budget en prose (« **Trois échanges au plus.** Le premier porte la demande,
+les suivants sont figés ici », `request.md` 193) et en machine (`demande.budget_echanges`, `3`,
+`expected.json` 9), et la même demande promet que « le reçu nomme l'échange qui l'a épuisé » (`request.md`
+214). Rien ne le mesurait : `grep -c budget docs/device/harness/run.mjs` rendait **0**, et une session qui
+prend trente échanges produit un reçu identique (étude antagoniste §4, W4). Le budget était une consigne,
+pas une mesure.
+
+**Options** : (a) porter le budget dans le gel ; (b) le faire écrire par l'opérateur (`--budget`) ; (c) lire
+`demande.budget_echanges` dans l'attendu du cas, que `verifierLeGel` re-hache déjà au début de chaque reçu.
+
+**Choix** : (c). (a) est écartée par construction : `empreinteDeGel` hache `fichiers` et `references`,
+jamais les champs du gel lui-même, donc un budget écrit là serait éditable sans re-gel, exactement le trou
+que H4 ne doit pas rouvrir. (b) remplacerait une mesure par une déclaration. L'attendu n'est pas re-haché
+pour l'occasion : il fait partie des deux fichiers que le gel enregistre (rôles `attendu` et `demande`), et
+il est résolu par le chemin que le gel lui donne, pas par `casesDir`, sans quoi un banc qui rejoue un gel
+dont les fichiers vivent encore dans le dépôt refuserait chaque reçu.
+
+Le **compte** est celui des messages `user` du fil, **tous**, sans filtre de fenêtre : le fil est le run
+(`faits` refuse un fil ouvert ailleurs et le reçu relit cette appartenance, ADR-031), `horodatage_fin` est
+un instant choisi par l'opérateur et un budget qu'on peut réduire en reculant la fin ne mesurerait rien, et
+l'export du §1.5 ne filtre pas non plus (ADR-032). Un échange est un message, pas une part : les appels
+d'outils sont des parts de `parts_json`, et l'export rend une ligne par part. Les tours de l'opérateur sont
+comptés, pas les questions de la session : trois questions dans un seul message consomment un échange.
+
+**Refus, pas plafond de verdict.** `utilises > budget` refuse le reçu (`exit 1`, rien n'est écrit, le refus
+nomme les deux chiffres, le `seq` du premier message au-delà et son horodatage), et `--verdict non concluant`
+ne le sauve pas : le cas fige ses réponses, un message au-delà n'en est pas une, et le reçu attesterait un
+run que le cas ne décrit pas. L'**épuisement** exact (`utilises == budget`) n'est pas un défaut : le reçu
+s'écrit, et `echanges.epuise_par` nomme l'échange qui a consommé le dernier tour (`{seq, ts}`), seul cas où
+il n'est pas nul. L'ordre est celui de la forme du run : après H3 et H2 qui ont établi les pièces, avant la
+fenêtre qui compte les échanges de la trace.
+
+**Conséquences** : `receipt.json` gagne `echanges{budget, utilises, epuise_par}` (run.mjs 1136-1193, champ
+écrit en 1364) ; aucune commande, aucun drapeau, aucun prérequis nouveaux, une requête de plus sur une base
+déjà ouverte. Le banc passe de **96 à 102** (contrôles 97 à 102) : un message sous le budget, trois messages
+pour un budget de trois avec `epuise_par` nommant le seq 5, quatre messages refusés avec les deux chiffres
+et le seq en trop, le même refus sous `--verdict non concluant`, et deux cas recopiés puis **re-gelés**
+(`freeze --refreeze`) dont l'attendu ne porte aucun budget ou en porte un illisible. Limites dites : la base
+reste la racine de confiance (un fil forgé de trois messages passe) ; un fil continué après le run fait
+refuser ; le reçu lit un scalaire de l'attendu, ce que la spec du protocole réservait au juge (un entier,
+jamais le contenu), et cette porte tient par discipline ; aucune session réelle.
+**Falsificateur** : un fil à quatre messages `user` pour un budget de trois dont le reçu s'écrit — la règle
+est fausse ; le même fil à trois messages — le reçu doit s'écrire et `epuise_par.seq` nommer le troisième.

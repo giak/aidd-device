@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 96 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 102 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -501,6 +501,64 @@ vide r96
 node "$H" receipt --run "$B/r96" --case "$CAS" --faits "$B/f96.json" >/dev/null || { echo "ARRET — le reçu de 96 ne s'écrit pas"; exit 2; }
 printf '{"seq":99,"role":"user"}\n' >> "$B/trace96.jsonl"
 controle "96 compare refus, trace réécrite"      0 refus-nomme 1 "ne rend plus son empreinte" node "$H" compare --run "$B/r96" --case "$CAS" --difference x --phrase y --verdict "non concluant" --limites "ne mord pas"
+
+# 97-102 : le budget d'échanges du cas, mesuré contre les messages `user` du fil (ADR-033). Les fils
+# portent `parts_json = '[]'`, donc l'export rejoué par H2 est vide comme `$B/trace/echange.jsonl`,
+# et seul le compte des messages distingue les cas.
+sqlite3 "$DBF" <<SQL
+insert into threads values('banc-budget-1','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-budget-1',1,'user',$D0,'[]');
+insert into threads values('banc-budget-3','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-budget-3',1,'user',$D0,'[]');
+insert into messages values('banc-budget-3',2,'assistant',$D0,'[]');
+insert into messages values('banc-budget-3',3,'user',$D0,'[]');
+insert into messages values('banc-budget-3',4,'assistant',$D0,'[]');
+insert into messages values('banc-budget-3',5,'user',$D0,'[]');
+insert into threads values('banc-budget-4','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-budget-4',1,'user',$D0,'[]');
+insert into messages values('banc-budget-4',2,'user',$D0,'[]');
+insert into messages values('banc-budget-4',3,'user',$D0,'[]');
+insert into messages values('banc-budget-4',4,'user',$D0,'[]');
+SQL
+faits-budget() { # fil, sortie — faits sur le fil, la trace vide étant déjà là (H2 exige l'export)
+  node "$H" faits --case "$CAS" --base "$DBF" --fil "$1" --trace "$B/trace/echange.jsonl" --out "$2" \
+    --par banc --fin "$ISO1" --temoignage "banc : aucun run reel" >/dev/null || { echo "ARRET — les faits de $1 ne s'écrivent pas"; exit 2; }
+}
+faits-budget banc-budget-1 "$B/f97.json"
+faits-budget banc-budget-3 "$B/f98.json"
+faits-budget banc-budget-4 "$B/f99.json"
+faits-budget banc-budget-4 "$B/f100.json"
+for r in r97 r98 r99 r100; do vide "$r"; done
+controle "97 receipt, fil dans le budget"        0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r97','--case','$CAS','--faits','$B/f97.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r97/receipt.json','utf8'));
+process.exit(r.echanges && r.echanges.budget===3 && r.echanges.utilises===1 && r.echanges.epuise_par===null ?0:1)"
+controle "98 receipt, budget épuisé et nommé"      0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r98','--case','$CAS','--faits','$B/f98.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r98/receipt.json','utf8'));
+process.exit(r.echanges.utilises===3 && r.echanges.epuise_par && r.echanges.epuise_par.seq===5 && Number.isFinite(r.echanges.epuise_par.ts) ?0:1)"
+controle "99 receipt refus, dépassement du budget" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+let err='';
+try{execFileSync('node',['$H','receipt','--run','$B/r99','--case','$CAS','--faits','$B/f99.json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']});process.exit(1)}
+catch(e){err=String(e.stderr);process.exit(e.status===1 && err.includes('porte 4 messages utilisateur, le cas en autorise 3') && err.includes('seq 4') && !fs.existsSync('$B/r99/receipt.json') ?0:1)}"
+controle "100 dépassement, non concluant compris" 0 refus-nomme 1 "un run qui dépasse le budget d'échanges" node "$H" receipt --run "$B/r100" --case "$CAS" --faits "$B/f100.json" --verdict "non concluant"
+
+cas-budget() { # nom, retouche de l'attendu — un cas recopié, modifié, re-gelé (le motif des contrôles 21-26)
+  mkdir -p "$B/$1"
+  cp "$REPO/docs/device/CASES/$CAS.request.md" "$B/$1/"
+  node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/$CAS.expected.json','utf8'));$2;fs.writeFileSync('$B/$1/$CAS.expected.json',JSON.stringify(a,null,2)+'\n')"
+  node "$H" freeze --case "$CAS" --cases "$B/$1" --refreeze --racine "$RACINE" \
+    --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" >/dev/null || { echo "ARRET — le re-gel de $1 ne s'écrit pas"; exit 2; }
+}
+cas-budget cases-sans-budget "delete a.demande.budget_echanges"
+cas-budget cases-budget-zero "a.demande.budget_echanges=0"
+vide r101
+vide r102
+controle "101 receipt refus, attendu sans budget"  0 refus-nomme 1 "ne déclare aucun budget" node "$H" receipt --run "$B/r101" --case "$CAS" --cases "$B/cases-sans-budget" --faits "$B/f97.json"
+controle "102 receipt refus, budget illisible"     0 refus-nomme 1 "un entier positif" node "$H" receipt --run "$B/r102" --case "$CAS" --cases "$B/cases-budget-zero" --faits "$B/f97.json"
 
 echo
 echo "$PASS/$TOTAL PASS"

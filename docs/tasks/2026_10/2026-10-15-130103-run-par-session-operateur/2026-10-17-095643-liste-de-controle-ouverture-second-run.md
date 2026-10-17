@@ -93,7 +93,9 @@ différence se dit dans le témoignage, elle ne se corrige pas par un second col
 
 **4.5 À la fin, dans cet ordre.** (1) `date -Is` ; (2) **l'export de la trace**, avant tout autre geste
 (commande du §1.5, `$RUN/trace/echange.jsonl`) ; (3) rien dans `terrain` : ni fichier créé, ni supprimé, ni
-`.freebuff/` touché.
+`.freebuff/` touché. Le chemin de ce fichier se recopie dans `faits.trace.chemin_exporte` (§4.7) : s'il ne
+le nomme pas, `receipt` ne refuse pas, il ajoute une limite « trace machine introuvable » — et la pièce (1)
+manque sans que personne ne l'ait vu.
 
 **4.6 Le dossier du run.** Nommé à l'ouverture, révisions du gel :
 
@@ -107,8 +109,35 @@ après le commit qu'elle cite n'est pas nommé par elle — le reçu doit le dir
 l'inverse.
 
 **4.7 Puis `collect`, `receipt`, `compare`.** L'ordre et les champs sont ceux de la
-[conduite](2026-10-15-154303-run.md) §3 ; cette liste ne les recopie pas. Le contrôle de clôture des quatre
-arbres (ADR-021, BOUNDARY §5) attend **0 → 0** pour `terrain`, et les deux lignes de l'origine inchangées.
+[conduite](2026-10-15-154303-run.md) §3 ; cette liste ne les recopie pas, mais elle nomme les cinq gestes
+que la conduite dit et qu'un opérateur saute quand il suit la liste seule — chacun éprouvé le 2026-10-17
+([répétition à blanc](2026-10-17-100609-repetition-a-blanc-de-l-ouverture.md)) :
+
+1. **`faits.json`, écrit à chaud, par le harnais** ([ADR-024](../../../DECISIONS.md)) :
+
+   ```text
+   node docs/device/harness/run.mjs faits --case <cas> --base <desktop-v2.db> \
+     --fil <fil> --trace "$RUN/trace/echange.jsonl" --out "$RUN/faits.json" \
+     --par <qui> --fin "$(date -Is)" --temoignage '<texte>'
+   ```
+
+   Elle dérive de la base et du gel les champs du §1.4 (`session`, `horodatage_debut`, le répertoire de
+   travail, la trace) et refuse un fil inconnu, un modèle vide, un chemin qui ne résout pas, un fil hors
+   de l'arbre `travail`, un fil en worktree, une fin antérieure au début, et un `faits.json` déjà écrit.
+   `--par`, `--fin` et `--temoignage` sont les trois faits que seule une personne donne : la commande ne
+   les invente pas.
+2. **`collect`, et ses deux branches.** Un produit : `collect --run "$RUN" --case "$CAS" --from
+   "$W/terrain/aidd_docs"`. Aucun produit — le cas du premier run : `collect … --sans-produit`.
+   L'autre branche refuse, donc sans elle `receipt` et `compare` refusent aussi.
+3. **`last-message.md`**, à la main, sous `raw/$CAS/`, verbatim.
+4. **`receipt`, une seule fois, pendant le run.** Il refuse d'écraser un reçu existant : un reçu
+   reconstruit est un témoignage. Son `--verdict` est **contraint par les falsificateurs** — toute autre
+   valeur que `non concluant` est refusée quand l'un mord.
+5. **`compare`, par le juge, sur le reçu seul.** Il refuse `ecart` quand le reçu dit `non concluant`, et
+   n'écrit jamais deux fois le même `output.json`.
+
+Le contrôle de clôture des quatre arbres (ADR-021, BOUNDARY §5) attend **0 → 0** pour `terrain`, et les
+deux lignes de l'origine inchangées.
 
 ## 5. Ce que cette liste ne prouve pas
 

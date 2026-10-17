@@ -9,7 +9,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lecteur commence : le dispositif fait exécuter une modification du **framework AIDD** (un framework de
   compétences markdown pour assistants IA, publié sur `github.com/giak/framework`) par une session IA, et
   nomme l'écart entre ce qu'elle annonce et ce qu'elle produit. Puis les acteurs et ce que chacun ne voit
-  jamais, les arbres et qui écrit où, les cinq commandes du harnais, la vie des artefacts, les
+  jamais, les arbres et qui écrit où, les six commandes du harnais, la vie des artefacts, les
   falsificateurs et le plafond du verdict, en cinq schémas. Le pourquoi du dépôt est à la
   [VISION](docs/VISION.md).
 - [AGENTS.md](AGENTS.md) — le contrat de travail, autonome : il vaut pour tout ce qui s'écrit ici.
@@ -19,7 +19,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
-- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 46 contrôles qui éprouvent ses
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 50 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/EXPLICATION.md](docs/EXPLICATION.md) — le projet raconté simplement, pour qui n'en
   connaît rien : analogies, schémas, état réel au 2026-10-15, échecs compris.
@@ -34,7 +34,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 Un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, session `opencode`) et s'est conclu
 **`non concluant`** : la session n'a rendu aucun tableau et n'a rien écrit. Le harnais est écrit
-([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 882 lignes, cinq commandes : `freeze`
+([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 1 006 lignes, six commandes : `freeze`
 — qui déclare une seule fois la racine des espaces de travail, dont dérivent les deux copies du cas —,
 `preflight` — la porte qui refuse d'ouvrir une session ailleurs que dans l'espace de travail gelé, et
 vérifie le texte remis —, `collect` — qui ne prend pour produit que ce que la session a écrit dans cet
@@ -52,7 +52,7 @@ et les raisons de ce verdict, ses arbitrages et ses brainstorm sont au
 **Au 2026-10-16.** Les trois trous du premier run sont comblés (reçu d'un run sans produit, chemin du
 §5 qui ne résolvait pas, lecture de la révision sous test non mesurée) et le client du second run est
 sondé : ses foyers, le mode *worktree* à refuser, le texte remis stocké octet pour octet. Le harnais a
-désormais son banc dans le dépôt, **46/46 PASS**, et le nom du dossier d'un run est tranché
+désormais son banc dans le dépôt, **50/50 PASS**, et le nom du dossier d'un run est tranché
 ([ADR-023](docs/DECISIONS.md) : des tirets). Ce qui reste n'est plus une mesure mais un geste : ouvrir un
 projet Freebuff sur `<W>/terrain`, en mode direct et sans *worktree*, puis conduire le second run. L'état
 courant, ses trous et les prochains pas sont au [tableau de bord](docs/DASHBOARD.md). Et rien n'a encore

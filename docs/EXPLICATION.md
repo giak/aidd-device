@@ -123,11 +123,12 @@ sequenceDiagram
   Note over Dis: étape 7, verdict conforme, écart ou non concluant
 ```
 
-Le harnais — `docs/device/harness/run.mjs`, 882 lignes, aucune dépendance — n'a que cinq
+Le harnais — `docs/device/harness/run.mjs`, 1 006 lignes, aucune dépendance — n'a que six
 commandes : `freeze` (avant, qui déclare la racine des espaces de travail une seule fois et en dérive
 les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie aussi le texte
-remis), `collect`, `receipt`, `compare`. Il **refuse** plutôt que de deviner :
-63 refus sont écrits dans son code (un produit déjà collecté, un lien symbolique dans la copie, un
+remis), `collect`, `faits` (les quinze valeurs exigées par le reçu, dérivées du fil du client et du gel), `receipt`,
+`compare`. Il **refuse** plutôt que de deviner :
+86 refus sont écrits dans son code (un produit déjà collecté, un lien symbolique dans la copie, un
 produit venu d'ailleurs que de l'espace de travail gelé, un reçu réécrit, un cas dont un fichier ne
 concorde plus avec le gel — au reçu comme au jugement —, une
 session qu'on s'apprête à ouvrir dans le mauvais dossier, un texte remis qui n'est pas celui du cas,
@@ -180,7 +181,7 @@ seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre
 | La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, **896 mots** pour une limite de 900 (v6 §10), mesuré le 2026-10-16 |
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
-| Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 5 commandes, 63 refus — dont `freeze --racine`, qui déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte qui refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` qui refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
+| Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 6 commandes, 86 refus — dont `freeze --racine`, qui déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte qui refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` qui refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
 | Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, puis après le passage à la racine déclarée (empreinte `0d9a2180`, les anciens `bc126fe6`, `38fa91f4` et `07246039` détruits) : le cas nomme `$RACINE` — la racine que le gel déclare une fois — et le texte remis garde son chemin absolu, falsificateur `F9` ajouté |
 | Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
 | Le dépôt public | `https://github.com/giak/aidd-device` : **44 commits** au 2026-10-16, dont le dernier (`64901e3`) n'est **pas poussé** ; `origin/main` est au précédent |
@@ -282,7 +283,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **46 contrôles**, `46/46 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **50 contrôles**, `50/50 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit

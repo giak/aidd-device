@@ -524,3 +524,39 @@ phrase du §5 d'[ARCHITECTURE](ARCHITECTURE.md) reçoit le renvoi.
 qu'aucune commande ne produit. Le séparateur n'est pas ce que le v6 éprouve ; les deux révisions dans le nom
 le sont, et elles y sont. **Falsificateur** : un dossier de run dont le nom porte un `@`, ou une ligne de la
 conduite qui en rend un.
+
+## ADR-024 — Le harnais écrit `faits.json`, et refuse de l'inventer (2026-10-17)
+
+**Contexte** : la [répétition à blanc](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-17-100609-repetition-a-blanc-de-l-ouverture.md)
+du 2026-10-17 a suivi la liste de contrôle ligne à ligne : six gestes manquaient, dont `faits.json`.
+`receipt` le prend en argument et refuse tout champ vide ; il exige **quinze valeurs**, sous sept clés, dont
+deux nomment un chemin qui doit résoudre. Écrit à la main, c'est la dernière pièce que rien ne vérifie :
+`receipt` lit ses champs, pas leur vérité.
+
+**Mesure, faite le même jour** : la base du client nomme le fil, son `project_path`, son `execution_mode`,
+sa `branch`, son `worktree_path`, son `harness_id`, son `model` et son `created_at` (epoch en
+millisecondes) ; `messages` porte le premier message utilisateur et son `ts`. Le gel nomme l'arbre
+`travail`. Trois choses ne sont dans aucune machine : qui a ouvert, quand le run s'est terminé, et ce que
+l'opérateur témoigne.
+
+**Options** : (a) laisser `faits.json` à la main ; (b) une commande qui remplit tout, y compris les trois
+faits humains, avec des valeurs par défaut ; (c) une commande qui dérive ce que la base et le gel disent,
+exige les trois faits humains, et refuse tout chemin qui ne résout pas.
+
+**Choix** : (c). `faits` lit la base en `-readonly` par `sqlite3` et refuse : un fil absent, un modèle vide,
+un `project_path` qui ne résout pas ou qui n'est pas l'arbre `travail` du gel, un `execution_mode` autre
+que `local`, une `branch` ou un `worktree_path` non vide (le piège mesuré du §1.7 de la conduite), un fil
+sans message utilisateur, une trace absente, une fin antérieure au début, un `faits.json` déjà écrit. Elle
+dérive `session.application` · `identifiant` · `modele` · `ouverte_le`, `horodatage_debut` (premier message
+utilisateur), `repertoire_de_travail`, `trace.source` · `chemin_exporte` · `commande` (la requête du §1.5,
+éprouvée sur une base réelle, `exit 0`).
+
+**Ce qu'elle n'invente pas** : `ouverte_par`, `horodatage_fin` et `temoignage` sont trois arguments
+obligatoires, et rien n'en fournit un défaut. `cloisonnement.attendu_vu` vaut `non` à défaut, et n'accepte
+que `oui` ou `non`.
+
+**Conséquences** : le harnais passe à **six commandes** ; le banc gagne quatre contrôles (acceptation, fil
+inconnu, chemin qui ne résout pas, fil en worktree) ; les pages qui comptent les commandes et les contrôles
+sont remises au vrai. Le format de `faits.json` ne change pas, donc `receipt` est intact.
+**Falsificateur** : un `faits.json` dont `repertoire_de_travail` n'est pas l'arbre `travail` du gel, ou
+dont `trace.chemin_exporte` ne résout pas — `receipt` l'accepte encore, `faits` le refuse.

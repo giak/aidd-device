@@ -1,6 +1,6 @@
 ---
 name: ARCHITECTURE — le protocole de test, de bout en bout
-description: L'architecture détaillée du dispositif : les acteurs et leur séparation de contexte, les arbres gelés, les cinq commandes du harnais avec ce que chacune lit, écrit et refuse, la vie des artefacts, les falsificateurs et le plafond du verdict, en schémas et en tables
+description: L'architecture détaillée du dispositif : les acteurs et leur séparation de contexte, les arbres gelés, les six commandes du harnais avec ce que chacune lit, écrit et refuse, la vie des artefacts, les falsificateurs et le plafond du verdict, en schémas et en tables
 type: architecture
 status: in-progress
 ---
@@ -25,7 +25,7 @@ status: in-progress
 > reçu le porte.
 >
 > **Ce que cette page possède** : les acteurs et leur séparation de contexte, le trajet des fichiers,
-> les cinq commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
+> les six commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
 > **Ce que possèdent les autres pages** : [DEVICE](device/DEVICE.md) dit ce qu'il fait, ne fait pas, et
 > comment le lancer ; [BOUNDARY](device/BOUNDARY.md) tient les quatre arbres et les preuves
 > d'intégrité ; [REPLAY](device/REPLAY.md) rejoue le gel depuis un clone neuf ; la
@@ -54,7 +54,7 @@ Cinq positions, jamais fusionnées, parce qu'aucune ne doit voir l'objet qui la 
 | auteur de l'attendu | le relecteur | écrit `CASES/<cas>.request.md` et `.expected.json`, fait geler l'empreinte | le produit |
 | opérateur | le relecteur | déclare la racine, gèle, passe la porte, ouvre la session, remet le texte, collecte, écrit le reçu, exporte la trace | rien : il tient le cas. Ce qu'il en dit reste un **témoignage** (`faits.json`), jamais une preuve |
 | session sous test | la session IA ouverte par l'opérateur | lit la révision sous test, écrit dans `terrain/` | `CASES/*.expected.json`, cette page, le journal |
-| harnais | `docs/device/harness/run.mjs`, 882 lignes, aucune dépendance | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
+| harnais | `docs/device/harness/run.mjs`, 1 006 lignes, aucune dépendance (il appelle `git`, `date` et `sqlite3`) | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
 | juge | l'agent | lit le **reçu seul**, écrit `output.json` | la session ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §8) |
 
 La séparation est **de contexte, pas de personne** : relecteur, opérateur et juge peuvent être la même
@@ -107,11 +107,11 @@ graph TD
   DEV -.->|"controle l'etat gele"| TRA
 ```
 
-## 4. Les cinq commandes, et le cycle d'un run
+## 4. Les six commandes, et le cycle d'un run
 
 `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 46 contrôles, sans ouvrir de session ni écrire dans le dépôt
+le dépôt, `docs/device/harness/banc-harnais.sh` : 50 contrôles, sans ouvrir de session ni écrire dans le dépôt
 ([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). Le banc n'est pas un automatisme pour autant : rien ne
 le déclenche seul, et il n'éprouve que le harnais, jamais le dépôt. Son code de sortie est toujours le
 même trio : `0` fait, `1` refus (imprimé, jamais compté), `2` usage.
@@ -122,6 +122,7 @@ même trio : `0` fait, `1` refus (imprimé, jamais compté), `2` usage.
 | `preflight` | juste avant d'ouvrir | le gel, le dossier examiné, le texte remis (`--texte`) | rien : il autorise ou il refuse | un dossier qui n'est pas l'arbre `travail` du gel, un arbre qui n'est plus dans l'état gelé, un cas dont un fichier a bougé, un texte qui n'est pas le §5 substitué ([ADR-018](DECISIONS.md)) |
 | `collect` | le produit revenu | le gel, `--from` résolu (`realpath`) | `runs/<id>/raw/<cas>/` et son manifeste : `sha256`, taille, `birth`, source absolue de chaque fichier ([ADR-020](DECISIONS.md)) | un `--from` hors de l'arbre `travail`, un lien symbolique, un dossier déjà collecté, une copie dont le `sha256` diffère, `--from` vide |
 | `collect --sans-produit` | un run qui ne rend rien | le gel seul | le même manifeste, avec `fichiers: []` et `produit_absent: true` | `--sans-produit` **avec** `--from` (spec §9) |
+| `faits` | entre l'export et le reçu | la base du client (`threads`, `messages`), le gel, `--trace` | `faits.json` : `session`, `horodatage_debut` (premier message utilisateur), `repertoire_de_travail`, `trace`, `temoignage` | un fil absent, un modèle vide, un chemin qui ne résout pas, un fil hors de l'arbre `travail`, un fil en worktree, une fin antérieure au début, un `faits.json` déjà écrit ([ADR-024](DECISIONS.md)) |
 | `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json` | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un verdict que la preuve ne porte pas |
 | `compare` | après, par le juge | le **reçu seul** et le gel, re-haché | `runs/<id>/output.json` : `cas`, `attendu`, `produit_brut`, `difference`, `verdict`, `limites`, `ecarte_comme_non_testable`, `phrase`, `gel_verifie`, `juge_le`, `depuis_le_recu` | un cas qui ne concorde plus avec le gel, un reçu qui cite une empreinte que le gel sur disque ne porte plus |
 
@@ -278,7 +279,7 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 46 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| le banc qui éprouve le harnais, ses 50 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |

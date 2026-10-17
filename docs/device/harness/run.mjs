@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // run.mjs — the minimal harness of a run.
 //
-// It opens no session and decides nothing by itself. Five commands, one per moment
+// It opens no session and decides nothing by itself. Six commands, one per moment
 // of the run, each carrying the spec paragraph that demands it
 // (docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md):
 //
@@ -19,13 +19,19 @@
 //            wrote in the frozen workspace, so a --from that resolves outside it is
 //            refused: a product from elsewhere would make the receipt read an origin
 //            the freeze does not cover (§4 "Ce qui revient")
+//   faits    between the export and the receipt — faits.json, the nine values the receipt
+//            reads. Derived from the client's base (thread, model, project root, mode,
+//            branch, worktree) and from the freeze (the tree « travail »), never typed by
+//            hand: a path that does not resolve is refused here, not copied into a receipt.
+//            The three human facts — who opened, when it ended, what the operator testifies
+//            — are required arguments, and nothing invents them (ADR-024).
 //   receipt  at run time, hot — receipt.json (§6), the four falsifiers of §5 checked,
 //            the verdict ceiling of §7 enforced, the case re-hashed against the freeze
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
 //            happened (§8: never the session) and the freeze for the premise, which it
 //            re-hashes before judging
 //
-// Usage: node docs/device/harness/run.mjs <freeze|collect|receipt|compare> [options]
+// Usage: node docs/device/harness/run.mjs <freeze|collect|faits|receipt|compare> [options]
 //        node docs/device/harness/run.mjs --help
 //
 // Exit status: 0 done · 1 refusal (printed, never counted) · 2 usage.
@@ -80,6 +86,14 @@ const USAGE = `usage: run.mjs <commande> [options]
   collect  --run <dir> --case <id> --sans-produit          (run sans produit, spec §9 :
            le manifeste est écrit avec fichiers: [] et produit_absent: true, sans
            --from ; sans lui, un run qui ne produit rien ne laissait aucun reçu)
+  faits    --case <id> --base <desktop-v2.db> --fil <thread> --trace <fichier> --out <faits.json>
+           --par <qui> --fin <date -Is> --temoignage <texte> [--attendu-vu oui|non] [--cases <dir>]
+           écrit les faits que receipt lira, sans les inventer : session (application, identifiant,
+           modele, ouverte_le), horodatage_debut (le premier message de l'utilisateur), le
+           répertoire de travail, la trace. Refuse un fil absent, un modèle vide, un chemin qui
+           ne résout pas, un fil hors de l'arbre « travail » du gel, un fil en worktree, une fin
+           antérieure au début, et un faits.json déjà écrit. --par, --fin et --temoignage sont
+           les trois faits que seule une personne peut donner : rien ne les remplace
   receipt  --run <dir> --case <id> --faits <faits.json> [--verdict conforme|ecart|non concluant]
            [--limite <texte> ...] [--cases <dir>]
            refuse si un fichier du cas ou une référence du gel a changé depuis le gel
@@ -645,6 +659,116 @@ function exigerChamp(objet, chemin, ou, quoi) {
   return valeur;
 }
 
+// ---------------------------------------------------------------------------
+// faits — what the receipt will read, derived where a machine holds it
+// ---------------------------------------------------------------------------
+// The rehearsal of 2026-10-17 (Séance 31) found the gap: the receipt needs nine values, three of them
+// exact paths, and nothing checked them because they were typed by hand. This command derives what
+// the client's base and the freeze say, refuses every path that does not resolve, and leaves the
+// three human facts to the operator — it does not invent them (ADR-024).
+const isoDeMs = (ms, ou) => {
+  const n = Number(ms);
+  if (!Number.isFinite(n) || n <= 0) refuse(`${ou} : « ${ms} » n'est pas un horodatage — la base ne dit pas quand`);
+  return execFileSync("date", ["-d", "@" + Math.floor(n / 1000), "--iso-8601=seconds"], { encoding: "utf8" }).trim();
+};
+const lireBase = (base, sql, ou) => {
+  let sortie;
+  try {
+    sortie = execFileSync("sqlite3", ["-readonly", base, sql], { encoding: "utf8" });
+  } catch (e) {
+    if (e.code === "ENOENT") refuse(`${ou} : sqlite3 introuvable — cette commande lit la base du client, elle ne la devine pas`);
+    refuse(`${ou} : la base ${display(base)} est illisible — ${String(e.stderr ?? e.message).trim().split("\n")[0]}`);
+  }
+  const t = sortie.trim();
+  if (t === "") return null;
+  try {
+    return JSON.parse(t);
+  } catch {
+    refuse(`${ou} : la réponse de la base n'est pas du JSON — ${t.slice(0, 120)}`);
+  }
+};
+
+function cmdFaits(a) {
+  const cas = a.required("case");
+  const base = resolve(a.required("base"));
+  const fil = a.required("fil");
+  if (!/^[A-Za-z0-9_-]{1,120}$/.test(fil)) refuse(`faits : « ${fil} » n'est pas un identifiant de fil — lettres, chiffres, tirets et soulignés seulement`);
+  const trace = resolve(a.required("trace"));
+  const out = resolve(a.required("out"));
+  const par = a.required("par");
+  const fin = a.required("fin");
+  const temoignage = a.required("temoignage");
+  const attenduVu = a.one("attendu-vu") ?? "non";
+  if (attenduVu !== "oui" && attenduVu !== "non") refuse(`faits : --attendu-vu vaut « ${attenduVu} », attendu « oui » ou « non »`);
+
+  if (!existsSync(base)) refuse(`faits : la base ${display(base)} n'existe pas — le dossier du client se lit sous .freebuff/project-id, il ne se devine pas`);
+  if (!existsSync(dirname(out))) refuse(`faits : le dossier de ${display(out)} n'existe pas — les faits s'écrivent dans le dossier du run, ils ne le créent pas`);
+  if (existsSync(out)) refuse(`faits : ${display(out)} existe déjà — les faits s'écrivent une fois, à chaud ; un fichier reconstruit est un témoignage (§6)`);
+
+  const f = lireBase(
+    base,
+    `select json_object('id', id, 'project_path', project_path, 'execution_mode', execution_mode, 'branch', branch, 'worktree_path', worktree_path, 'harness_id', harness_id, 'model', model, 'created_at', created_at) from threads where id = '${fil}';`,
+    "faits",
+  );
+  if (!f) refuse(`faits : aucun fil « ${fil} » dans ${display(base)} — l'identifiant du fil se lit dans la base, il ne se devine pas`);
+  if (!f.project_path) refuse(`faits : le fil « ${fil} » ne nomme aucun project_path — le répertoire du run ne se devine pas`);
+  if (!f.model) refuse(`faits : le fil « ${fil} » ne nomme aucun modèle — le reçu refuse un champ vide, et le modèle est un fait`);
+  if (f.execution_mode !== "local")
+    refuse(`faits : le fil « ${fil} » s'exécute en « ${f.execution_mode ?? "(vide)"} », pas en local — un run dans un autre environnement n'écrit pas dans l'arbre gelé`);
+  if (f.branch || f.worktree_path)
+    refuse(
+      `faits : le fil « ${fil} » vit dans un worktree (branche « ${f.branch ?? ""} », ${f.worktree_path ?? ""}) — il déplacerait le HEAD de la copie, et le produit sortirait de l'arbre gelé (§1.7)`,
+    );
+
+  const travail = resolve(f.project_path);
+  if (!existsSync(travail)) refuse(`faits : le répertoire de travail du fil (${travail}) ne résout pas — le run aurait écrit nulle part`);
+  if (!statSync(travail).isDirectory()) refuse(`faits : ${travail} n'est pas un répertoire`);
+
+  const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "faits");
+  if (!gel) refuse(`faits : aucun gel ${display(gelPath)} — le répertoire du fil se compare à l'arbre « travail » du gel, sinon il n'y a rien à comparer`);
+  const geleTravail = (gel.arbres ?? []).find((t) => t.label === "travail");
+  if (!geleTravail || resolu(resolve(geleTravail.chemin)) !== resolu(travail)) {
+    refuse(
+      `faits : le fil ouvre ${travail}, le gel nomme « travail » ${geleTravail?.chemin ?? "(aucun arbre « travail »)"} — des faits d'un run ouvert ailleurs nommeraient un produit que le gel ne couvre pas`,
+    );
+  }
+
+  const premier = lireBase(base, `select json_object('ts', ts, 'seq', seq) from messages where thread_id = '${fil}' and role = 'user' order by seq limit 1;`, "faits");
+  if (!premier) refuse(`faits : le fil « ${fil} » ne porte aucun message utilisateur — le début du run ne se lit pas, et rien ne l'invente`);
+  const debut = isoDeMs(premier.ts, "faits");
+  const finMs = Date.parse(fin);
+  if (!Number.isFinite(finMs)) refuse(`faits : --fin « ${fin} » n'est pas une date lisible — l'heure de fin se lit avec date -Is`);
+  if (finMs < Date.parse(debut)) refuse(`faits : la fin (${fin}) précède le début (${debut}) — un run ne se termine pas avant d'avoir commencé`);
+  if (!existsSync(trace)) refuse(`faits : la trace ${display(trace)} n'existe pas — l'export se fait avant tout autre geste (§1.5), et un chemin qui ne résout pas ne se recopie pas`);
+  if (!par.trim() || !temoignage.trim())
+    refuse(`faits : --par et --temoignage ne peuvent pas être vides — ces faits-là viennent de l'opérateur, jamais d'une machine`);
+
+  const commande =
+    `sqlite3 -readonly ${base} "select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
+    `'open', json_extract(value,'$.open'), 'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
+    `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;" > ${trace}`;
+
+  const faits = {
+    session: {
+      application: `Freebuff Desktop (desktop-v2.db${f.harness_id ? `, harness_id ${f.harness_id}` : ""})`,
+      identifiant: f.id,
+      modele: f.model,
+      ouverte_par: par,
+      ouverte_le: isoDeMs(f.created_at, "faits"),
+    },
+    horodatage_debut: debut,
+    horodatage_fin: fin,
+    repertoire_de_travail: travail,
+    trace: { source: `${display(base)} (tables threads, messages)`, chemin_exporte: trace, commande },
+    cloisonnement: { attendu_vu: attenduVu },
+    temoignage: { qui: par, quand: fin, texte: temoignage },
+  };
+  writeJson(out, faits);
+  console.log(`faits ok — ${cas} : fil ${f.id}, début ${debut}, fin ${fin} ; ${display(out)}`);
+}
+
 function cmdReceipt(a) {
   const runDir = resolve(a.required("run"));
   const cas = a.required("case");
@@ -871,7 +995,7 @@ function cmdCompare(a) {
   console.log(`compare ok — ${cas} : verdict ${verdict}, limites « ${limites} » ; ${display(outPath)}`);
 }
 
-const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, receipt: cmdReceipt, compare: cmdCompare };
+const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare };
 const a = parseArgs(process.argv.slice(2));
 if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
   console.log(USAGE);

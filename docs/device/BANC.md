@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 46 contrôles qui éprouvent les refus et les acceptations de run.mjs, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 50 contrôles qui éprouvent les refus et les acceptations de run.mjs, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -9,21 +9,21 @@ status: in-progress
 
 > V0.1 — 2026-10-16. Reprend le banc jetable `/tmp/banc-porte.sh`, né le 2026-10-15 avec la porte
 > (ADR-018) puis étendu au reste du harnais (ADR-020). Il change de nom en changeant de foyer :
-> « porte » ne nomme que la première des cinq commandes qu'il éprouve aujourd'hui ; les ADR-018 et 020,
+> « porte » ne nomme que la première des six commandes qu'il éprouve aujourd'hui ; les ADR-018 et 020,
 > datées, gardent l'ancien nom tel qu'elles l'ont écrit.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 46 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 50 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt.
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 46/46 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 50/50 PASS, exit 0
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `46/46 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `50/50 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -43,8 +43,8 @@ Trois arrêts, `exit 2`, avant le premier contrôle :
 
 Un banc dont la pièce est absente compterait des accidents comme des refus : il se tait plutôt.
 
-Il lui faut `bash`, `node`, un cas gelé et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel
-depuis un clone neuf).
+Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 lisent une base de client factice), un cas
+gelé et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf).
 
 ## 3. Ce qu'il touche, et ce qu'il ne touche pas
 
@@ -53,7 +53,7 @@ depuis un clone neuf).
   échoue si l'espace n'est pas rendu propre). C'est la seule écriture hors du dossier jetable.
 - Jamais le dépôt, jamais les quatre arbres, jamais `run.mjs`. Aucune session n'est ouverte.
 
-## 4. Les 46, par groupe
+## 4. Les 50, par groupe
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
@@ -61,6 +61,7 @@ depuis un clone neuf).
 | 14 à 20 | non-régression du reste : le reçu sur le dossier gelé, les refus d'origine, `--help` | — |
 | 21 à 31 | la racine déclarée : gel, garde du cas, texte substitué | ADR-019 |
 | 32 à 46 | l'origine du produit : `collect` exige l'espace gelé, le reçu relit le manifeste | ADR-020 |
+| 47 à 50 | les faits : dérivés du fil et du gel, puis refusés quand le fil est inconnu, quand le chemin ne résout pas, quand le fil vit dans un worktree | ADR-024 |
 
 Chaque groupe porte ses **acceptations** autant que ses refus : un banc qui ne saurait que refuser
 passerait en refusant tout.

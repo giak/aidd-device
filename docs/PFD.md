@@ -20,15 +20,15 @@ Légende : 🔲 non démarré · 🟨 en cours · 🟢 fait · 🟠 à revoir
 | `BOUNDARY.md` | le framework est intact, aucun fichier du dispositif ne lui appartient | 2 | 🟨 page écrite (**1 970 mots**, remesuré le 2026-10-16 après la Séance 21 ; la page avait annoncé 1 563, puis 1 686) ; la preuve d'appartenance se mesure en paires chemin + contenu ([ADR-014](DECISIONS.md)), **remesurée le 2026-10-16** : 2 599 paires d'un côté, 42 de l'autre, **0 commune** ; les relevés du second run restent à faire |
 | `CASES/*.expected.json` | les attendus écrits avant le premier run, empreinte figée | 2 | 🟨 écrit, puis **rectifié et re-gelé six fois** le 2026-10-15 — dernier gel `0d9a2180` (`gele_le` `2026-10-15T22:11:24.782242943+0200`, [ADR-018](DECISIONS.md), [ADR-019](DECISIONS.md)) ; l'attendu porte 9 falsificateurs dont `F9` (`sha256` `ae4914c5…`, 15 423 o), la demande `5aac04fb…` (13 413 o). **Un run a eu lieu** le même jour (`non concluant`, aucun produit) |
 | `runs/<horodatage>/output.json` | l'écart : un objet par cas, verdict et limites | 2 | 🔲 — un run a eu lieu (`runs/2026-10-15-171559-…/`), **sans `output.json`** : il est antérieur au chemin sans produit, que le harnais sait écrire depuis (spec §9, `collect --sans-produit`). L'`output.json` s'écrira avec le second run |
-| `NEGATIVE.md` | le dispositif a signalé une casse connue | 2 | 🔲 |
-| `ECART.md` | le compte-rendu commité dans la pull request framework | 2 | 🔲 |
+| `NEGATIVE.md` | le dispositif a signalé une casse connue | 2 | 🟨 ouvert le 2026-10-17 : une phrase de skill retournée est signalée (`exit 1`, `docs/device/NEGATIVE.md`), le produit jugé `écart` manque encore |
+| `ECART.md` | le compte-rendu commité dans la pull request framework | 2 | 🟨 rédigé le 2026-10-17 au foyer du run (`docs/device/runs/2026-10-15-171559-…/ECART.md`), dans la forme de la PR : phrase de verdict, écart nommé, limites qui mordent, révisions, clone, commande qui refait le run, ce qui manque ; aucun lien markdown, chemins en `backticks`. **Pas commité dans une PR** : aucune PR n'existe |
 
 ## Les 3 phases du projet
 
 | Phase | Contenu | Statut |
 | --- | --- | --- |
 | 1 — Gestion documentaire (fondation + boucle 2) | la gestion comme terrain de consignation : B1–B6, unité de travail, clôture, remote | 🟨 en cours |
-| 2 — Le dispositif (le v6) | DEVICE/BOUNDARY écrits, CASES gelé (`0d9a2180`) ; un run a eu lieu (`non concluant`) ; `output.json`, `NEGATIVE.md`, `ECART.md` et un run concluant restent | 🟨 |
+| 2 — Le dispositif (le v6) | DEVICE/BOUNDARY écrits, CASES gelé (`0d9a2180`) ; un run a eu lieu (`non concluant`) ; `output.json`, la publication d'`ECART.md` dans une PR et un run concluant restent ; `NEGATIVE.md` et `ECART.md` sont écrits, à moitié (2026-10-17) | 🟨 |
 | 3 — Amélioration continue | mesure des dérives de sa propre consignation, arbitrages | 🔲 |
 
 ## 2. Gestion documentaire (la partie en cours)

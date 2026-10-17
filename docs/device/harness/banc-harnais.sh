@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs,
-# replayed dry. 46 controls, no session opened, nothing written in the repository or in the
+# replayed dry. 50 controls, no session opened, nothing written in the repository or in the
 # four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -212,6 +212,20 @@ controle "45 receipt, source disparue = limite"    0 node "$H" receipt --run "$B
 controle "46 la limite de la source disparue est écrite" 0 node -e "
 const r=require('$B/recu-disparue/receipt.json');
 process.exit(r.limites.some(l=>l.includes('source du produit non résolvable'))?0:1)"
+
+# 47-50 : les faits se dérivent du fil et du gel, ils ne se tapent pas (ADR-024)
+DBF="$B/client.db"
+sqlite3 "$DBF" "create table threads(id text primary key, project_path text, execution_mode text, branch text, worktree_path text, harness_id text, model text, created_at integer);
+create table messages(thread_id text, seq integer, role text, ts integer, parts_json text);
+insert into threads values('fil-banc','$W/terrain','local','','','codebuff','m-banc',$(($(date +%s)*1000-60000)));
+insert into messages values('fil-banc',1,'user',$(($(date +%s)*1000-30000)),'[]');"
+touch "$B/trace/echange.jsonl"
+controle "47 faits, fil local dans l'arbre gelé"   0 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/faits-genere.json" --par banc --fin "$(date -Is)" --temoignage "banc"
+controle "48 faits refus, fil inconnu"             1 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-absent --trace "$B/trace/echange.jsonl" --out "$B/f48.json" --par banc --fin "$(date -Is)" --temoignage "banc"
+sqlite3 "$DBF" "update threads set project_path='$B/inexistant' where id='fil-banc';"
+controle "49 faits refus, chemin qui ne résout pas" 1 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/f49.json" --par banc --fin "$(date -Is)" --temoignage "banc"
+sqlite3 "$DBF" "update threads set project_path='$W/terrain', branch='freebuff/banc', worktree_path='$B/wt' where id='fil-banc';"
+controle "50 faits refus, fil en worktree"         1 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/f50.json" --par banc --fin "$(date -Is)" --temoignage "banc"
 
 echo
 echo "$PASS/$TOTAL PASS"

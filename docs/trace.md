@@ -2062,3 +2062,194 @@ c'est le seul contenu non commité à l'instant où il s'écrit. Puis le geste :
 ligne lue avant de coller (liste de contrôle §4.2).
 
 **Fermeture.** Suite close à cet instant.
+
+## Séance 29 — 2026-10-17 (le contrôle négatif : une phrase de skill retournée, signalée)
+
+**Objectif.** Construire `NEGATIVE.md` (v6 §10, question 6 du §11) : introduire une casse volontaire dans une
+phrase de skill du framework, montrer la sortie qui la signale, ou documenter pourquoi le contrôle ne peut
+pas être construit.
+
+**Fait.** [NEGATIVE.md](device/NEGATIVE.md), six sections, type `negative` : la casse, les deux directions du
+contrôle avec leurs sorties brutes, ce qu'il prouve et ne prouve pas, et la moitié comportementale nommée
+comme manquante. Le banc vit sous `/tmp/negatif-2026-10-17-100043`, hors des quatre arbres : une copie de la
+révision sous test, une copie de `CASES/`, et un seul champ du gel copié changé —
+`arbres[revision-sous-test].chemin`, que l'empreinte ne couvre pas ([ADR-016](DECISIONS.md)). Le tableau de
+bord gagne sa ligne et l'étape 7 y passe de « jamais ouvert » à « ouvert à moitié » ; le PFD, qui portait
+encore `NEGATIVE.md` en 🔲 et parmi les pièces manquantes, est remis au vrai (🟨, deux lignes).
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le banc n'est pas piégé | `preflight --cases <banc>` sur la copie intacte | `preflight ok … gel 0d9a2180 re-haché, 2 fichier(s) et 8 référence(s) ; texte 832036f7` — **`exit 0`** |
+| la phrase est retournée | `sed`/`grep` sur la copie | l. 33 `- End with a short report of what changed.` → `- Never report what changed.` ; **1 223 → 1 209** o, `149f0f19…` → `329852d0…` |
+| la casse est signalée | même commande, copie cassée | `REFUS — preflight : la référence « …/SKILL.md » de l'arbre « revision-sous-test » a changé depuis le gel — 329852d0 au disque, 149f0f19 gelé …` — **`exit 1`** |
+| le signal n'est pas un coup de chance | première casse essayée, autre phrase (`Ask before anything ambiguous…`, `629c5bcf`) | **`exit 1`** aussi : deux perturbations, deux refus |
+| le cas réel n'a pas bougé | `preflight --texte …` sur `CASES/` | `exit 0`, gel `0d9a2180`, 2 fichiers, 8 références, texte `832036f7` |
+| les quatre arbres intacts | `rev-parse --short HEAD`, `status --porcelain` | `fe48de12`/2, `416ec1f`/1, `4c39e5c5`/0, `416ec1f`/0 — identiques au matin |
+
+**Rectifications de ses propres affirmations.** Une, de méthode : la première casse essayée retournait la
+règle d'ambiguïté, qui n'est citée par aucun falsificateur ; elle signalait aussi, mais elle liait mal la
+casse à ce que le cas attend. La seconde porte sur la phrase que `E2` cite mot pour mot — « End with a short
+report of what changed » — et c'est elle qui est retenue : retourner la phrase tue la raison d'être de
+`E2`, donc le cas qui doit la signaler est nommé.
+
+**Dérives signalées, non corrigées.** Trois. (1) **La moitié comportementale du contrôle n'est pas faite** :
+le dispositif signale l'identité de la casse, pas son effet ; aucun produit n'a été écrit selon la règle
+retournée, donc `compare` n'a rien jugé. La question 6 du §11 reste **à moitié** répondue, et le v6 est
+explicite : en état A, le travail n'est pas fini. (2) Le refus est celui de `preflight` ; `receipt`
+(`run.mjs:661`) et `compare` (`:836`) appellent la même fonction, mais c'est un fait de lecture, pas une
+mesure — aucune des deux n'a été courue ici. (3) Le banc `/tmp` est jetable par construction : la preuve
+tient tant que la sortie citée est crue, et les commandes du §3 suffisent à le refaire.
+
+**Prochaines étapes.** Le contrôle comportemental, écrit d'avance au §5 de `NEGATIVE.md` : troisième copie du
+cas dans un dossier jetable, référence pointant une copie cassée, `freeze --refreeze`, même session et même
+texte du §5, puis `collect`, `receipt`, `compare` — le juge doit rendre `écart` et la différence nommer
+`E2`. Il attend donc un run qui produit, c'est-à-dire le geste qui reste de la Séance 28.
+
+**Mémoires.** `7535b660` — la casse, les deux directions mesurées, les deux perturbations, et la moitié qui
+manque.
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne `NEGATIVE.md`, sa ligne au tableau de bord, deux
+lignes du PFD et ce paragraphe ; rien n'est commité, aucun des quatre arbres n'a été touché, le banc jetable
+reste sous `/tmp`.
+
+## Séance 30 — 2026-10-17 (`ECART.md` du premier run, dans la forme de la pull request)
+
+**Objectif.** Écrire `ECART.md` pour le premier cas : la forme qu'attend la pull request, ce qui peut déjà
+être dit du run `non concluant`, et ce qui manque encore.
+
+**Fait.** [ECART.md](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/ECART.md), sept sections, écrit au
+foyer du run, à côté de ses pièces brutes : la phrase de verdict, l'écart (attendu, produit, différence
+nommée, verdict, pourquoi pas `écart`), les falsificateurs qui mordent et ceux qui ne sont pas évaluables,
+les limites du run, la preuve du contrôle négatif avec sa sortie, les révisions et le clone, la commande
+qui refait le run, et ce qui n'a pas été fait. **Aucun lien markdown, chemins en `backticks`** : c'est la
+forme que le dépôt du framework impose (`check-markdown-links.js`). Le PFD (ligne `ECART.md`, phase 2) et le
+tableau de bord (en-tête, ligne de document, étape 7) sont remis au vrai.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| la fenêtre du run | `cat horodatage_debut.txt horodatage_fin.txt` | `2026-10-15T17:15:59+02:00`, `2026-10-15T17:29:51+02:00` |
+| les trois refus, cités mot pour mot | `cat collect-refus.txt receipt-refus.txt compare-refus.txt` | `--from absent …/terrain/aidd_docs` ; `aucun manifeste … lancer collect d'abord` ; `aucun reçu … le reçu seul (§8)` |
+| la trace est là, et son empreinte | `ls -l`, `sha256sum` | `161 022` octets, `40f7bb60…` |
+| aucun produit | `ls <W>/terrain/aidd_docs` | absente, avant comme après |
+| trois `Glob`, tous vides | `grep` de `trace/echange-1.txt` | `**/02-project-memory/SKILL.md`, `**/project-memory/**/*.md`, `**/framework-origin/**` — **0 résultat** chacun |
+| le document ne casse aucun contrôle de lien | `grep -c ']('` sur `ECART.md` | **0** |
+
+**Rectifications de ses propres affirmations.** Une : le PV ne nomme que **deux** `Glob` ; la trace en
+porte **trois** (le second, `**/project-memory/**/*.md`, n'y figure pas). L'écart dit trois, et le PV reste
+tel qu'il a été écrit — c'est un enregistrement daté.
+
+**Dérives signalées, non corrigées.** Quatre. (1) `ECART.md` n'est **pas** à sa destination : le v6 le veut
+commité sous `aidd_docs/tasks/<mois>/<dossier>/ECART.md` dans un working copy de la PR du framework ; aucune
+PR n'existe, donc aucune copie de travail — le geste de publication est nommé au §7, pas fait. (2) Aucun
+`receipt.json`, aucun `output.json` pour ce run : il est antérieur au chemin sans produit, et l'écart tient
+sur le PV et les trois refus. (3) `faits.json` cite l'ancien espace de travail
+(`/home/giak/runs/aidd-device/…`), mort depuis le déplacement : l'écart le nomme, la pièce reste telle
+quelle. (4) La moitié comportementale du contrôle négatif manque toujours : l'écart renvoie à
+`NEGATIVE.md`, qui le dit.
+
+**Prochaines étapes.** Le run d'abord (fil neuf, mode direct, texte du §5, trois messages), puis
+`collect`/`receipt`/`compare`, et un `ECART.md` **du second run** — celui-ci restera l'écart daté du premier.
+La publication dans une PR attend une PR.
+
+**Mémoires.** `48afce8c` — la forme, les mesures, la rectification des trois `Glob`, et les quatre manques.
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne `ECART.md`, deux lignes du PFD, trois du tableau
+de bord et ce paragraphe ; rien n'est commité, aucun des quatre arbres n'a été touché.
+
+## Séance 31 — 2026-10-17 (l'ouverture suivie à blanc : six trous, trouvés avant de payer un run)
+
+**Objectif.** Répéter l'ouverture du second run sur une copie jetable du cas, en suivant la liste de contrôle
+ligne à ligne, pour prouver qu'elle se suit sans trou avant de payer un vrai run.
+
+**Fait.** [Répétition à blanc](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-17-100609-repetition-a-blanc-de-l-ouverture.md),
+six sections, sur `/tmp/repetition-2026-10-17-100539` : copies du terrain, de la révision sous test et de
+`CASES/`, hors des quatre arbres, re-gelées là. **Six trous trouvés, tous réparés** : la liste ne disait pas
+d'écrire `faits.json` ni `last-message.md`, ne reliait pas `faits.trace.chemin_exporte` à l'export, n'avait
+pas la branche `collect --sans-produit` (l'issue du premier run), ne disait ni que le reçu s'écrit une seule
+fois ni que le verdict est contraint par les falsificateurs. La liste et le tableau de bord sont réparés.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le cas voyage | `freeze --refreeze --racine <banc>` | `2 fichiers du cas, 8 reference(s), 4 arbre(s) ; empreinte 0d9a2180` — `exit 0` |
+| la porte tient sur la copie | `preflight --cases <banc> --repertoire <banc>/terrain` | `ouverture autorisée (HEAD 416ec1f, porcelain 0)` — `exit 0` |
+| la chaîne va jusqu'au bout, avec produit | `collect` puis `receipt --verdict ecart` puis `compare` | `2 fichier(s)`, reçu à **20 champs** (`1 limite`), `output.json` à **11 clés**, **7 attendus écartés** — trois `exit 0` |
+| la branche sans produit fonctionne | `collect --sans-produit` puis `receipt` puis `compare` | `0 fichier`, `non concluant`, **3 limites** — trois `exit 0` |
+| la requête du fil est valide | `sqlite3 -readonly … from threads;` | `exit 0`, **0 ligne** (aucun fil n'est encore ouvert) |
+| les commandes lisent le cas par défaut | `collect` sans `--cases` | **refus** : produit « hors de l'espace de travail gelé » — c'est le gel du vrai cas qui était lu, pas celui du banc |
+
+**Rectifications de ses propres affirmations.** Aucune sur un fait antérieur. Une sur la méthode : la
+première exécution de `collect` sur le banc a échoué de ma faute, `--cases` omis ; le refus était juste, et
+il a appris que les trois commandes sont attachées au dossier `CASES` du dépôt par défaut — sans effet pour
+le vrai run, dont le cas vit là.
+
+**Dérives signalées, non corrigées.** Trois. (1) **Trois étapes de la liste ne sont pas éprouvables sans
+session** : 4.1 (fil neuf, mode direct), 4.3 (collage) et 4.4 (premier message stocké comparé au texte) ;
+elles restent à faire au vrai geste, et la répétition le dit plutôt que de le laisser croire. (2) Le produit
+de la répétition est **factice** — deux fichiers écrits pour l'exercice, et le reçu porte lui-même
+« répétition, aucune session » ; aucun de ces fichiers n'est cité comme un run. (3) Le parent
+`docs/device/runs/` n'a pas été éprouvé : un `mkdir` sous `/tmp` a tenu lieu, et la commande de nommage,
+elle, a rendu ce qu'elle devait.
+
+**Prochaines étapes.** Le geste, désormais sans trou connu dans sa liste : fil neuf en mode direct, la ligne
+du fil lue avant de coller, le texte du §5, trois messages au plus, l'export, puis les cinq gestes du §4.7
+— dont les deux branches de `collect` selon que la session produit ou non.
+
+**Mémoires.** `a226af32` — le banc, les sorties, les six trous, et ce qui n'a pas pu être éprouvé.
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne la répétition, la liste réparée, une ligne du
+tableau de bord et ce paragraphe ; rien n'est commité, aucun des quatre arbres n'a été touché, le banc
+jetable reste sous `/tmp`.
+
+## Séance 32 — 2026-10-17 (`faits` : les quinze valeurs du reçu, dérivées au lieu d'être tapées)
+
+**Objectif.** Faire écrire `faits.json` par le harnais : une commande qui lit le fil du client et l'export de
+trace, remplit les champs du reçu et refuse un chemin qui ne résout pas.
+
+**Fait.** Une sixième commande, `faits`, dans `run.mjs` ([ADR-024](DECISIONS.md)), et le banc qui la couvre :
+contrôles 47 à 50. Elle lit la base du client en `-readonly` par `sqlite3`, en dérive `session.application` ·
+`identifiant` · `modele` · `ouverte_le`, `horodatage_debut` (le premier message de l'utilisateur),
+`repertoire_de_travail`, `trace.source` · `chemin_exporte` · `commande`, et exige les trois faits humains —
+qui a ouvert, quand le run s'est terminé, ce que l'opérateur témoigne. Le harnais passe de cinq à six
+commandes, de 882 à **1 006 lignes**, de 63 à **86 refus**. Les pages qui comptent sont remises au vrai :
+DEVICE (896 mots, sous son plafond), BANC, DASHBOARD, ARCHITECTURE, EXPLICATION, README, et le §4.7 de la
+liste de contrôle, qui nomme désormais une commande au lieu de quinze valeurs tapées à la main.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le code est valide | `node --check run.mjs`, `--help` | les deux `exit 0`, l'aide liste `faits` |
+| elle écrit les faits d'un fil | base **factice** (schéma minimal), fil pointant `<W>/terrain`, un message | `faits ok — … début 2026-10-17T10:00:46+02:00, fin …` — **`exit 0`**, neuf groupes de champs |
+| un fil inconnu est refusé | `--fil fil-absent` | `aucun fil « fil-absent » … l'identifiant se lit dans la base, il ne se devine pas` — **`exit 1`** |
+| un chemin qui ne résout pas est refusé | `project_path=/tmp/nexiste-pas/terrain` | `le répertoire de travail du fil (…) ne résout pas — le run aurait écrit nulle part` — **`exit 1`** |
+| un fil en worktree est refusé | `branch=freebuff/x`, `worktree_path=…` | `il déplacerait le HEAD de la copie, et le produit sortirait de l'arbre gelé (§1.7)` — **`exit 1`** |
+| une fin antérieure au début est refusée | `--fin 2020-01-01…` | `un run ne se termine pas avant d'avoir commencé` — **`exit 1`** |
+| une trace absente est refusée | `--trace /tmp/aucune-trace.jsonl` | `l'export se fait avant tout autre geste (§1.5)` — **`exit 1`** |
+| les faits ne s'écrivent qu'une fois | même `--out` deux fois | `les faits s'écrivent une fois, à chaud` — **`exit 1`** |
+| le banc couvre la commande | `bash docs/device/harness/banc-harnais.sh` | **50/50 PASS**, `exit 0` |
+
+**Rectifications de ses propres affirmations.** Aucune. Le chiffre des refus change de convention sans la
+changer : la page comptait les lignes portant `refuse(`, définition comprise (63) ; la même commande en rend
+86, dont 85 sites d'appel.
+
+**Dérives signalées, non corrigées.** Quatre. (1) `receipt` accepte encore un `faits.json` dont
+`repertoire_de_travail` ne résout pas ou ne nomme pas l'arbre `travail` : c'est le falsificateur de
+l'ADR-024, et il n'est pas réparé — `faits` refuse ce que `receipt` croit encore. (2) `trace.chemin_exporte`
+n'est vérifié que par son **existence** : un fichier quelconque y passe pour un export. (3) La base factice
+du banc est un schéma minimal, pas la base du client : le banc prouve la logique de refus, pas la forme
+exacte des tables. (4) La commande appelle `sqlite3` et `date -d`, deux binaires qui ne sont pas déclarés au
+`--help` comme prérequis — le banc, lui, en dépend désormais.
+
+**Prochaines étapes.** Le geste, avec une étape de moins à la main : fil neuf, collage, export, puis `faits`
+avec le fil et la date de fin, puis `collect` (deux branches), `last-message.md`, `receipt`, `compare`.
+
+**Mémoires.** `85c25441` — la commande, ses refus mesurés, le banc, et les quatre limites.
+
+**Fermeture.** Séance close à cet instant. Le dépôt gagne `run.mjs` et son banc, l'ADR-024, la liste de
+contrôle réparée et sept pages remises au vrai ; rien n'est commité, aucun des quatre arbres n'a été touché.

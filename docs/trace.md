@@ -2040,3 +2040,25 @@ et ce qui reste à faire au geste.
 
 **Fermeture.** Séance close à cet instant. Le dépôt gagne la liste de contrôle, la conduite et le tableau de
 bord réparés, et ce paragraphe ; aucun fil n'est ouvert, aucune copie du cas touchée, rien de commité.
+
+## Séance 28 — 2026-10-17 (suite)
+
+**Objectif.** Mettre la séance et ses trois pages au dépôt, pousser, et vérifier que `origin/main` les porte.
+
+**Fait.** Commit `fad7a83` — « Préparer l'ouverture du second run, et réparer ce que la vérification a
+démenti » — quatre fichiers, **+209/−11** : la liste de contrôle (nouvelle), la conduite §1.7 et sa note
+datée, le tableau de bord, ce journal. Poussé sur `https://github.com/giak/aidd-device.git`, branche `main` :
+`57fddc8..fad7a83`, `push exit 0`.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le commit est sur la branche distante | `git ls-remote origin refs/heads/main` | `fad7a8321365986f3f0f62c13eb5a0d5ea75b984 refs/heads/main`, égal à `git rev-parse HEAD` |
+| les quatre fichiers y sont, au même contenu | `git fetch` puis `git rev-parse origin/main:<chemin>` contre `git hash-object <chemin>` | **4/4 identiques** : `DASHBOARD.md`, `trace.md`, la conduite, la liste |
+
+**Ce qui reste.** Ce paragraphe : il est écrit après la poussée qu'il relate et part au commit qui le porte ;
+c'est le seul contenu non commité à l'instant où il s'écrit. Puis le geste : un fil neuf en mode direct, sa
+ligne lue avant de coller (liste de contrôle §4.2).
+
+**Fermeture.** Suite close à cet instant.

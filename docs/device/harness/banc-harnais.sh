@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 67 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 96 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -58,9 +58,27 @@ controle() { # nom, attendu, commande...
   if [ "$rc" = "$attendu" ]; then PASS=$((PASS+1)); printf 'PASS  %-46s exit=%s\n' "$nom" "$rc"
   else printf 'FAIL  %-46s exit=%s attendu=%s\n' "$nom" "$rc" "$attendu"; fi
 }
+refus-nomme() { # exit attendu, texte attendu, commande... — un refus explicite, pas une trace Node
+  local voulu="$1" attendu="$2"; shift 2
+  local sortie rc
+  sortie=$("$@" 2>&1); rc=$?
+  [ "$rc" = "$voulu" ] && printf '%s' "$sortie" | grep -qF -- "$attendu"
+}
 
 mkdir -p "$B/cases" "$B/cases2" "$B/trace" "$B/run"
 cp "$GEL" "$B/cases/$CAS.freeze.json"
+
+# The client's base and its thread, before the first receipt: H3 re-reads them (ADR-031). The two
+# instants are derived as faits derives them (`date -d @<seconde>`), so the fixture and the harness
+# compare the same string, whatever the local zone.
+D0=$(date -d '2026-10-15T23:00:00+02:00' +%s000)
+ISO0=$(date -d "@$((D0 / 1000))" --iso-8601=seconds)
+ISO1=$(date -d "@$((D0 / 1000 + 60))" --iso-8601=seconds)
+DBF="$B/client.db"
+sqlite3 "$DBF" "create table threads(id text primary key, project_path text, execution_mode text, branch text, worktree_path text, harness_id text, model text, created_at integer);
+create table messages(thread_id text, seq integer, role text, ts integer, parts_json text);
+insert into threads values('banc','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc',1,'user',$D0,'[]');"
 
 # 1-2 : l'ouverture autorisée, sur le gel réel
 controle "1 porte, dossier gelé (--repertoire)"  0 node "$H" preflight --case "$CAS" --repertoire "$W/terrain"
@@ -116,15 +134,17 @@ controle "13 porte, gel rejoué d'un banc"        0 node "$H" preflight --case "
 
 # 14-19 : non-régression du reste du harnais (le reçu sur le dossier gelé, et les refus d'origine)
 controle "14 collect --sans-produit"             0 node "$H" collect --run "$B/run" --case "$CAS" --sans-produit
-cat > "$B/faits-mauvais.json" <<JSON
-{"session":{"application":"banc","identifiant":"banc","modele":"aucun","ouverte_par":"banc","ouverte_le":"2026-10-15T23:00:00+02:00"},
-"horodatage_debut":"2026-10-15T23:00:00+02:00","horodatage_fin":"2026-10-15T23:01:00+02:00",
-"repertoire_de_travail":"$TERRAIN","trace":{"source":"banc","chemin_exporte":"$B/trace/echange.jsonl","commande":"sqlite3 -readonly base \"select json_object('seq', m.seq) from messages m, json_each(m.parts_json) where m.thread_id='banc' order by m.seq;\""},
-"cloisonnement":{"attendu_vu":"non"},"temoignage":{"qui":"banc","quand":"2026-10-15T23:01:00+02:00","texte":"banc : aucun run reel"}}
-JSON
-sed "s#\"repertoire_de_travail\":\"$TERRAIN\"#\"repertoire_de_travail\":\"$W/terrain\"#" \
-  "$B/faits-mauvais.json" > "$B/faits-bon.json"
-controle "15 receipt refus, autre arbre gelé"    1 node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-mauvais.json"
+# The bench's faits.json is written by faits, never by hand: H2 compares the command the piece cites
+# to the one the receipt rebuilds, and a hand-written command differs by its SQL (ADR-032). The
+# export is made before faits, as §1.5 orders it, and is the thread's own output — here empty,
+# since the thread « banc » has no part.
+: > "$B/trace/echange.jsonl"
+node "$H" faits --case "$CAS" --base "$DBF" --fil banc --trace "$B/trace/echange.jsonl" --out "$B/faits-banc.json" \
+  --par banc --fin "$ISO1" --temoignage "banc : aucun run reel" >/dev/null || { echo "ARRET — la fixture faits du banc ne s'écrit pas"; exit 2; }
+node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-banc.json','utf8'));
+t.repertoire_de_travail='$TERRAIN';fs.writeFileSync('$B/faits-mauvais.json',JSON.stringify(t,null,2)+'\n')"
+cp "$B/faits-banc.json" "$B/faits-bon.json"
+controle "15 receipt refus, base d'un autre arbre" 0 refus-nomme 1 "ouvre" node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-mauvais.json"
 controle "16 receipt, dossier gelé"              0 node "$H" receipt --run "$B/run" --case "$CAS" --faits "$B/faits-bon.json"
 controle "17 compare, depuis le reçu seul"       0 node "$H" compare --run "$B/run" --case "$CAS" --difference "banc : rien produit" --phrase "banc" --verdict "non concluant" --limites "ne mord pas"
 controle "18 second collect refusé"              1 node "$H" collect --run "$B/run" --case "$CAS" --sans-produit
@@ -193,12 +213,13 @@ const {execFileSync}=require('child_process');
 process.exit(execFileSync('git',['-C','$W/terrain','status','--porcelain'],{encoding:'utf8'}).trim()===''?0:1)"
 
 # 42-45 : le reçu relit l'origine — la porte de collect peut être sautée
-mk() { # nom-du-run, chemin-de-la-source-du-produit
+mk() { # nom-du-run, source déclarée — la copie est réelle, seule la provenance déclarée change (H1, ADR-030)
   node "$H" collect --run "$B/$1" --case "$CAS" --sans-produit >/dev/null 2>&1
-  node -e "const fs=require('fs'),p='$B/$1/raw/$CAS/manifest.json';const m=JSON.parse(fs.readFileSync(p,'utf8'));
-const src='$2';
-if (src==='') { m.arbre_de_travail={label:'travail',chemin:'$TERRAIN'}; }
-else { m.fichiers=[{chemin:'produit.md',source:src,sha256:'0'.repeat(64),taille:1,birth:null,birth_epoch:null}]; }
+  cp "$W/terrain/README.md" "$B/$1/raw/$CAS/produit.md"
+  node -e "const fs=require('fs'),crypto=require('crypto'),p='$B/$1/raw/$CAS/manifest.json',copie='$B/$1/raw/$CAS/produit.md';
+const m=JSON.parse(fs.readFileSync(p,'utf8'));const src='$2';
+if (src==='') { m.arbre_de_travail={label:'travail',chemin:'$TERRAIN'}; fs.unlinkSync(copie); }
+else { const b=fs.readFileSync(copie); m.fichiers=[{chemin:'produit.md',source:src,sha256:crypto.createHash('sha256').update(b).digest('hex'),taille:b.length,birth:null,birth_epoch:null}]; }
 fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n');"
 }
 mk recu-arbre ""
@@ -214,12 +235,8 @@ const r=require('$B/recu-disparue/receipt.json');
 process.exit(r.limites.some(l=>l.includes('source du produit non résolvable'))?0:1)"
 
 # 47-50 : les faits se dérivent du fil et du gel, ils ne se tapent pas (ADR-024)
-DBF="$B/client.db"
-sqlite3 "$DBF" "create table threads(id text primary key, project_path text, execution_mode text, branch text, worktree_path text, harness_id text, model text, created_at integer);
-create table messages(thread_id text, seq integer, role text, ts integer, parts_json text);
-insert into threads values('fil-banc','$W/terrain','local','','','codebuff','m-banc',$(($(date +%s)*1000-60000)));
+sqlite3 "$DBF" "insert into threads values('fil-banc','$W/terrain','local','','','codebuff','m-banc',$(($(date +%s)*1000-60000)));
 insert into messages values('fil-banc',1,'user',$(($(date +%s)*1000-30000)),'[]');"
-touch "$B/trace/echange.jsonl"
 controle "47 faits, fil local dans l'arbre gelé"   0 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/faits-genere.json" --par banc --fin "$(date -Is)" --temoignage "banc"
 controle "48 faits refus, fil inconnu"             1 node "$H" faits --case "$CAS" --base "$DBF" --fil fil-absent --trace "$B/trace/echange.jsonl" --out "$B/f48.json" --par banc --fin "$(date -Is)" --temoignage "banc"
 sqlite3 "$DBF" "update threads set project_path='$B/inexistant' where id='fil-banc';"
@@ -230,8 +247,12 @@ controle "50 faits refus, fil en worktree"         1 node "$H" faits --case "$CA
 # 51-56 : receipt situe les chemins de faits.json, et les compare comme faits les compare (ADR-025)
 vide() { node "$H" collect --run "$B/$1" --case "$CAS" --sans-produit >/dev/null 2>&1; }
 faits-en() { # travail, trace, sortie — depuis le faits.json du banc, seules les deux valeurs changent
+  # The redirect at the end of trace.commande moves with the exported path, otherwise H2 would
+  # refuse the piece for citing another export before reaching the control it serves (ADR-032).
   node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));
 t.repertoire_de_travail=process.argv[1];t.trace.chemin_exporte=process.argv[2];
+const i=t.trace.commande.lastIndexOf(' > ');
+t.trace.commande=t.trace.commande.slice(0,i)+' > '+process.argv[2];
 fs.writeFileSync(process.argv[3],JSON.stringify(t,null,2)+'\n')" "$1" "$2" "$3"
 }
 for r in r51 r52 r53 r54 r55 r56; do vide "$r"; done
@@ -266,12 +287,6 @@ ln -s "$(command -v git)" "$B/sans-sqlite/git"; ln -s "$(command -v date)" "$B/s
 ln -s "$(command -v date)" "$B/sans-git/date"; ln -s "$(command -v sqlite3)" "$B/sans-git/sqlite3"
 ln -s "$(command -v git)" "$B/faux-date/git"
 printf '#!/bin/sh\necho "date: illegal option -- -" >&2\nexit 1\n' > "$B/faux-date/date"; chmod +x "$B/faux-date/date"
-refus-nomme() { # exit attendu, texte attendu, commande... — un refus explicite, pas une trace Node
-  local voulu="$1" attendu="$2"; shift 2
-  local sortie rc
-  sortie=$("$@" 2>&1); rc=$?
-  [ "$rc" = "$voulu" ] && printf '%s' "$sortie" | grep -qF -- "$attendu"
-}
 controle "57 prérequis refus, sqlite3 absent"      0 refus-nomme 1 "« sqlite3 » est introuvable" env PATH="$B/sans-sqlite" "$NODE" "$H" faits --case "$CAS" --base "$B/client.db" --fil fil-banc --trace "$B/trace/echange.jsonl" --out "$B/f57.json" --par banc --fin "$(date -Is)" --temoignage banc
 controle "58 prérequis refus, date qui n'obéit pas" 0 refus-nomme 1 "GNU coreutils" env PATH="$B/faux-date" "$NODE" "$H" collect --run "$B/run-pre58" --case "$CAS" --sans-produit
 controle "59 prérequis refus, git absent"         0 refus-nomme 1 "« git » est introuvable" env PATH="$B/sans-git" "$NODE" "$H" preflight --case "$CAS"
@@ -299,18 +314,28 @@ controle "64 receipt refus, identifiant d'un autre fil" 0 refus-nomme 1 "session
 faits-ident "banc" "banc" "$B/f65.json"
 controle "65 receipt refus, commande sans fil"    0 refus-nomme 1 "ne nomme aucun fil" node "$H" receipt --run "$B/r65" --case "$CAS" --faits "$B/f65.json"
 
-# 66-67 : le reçu lit l'export et compte les échanges de la fenêtre (§5, condition 2 ; ADR-029)
-D66=$(date -d '2026-10-15T23:00:00+02:00' +%s000)
-mkdir -p "$B/trace66"
-printf '{"seq":1,"role":"user","ts":%s,"text":"banc"}\n' "$((D66+30000))" > "$B/trace66/dans.jsonl"
-printf '{"seq":1,"role":"user","ts":%s,"text":"banc"}\n' "$((D66-3600000))" > "$B/trace66/hors.jsonl"
-trace66() { # fichier de trace, sortie
-  node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));
-t.trace.chemin_exporte=process.argv[1];fs.writeFileSync(process.argv[2],JSON.stringify(t,null,2)+'\n')" "$1" "$2"
+# 66-67 : le reçu lit l'export et compte les échanges de la fenêtre (§5, condition 2 ; ADR-029).
+# H2 (ADR-032) interdit d'écrire la trace à la main : le fichier est la sortie de la requête du
+# §1.5 sur une base qui porte le fil, exécutée par la commande que faits écrit. Le cas « hors
+# fenêtre » se déplace donc dans la base : le premier message utilisateur n'a aucune part, donc il
+# ne s'exporte pas, et le seul message exporté tombe une heure après la fenêtre.
+export-fil() { # fil, fichier de trace, faits — le geste §1.5 : le fichier est la sortie de la pièce
+  : > "$2"
+  node "$H" faits --case "$CAS" --base "$DBF" --fil "$1" --trace "$2" --out "$3" \
+    --par banc --fin "$ISO1" --temoignage "banc : aucun run reel" >/dev/null 2>&1 || return 1
+  bash -c "$(node -e "process.stdout.write(require('$3').trace.commande)")"
 }
-trace66 "$B/trace66/dans.jsonl" "$B/f66.json"
-trace66 "$B/trace66/hors.jsonl" "$B/f67.json"
-for r in r66 r67; do node "$H" collect --run "$B/$r" --case "$CAS" --sans-produit >/dev/null 2>&1; done
+sqlite3 "$DBF" <<SQL
+insert into threads values('banc-fenetre','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-fenetre',1,'user',$D0,'[{"kind":"text","text":"banc"},{"kind":"text","text":"banc, seconde part"}]');
+insert into threads values('banc-hors-fenetre','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-hors-fenetre',1,'user',$D0,'[]');
+insert into messages values('banc-hors-fenetre',2,'assistant',$(($D0+3600000)),'[{"kind":"text","text":"banc, une heure plus tard"}]');
+SQL
+mkdir -p "$B/trace66"
+export-fil banc-fenetre "$B/trace66/fenetre.jsonl" "$B/f66.json" || { echo "ARRET — l'export de 66 ne s'écrit pas"; exit 2; }
+export-fil banc-hors-fenetre "$B/trace66/hors.jsonl" "$B/f67.json" || { echo "ARRET — l'export de 67 ne s'écrit pas"; exit 2; }
+for r in r66 r67; do vide "$r"; done
 controle "66 receipt, échange dans la fenêtre"      0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','receipt','--run','$B/r66','--case','$CAS','--faits','$B/f66.json'],{stdio:'ignore'});
@@ -321,6 +346,161 @@ const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','receipt','--run','$B/r67','--case','$CAS','--faits','$B/f67.json'],{stdio:'ignore'});
 const r=JSON.parse(fs.readFileSync('$B/r67/receipt.json','utf8'));
 process.exit(r.falsificateurs.trace_sans_echange_dans_la_fenetre===true && r.limites.some(l=>l.includes('condition 2')) ?0:1)"
+
+# 68-86 : H1 re-hache la copie (ADR-030), H3 relit la base (ADR-031)
+produit-run() { # nom — un run dont le produit est réellement copié depuis l'espace gelé
+  node "$H" collect --run "$B/$1" --case "$CAS" --from "$W/terrain/README.md" >/dev/null 2>&1
+}
+faits-fil() { # fil, sortie — copie de faits-bon, identifiant et commande d'export au même fil
+  node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));
+t.session.identifiant=process.argv[1];
+t.trace.commande=t.trace.commande.replace(/thread_id='[^']*'/, \"thread_id='\"+process.argv[1]+\"'\");
+fs.writeFileSync(process.argv[2],JSON.stringify(t,null,2)+'\n')" "$1" "$2"
+}
+
+produit-run r68
+printf 'retouche apres collect\n' >> "$B/r68/raw/$CAS/README.md"
+controle "68 receipt refus, copie réécrite"      0 refus-nomme 1 "ne rend plus l'empreinte" node "$H" receipt --run "$B/r68" --case "$CAS" --faits "$B/faits-bon.json" --verdict "non concluant"
+
+produit-run r69
+rm "$B/r69/raw/$CAS/README.md"
+controle "69 receipt refus, copie supprimée"     0 refus-nomme 1 "n'est plus dans la copie" node "$H" receipt --run "$B/r69" --case "$CAS" --faits "$B/faits-bon.json" --verdict "non concluant"
+
+produit-run r70
+: > "$B/r70/raw/$CAS/ajoute.md"
+controle "70 receipt refus, fichier en trop"     0 refus-nomme 1 "absent du manifeste" node "$H" receipt --run "$B/r70" --case "$CAS" --faits "$B/faits-bon.json" --verdict "non concluant"
+
+produit-run r71
+controle "71 receipt, copie intacte et comptée"  0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r71','--case','$CAS','--faits','$B/faits-bon.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r71/receipt.json','utf8'));
+process.exit(r.produit.verifie && r.produit.verifie.fichiers===1 && /^[0-9a-f]{64}$/.test(r.produit.verifie.manifeste_sha256)?0:1)"
+controle "72 manifeste haché au reçu"            0 node -e "
+const fs=require('fs'),crypto=require('crypto');const r=JSON.parse(fs.readFileSync('$B/r71/receipt.json','utf8'));
+const sha=crypto.createHash('sha256').update(fs.readFileSync('$B/r71/raw/$CAS/manifest.json')).digest('hex');
+process.exit(r.produit.verifie.manifeste_sha256===sha?0:1)"
+
+produit-run r73
+node -e "const fs=require('fs'),p='$B/r73/raw/$CAS/manifest.json';const m=JSON.parse(fs.readFileSync(p,'utf8'));m.fichiers[0].chemin='../../evasion.md';fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n');"
+controle "73 receipt refus, chemin qui sort"     0 refus-nomme 1 "sort de" node "$H" receipt --run "$B/r73" --case "$CAS" --faits "$B/faits-bon.json" --verdict "non concluant"
+
+produit-run r74
+rm "$B/r74/raw/$CAS/README.md"
+ln -s "$W/terrain/README.md" "$B/r74/raw/$CAS/README.md"
+controle "74 receipt refus, lien symbolique"     0 refus-nomme 1 "lien symbolique" node "$H" receipt --run "$B/r74" --case "$CAS" --faits "$B/faits-bon.json" --verdict "non concluant"
+
+for r in r75 r76 r77 r78 r79 r80 r81 r82 r83 r84 r85; do vide "$r"; done
+node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));delete t.trace.base;fs.writeFileSync('$B/f75.json',JSON.stringify(t,null,2)+'\n')"
+controle "75 receipt refus, faits sans base"     0 refus-nomme 1 "trace.base" node "$H" receipt --run "$B/r75" --case "$CAS" --faits "$B/f75.json" --verdict "non concluant"
+node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync('$B/faits-bon.json','utf8'));t.trace.base='$B/absente.db';fs.writeFileSync('$B/f76.json',JSON.stringify(t,null,2)+'\n')"
+controle "76 receipt refus, base absente"        0 refus-nomme 1 "n'existe pas" node "$H" receipt --run "$B/r76" --case "$CAS" --faits "$B/f76.json" --verdict "non concluant"
+
+sqlite3 "$DBF" "insert into threads values('banc-hors','$B/ailleurs','local','','','codebuff','aucun',$D0);
+insert into threads values('banc-distance','$W/terrain','remote','','','codebuff','aucun',$D0);
+insert into threads values('banc-worktree','$W/terrain','local','freebuff/x','$B/wt','codebuff','aucun',$D0);
+insert into threads values('banc-modele','$W/terrain','local','','','codebuff','autre-modele',$D0);
+insert into threads values('banc-heure','$W/terrain','local','','','codebuff','aucun',$((D0+5000)));
+insert into threads values('banc-sans-message','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into threads values('banc-debut','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-debut',1,'user',$((D0+5000)),'[]');"
+
+faits-fil fil-absent "$B/f77.json"
+controle "77 receipt refus, fil absent"          0 refus-nomme 1 "ne connaît aucun fil" node "$H" receipt --run "$B/r77" --case "$CAS" --faits "$B/f77.json" --verdict "non concluant"
+faits-fil banc-hors "$B/f78.json"
+controle "78 receipt refus, base hors de l'arbre" 0 refus-nomme 1 "ouvre" node "$H" receipt --run "$B/r78" --case "$CAS" --faits "$B/f78.json" --verdict "non concluant"
+faits-fil banc-distance "$B/f79.json"
+controle "79 receipt refus, mode non local"      0 refus-nomme 1 "s'exécute en" node "$H" receipt --run "$B/r79" --case "$CAS" --faits "$B/f79.json" --verdict "non concluant"
+faits-fil banc-worktree "$B/f80.json"
+controle "80 receipt refus, worktree"            0 refus-nomme 1 "worktree" node "$H" receipt --run "$B/r80" --case "$CAS" --faits "$B/f80.json" --verdict "non concluant"
+faits-fil banc-modele "$B/f81.json"
+controle "81 receipt refus, modèle démenti"      0 refus-nomme 1 "modèle" node "$H" receipt --run "$B/r81" --case "$CAS" --faits "$B/f81.json" --verdict "non concluant"
+faits-fil banc-heure "$B/f82.json"
+controle "82 receipt refus, ouverture démentie"  0 refus-nomme 1 "l'ouverture du fil" node "$H" receipt --run "$B/r82" --case "$CAS" --faits "$B/f82.json" --verdict "non concluant"
+faits-fil banc-debut "$B/f83.json"
+controle "83 receipt refus, début démenti"       0 refus-nomme 1 "premier message du fil" node "$H" receipt --run "$B/r83" --case "$CAS" --faits "$B/f83.json" --verdict "non concluant"
+faits-fil banc-sans-message "$B/f84.json"
+controle "84 receipt refus, aucun message user"  0 refus-nomme 1 "aucun message utilisateur" node "$H" receipt --run "$B/r84" --case "$CAS" --faits "$B/f84.json" --verdict "non concluant"
+
+faits-fil banc "$B/f85.json"
+controle "85 receipt, base concordante"          0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r85','--case','$CAS','--faits','$B/f85.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r85/receipt.json','utf8'));
+process.exit(r.session_verifiee && r.session_verifiee.fil==='banc' && r.session_verifiee.modele==='aucun' && r.session_verifiee.ouverte_le==='$ISO0' ?0:1)"
+
+controle "86 prérequis refus, sqlite3 absent au reçu" 0 refus-nomme 1 "« sqlite3 » est introuvable" env PATH="$B/sans-sqlite" "$NODE" "$H" receipt --run "$B/r85" --case "$CAS" --faits "$B/f85.json" --verdict "non concluant"
+
+produit-run r87
+printf 'dernier message de la session\n' > "$B/r87/raw/$CAS/last-message.md"
+controle "87 receipt, dernier message admis et haché" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
+execFileSync('node',['$H','receipt','--run','$B/r87','--case','$CAS','--faits','$B/faits-bon.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r87/receipt.json','utf8'));
+const sha=crypto.createHash('sha256').update(fs.readFileSync('$B/r87/raw/$CAS/last-message.md')).digest('hex');
+process.exit(r.produit.verifie && r.produit.verifie.last_message_sha256===sha?0:1)"
+
+# 88-96 : H2 rejoue l'export depuis la base et hache la trace (ADR-032). Chaque cas qui touche le
+# fichier a le sien : une trace réécrite pour un contrôle ne doit pas faire refuser le reçu d'un
+# autre.
+mkdir -p "$B/trace88"
+export-fil banc-fenetre "$B/trace88/fenetre.jsonl" "$B/f88.json" || { echo "ARRET — l'export de 88 ne s'écrit pas"; exit 2; }
+vide r88
+controle "88 receipt, export intact et haché"     0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
+execFileSync('node',['$H','receipt','--run','$B/r88','--case','$CAS','--faits','$B/f88.json'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r88/receipt.json','utf8'));
+const sha=crypto.createHash('sha256').update(fs.readFileSync('$B/trace88/fenetre.jsonl')).digest('hex');
+process.exit(r.trace_lue.sha256===sha && typeof r.trace_lue.rejoue_le==='string' && r.trace_lue.rejoue_le.length>0 ?0:1)"
+
+export-fil banc-fenetre "$B/trace89.jsonl" "$B/f89.json" || { echo "ARRET — l'export de 89 ne s'écrit pas"; exit 2; }
+printf '{"seq":9,"role":"user"}\n' >> "$B/trace89.jsonl"
+vide r89
+controle "89 receipt refus, un octet ajouté"     0 refus-nomme 1 "ne rend pas ce que la base rend" node "$H" receipt --run "$B/r89" --case "$CAS" --faits "$B/f89.json"
+
+export-fil banc-fenetre "$B/trace90.jsonl" "$B/f90.json" || { echo "ARRET — l'export de 90 ne s'écrit pas"; exit 2; }
+node -e "const fs=require('fs'),p='$B/trace90.jsonl';const l=fs.readFileSync(p,'utf8').split('\n').filter(x=>x!=='');
+fs.writeFileSync(p,l.reverse().join('\n')+'\n')"
+vide r90
+controle "90 receipt refus, lignes permutées"    0 refus-nomme 1 "ne rend pas ce que la base rend" node "$H" receipt --run "$B/r90" --case "$CAS" --faits "$B/f90.json"
+
+piece-h2() { # source (faits du banc), sortie — une copie où seule la commande bouge
+  node -e "const fs=require('fs');const t=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
+t.trace.commande=process.argv[3];fs.writeFileSync(process.argv[2],JSON.stringify(t,null,2)+'\n')" "$1" "$2" "$3"
+}
+commande-de() { node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).trace.commande)" "$1"; }
+COMM88=$(commande-de "$B/f88.json") || { echo "ARRET — la pièce de 88 est illisible"; exit 2; }
+
+piece-h2 "$B/f88.json" "$B/f91.json" "$(printf '%s' "$COMM88" | sed 's/ order by m.seq, json_each.key;/ order by m.seq;/')"
+vide r91
+controle "91 receipt refus, requête retouchée"   0 refus-nomme 1 "n'est pas la commande que ce run reconstruit" node "$H" receipt --run "$B/r91" --case "$CAS" --faits "$B/f91.json"
+
+piece-h2 "$B/f88.json" "$B/f92.json" "$(printf '%s' "$COMM88" | sed "s#sqlite3 -readonly $DBF #sqlite3 -readonly $B/autre.db #")"
+vide r92
+controle "92 receipt refus, autre base citée"    0 refus-nomme 1 "n'est pas la commande que ce run reconstruit" node "$H" receipt --run "$B/r92" --case "$CAS" --faits "$B/f92.json"
+
+piece-h2 "$B/f88.json" "$B/f94.json" "${COMM88% > *} > $B/trace88/ailleurs.jsonl"
+vide r94
+controle "94 receipt refus, autre chemin d'export" 0 refus-nomme 1 "n'est pas la commande que ce run reconstruit" node "$H" receipt --run "$B/r94" --case "$CAS" --faits "$B/f94.json"
+
+sqlite3 "$DBF" <<SQL
+insert into threads values('banc-apres','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-apres',1,'user',$D0,'[{"kind":"text","text":"banc"}]');
+SQL
+export-fil banc-apres "$B/trace93.jsonl" "$B/f93.json" || { echo "ARRET — l'export de 93 ne s'écrit pas"; exit 2; }
+sqlite3 "$DBF" <<SQL
+insert into messages values('banc-apres',2,'assistant',$(($D0+1000)),'[{"kind":"text","text":"banc, après l''export"}]');
+SQL
+vide r93
+controle "93 receipt refus, message ajouté après l'export" 0 refus-nomme 1 "ne rend pas ce que la base rend" node "$H" receipt --run "$B/r93" --case "$CAS" --faits "$B/f93.json"
+
+controle "95 compare, trace intacte"             0 node "$H" compare --run "$B/r88" --case "$CAS" --difference "banc : rien produit" --phrase "banc" --verdict "non concluant" --limites "ne mord pas"
+
+export-fil banc-fenetre "$B/trace96.jsonl" "$B/f96.json" || { echo "ARRET — l'export de 96 ne s'écrit pas"; exit 2; }
+vide r96
+node "$H" receipt --run "$B/r96" --case "$CAS" --faits "$B/f96.json" >/dev/null || { echo "ARRET — le reçu de 96 ne s'écrit pas"; exit 2; }
+printf '{"seq":99,"role":"user"}\n' >> "$B/trace96.jsonl"
+controle "96 compare refus, trace réécrite"      0 refus-nomme 1 "ne rend plus son empreinte" node "$H" compare --run "$B/r96" --case "$CAS" --difference x --phrase y --verdict "non concluant" --limites "ne mord pas"
 
 echo
 echo "$PASS/$TOTAL PASS"

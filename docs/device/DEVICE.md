@@ -48,7 +48,7 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 67 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
+  (`harness/banc-harnais.sh`, 96 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
   demande, attendu, gel).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
@@ -87,7 +87,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `67/67 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `96/96 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
@@ -95,7 +95,9 @@ de travail déclarée une seule fois, et l'état des arbres avant ;
 3. `preflight` — la porte : elle refuse d'autoriser l'ouverture si le dossier n'est pas l'espace de
    travail que le gel nomme `travail`, encore dans l'état gelé (ADR-018) ;
 4. l'opérateur ouvre une session neuve et lui remet le texte verbatim — geste humain, sans commande ;
-5. `collect` puis `receipt` — produit verbatim, manifeste, reçu écrit à chaud ;
+5. `collect`, l'export, `faits` (les faits que le reçu lira, dérivés du fil et du gel), puis `receipt` —
+   produit verbatim, manifeste, reçu écrit à chaud ; le reçu re-hache la copie, relit la base et y rejoue
+   l'export du §1.5 (ADR-030, ADR-031, ADR-032) ;
 6. `compare` — l'écart et la phrase de verdict, depuis le reçu seul.
 
 ## Les noms du v6, et leur foyer

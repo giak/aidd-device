@@ -19,14 +19,18 @@
 //            wrote in the frozen workspace, so a --from that resolves outside it is
 //            refused: a product from elsewhere would make the receipt read an origin
 //            the freeze does not cover (§4 "Ce qui revient")
-//   faits    between the export and the receipt — faits.json, the nine values the receipt
-//            reads. Derived from the client's base (thread, model, project root, mode,
-//            branch, worktree) and from the freeze (the tree « travail »), never typed by
-//            hand: a path that does not resolve is refused here, not copied into a receipt.
+//   faits    between the export and the receipt — faits.json, the values the receipt reads,
+//            plus trace.base, the base they were read from. Derived from the client's base
+//            (thread, model, project root, mode, branch, worktree) and from the freeze (the
+//            tree « travail »), never typed by hand: a path that does not resolve is refused
+//            here, not copied into a receipt.
 //            The three human facts — who opened, when it ended, what the operator testifies
 //            — are required arguments, and nothing invents them (ADR-024).
 //   receipt  at run time, hot — receipt.json (§6), the four falsifiers of §5 checked,
-//            the verdict ceiling of §7 enforced, the case re-hashed against the freeze
+//            the verdict ceiling of §7 enforced, the case re-hashed against the freeze,
+//            the copy under raw/ re-hashed (ADR-030), the client's base re-read (ADR-031),
+//            and the export it cites rebuilt from that base, replayed and compared byte for
+//            byte to the file, which is then hashed into the receipt (ADR-032)
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
 //            happened (§8: never the session) and the freeze for the premise, which it
 //            re-hashes before judging
@@ -105,18 +109,29 @@ const USAGE = `usage: run.mjs <commande> [options]
            absent ou qui n'est pas un répertoire, un dossier de trace absent ; l'arbre
            du run se compare après résolution des liens, comme faits le compare
            (ADR-025). Il rattache session.identifiant au fil que trace.commande lit
-           (ADR-028) : aucune mention, plusieurs fils, ou un autre fil, sont des refus
+           (ADR-028) : aucune mention, plusieurs fils, ou un autre fil, sont des refus.
+           Il re-hache la copie sous raw/<case>/ contre le manifeste (ADR-030) : un
+           fichier absent, en trop, ou dont le sha256 a changé, est un refus.
+           Il relit la base nommée par trace.base (ADR-031) : un fil absent, un
+           project_path hors de l'arbre gelé, un mode non local, un worktree, un modèle
+           ou une heure d'ouverture que la base démentent, sont des refus.
+           Il reconstruit l'export du §1.5 depuis cette base, sans jamais exécuter la
+           chaîne que la pièce cite (ADR-032) : trace.commande doit être égale, caractère
+           pour caractère, à la commande reconstruite, puis la requête s'exécute en
+           -readonly et ses octets se comparent au fichier exporté. Une différence est un
+           refus ; trace_lue porte le sha256 du fichier et l'heure du rejeu
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
            refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
-           dont le reçu cite une empreinte que le gel sur disque ne porte plus
+           dont le reçu cite une empreinte que le gel sur disque ne porte plus, ou dont
+           la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032)
 
   prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
     git --version                  toutes les commandes — les quatre arbres, leur porcelain
     date --iso-8601=seconds        toutes les commandes — geler, collecter, recevoir, juger
-    date -d @<epoch>               faits seule — l'epoch du fil en date locale
-    sqlite3 -version               faits seule — la base du client, en -readonly
+    date -d @<epoch>               faits et receipt — l'epoch du fil en date locale
+    sqlite3 -version               faits et receipt — la base du client, en -readonly
 
   faits.json (receipt) : session{application,identifiant,modele,ouverte_par,ouverte_le}
     horodatage_debut · horodatage_fin · repertoire_de_travail ·
@@ -125,7 +140,8 @@ const USAGE = `usage: run.mjs <commande> [options]
 
   receipt.json (spec §6) : les champs du §6, plus falsificateurs (les quatre
     conditions du §5, toutes lues ici — la 2e lit l'export ligne à ligne), trace_lue
-    (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles), recu_ecrit_le,
+    (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
+    fichier exporté, heure du rejeu — nuls quand la trace est absente), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
     re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
@@ -172,14 +188,14 @@ const PREREQUIS = [
     outil: "date",
     sonde: ["-d", "@0", "--iso-8601=seconds"],
     pour: "convertit l'epoch du fil en date locale",
-    commandes: ["faits"],
+    commandes: ["faits", "receipt"],
     remede: "GNU coreutils requis (date -d)",
   },
   {
     outil: "sqlite3",
     sonde: ["-version"],
     pour: "lit la base du client en -readonly",
-    commandes: ["faits"],
+    commandes: ["faits", "receipt"],
     remede: "installer sqlite3",
   },
 ];
@@ -233,6 +249,9 @@ function nowStamp() {
 const sha256File = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
 const sha256Text = (t) => createHash("sha256").update(t).digest("hex");
 const display = (p) => (p.startsWith(REPO + sep) ? relative(REPO, p) : p);
+// A refusal quotes the decisive part of a long string: two export commands side by side are
+// readable up to the point where they differ, and a wall of SQL hides the difference it names.
+const court = (s) => (s.length > 180 ? s.slice(0, 180) + "…" : s);
 const estDans = (p, racine) => p === racine || p.startsWith(racine + sep);
 // A path compared against the frozen trees is compared after its links are resolved: a symlink
 // left in the workspace is how a product written elsewhere would look like a product written
@@ -740,6 +759,17 @@ const lireBase = (base, sql, ou) => {
   }
 };
 
+// The §1.5 export, written once. `faits` puts this string into the piece; the receipt rebuilds it from
+// the piece's fields and compares the two character for character (ADR-032). Two copies of the
+// template would drift, and the drift would be invisible: the receipt would refuse a command faits
+// itself wrote. The thread id is interpolated after both commands have refused anything but
+// [A-Za-z0-9_-], and the SQL holds no double quote, so the shell quoting is unambiguous.
+const requeteExport = (fil) =>
+  `select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
+  `'open', json_extract(value,'$.open'), 'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
+  `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;`;
+const commandeExport = (base, fil, trace) => `sqlite3 -readonly ${base} "${requeteExport(fil)}" > ${trace}`;
+
 function cmdFaits(a) {
   const cas = a.required("case");
   const base = resolve(a.required("base"));
@@ -797,10 +827,7 @@ function cmdFaits(a) {
   if (!par.trim() || !temoignage.trim())
     refuse(`faits : --par et --temoignage ne peuvent pas être vides — ces faits-là viennent de l'opérateur, jamais d'une machine`);
 
-  const commande =
-    `sqlite3 -readonly ${base} "select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
-    `'open', json_extract(value,'$.open'), 'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
-    `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;" > ${trace}`;
+  const commande = commandeExport(base, fil, trace);
 
   const faits = {
     session: {
@@ -813,12 +840,86 @@ function cmdFaits(a) {
     horodatage_debut: debut,
     horodatage_fin: fin,
     repertoire_de_travail: travail,
-    trace: { source: `${display(base)} (tables threads, messages)`, chemin_exporte: trace, commande },
+    trace: { source: `${display(base)} (tables threads, messages)`, base, chemin_exporte: trace, commande },
     cloisonnement: { attendu_vu: attenduVu },
     temoignage: { qui: par, quand: fin, texte: temoignage },
   };
   writeJson(out, faits);
   console.log(`faits ok — ${cas} : fil ${f.id}, début ${debut}, fin ${fin} ; ${display(out)}`);
+}
+
+// H1 (ADR-030) : the copy under raw/ is the record the receipt cites, and nothing re-read it —
+// a copy rewritten or deleted after collect kept the manifest's word (study §3 F, G). The receipt
+// re-hashes every file the manifest names, refuses one it does not name, and hashes the manifest
+// itself so a later edit of the piece shows. A run without product has an empty manifest and
+// passes here: it is F8, not this, that refuses a « conforme » on nothing.
+function verifierCopie(dest, manifeste, ou) {
+  if (!Array.isArray(manifeste.fichiers)) {
+    refuse(`${ou} : le manifeste ne porte aucune liste de fichiers — il n'a pas été écrit par collect, ou il a été réécrit`);
+  }
+  if (!existsSync(dest)) refuse(`${ou} : la copie du produit (${display(dest)}) n'existe pas — le manifeste décrit un dossier absent`);
+  if (!statSync(dest).isDirectory()) refuse(`${ou} : ${display(dest)} n'est pas un répertoire — un produit se copie dans un dossier`);
+  const manifestePath = join(dest, "manifest.json");
+  // `last-message.md` is the protocol's second piece under raw/<cas>/ (spec §4): the operator
+  // writes it by hand after collect, so the manifest cannot list it. H1 measures it instead of
+  // ignoring it, and does not count it as a copy that grew.
+  const dernierMessage = join(dest, "last-message.md");
+  const permises = new Set([manifestePath, dernierMessage]);
+  const nommes = new Set();
+  for (const f of manifeste.fichiers) {
+    if (typeof f.chemin !== "string" || f.chemin.trim() === "") {
+      refuse(`${ou} : une entrée du manifeste ne nomme aucun chemin — une copie qu'on ne peut pas situer ne s'atteste pas`);
+    }
+    if (typeof f.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(f.sha256)) {
+      refuse(`${ou} : l'entrée « ${f.chemin} » du manifeste ne porte aucun sha256 lisible — il n'y a rien à confronter`);
+    }
+    const p = resolve(dest, f.chemin);
+    if (p !== dest && !p.startsWith(dest + sep)) {
+      refuse(`${ou} : le chemin « ${f.chemin} » du manifeste sort de ${display(dest)} — une copie ne cite pas ce qui est hors d'elle`);
+    }
+    if (p === manifestePath) {
+      refuse(
+        `${ou} : le manifeste liste « ${f.chemin} » comme fichier du produit — collect écrit son propre manifeste à ce chemin, donc le produit de ce nom a été écrasé, et le reçu ne peut pas dire lequel il lit`,
+      );
+    }
+    nommes.add(p);
+    if (!existsSync(p)) {
+      refuse(`${ou} : le fichier « ${f.chemin} » du manifeste n'est plus dans la copie (${display(p)}) — un produit cité qui n'existe plus n'atteste rien`);
+    }
+    const st = lstatSync(p);
+    if (st.isSymbolicLink()) refuse(`${ou} : lien symbolique dans la copie (${display(p)}) — une copie qui sort d'elle-même n'est pas le produit`);
+    if (!st.isFile()) refuse(`${ou} : « ${f.chemin} » du manifeste n'est pas un fichier (${display(p)})`);
+    const sha256 = sha256File(p);
+    if (sha256 !== f.sha256) {
+      refuse(
+        `${ou} : la copie « ${f.chemin} » ne rend plus l'empreinte du manifeste — ${sha256.slice(0, 8)} au disque, ${f.sha256.slice(0, 8)} au manifeste (${display(p)}) ; la copie a été réécrite après collect`,
+      );
+    }
+  }
+  const parcourir = (d) => {
+    for (const n of readdirSync(d).sort()) {
+      const p = join(d, n);
+      const st = lstatSync(p);
+      if (st.isSymbolicLink()) refuse(`${ou} : lien symbolique dans la copie (${display(p)}) — une copie qui sort d'elle-même n'est pas le produit`);
+      if (st.isDirectory()) {
+        parcourir(p);
+        continue;
+      }
+      if (permises.has(p)) continue;
+      if (!nommes.has(p)) {
+        refuse(`${ou} : « ${display(p)} » est dans la copie et absent du manifeste — la copie a grossi après collect, et le manifeste n'est plus son contenu`);
+      }
+    }
+  };
+  parcourir(dest);
+  const verifie = { fichiers: manifeste.fichiers.length, manifeste_sha256: sha256File(manifestePath) };
+  if (existsSync(dernierMessage)) {
+    const st = lstatSync(dernierMessage);
+    if (st.isSymbolicLink()) refuse(`${ou} : ${display(dernierMessage)} est un lien symbolique — le dernier message se lit sous raw/, pas ailleurs`);
+    if (!st.isFile()) refuse(`${ou} : ${display(dernierMessage)} n'est pas un fichier — le dernier message est un texte, pas un dossier`);
+    verifie.last_message_sha256 = sha256File(dernierMessage);
+  }
+  return verifie;
 }
 
 function cmdReceipt(a) {
@@ -903,6 +1004,80 @@ function cmdReceipt(a) {
   if (!/from\s+messages/i.test(trace.commande)) {
     refuse(`receipt : trace.commande ne lit pas les messages (aucun « from messages ») — la pièce (1) du §5 ne vient pas d'une autre requête`);
   }
+  // H3 (ADR-031) : faits derived these values from the client's base, but the receipt reads a
+  // file, and a file is written by hand or edited after faits. It re-reads the base the piece
+  // names and compares what it publishes to what the base says: a receipt that copies a session
+  // nobody can find attests nothing (study §3 A). The base's path is a field, not a sentence
+  // parsed out of trace.source.
+  const base = resolve(exigerChamp(faits, "trace.base", "receipt", "faits.json"));
+  if (!existsSync(base)) {
+    refuse(`receipt : la base nommée par faits.json (${base}) n'existe pas — le reçu ne peut pas confronter la session qu'il publie à celle que la base porte (§6)`);
+  }
+  if (!statSync(base).isFile()) refuse(`receipt : la base nommée par faits.json (${base}) n'est pas un fichier`);
+  if (!/^[A-Za-z0-9_-]{1,120}$/.test(session.identifiant)) {
+    refuse(
+      `receipt : « ${session.identifiant} » n'est pas un identifiant de fil — lettres, chiffres, tirets et soulignés seulement ; un identifiant ne s'interpole pas dans une requête`,
+    );
+  }
+  const filBase = lireBase(
+    base,
+    `select json_object('id', id, 'project_path', project_path, 'execution_mode', execution_mode, 'branch', branch, 'worktree_path', worktree_path, 'model', model, 'created_at', created_at) from threads where id = '${session.identifiant}';`,
+    "receipt",
+  );
+  if (!filBase) {
+    refuse(`receipt : la base ${base} ne connaît aucun fil « ${session.identifiant} » — le faits.json décrit une session que rien ne porte (§6)`);
+  }
+  const projetBase = filBase.project_path ? resolu(resolve(filBase.project_path)) : null;
+  const travailResolu = resolu(travail);
+  if (!filBase.project_path || projetBase === null || travailResolu === null || projetBase !== travailResolu) {
+    refuse(
+      `receipt : la base dit que le fil « ${session.identifiant} » ouvre ${filBase.project_path ?? "(aucun project_path)"}, le reçu dit ${travail} — des faits d'un run ouvert ailleurs nomment un produit que le gel ne couvre pas`,
+    );
+  }
+  if (filBase.execution_mode !== "local") {
+    refuse(
+      `receipt : la base dit que le fil « ${session.identifiant} » s'exécute en « ${filBase.execution_mode ?? "(vide)"} », pas en local — un run dans un autre environnement n'écrit pas dans l'arbre gelé`,
+    );
+  }
+  if (filBase.branch || filBase.worktree_path) {
+    refuse(
+      `receipt : la base dit que le fil « ${session.identifiant} » vit dans un worktree (branche « ${filBase.branch ?? ""} », ${filBase.worktree_path ?? ""}) — il déplacerait le HEAD de la copie`,
+    );
+  }
+  if (!filBase.model || filBase.model !== session.modele) {
+    refuse(
+      `receipt : la base dit le modèle « ${filBase.model ?? "(vide)"} » pour le fil « ${session.identifiant} », le reçu dit « ${session.modele} » — le modèle du reçu est démenti`,
+    );
+  }
+  const ouverteBase = isoDeMs(filBase.created_at, "receipt");
+  if (ouverteBase !== session.ouverte_le) {
+    refuse(
+      `receipt : la base date l'ouverture du fil « ${session.identifiant} » à ${ouverteBase}, le reçu dit ${session.ouverte_le} — l'heure d'ouverture est démentie`,
+    );
+  }
+  const premierBase = lireBase(
+    base,
+    `select json_object('ts', ts, 'seq', seq) from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1;`,
+    "receipt",
+  );
+  if (!premierBase) {
+    refuse(`receipt : la base ne porte aucun message utilisateur pour le fil « ${session.identifiant} » — le début du run ne se lit pas, et rien ne l'invente`);
+  }
+  const debutBase = isoDeMs(premierBase.ts, "receipt");
+  if (debutBase !== horodatageDebut) {
+    refuse(
+      `receipt : la base date le premier message du fil « ${session.identifiant} » à ${debutBase}, le reçu dit ${horodatageDebut} — le début du run est démenti`,
+    );
+  }
+  const sessionVerifiee = {
+    base,
+    fil: filBase.id,
+    project_path: filBase.project_path,
+    execution_mode: filBase.execution_mode,
+    modele: filBase.model,
+    ouverte_le: ouverteBase,
+    premier_message: debutBase,
+  };
   // Condition 2 of §5 asks the trace to carry at least one exchange inside the run's window. The
   // receipt asserted it could not read the export at all; it reads it now — a JSONL line per part,
   // `ts` in epoch milliseconds as the §1.5 query writes it. What the file has wrong is counted and
@@ -912,6 +1087,44 @@ function cmdReceipt(a) {
       `receipt : le chemin exporté de la trace (${trace.chemin_exporte}) est un répertoire — l'export du §1.5 est un fichier JSONL, et un dossier ne s'atteste pas`,
     );
   }
+  // H2 (ADR-032) : the export was compared to nothing. faits built the command that should have
+  // produced it (§1.5) and wrote it into the piece; the receipt rebuilds that command from its own
+  // fields — never running the string the piece carries, which would hand code execution to whoever
+  // edits faits.json — refuses a piece that cites another, then runs the rebuilt query in -readonly,
+  // keeps the bytes undecoded, and compares their sha256 to the file's. Order matters: H3 has just
+  // established that the base is readable and holds this thread, and the window is counted only
+  // after, because counting the exchanges of a file not shown to come from the base counts text.
+  const commandeAttendue = commandeExport(base, session.identifiant, traceExportee);
+  if (trace.commande !== commandeAttendue) {
+    refuse(
+      `receipt : trace.commande n'est pas la commande que ce run reconstruit — la pièce cite « ${court(trace.commande)} », ` +
+        `le rejeu serait « ${court(commandeAttendue)} » ; une commande qu'on n'exécute pas se compare, et celle-ci ` +
+        `ne décrit pas l'export lu (§1.5, H2)`,
+    );
+  }
+  let traceRejouee = null;
+  if (existsSync(traceExportee)) {
+    let octets;
+    try {
+      octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(session.identifiant)], { maxBuffer: 64 * 1024 * 1024 });
+    } catch (e) {
+      if (e.code === "ENOENT") refuse(`receipt : sqlite3 introuvable — le rejeu de l'export ne se devine pas`);
+      refuse(
+        `receipt : le rejeu de l'export sur ${display(base)} a échoué — ` +
+          `${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"} ; la pièce (1) du §5 ne se vérifie pas (H2)`,
+      );
+    }
+    const empreinteFichier = sha256File(traceExportee);
+    const empreinteRejeu = createHash("sha256").update(octets).digest("hex");
+    if (empreinteRejeu !== empreinteFichier) {
+      refuse(
+        `receipt : la trace exportée ne rend pas ce que la base rend pour le fil « ${session.identifiant} » — ` +
+          `${empreinteFichier.slice(0, 8)} au fichier, ${empreinteRejeu.slice(0, 8)} au rejeu (${display(traceExportee)}) ; ` +
+          `le fichier a été réécrit, tronqué ou complété après l'export, et la condition 2 du §5 se lirait sur un texte qui n'est plus la base`,
+      );
+    }
+    traceRejouee = { sha256: empreinteFichier, rejoue_le: localIso() };
+  }
   const debutMs = Date.parse(horodatageDebut);
   const finMs = Date.parse(horodatageFin);
   if (!Number.isFinite(debutMs) || !Number.isFinite(finMs)) {
@@ -919,7 +1132,14 @@ function cmdReceipt(a) {
       `receipt : les horodatages du run (${horodatageDebut} → ${horodatageFin}) ne se lisent pas — la fenêtre du §5 ne se mesure pas, et la condition 2 avec elle`,
     );
   }
-  const traceLue = { lignes: 0, echanges_dans_la_fenetre: 0, sans_horodatage: 0, illisibles: 0 };
+  const traceLue = {
+    lignes: 0,
+    echanges_dans_la_fenetre: 0,
+    sans_horodatage: 0,
+    illisibles: 0,
+    sha256: traceRejouee?.sha256 ?? null,
+    rejoue_le: traceRejouee?.rejoue_le ?? null,
+  };
   if (existsSync(traceExportee)) {
     for (const ligne of readFileSync(traceExportee, "utf8").split("\n")) {
       if (ligne.trim() === "") continue;
@@ -999,6 +1219,10 @@ function cmdReceipt(a) {
   }
 
   const demande = gel.fichiers.find((f) => f.role === "demande");
+  // H1 (ADR-030) : the copy is re-read after the trees and before the falsifiers, so the
+  // receipt cites a product it has just measured, not one the manifest describes.
+  const copieVerifiee = verifierCopie(join(runDir, "raw", cas), manifeste, "receipt");
+
   const falsificateurs = {
     birth_anterieur_au_gel: manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch < gel.gele_le_epoch).map((f) => f.chemin),
     arbre_de_travail_inchange: manifeste.fichiers.length > 0 && memeArbre(avantTravail, apresTravail),
@@ -1050,6 +1274,7 @@ function cmdReceipt(a) {
     absent: manifeste.fichiers.length === 0,
     chemins: manifeste.fichiers.map((f) => join("raw", cas, f.chemin)),
     fichiers: manifeste.fichiers.map(({ chemin, source, sha256, taille, birth, birth_epoch }) => ({ chemin, source, sha256, taille, birth, birth_epoch })),
+    verifie: copieVerifiee,
   };
   const arbres = { avant: gel.arbres, apres };
   const reecrireRevision = (t) => {
@@ -1061,6 +1286,7 @@ function cmdReceipt(a) {
     cas,
     recu_ecrit_le: localIso(),
     session,
+    session_verifiee: sessionVerifiee,
     demande: { chemin: demande?.chemin ?? null, sha256: demande?.sha256 ?? null, gel: gelPath, empreinte_gel: gel.empreinte, gele_le: gel.gele_le },
     gel_verifie: gelVerifie,
     ...Object.assign({}, ...apres.map(reecrireRevision)),
@@ -1115,6 +1341,23 @@ function cmdCompare(a) {
   }
   const outPath = join(runDir, "output.json");
   if (existsSync(outPath)) refuse(`compare : ${display(outPath)} existe déjà`);
+
+  // H2 (ADR-032) : the receipt cites one export by its sha256; the judge re-hashes that file before
+  // judging, so a trace rewritten between the receipt and the judgment is refused rather than judged
+  // against a file the receipt never saw. Absent file: nothing to compare — the receipt said the
+  // absence and kept the empreinte (§4).
+  if (recu.trace_lue?.sha256 && recu.trace?.chemin_exporte) {
+    const traceCitee = resolve(recu.trace.chemin_exporte);
+    if (existsSync(traceCitee) && !statSync(traceCitee).isDirectory()) {
+      const empreinteDisque = sha256File(traceCitee);
+      if (empreinteDisque !== recu.trace_lue.sha256) {
+        refuse(
+          `compare : la trace citée par le reçu ne rend plus son empreinte — ${empreinteDisque.slice(0, 8)} au disque, ` +
+            `${String(recu.trace_lue.sha256).slice(0, 8)} au reçu (${display(traceCitee)}) ; le run jugé ne serait plus celui que le reçu a lu (H2)`,
+        );
+      }
+    }
+  }
 
   if (verdict !== "non concluant" && recu.verdict === "non concluant") {
     refuse(`compare : verdict « ${verdict} » refusé — le reçu conclut « non concluant » : ${recu.limites.join(" ; ")}`);

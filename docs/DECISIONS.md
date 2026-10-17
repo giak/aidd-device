@@ -754,3 +754,96 @@ Desktop) ; un export d'une autre source du §5.1, dont les lignes ne portent pas
 sans horodatage, et la fenêtre ne le date pas.
 **Falsificateur** : un export dont les échanges tombent hors fenêtre — le reçu doit mordre la condition 2 et le
 dire ; le même export décalé dans la fenêtre — il doit passer la condition et laisser le falsificateur faux.
+## ADR-030 — `receipt` re-hache la copie sous `raw/` (H1) (2026-10-17)
+
+**Contexte** : l'[étude antagoniste](brainstorm/2026-10-17-135619-etude-antagoniste-du-protocole.md) §3 a
+mesuré deux fois le même trou. Le reçu recopiait les `sha256` du manifeste (`run.mjs` 1049-1052) et
+n'ouvrait jamais les fichiers qu'il citait sous `raw/<cas>/` : une copie réécrite après `collect`
+(28 → 34 octets) rendait `exit 0`, `conforme`, avec l'ancienne empreinte, et une copie supprimée rendait
+le même reçu, citant des chemins absents.
+
+**Options** : (a) laisser la copie au manifeste ; (b) re-hacher les seuls fichiers listés ; (c) re-hacher
+les fichiers listés, refuser un fichier que le manifeste ne liste pas, et hacher le manifeste lui-même.
+
+**Choix** : (c), dans `verifierCopie`, appelée au reçu après la comparaison des arbres et avant les
+falsificateurs. Le reçu écrit `produit.verifie{fichiers, manifeste_sha256}`. Deux précisions trouvées à
+l'implémentation : un produit dont un fichier s'appelle `manifest.json` est refusé, puisque `collect` écrit
+son manifeste à ce chemin et l'écraserait en silence ; et `last-message.md`, que la spec §4 fait écrire
+**à la main** sous `raw/<cas>/` après `collect`, est admis, mesuré (`last_message_sha256`), et n'est pas
+compté comme une copie qui a grossi. Sans cette seconde précision, H1 aurait refusé tout run conforme à la
+spec.
+
+**Conséquences** : aucun prérequis nouveau, aucun champ existant changé. Le banc gagne huit contrôles
+(68 à 74 et 87) : copie réécrite, copie supprimée, fichier en trop, copie intacte et comptée, manifeste
+haché, chemin qui sort de `raw/`, lien symbolique, dernier message admis et haché. Il passe de 67 à **87**
+avec H3 (ADR-031). Limite dite : une copie modifiée **avant** `collect` est le produit, pas une fraude.
+**Falsificateur** : une copie réécrite après `collect` dont le reçu sort en `0` — la règle est fausse ; la
+même copie intacte — le reçu doit sortir en `0` et compter ses fichiers.
+
+## ADR-031 — `receipt` relit la base nommée par `faits.json` (H3) (2026-10-17)
+
+**Contexte** : `faits` dérive de la base du client le fil, le modèle, le répertoire, le mode, la branche,
+le worktree et le premier message, et refuse ce qui ne s'y trouve pas (ADR-024). Mais le reçu lit un
+**fichier** : un `faits.json` écrit à la main, ou édité après `faits`, passait sans être confronté à rien.
+L'étude §3 A l'a exécuté : aucun fil n'existait dans aucune base, le reçu est sorti en `0`, `conforme`.
+
+**Options** : (a) continuer à croire le fichier ; (b) extraire le chemin de la base de `trace.source` ;
+(c) ajouter à `faits.json` un champ `trace.base` et faire relire la base au reçu.
+
+**Choix** : (c). `faits` écrit `trace.base`, chemin absolu résolu ; `receipt` l'exige, lit la base en
+`-readonly`, et refuse : fil absent, `project_path` résolu différent de `repertoire_de_travail`, mode
+d'exécution non local, branche ou worktree non vide, modèle vide ou différent de `session.modele`,
+`created_at` différent de `session.ouverte_le`, aucun message `user`, premier message différent de
+`horodatage_debut`. Les heures se comparent par la même dérivation que `faits` (`date -d @<seconde>`), et
+`session_verifiee` porte ce que la base dit, non ce que le fichier dit. `sqlite3 -version` et
+`date -d @0` passent de `faits` seule à `faits` et `receipt` (ADR-026 étendu).
+
+**Conséquences** : `faits.json` passe en v2 ; un fichier d'avant cette ADR est refusé par le nouveau reçu,
+sans effet sur les reçus déjà écrits, qui refusent de s'écraser. Le banc gagne douze contrôles (75 à 86) :
+champ absent, base absente, fil inconnu, répertoire hors de l'arbre, mode non local, worktree, modèle,
+heure d'ouverture, premier message, aucun message, base concordante, et le prérequis `sqlite3` au reçu.
+Limite dite : une base forgée avec un fil cohérent passe, et `trace.base` peut nommer une autre base que
+`trace.commande` tant que H2 n'est pas fait. **Close par l'ADR-032** (2026-10-17) : la commande citée est
+désormais comparée à celle que le reçu reconstruit.
+**Falsificateur** : un `faits.json` qui nomme un fil absent de la base et sort en `0` — la règle est
+fausse ; le même fichier avec le fil réel — il doit sortir en `0` et écrire `session_verifiee`.
+
+## ADR-032 — `receipt` rejoue l'export et hache la trace (H2) (2026-10-17)
+
+**Contexte** : la pièce (1) du §5, la trace machine, était un fichier que l'opérateur exportait et que
+**rien** ne comparait à sa source. `faits` construisait la commande d'export et l'écrivait dans
+`faits.json` ; `receipt` en lisait le fil (ADR-028) puis comptait les échanges du fichier (ADR-029), sans
+jamais vérifier que le fichier **était** ce que la base rend. L'étude antagoniste (§3, lièvres L4 et L5)
+le dit en deux temps : la commande n'est jamais comparée à l'exécutée, et la trace n'est pas hachée.
+
+**Options** : (a) exécuter `trace.commande` telle que la pièce la porte ; (b) ne hacher que le fichier ;
+(c) reconstruire la commande depuis les champs de la pièce, refuser une commande qui en diffère, exécuter
+la requête reconstruite en `-readonly`, comparer les octets, et hacher le fichier dans le reçu.
+
+**Choix** : (c). (a) est écartée pour une raison de sûreté, non de style : `faits.json` est un fichier
+éditable, et l'exécuter donnerait à qui l'édite l'exécution de code arbitraire sur la machine du reçu. Le
+gabarit de l'export est donc écrit **une fois** (`requeteExport`, `commandeExport`, `run.mjs` 767-771),
+`faits` s'en sert (830), et `receipt` le rejoue depuis `trace.base`, `session.identifiant` et
+`trace.chemin_exporte` (1090-1126). `trace.commande` doit être égale, caractère pour caractère, à la
+commande reconstruite : un chemin de base, un fil, un chemin d'export, une requête ou une redirection qui
+diffèrent sont un refus, sans que la chaîne de la pièce soit interprétée. Le rejeu capture **les octets**
+de la sortie standard, jamais décodés puis ré-encodés, et les confronte au `sha256` du fichier. Le reçu
+écrit `trace_lue.sha256` et `trace_lue.rejoue_le` à côté des comptes d'ADR-029 ; une trace absente reste
+l'absence que le reçu disait, sans rejeu (deux `null`) et avec sa limite. `compare` re-hache la trace citée
+avant de juger (1345-1358) : un reçu qui cite une trace qui n'est plus celle qu'il a lue ne juge plus le
+même run. Ordre : le rejeu vient **après** H3, qui a établi que la base est lisible et porte ce fil, et
+**avant** la fenêtre, qui compterait sinon les échanges d'un texte dont la provenance n'est pas établie.
+
+**Conséquences** : `faits` ne change pas de sortie, `receipt.json` gagne deux champs sous `trace_lue`,
+`compare` une vérification ; aucune commande, aucun drapeau, aucun prérequis nouveau. Le banc passe de 87 à
+**96** (contrôles 88 à 96). Deux coûts trouvés à l'implémentation, tous deux dus au fait que H2 mord : les
+fixtures 66 et 67 tapaient leur export **à la main** et sont désormais produites par le rejeu — donc le cas
+« hors fenêtre » se déplace dans la base (premier message utilisateur sans part, message exporté une heure
+plus tard), et le `faits.json` du banc, écrit à la main jusqu'ici, doit être produit par `faits`, sinon son
+`trace.commande` n'est plus la commande reconstruite. Limites dites : la base reste la racine de confiance
+(une base forgée, cohérente, rend un export cohérent, W1 ouvert) ; un message ajouté au fil **après**
+l'export fait refuser le reçu, ce qui impose l'ordre du §1.5 ; `faits` écrit le chemin de la base sans
+guillemets, donc un chemin avec espace casserait à la fois le rejeu et la comparaison ; le rejeu prouve
+que le fichier est l'export de cette base **à l'instant du reçu**, pas au bon moment.
+**Falsificateur** : un export dont un octet a été ajouté et un reçu qui sort en `0` — la règle est fausse ;
+le même export intact — le reçu doit sortir en `0` et écrire un `sha256` égal à celui du fichier.

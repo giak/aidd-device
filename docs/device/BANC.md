@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 67 contrôles qui éprouvent les refus et les acceptations de run.mjs et du contrôle de liens, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 96 contrôles qui éprouvent les refus et les acceptations de run.mjs et du contrôle de liens, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -12,21 +12,21 @@ status: in-progress
 > « porte » ne nomme que la première des six commandes qu'il éprouve aujourd'hui ; les ADR-018 et 020,
 > datées, gardent l'ancien nom tel qu'elles l'ont écrit.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 67 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 96 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve deux instruments du dossier `harness/` : `run.mjs`,
-le harnais du run (contrôles 1 à 60, puis 64 à 67), et `liens.mjs`, le contrôle de liens des documents du
+le harnais du run (contrôles 1 à 60, puis 64 à 96), et `liens.mjs`, le contrôle de liens des documents du
 dépôt (contrôles 61 à 63).
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 67/67 PASS, exit 0
-node docs/device/harness/liens.mjs                → 312 liens hors code, 0 mort, exit 0
+bash docs/device/harness/banc-harnais.sh          → 96/96 PASS, exit 0
+node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `67/67 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `96/96 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -46,7 +46,7 @@ Trois arrêts, `exit 2`, avant le premier contrôle :
 
 Un banc dont la pièce est absente compterait des accidents comme des refus : il se tait plutôt.
 
-Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 lisent une base de client factice), un cas
+Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 et 66 à 96 lisent une base de client factice), un cas
 gelé et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf). Ces outils-là
 ne sont pas supposés : `run.mjs` les déclare au `--help` et les sonde au démarrage, et les contrôles 57 à
 60 lui donnent un `PATH` amputé pour l'entendre refuser ([ADR-026](../DECISIONS.md)). Le banc, lui, ne
@@ -60,7 +60,7 @@ une panne d'outil se voir dans un `FAIL`.
   échoue si l'espace n'est pas rendu propre). C'est la seule écriture hors du dossier jetable.
 - Jamais le dépôt, jamais les quatre arbres, jamais `run.mjs`. Aucune session n'est ouverte.
 
-## 4. Les 67, par groupe
+## 4. Les 96, par groupe
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
@@ -73,7 +73,11 @@ une panne d'outil se voir dans un `FAIL`.
 | 57 à 60 | les prérequis, déclarés et sondés : `sqlite3` absent, `date` qui n'obéit pas, `git` absent — trois refus qui nomment l'outil — et le `--help` qui les déclare | ADR-026 |
 | 61 à 63 | le contrôle de liens : le dépôt sans lien mort (accepté), un lien mort en prose (refusé, nommé), une citation `](…)` entre backticks (acceptée, comptée comme motif écarté) | ADR-027 |
 | 64 à 65 | `session.identifiant` rattaché au fil que la commande d'export lit : un autre fil (refusé, nommé), aucune mention de fil (refusé) | ADR-028 |
-| 66 à 67 | l'export lu par le reçu : un échange dans la fenêtre du run (accepté, compté sous `trace_lue`), un échange hors fenêtre (accepté, condition 2 du §5 mordue et nommée) | ADR-029 |
+| 66 à 67 | l'export lu par le reçu : un échange dans la fenêtre du run (accepté, compté sous `trace_lue`), un échange hors fenêtre (accepté, condition 2 du §5 mordue et nommée). Le fichier n'est plus écrit à la main : il est la sortie de la commande que `faits` écrit, exécutée sur la base du banc ; le cas hors fenêtre se déplace dans la base (premier message sans part, message exporté une heure plus tard) | ADR-029, ADR-032 |
+| 68 à 74 | la copie re-hachée : réécrite après `collect` (refus, empreinte nommée), supprimée (refus), fichier en trop (refus), intacte (acceptée et comptée), manifeste haché au reçu, chemin qui sort de `raw/` (refus), lien symbolique (refus) | ADR-030 |
+| 75 à 86 | la base relue : champ `trace.base` absent, base absente, fil inconnu, répertoire hors de l'arbre, mode non local, worktree, modèle, heure d'ouverture, premier message, aucun message — dix refus nommés —, base concordante (acceptée, `session_verifiee` venue de la base), et `sqlite3` absent au reçu (refus nommé) | ADR-031 |
+| 87 | `last-message.md`, écrit à la main sous `raw/<cas>/` après `collect` : admis et haché sous `produit.verifie` | ADR-030 |
+| 88 à 96 | l'export rejoué — deux acceptations, sept refus : intact (accepté, `trace_lue.sha256` égal au fichier et `rejoue_le` écrit), un octet ajouté, lignes permutées, requête retouchée, autre base citée, autre chemin d'export cité, message ajouté à la base après l'export (refus, les deux empreintes à l'appui), `compare` sur une trace intacte (accepté), `compare` sur une trace réécrite entre le reçu et le juge (refus) | ADR-032 |
 
 Chaque groupe porte ses **acceptations** autant que ses refus : un banc qui ne saurait que refuser
 passerait en refusant tout.

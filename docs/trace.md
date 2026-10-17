@@ -2562,4 +2562,14 @@ moins.
 **Fermeture.** Séance close à cet instant. Ce paragraphe part dans le commit qui le porte, dont l'empreinte ne
 peut donc pas figurer ici. Aucun des quatre arbres n'a été touché.
 
-**Mémoires.** `MEMOIRE_A_COMPLETER``558e0a85` — le commit, la poussée, les onze blobs.
+**Mémoires.** `558e0a85` — le commit, la poussée, les onze blobs.
+
+## Séance 39 — 2026-10-17 (suite)
+
+**Rectification.** La ligne « Mémoires » de la séance précédente est arrivée malformée sur `origin/main` : un
+`sed` dont les backticks ont été interprétés par le shell y avait laissé le jeton `MEMOIRE_A_COMPLETER` collé à
+l'identifiant `558e0a85`, poussé dans `f52e5cb`. La ligne est remise en état ici, et cette suite le dit plutôt
+que de laisser croire l'original juste. Leçon de méthode : un remplacement qui traverse des backticks se fait
+sans shell.
+
+**Fermeture.** Cette suite part dans le commit qui la porte. Aucun des quatre arbres n'a été touché.

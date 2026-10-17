@@ -126,8 +126,8 @@ le kit d'ouverture (`…/aidd-device-work/2026-10-15-133423-promesse-memoire-ava
 projet il vient), lit la racine de l'espace de travail et la révision sous test **dans le gel** — jamais
 retapées —, nomme le dossier du run, mesure la fin, exporte la trace (avant tout autre geste, §4.5), puis
 appelle `faits`, `collect`, `receipt`, `compare`. Elle n'écrit **rien** si l'un des cinq faits humains
-manque, et s'arrête au premier refus du harnais en laissant les pièces déjà écrites : une pièce sans reçu
-est un brouillon de preuve, jamais un reçu. Le dossier des runs est `docs/device/runs/` (`RUNS_DIR` le
+manque ou garde son gabarit `« <…> »`, et s'arrête au premier refus du harnais en laissant les pièces déjà
+écrites : une pièce sans reçu est un brouillon de preuve, jamais un reçu. Le dossier des runs est `docs/device/runs/` (`RUNS_DIR` le
 déplace) ; `collect` prend la branche produit si `terrain/aidd_docs` existe, `--sans-produit` sinon.
 
 ```bash
@@ -176,7 +176,7 @@ case "$LIMITES" in ""|mord|"ne mord pas"|"non évaluable") ;; *) echo "REFUS —
 BASES=()
 for db in "$HOME"/.config/freebuff-desktop/projects/*/desktop-v2.db; do
   [ -f "$db" ] || continue
-  [ "$(sqlite3 -readonly "$db" "select count(*) from threads where id='$FIL';" 2>/dev/null)" = 1 ] && BASES+=("$db")
+  [ "$(sqlite3 -readonly "$db" "select count(*) from threads where id='$FIL';")" = 1 ] && BASES+=("$db")
 done
 [ "${#BASES[@]}" -eq 1 ] || { echo "REFUS — le fil « $FIL » se lit dans ${#BASES[@]} base(s) du client, une seule attendue ; rien n'a été écrit" >&2; exit 1; }
 BASE="${BASES[0]}"
@@ -204,10 +204,9 @@ PORCELAIN=$(git -C "$REPO" status --porcelain)
 
 # 4. The trace first, its end measured before it: the only piece the operator does not write (§1.5, §4.5).
 FIN=$(date -Is)
-SQL="select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'\$.kind'),
-          'open', json_extract(value,'\$.open'), 'text', json_extract(value,'\$.text'), 'ts', m.ts)
-     from messages m, json_each(m.parts_json)
-    where m.thread_id='$FIL' order by m.seq, json_each.key;"
+# The query is written on one line, exactly as faits records it: a wrapped query would give a faits.json
+# whose trace.commande is an equivalent, not the command that produced the file.
+SQL="select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'\$.kind'), 'open', json_extract(value,'\$.open'), 'text', json_extract(value,'\$.text'), 'ts', m.ts) from messages m, json_each(m.parts_json) where m.thread_id='$FIL' order by m.seq, json_each.key;"
 sqlite3 -readonly "$BASE" "$SQL" > "$RUN/trace/echange.jsonl" || { echo "REFUS — l'export de la trace a échoué ; le reçu n'aurait rien à compter" >&2; exit 1; }
 echo "trace — $(grep -c '' "$RUN/trace/echange.jsonl") ligne(s) lues dans $BASE"
 
@@ -271,6 +270,9 @@ deux lignes de l'origine inchangées.
 - **La chaîne du §4.7 sur un vrai fil de `terrain`** : elle est éprouvée jusqu'au refus de `faits`, sur un
   fil d'un autre projet, et refuse proprement un fil inconnu sans rien écrire ; elle n'a jamais atteint
   `receipt` ni `compare`, faute d'un fil ouvert dans la copie du cas.
+- **Sa branche produit** (`collect --from terrain/aidd_docs`) : jamais exercée, parce que `terrain` n'a pas
+  d'`aidd_docs` et qu'en créer un y écrirait, ce que le run interdit. Seule la branche `--sans-produit` a
+  été éprouvée.
 - **Le mode direct avant l'ouverture** : il se lit dans la ligne du fil, donc **après** l'ouverture (§4.2).
   Le client ne l'expose pas avant.
 - **Le `default_branch` relevé par le client** (`origin/test/aidd-installation`) : aucune commande de cette

@@ -2663,3 +2663,54 @@ le bloc du §4.7 avec les cinq faits.
 
 **Mémoires.** `5f473202` (2026-10-17 11:40:12) — la commande, son ordre, ses cinq portes mesurées, et
 la limite « jamais jusqu'au reçu ».
+
+## Séance 41 — 2026-10-17 (suite) : ce que le double contrôle a trouvé
+
+**Objectif.** Relire les trois livrables de la journée et les deux commits contre leurs propres affirmations,
+sans complaisance : chercher ce qui est faux, périmé ou invérifiable, et le prouver par la mesure.
+
+**Fait.** Quatre corrections, toutes dans le bloc du §4.7 et la liste :
+
+1. **la requête d'export tient maintenant sur une ligne**, exactement comme `faits` l'enregistre. Elle était
+   coupée sur quatre lignes : `faits.json` aurait porté un équivalent, pas la commande qui a produit le
+   fichier. Mesure après réparation : variables substituées, la commande exécutée est **identique caractère
+   par caractère** au modèle de `run.mjs` (501 caractères, 0 différence).
+2. **« 89 lignes » était périmé.** Ce chiffre mesurait le script d'avant le garde-fou des gabarits ; la
+   version committée en compte 94, celle d'après réparation 93 (`wc -l` sur le bloc extrait).
+3. **un diagnostic muet dans la recherche de base** : `sqlite3 … 2>/dev/null` faisait disparaître l'erreur
+   d'une base illisible, et le refus final aurait dit « 0 base » sans dire pourquoi. Le `2>/dev/null` est
+   retiré ; la boucle se comporte pareil, l'erreur se voit.
+4. **le §5 de la liste nomme une branche jamais exercée** : `collect --from terrain/aidd_docs` (produit),
+   impossible à éprouver sans écrire dans `terrain`. Et le préambule du §4.7 dit que le gabarit non rempli
+   bloque aussi.
+
+**Rectification d'une fausse piste, la mienne.** J'ai suspecté faux le « commande identique au caractère
+près » de la Séance 40, à cause des guillemets autour de `"$DB"` et de `"$RUN/…"` que `faits` n'écrit pas.
+Mesure contre le modèle extrait de `run.mjs` : substitution des deux côtés, **533 caractères, 0 différence**.
+L'affirmation tient ; c'est mon soupçon qui était l'erreur, et il n'a pas été « réparé ».
+
+**Rectification d'un message de commit.** `9fdf435` écrit « Aucun des trois n'écrit rien » : la polarité est
+inversée, les trois cas n'écrivent **rien**. Un message de commit ne se réécrit pas ; il se rectifie ici.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le bloc extrait se lit | `bash -n`, bloc du §4.7 | **93 lignes**, `exit 0` |
+| collé tel quel, il s'arrête avant d'écrire | bloc sans variable | `USAGE — FIL …`, **`exit 2`**, aucun dossier |
+| un gabarit restant bloque | `FIL` rempli, quatre gabarits | 4 `REFUS`, **`exit 1`**, aucun dossier |
+| un fil inconnu n'écrit rien | `FIL=zzznothread` | `REFUS — … 0 base(s)`, **`exit 1`**, aucun dossier |
+| l'export tourne et la porte de `faits` tient | fil réel d'un autre projet | `trace — 2 244 ligne(s)`, puis `REFUS — faits : le fil ouvre …/aidd-device`, **`exit 1`** |
+| la commande exécutée est celle qui sera enregistrée | substitution des deux côtés contre le modèle de `run.mjs` | **501 caractères, 0 différence** |
+| idem pour la commande du kit §3.6 | même méthode | **533 caractères, 0 différence** |
+| les liens tiennent | `liens.mjs` | 324 liens, **0 mort**, `exit 0` |
+
+**Note de mesure.** L'export du fil d'essai a rendu **2 003** lignes à 13:38 et **2 244** à 14:05 : ce fil
+est vivant, il s'agit probablement de cette session. Le nombre de lignes est donc un instantané, jamais une
+constante ; le bloc affiche le sien à l'exécution.
+
+**Prochaines étapes.** Committer ces quatre corrections et la présente suite ; ouvrir le fil neuf dans
+`terrain` pour que la chaîne atteigne `receipt` et `compare`.
+
+**Mémoires.** `5f473202` mise à jour : la requête d'export s'écrit sur une ligne, la commande enregistrée
+doit être la commande exécutée, et un chiffre de ligne de script se remesure après chaque édition.

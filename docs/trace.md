@@ -2573,3 +2573,42 @@ que de laisser croire l'original juste. Leçon de méthode : un remplacement qui
 sans shell.
 
 **Fermeture.** Cette suite part dans le commit qui la porte. Aucun des quatre arbres n'a été touché.
+
+## Séance 40 — 2026-10-17 (le kit d'ouverture : une page, plus de retour au journal)
+
+**Objectif.** L'ouverture du second run demandait encore de rouvrir le journal : le texte et les deux
+réponses vivaient dans `$W/mode-d-emploi.md` (09:52), mais les commandes des gestes et la suite du harnais
+vivaient dans la conduite §1.5 et la liste de contrôle §4. Le kit les met sur une page.
+
+**Fait.** `$W/kit-ouverture.md` (7 483 octets, `stat -c %w` = 2026-10-17 10:53:48) : §1 le texte du §5, extrait
+du cas par script, `$RACINE` substitué ; §2 les deux réponses figées et leurs déclencheurs ; §3 les sept
+gestes de l'opérateur avec leurs commandes — lire la ligne du fil, coller, vérifier le premier maillon, `date -Is`,
+nommer `$RUN`, exporter la trace ; §4 ce qui ne part jamais ; §5 les cinq gestes du harnais, dans l'ordre.
+Le §5 repose les variables dont il se sert, au lieu de les supposer restées de la section précédente. `$W/mode-d-emploi.md`
+n'est pas touché : la liste de contrôle §4.3 dit désormais lequel des deux fait foi.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le bloc du kit est le texte scellé | extraction + `sha256` | **254** octets, `832036f7…`, identique à `texte-a-remettre.txt` |
+| le harnais accepte ce bloc | `preflight --case <cas> --repertoire $W/terrain --texte <bloc extrait>` | `ouverture autorisée … texte 832036f7 (254 octets) conforme au §5 substitué`, **`exit 0`** |
+| la commande d'export tourne | la requête du kit, rejouée sur la base d'un autre projet | **1 875** lignes JSONL, `exit 0` (le `141` d'un premier essai venait du `head`, pas du SQL) |
+| la trace lue est celle que `faits` enregistre | lecture de `run.mjs` (801-802) | commande **identique** au caractère près, `where m.thread_id=` comprise |
+| la colonne du fil existe | `.schema threads` | `execution_mode TEXT NOT NULL DEFAULT 'local'` |
+| les drapeaux du §5 existent | `faits` avec un fil inexistant | `REFUS — faits : aucun fil « fil-inexistant » dans …desktop-v2.db`, **`exit 1`**, aucun fichier écrit |
+
+**Dérives signalées, et corrigées.** Trois, toutes introduites par l'ADR-028/029 et poussées :
+
+1. liste de contrôle §4.4 annonçait « deux fois `832036f7…` » sans retirer le saut de ligne que `sqlite3`
+   ajoute : le premier fichier pèse 255 octets pour un texte de 254, et son empreinte n'aurait pas été celle
+   du texte (mesuré : 238 octets pour 237 sur un message réel). Corrigé en `head -c -1`, taille attendue
+   nommée, et la correction datée sur place.
+2. conduite §1.5 affirmait « Le harnais n'en lit **aucune** » : faux depuis ADR-029, le reçu relit l'export.
+3. conduite §1.4 donnait `chemin_exporte: "$RUN/trace/"`, un **dossier** — que le reçu refuse désormais.
+
+**Prochaines étapes.** Ouvrir le fil neuf dans le projet `terrain`, en mode direct ; le §3 du kit se lit sans
+revenir ici.
+
+**Mémoires.** `abed7a80` — le kit, ses contrôles, les trois dérives corrigées, et la leçon du saut de ligne `sqlite3`.
+

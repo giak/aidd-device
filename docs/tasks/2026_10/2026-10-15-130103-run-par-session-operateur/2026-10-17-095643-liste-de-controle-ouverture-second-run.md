@@ -77,19 +77,25 @@ Attendu : **une** ligne, `project_path` = `$W/terrain`, `execution_mode` = `loca
 `worktree_path` **vides**. Toute autre valeur arrête le geste : le fil est à fermer et à rouvrir. Accolée,
 `git -C $W/terrain worktree list` doit rendre **une** ligne, celle du §2.
 
-**4.3 Coller le texte du §5, mot pour mot.** Source : `$W/mode-d-emploi.md`, bloc unique, 254 octets,
-`832036f7…`. Il ne se retape pas. Le budget est de **trois messages** au total.
+**4.3 Coller le texte du §5, mot pour mot.** Source : `$W/kit-ouverture.md` (§1, 254 octets,
+`832036f7…`), qui remplace sur ce point `$W/mode-d-emploi.md` — celui-ci disait les trois premiers gestes
+sans leurs commandes. Il ne se retape pas. Le budget est de **trois messages** au total.
 
 **4.4 Vérifier le premier maillon dès le collage.** Le texte stocké par le client est le texte reçu :
 
 ```text
 sqlite3 -readonly "$DB" "select json_extract(parts_json,'\$[0].text') from messages
-  where thread_id='<thread>' and role='user' order by seq limit 1;" > /tmp/sonde/remis.txt
-sha256sum /tmp/sonde/remis.txt "$W/texte-a-remettre.txt"
+  where thread_id='<thread>' and role='user' order by seq limit 1;" > /tmp/remis.txt
+wc -c < /tmp/remis.txt                                         # attendu : 255
+sha256sum <(head -c -1 /tmp/remis.txt) "$W/texte-a-remettre.txt"
 ```
 
-Deux fois `832036f7…` : ce que l'opérateur a collé et ce qui est stocké sont le même octet-à-octet. Une
-différence se dit dans le témoignage, elle ne se corrige pas par un second collage.
+Deux fois `832036f7…`, une fois `head -c -1` appliqué : `sqlite3` ajoute un saut de ligne à chaque ligne
+sortie, d'où **255** octets pour un texte de **254**. La version antérieure de ce §4.4 annonçait deux
+empreintes égales sans ce retrait : le premier fichier en aurait pesé 255, et son empreinte n'aurait pas
+été `832036f7…` (mesuré le 2026-10-17 : 238 octets pour 237 de texte sur un message réel). Ce que
+l'opérateur a collé et ce qui est stocké sont alors le même octet-à-octet. Une différence se dit dans le
+témoignage, elle ne se corrige pas par un second collage.
 
 **4.5 À la fin, dans cet ordre.** (1) `date -Is` ; (2) **l'export de la trace**, avant tout autre geste
 (commande du §1.5, `$RUN/trace/echange.jsonl`) ; (3) rien dans `terrain` : ni fichier créé, ni supprimé, ni

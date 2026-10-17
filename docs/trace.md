@@ -3064,3 +3064,40 @@ H5 (`gate.json`), puis H6.
 mesures de l'écart, les quatre décisions (attendu, tous les messages `user`, refus du dépassement,
 `epuise_par`), le banc à 102 et les limites.
 
+## Séance 49 — 2026-10-17 (la poussée : quatre commits, du guide au journal)
+
+**Objectif.** Committer tout le travail en attente en plusieurs commits, puis pousser sur `origin/main`.
+
+**Fait.** Quatre commits, du plus ancien au plus récent :
+
+| Commit | Contenu | Mesure |
+| --- | --- | --- |
+| `4c46476` | les deux brainstorms du 2026-10-17 (guide de bout en bout, étude antagoniste) | 2 fichiers, +551 |
+| `f0fca6e` | les trois specs du dossier `2026-10-17-140536-durcissement-du-recu` | 3 fichiers, +567 |
+| `9ed2e29` | H1, H2 et H3 : `run.mjs`, le banc, les trois ADR, six pages | 9 fichiers, +605/−82 |
+| `4214275` | le journal, Séances 42 à 48 | 1 fichier, +350 |
+
+Le découpage suit ce qui peut tenir tout seul. Les specs précèdent leur code, et le journal vient après.
+Le durcissement n'a **pas** été coupé en trois : `run.mjs` et le banc portent H1, H2 et H3 dans les mêmes
+fichiers, et un commit partiel aurait laissé un banc qui ne passe pas son propre arbre. Un commit par
+geste aurait demandé d'écrire deux états intermédiaires jamais mesurés.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` sur l'arbre du commit `9ed2e29` | **96/96 PASS**, `exit 0`, 0 `FAIL` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 33 fichiers, 346 liens, **0 mort** |
+| `git push origin main` | `642b5ef..4214275 main -> main`, `exit 0` |
+| `git ls-remote origin main` | `4214275f3a2f2a7712042b939330f4ac664b41b6` = `git rev-parse HEAD` |
+| `git status -sb` | `## main...origin/main`, plus rien devant |
+
+La poussée publie **sept** commits : les quatre de cette séance et trois déjà commits mais jamais poussés
+(`5786276` Séance 40, `9fdf435` Séance 41, `d70e016` la réparation de la clôture).
+
+**OPEN.** Aucune session réelle ; la poussée ne change pas les limites dites en Séance 48 ; le commit de
+cette séance part après elle, donc le dernier `origin/main` n'est pas celui des quatre lignes ci-dessus.
+
+**Mémoires.** `dcef65d7` (2026-10-17 20:54:09) : les quatre commits, la poussée et le hash lu sur le distant.
+

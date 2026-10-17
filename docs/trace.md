@@ -2714,3 +2714,353 @@ constante ; le bloc affiche le sien à l'exécution.
 
 **Mémoires.** `5f473202` mise à jour : la requête d'export s'écrit sur une ligne, la commande enregistrée
 doit être la commande exécutée, et un chiffre de ligne de script se remesure après chaque édition.
+## Séance 42 — 2026-10-17 (le guide pédagogique du test de bout en bout, en brainstorm)
+
+**Objectif.** Savoir comment écrire un guide qui prenne un lecteur par la main jusqu'à savoir mener un test
+de bout en bout, avant d'en écrire une ligne.
+
+**Fait.** `docs/brainstorm/2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md` (18 007 octets,
+`stat -c %w` = 2026-10-17 13:43:47) : les trois lecteurs possibles et celui que je devine (§1), le
+renversement du parcours, du verdict vers les arbres (§2), les cinq seuils avec leur preuve et l'erreur qui
+trahit un seuil non franchi (§3), la règle « on ne nomme qu'après avoir fait » et cinq anti-patterns (§4),
+sept chapitres au tableau (§5), huit figures dont cinq Mermaid et leur quiproquo empêché (§6), cinq
+exercices (§7), cinq falsificateurs du guide et un protocole de mesure (§8), format et longueur (§9), la
+plus petite version livrable en trois chapitres (§10), les décisions ouvertes (§11), les sources et ce qui
+n'est pas mesuré (§12). Rien du guide lui-même n'est écrit.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| les cinq figures se rendent, et disent ce qu'elles doivent dire | blocs extraits, `mmdc` 11.4.2, `PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome` | 5/5 `exit 0`, 0 nœud d'erreur, 0 « Syntax error », libellé attendu présent dans chaque SVG ; 11 451 / 12 753 / 10 446 / 25 428 / 10 266 octets |
+| aucune figure ne s'est dégradée en silence | lecture du texte des SVG | au premier passage, sept libellés « 1. », « 2. » … lus comme des listes : `exit 0` et sept « Unsupported markdown: list » ; libellés réécrits en « chapitre 1 : … », revérifiés |
+| les liens tiennent | `node docs/device/harness/liens.mjs` | 324 liens hors code, **0 mort**, `exit 0` (deux liens `../../tasks/` corrigés en `../tasks/`) |
+| la forme est celle de la maison | comptages | 12 clôtures de bloc, accents graves appariés, 0 apostrophe typographique, 0 tiret cadratin |
+
+**Dérives signalées, non corrigées.** Le paragraphe §9 affirmait que les figures « se vérifient » avant de
+l'avoir fait ; la phrase a été mise au vrai et la mesure ajoutée au §12. Le brainstorm ne tranche pas la
+question du lecteur : il la pose, avec une devinette nommée.
+
+**Prochaines étapes.** Trancher A / B / C (§1), puis écrire les trois chapitres de la version minimale (§10)
+et les faire lire à un tiers.
+
+**Mémoires.** `2eaac4fb` (2026-10-17 11:46:14) : le renversement verdict vers arbres, les cinq seuils, le
+piège Mermaid des libellés numérotés que l'exit code cache, et ce qui reste non mesuré.
+## Séance 43 — 2026-10-17 (étude antagoniste : le protocole atteste des fichiers, pas une session)
+
+**Objectif.** Chercher ce qui casse dans le protocole de test, par l'attaque et non par la relecture, et le
+prouver par des sondes exécutées plutôt que par des lectures.
+
+**Fait.** `docs/brainstorm/2026-10-17-135619-etude-antagoniste-du-protocole.md` (17 020 octets à la
+première écriture, **17 065** après trois rectifications, **17 696** après la quatrième ; `stat -c %w` = 2026-10-17 13:56:19) : sept expériences montées dans des clones jetables sous `/tmp`, un
+modèle de menace, cinq loups, cinq lièvres, quatre zones d'ombre, ce qui tient, six durcissements chiffrés,
+et ce que l'étude ne prouve pas. **Aucun fichier du harnais n'est modifié** : une revue, pas une réparation.
+
+**Vérifié.**
+
+| Sonde | Geste | Résultat observé |
+| --- | --- | --- |
+| A | produit dans un clone, `faits.json` et `echange.jsonl` écrits à la main, aucun fil | `receipt` **`exit 0`**, `verdict conforme` |
+| B | idem plus `memory/backlog.md` (falsificateur F4) | **`exit 0`**, `conforme` |
+| C | produit sous un chemin ignoré par git | `conforme` refusé, `exit 1` ; avec `non concluant`, reçu écrit, **`exit 0`** |
+| D | aucune trace exportée | **`exit 1`**, condition 2 mord |
+| E | échanges hors fenêtre | **`exit 1`** |
+| F | copie sous `raw/` réécrite après collect (28 → 34 o) | **`exit 0`**, `conforme`, reçu citant l'ancien `sha256` |
+| G | copie sous `raw/` supprimée, manifeste gardé | **`exit 0`**, `conforme` |
+
+Statique : `grep -c budget run.mjs` = **0** ; `grep -c backlog run.mjs` = **0** ; `empreinteDeGel` (323-327)
+ne hache ni `arbres` ni la trace ; `receipt` ne lit jamais la base nommée par `trace.source`.
+
+**Rectifications, quatre.** Trois pendant l'écriture : « l'opérateur écrit six des sept entrées » était un
+chiffre non mesuré, remplacé par la liste des pièces ; F8 était compté parmi les falsificateurs non lus,
+faux, un manifeste vide fait mordre « la session n'a rien produit » ; les sondes n'avaient pas « passé
+`preflight` », qui n'a pas été invoqué, c'est le reçu qui les a laissées passer. La quatrième au contrôle
+final : « `terrain` est resté à `porcelain` 0 ligne » était faux. `git -C /home/giak/projects/audio-sync-tool
+status --porcelain` rend **1 ligne** (`?? .freebuff/`, dossier daté du 2026-10-14 15:49), et le gel du
+2026-10-15 enregistre déjà cette ligne ; la preuve de non-écriture est donc l'**égalité** avec le gel, pas un
+zéro. Étude §9 et §10 corrigés.
+
+**Dérives signalées, non corrigées.** `terrain/.gitignore` n'ignore pas `aidd_docs`, donc C n'ouvre pas de
+risque aujourd'hui ; `.git/info/exclude` de la copie (7 lignes contre 48) reste non expliqué, et il est le
+vecteur exact de C. Aucune réparation du harnais n'est appliquée : la règle du dépôt exige une spec écrite
+avant le code, et le durcissement proposé (H1 à H6) la demande.
+
+**OPEN.** Aucune session réelle n'a été ouverte ; aucune base du client n'a été falsifiée ; le montage
+modifie `arbres[travail]` du gel, c'est-à-dire le trou W5 lui-même.
+
+**Prochaines étapes.** Écrire la spec du durcissement H1 (re-hachage de `raw/`) et H3 (re-contrôle de la
+base), puis les éprouver au banc ; F1 attend une définition mécanique du tableau.
+
+**Mémoires.** `5f586e45` (2026-10-17 11:58:00) : le protocole atteste des fichiers, les sept sondes, le fait
+que `raw/` n'est jamais remesuré, et les durcissements H1 à H6 proposés.
+## Séance 44 — 2026-10-17 (spec du durcissement H1 et H3)
+
+**Objectif.** Écrire, avant toute ligne de code, la spec des deux premiers durcissements mesurés par l'étude
+antagoniste : le reçu re-hache `raw/<cas>/` (H1), et refuse un `faits.json` que la base du client dément (H3).
+
+**Fait.** `docs/tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-17-140536-spec.md`
+(199 lignes, 2 061 mots, 12 621 octets ; naissance du dossier `stat -c %w` = 2026-10-17 14:05:36, le nom la
+porte). Dix sections : critère falsifiable, H1 en six règles, H3 en huit refus, interface (un champ
+`trace.base`, deux champs de reçu, deux prérequis étendus), 18 contrôles de banc (68 à 85), non-régression,
+ce qui reste ouvert, quatre décisions soumises au relecteur. **Aucun fichier du harnais touché** : la spec
+attend l'approbation, puis le code.
+
+**Vérifié.**
+
+| Citation | Ce qui s'y trouve |
+| --- | --- |
+| 838-839 | lecture du manifeste au reçu |
+| 1049-1052 | `produit` recopie les `sha256` du manifeste, ne les recalcule pas |
+| 661-691 | `copier`, puis `writeJson(join(dest, "manifest.json"))` : le manifeste s'écrit au même chemin qu'un produit de ce nom |
+| 617-618 | manifeste vide d'un run `--sans-produit` |
+| 743-821 | `cmdFaits`, ses refus, et l'écriture de `trace.source` (816) |
+| 844-865 | les champs que `receipt` exige de `faits.json` |
+| 163-183 | `PREREQUIS`, dont `sqlite3` et `date -d`, déclarés pour `faits` seule |
+| 721-742 | `isoDeMs` et `lireBase`, réutilisables par `receipt` |
+
+`node docs/device/harness/liens.mjs` → `exit 0`, 31 fichiers, 327 liens, **0 mort**. Sur la spec :
+18 lignes de contrôle, 4 tirets cadratins (le `name` et trois titres, convention du dépôt), **0 dans la prose**.
+
+**Rectifications.** Deux, avant livraison. J'avais écrit « onze contrôles » lisent `faits-bon.json` : faux,
+ils sont douze, et deux d'entre eux (44 et 45) citent un fichier jamais copié, que H1 transforme en refus ;
+la conséquence est écrite en trois points au §6. J'avais cité le bloc `session` du reçu comme 844-876 : il
+finit à 865, `temoignage` compris.
+
+**Dérives signalées, non corrigées.** Un produit qui contiendrait un fichier nommé `manifest.json` serait
+écrasé par le manifeste de `collect` : inféré du code (661-691), non mesuré, et H1 le refuse en amont.
+
+**OPEN.** H3 crée `trace.base` : un `faits.json` d'avant cette spec est refusé par le nouveau `receipt`,
+assumé au §4.1 et sans effet sur les reçus déjà écrits (le reçu refuse de s'écraser). Aucune session réelle,
+aucune base forgée : H1 et H3 sont spécifiés, pas éprouvés.
+
+**Prochaines étapes.** Approbation de la spec, puis H1 et H3 dans `run.mjs`, puis les 18 contrôles du banc et
+la mise à jour de `BANC.md`, `DEVICE.md`, `README.md`. H2, H4, H5, H6 restent hors spec.
+
+**Mémoires.** `0ce57877` (2026-10-17 12:08:00) : `trace.base` explicite contre le parsing de `trace.source`,
+le refus d'un fichier en plus sous `raw/`, et la fixture des contrôles 44-45.
+
+## Séance 45 — 2026-10-17 (H1 et H3 appliqués : le reçu relit sa copie et sa base)
+
+**Objectif.** Appliquer les deux premiers durcissements de l'étude antagoniste, sur la spec approuvée par
+la demande : `receipt` re-hache `raw/<cas>/` (H1, ADR-030) et relit la base que `faits.json` nomme
+(H3, ADR-031).
+
+**Fait.** `run.mjs` : `verifierCopie` (H1) re-hache chaque fichier du manifeste, refuse un fichier absent,
+un `sha256` différent, un chemin qui sort de `raw/<cas>/`, un lien symbolique et un fichier non listé ;
+hache `manifest.json` et `last-message.md` sous `produit.verifie`. `faits` écrit `trace.base` ; `receipt`
+l'exige, relit la base en `-readonly` et refuse huit écarts (fil absent, répertoire hors de l'arbre gelé,
+mode non local, worktree, modèle, heure d'ouverture, premier message, aucun message), puis écrit
+`session_verifiee` depuis la base. `sqlite3 -version` et `date -d @0` passent à `faits` **et** `receipt`.
+`--help` et l'en-tête disent les deux gestes. Le banc passe de 67 à **87 contrôles** (68 à 87), les
+fixtures de `faits-bon.json` et des contrôles 44-45 mises au vrai, le contrôle 15 nommant désormais son
+motif. ADR-030 et ADR-031 écrites ; `BANC.md`, `DEVICE.md`, `ARCHITECTURE.md`, `EXPLICATION.md`,
+`DASHBOARD.md`, `README.md` et la spec remis à leurs compteurs.
+
+**Vérifié.**
+
+| Geste | Résultat observé |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **87/87 PASS**, `exit 0` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `node docs/device/harness/liens.mjs` | 328 liens, **0 mort**, `exit 0` |
+| `wc -l run.mjs` · `grep -c "refuse("` | **1 311** lignes, **122** refus |
+| sonde F rejouée (contrôle 68) | copie réécrite après `collect` → **`exit 1`**, empreinte nommée |
+| copie supprimée (contrôle 69) | **`exit 1`** |
+| `faits.json` sans `trace.base`, fil inconnu, base absente (75-77) | **`exit 1`**, motif nommé |
+| base concordante (85) | `exit 0`, `session_verifiee.fil` = `banc` |
+
+**Rectifications, trois, dont une matérielle.**
+
+1. **H1 aurait refusé tout run conforme.** La spec du run fait écrire `last-message.md` **à la main** sous
+   `raw/<cas>/` après `collect` (§4) ; le manifeste ne peut donc pas le lister, et la règle « tout fichier
+   non listé est un refus » l'aurait frappé. Trouvé en cherchant qui écrit ce fichier, pas en relisant ma
+   spec. `last-message.md` est désormais une exception **nommée et mesurée** (hachée sous
+   `produit.verifie.last_message_sha256`), et le contrôle 87 la prouve. La spec §3 et §9 sont amendées.
+2. **18 contrôles annoncés, 19 écrits.** Le fil sans message utilisateur a son propre contrôle (84), sinon
+   la branche restait non éprouvée. La table §6 est renumérotée 68 à 87, le §7 passe à 87.
+3. **Deux fixtures mentaient par omission.** Les contrôles 44 et 45 citaient un fichier jamais copié : H1 en
+   fait des refus, donc la fixture dépose une vraie copie avec le `sha256` qu'elle inscrit. Et
+   `faits-bon.json` devait nommer un fil qui existe : le banc insère `banc` dans `$DBF` avant le premier
+   reçu, avec ses heures dérivées comme `faits` les dérive.
+
+**Dérives signalées, non corrigées.** `receipt` dépend maintenant de la base au moment du reçu : un
+`faits.json` d'avant la spec est refusé, et un run dont la base a disparu entre `faits` et `receipt` ne peut
+plus produire de reçu. C'est le prix de H3, dit dans l'ADR-031, pas un défaut constaté.
+
+**OPEN.** Aucune session réelle ; aucune base forgée (H3 ne ferme pas W1 : un fil cohérent dans une base
+forgée passe) ; `trace.base` et `trace.commande` peuvent nommer deux bases différentes tant que H2 n'est
+pas fait.
+
+**Prochaines étapes.** H2 (rejouer l'export, hacher la trace), puis H4, H5, H6 ; la définition mécanique du
+tableau reste le préalable de H6.
+
+**Mémoires.** `778c8ffe` (2026-10-17 12:26:30) : les deux gestes appliqués, `last-message.md` sauvé de H1,
+le banc à 87 et les rectifications de la spec.
+
+## Séance 46 — 2026-10-17 (spec H2 : l'export rejoué depuis la base, la trace hachée)
+
+**Objectif.** Spécifier H2, avant le code : lier la trace exportée à la base qui la produit, sans exécuter
+la commande que porte `faits.json`.
+
+**Fait.** `docs/tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-17-143030-spec-h2.md`
+(158 lignes, 1 748 mots, 10 398 octets ; naissance `stat -c %w` = 2026-10-17 14:30:30). Le reçu
+**reconstruit** la commande d'export depuis `trace.base`, `session.identifiant` et `trace.chemin_exporte`,
+avec le gabarit de `faits` (807-810) ; il exige l'égalité caractère pour caractère avec `trace.commande`
+(ferme L4 sans interpréter une pièce éditable) ; il exécute la requête en `-readonly`, capture **les
+octets** de la sortie, compare au `sha256` du fichier, et écrit `trace_lue.sha256` et `trace_lue.rejoue_le`.
+`compare` re-hache la trace citée et refuse si elle a changé. Neuf contrôles (88 à 96), banc 87 → 96 ;
+ADR-032 prévue.
+
+**Vérifié.**
+
+| Citation | Ce qui s'y trouve |
+| --- | --- |
+| 807-810 | le gabarit de la commande d'export, seul texte que H2 recopie |
+| 823 | `trace{source, base, chemin_exporte, commande}` |
+| 240 | `sha256File`, la fonction que le rejeu confronte |
+| 1251 | `cmdCompare`, où le re-hachage prend place |
+| 1232 | `trace_lue`, où les deux champs nouveaux entrent |
+
+`node docs/device/harness/liens.mjs` → `exit 0`, 32 fichiers, 334 liens, **0 mort**. Sur la spec :
+9 lignes de contrôle (88 à 96), 2 tirets cadratins (le `name` et le titre), **0 dans la prose**.
+
+**Rectifications, trois.** La spec §8 disait que les contrôles 16 à 55 s'appuyaient sur un fichier vide :
+`echange.jsonl` n'est créé qu'au contrôle 47, donc ces quatre-là ont une trace absente, pas un vide ; seul
+le 85 compare un vide à un vide. Corrigé. Les deux liens vers `DECISIONS.md` étaient écrits `../` depuis un dossier de
+tâche, donc faux : `../../../`, vérifié par le contrôle de liens. Et le contrôle 94 doublait le 56 (trace
+absente) : remplacé par un `trace.commande` qui cite un autre chemin d'export, sinon un contrôle neuf
+n'apprenait rien.
+
+**Dérives signalées, non corrigées.** H2 découvre que les contrôles 66 et 67 tapaient leurs exports : sous
+la règle nouvelle ils seraient refusés avant la fenêtre. Leur fixture doit être produite par le rejeu, et le
+cas hors fenêtre se déplace **dans la base** (fil `banc-hors-fenetre` : premier message sans part, message
+tardif avec une part), pas dans le fichier. La spec §8 le détaille, le banc n'est pas touché.
+
+**OPEN.** Aucune session réelle ; la base reste la racine de confiance ; un message ajouté au fil après
+l'export fera refuser le reçu (l'ordre du §1.5 l'évite, la spec le dit) ; `faits` écrit le chemin de la base
+sans guillemets dans `trace.commande`, donc un chemin avec espace casserait le rejeu.
+
+**Prochaines étapes.** Approbation, puis H2 dans `run.mjs` et ADR-032 ; ensuite H4 (budget), H5
+(`gate.json`), H6 (le tableau).
+
+**Mémoires.** `1ffc563f` (2026-10-17 12:33:17) : reconstruire sans exécuter, égalité octet pour octet,
+`compare` re-hache, et les fixtures 66-67 à refaire.
+
+## Séance 47 — 2026-10-17 (H2 appliqué : l'export rejoué depuis la base, la trace hachée)
+
+**Objectif.** Appliquer la spec H2 approuvée : lier la preuve au fichier exporté, sans jamais exécuter la
+chaîne que porte `faits.json`.
+
+**Fait.**
+
+- `run.mjs` (1 393 lignes, contre 1 311) : le gabarit du §1.5 est écrit **une fois** (`requeteExport`,
+  `commandeExport`, 767-771) ; `faits` s'en sert (830) au lieu de le recopier ; `receipt` reconstruit la
+  commande depuis `trace.base`, `session.identifiant` et `trace.chemin_exporte`, refuse une `trace.commande`
+  qui en diffère, rejoue la requête en `-readonly`, compare **les octets** au fichier et écrit
+  `trace_lue.sha256` et `trace_lue.rejoue_le` (1090-1126) ; `compare` re-hache la trace citée (1345-1358).
+  `--help` dit les deux refus nouveaux et les deux champs du reçu.
+- `banc-harnais.sh` (507 lignes, contre 328) : le `faits.json` du banc est produit par `faits` — une pièce
+  écrite à la main n'atteint plus le reçu ; `faits-en` déplace la redirection de `trace.commande` avec le
+  chemin exporté ; les fixtures 66-67 sont produites par le rejeu (`export-fil` exécute la commande que
+  `faits` écrit), le fil `banc-fenetre` porte deux parts, et le cas hors fenêtre se déplace **dans la base**
+  (`banc-hors-fenetre`) ; neuf contrôles neufs (88 à 96) ; en-tête à 96.
+- [ADR-032](DECISIONS.md) écrite, et la limite de l'ADR-031 qui la nommait close sur place, d'une phrase
+  datée. `BANC.md`, `DEVICE.md`, `ARCHITECTURE.md`, `EXPLICATION.md`, `DASHBOARD.md` et `README.md` passent
+  de 87 à **96** ; la spec H2 passe à `status: done` et reçoit un §13 pour ses deux écarts.
+- Deux chiffres périmés remis au mesuré dans la même passe : le nombre de lignes du harnais (1 311 →
+  **1 393**, `wc -l`) et son compte de refus (86 → **127**, `grep -c 'refuse('`), dans `EXPLICATION.md`,
+  `ARCHITECTURE.md`, `DASHBOARD.md` et `README.md`. Le tableau de bord citait encore **67/67** comme dernier
+  compte du banc : il porte désormais les trois paliers (67, puis 87 et 96).
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **96/96 PASS**, `exit 0`, 0 `FAIL` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 32 fichiers, 341 liens hors code, **0 mort** |
+| contrôle 88 (fixture `banc-fenetre`) | `trace_lue` = `{lignes: 2, echanges_dans_la_fenetre: 2, illisibles: 0, sha256: 92354997…, rejoue_le: 2026-10-17T20:42:31+02:00}` |
+| contrôle 89, rejoué à la main | `REFUS — … ne rend pas ce que la base rend pour le fil « banc-fenetre » — efccadca au fichier, 92354997 au rejeu …`, `exit 1` |
+| contrôle 96, rejoué à la main | `REFUS — compare : la trace citée par le reçu ne rend plus son empreinte — ba840a8c au disque, 92354997 au reçu`, `exit 1` |
+
+**Dérives signalées, non corrigées.** La spec H1/H3 du même dossier porte encore « Statut : en attente
+d'approbation » et `status: in-progress` alors que H1 et H3 sont dans `run.mjs` depuis la Séance 45 :
+constaté en cherchant une convention de statut, laissé en place (hors du périmètre de H2). `faits` écrit
+toujours le chemin de la base sans guillemets dans `trace.commande` : un chemin avec espace casserait à la
+fois le rejeu et la comparaison, et c'est dit dans l'ADR-032, pas corrigé.
+
+**Rectifications.** Deux, sur mes propres affirmations. La ligne 88-96 de `BANC.md` annonçait « cinq refus » :
+le compte est **sept** (89, 90, 91, 92, 93, 94, 96) pour deux acceptations, corrigé avant livraison. Et le
+§8.3 de la spec H2 disait que les contrôles 16, 44, 45 et 55 garderaient une trace **absente** : faux dès
+lors que leur `faits.json` vient de `faits` — la trace existe et est vide, le rejeu rend zéro ligne, et
+l'égalité des empreintes tient ; l'absence n'est plus éprouvée que par le contrôle 56. Écrit au §13 de la
+spec, pas dissimulé.
+
+**OPEN.** Aucune session réelle ; la base reste la racine de confiance (W1 ouvert) ; un message ajouté au
+fil après l'export fait refuser le reçu, donc l'ordre du §1.5 devient obligatoire ; le rejeu prouve le
+fichier **à l'instant du reçu**, pas au bon moment. **Rien n'est commité.**
+
+**Prochaines étapes.** H4 (le budget), H5 (`gate.json`), H6 (le tableau, après sa définition mécanique).
+
+**Mémoires.** `6c3fc62b` (2026-10-17 20:44:50) : reconstruire sans exécuter, égalité octet pour octet,
+`compare` re-hache, le `faits.json` du banc produit par `faits`, les fixtures 66-67 par le rejeu, 96/96.
+
+## Séance 48 — 2026-10-17 (spec H4 : le budget d'échanges, mesuré contre le fil)
+
+**Objectif.** Spécifier H4, avant le code : le cas fixe un budget d'échanges, rien ne le mesure, et la
+promesse « le reçu nomme l'échange qui l'a épuisé » n'est tenue par aucune ligne.
+
+**Fait.**
+
+- `docs/tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-17-204933-spec-h4.md`, 180 lignes,
+  11 759 octets, 1 983 mots (remesurés après deux corrections de relecture) ; naissance `stat -c %w` =
+  `2026-10-17 20:49:33.969414763 +0200`, le nom porte `204933`. Aucune ligne de `run.mjs`.
+- **Ce qui se compte** : un échange = un message `user` du fil, tous, sans filtre de fenêtre (le fil est le
+  run ; `horodatage_fin` est un instant choisi, il ne doit pas réduire le budget ; l'export ne filtre pas
+  non plus). Les appels d'outils sont des parts, pas des messages.
+- **Où le budget se lit** : `demande.budget_echanges` de l'attendu (`3`), que `verifierLeGel` re-hache avant
+  toute lecture puisque l'attendu est l'un des deux fichiers du gel. Un champ de gel aurait été éditable
+  sans re-gel : `empreinte` ne hache que `fichiers` et `references`.
+- **Refus, pas plafond** : `utilises > budget` est un refus (`exit 1`, rien ne s'écrit), `--verdict non
+  concluant` ne le sauve pas ; `utilises == budget` est normal et le reçu nomme l'échange (`epuise_par`).
+- Six contrôles prévus (97 à 102), banc 96 → **102**, aucune fixture existante retouchée (le fil `banc` a
+  **1** message `user`, `fil-banc` 1, `banc-fenetre` 1, `banc-hors-fenetre` 1, `banc-apres` 1, tous sous 3).
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `grep -c budget docs/device/harness/run.mjs` | **0** |
+| `grep -n budget_echanges …expected.json` | l. **9**, `"budget_echanges": 3`, sous `demande` |
+| rôles des fichiers du gel | `attendu \| demande`, donc l'attendu est re-haché |
+| `grep -n « Trois échanges au plus » …request.md` | l. **193** ; « nomme l'échange qui l'a épuisé » l. **214** |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 33 fichiers, 346 liens hors code, **0 mort** |
+| tirets cadratins dans la spec | **2** (le `name` et le titre), **0 dans la prose** |
+
+Le banc n'a pas été relancé : aucune ligne de code n'a changé dans cette séance, et son contrôle 61 éprouve
+`liens.mjs`, relancé seul.
+
+**Dérives signalées, non corrigées.** La règle « l'attendu est lu par le juge seul » (ARCHITECTURE §5, spec du
+protocole §3) est amendée par cette spec : le reçu y lira **un entier**, pas le contenu. C'est dit au §2, pas
+corrigé dans les pages, puisque la spec n'est pas approuvée. Rien d'autre n'a été trouvé qui contredise un
+document.
+
+**Rectifications.** Quatre, sur mes propres pièces. La cellule `--help` du §6 portait un tiret cadratin qui
+faisait un troisième tiret hors du `name` et du titre : remplacé par « rien sur le budget ». Le §2 citait la
+requête d'export à l'appui de « un échange = un message », alors qu'elle rend **une ligne par part** :
+reformulé, et la distinction dite (deux parts, un échange). Le bandeau de la spec ne portait pas la valeur de
+naissance, seulement la commande qui la donne : ajoutée. Et la mémoire
+écrite pour cette séance contenait `echanges{бudget…}` avec un `б` cyrillique : corrigée à la source par
+`update_memory`, relue après correction.
+
+**OPEN.** Spec non approuvée, donc aucun code ; la base reste la racine de confiance ; le budget compte les
+tours de l'opérateur, pas les questions de la session ; un fil continué après le run fera refuser ; aucune
+session réelle. **Rien n'est commité.**
+
+**Prochaines étapes.** Approbation, puis H4 dans `run.mjs` avec les contrôles 97 à 102 et l'ADR-033 ; ensuite
+H5 (`gate.json`), puis H6.
+
+**Mémoires.** `eeb9b255` (2026-10-17 20:50:04, corrigée à 20:50:22, chiffres remesurés à 20:51:28) : les
+mesures de l'écart, les quatre décisions (attendu, tous les messages `user`, refus du dépassement,
+`epuise_par`), le banc à 102 et les limites.
+

@@ -11,8 +11,8 @@ status: in-progress
 > [spec du run](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md),
 > écrite aussi au §1.1 de la [conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
 > pour l'opérateur — qui, lui, connaît le cas et ses racines. Ici, rien n'est connu d'avance : tout
-> vient du gel. Les sorties citées ont été observées le 2026-10-15, et celle du §3 depuis le clone public
-> l'a été le 2026-10-16, après le push de la journée.
+> vient du gel. Les sorties citées ont été observées le 2026-10-15 ; celles du §3, depuis le clone
+> public, le 2026-10-17.
 
 ## 1. Ce que la recette établit, et ce qu'elle n'établit pas
 
@@ -27,12 +27,12 @@ status: in-progress
 | --- |
 | le `porcelain` gelé : ses fichiers non suivis (`.freebuff/`, la copie périmée du v6) n'entrent dans aucun commit |
 | les dates de **naissance** des fichiers : git ne les transporte pas — un clone date tout à l'heure du clone |
-| l'instant `gele_le` : déclaré par le gel ; git ne borne que l'entrée au dépôt (commit `c925604`, `16:02:59`) |
+| l'instant `gele_le` : déclaré par le gel ; git ne borne que l'entrée au dépôt du gel publié (commit `6789bec`, `22:30:28`) |
 | l'état non commité du dispositif : un clone ne reçoit que ce qui est poussé |
 
-Rien de tout cela ne dit qu'un **run** a eu lieu : il n'y en a pas, et c'est la question du run, pas
-du gel. Ce que la recette établit, c'est que le texte scellé est bien celui qu'un tiers peut relire,
-et que rien ne l'a déplacé depuis.
+Rien de tout cela ne dit qu'un **run** a eu lieu : la recette porte sur le gel, et ce qu'un run laisse
+se lit au §5, qui n'est pas sa question. Ce que la recette établit, c'est que le texte scellé est bien
+celui qu'un tiers peut relire, et que rien ne l'a déplacé depuis.
 
 ## 2. La recette
 
@@ -117,35 +117,17 @@ PY
 
 ## 3. Ce que la recette rend, mesuré
 
-**Depuis le clone public, jusqu'au push du 2026-10-16** — le gel poussé était encore celui d'avant
-l'ADR-016 :
-
-```text
-cas gelé : 2026-10-15-133423-promesse-memoire-avant-ecriture
-arbre des références à 4c39e5c5
-gel d'avant l'ADR-016 : des chemins absolus y sont écrits (fichiers[].chemin),
-donc un clone ne peut pas le rejouer sans réécrire ces chemins — c'est ce que
-l'ADR-016 a réparé. Le dispositif n'a pas encore poussé le gel refait.
-→ exit 3
-```
-
-C'est un résultat, pas une panne : la recette **dit** qu'elle ne peut pas rejouer ce gel-là, au lieu
-de rendre deux `False` qui accuseraient les mauvais fichiers. La dernière phrase de cette sortie a été
-réécrite le 2026-10-16 : la recette ne dit plus que le gel refait attend un push, il est poussé ; le
-reste de la sortie n'a pas bougé.
-
-**Depuis le push du 2026-10-16**, un clone neuf reçoit le gel refait et la recette va au bout d'elle-même :
-le bloc du §2, sans la ligne `cp` du § suivant, rejoué ce soir-là depuis `/tmp/gel-verif` → `empreinte
-True`, `VERDICT   gel rejoué à l'identique`, `exit 0`. Le gel que ce clone porte, mesuré :
-`git show origin/main:docs/device/CASES/<cas>.freeze.json` → empreinte
+**Le gel publié, au 2026-10-17.** `origin/main` porte le gel d'après l'ADR-016 et l'ADR-019 : empreinte
 `0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8`, `gele_le`
-`2026-10-15T22:11:24.782242943+0200`, `fichiers[].chemin` **relatifs** — c'est le gel qui attendait un
-commit et un push, et c'est le seul changement : la recette, elle, est identique. Le champ qu'il porte en
-plus, `racine_espace_de_travail`, reste ignoré d'elle, qui n'en a pas besoin pour rejouer les empreintes.
+`2026-10-15T22:11:24.782242943+0200`, `fichiers[].chemin` **relatifs**, `racine_espace_de_travail`
+déclarée. Il est entré au dépôt par `6789bec` (`2026-10-15T22:30:28+02:00`), et le fichier publié est
+**octet pour octet** celui du dépôt local (`sha256`
+`d50ee0ab7b71bd0f2c3fb9db0012907ed1a022ff234207adc91f3c38fce33a44`). Les deux gels d'avant —
+`bc126fe6`, chemins absolus, puis `07246039` — ne sont plus ce qu'un clone reçoit.
 
-**Avec le gel refait, avant son push** — le même bloc, plus une ligne qui déposait le gel refait dans le
-clone (`cp <dispositif>/docs/device/CASES/<cas>.freeze.json dispositif/docs/device/CASES/`, ce que le push
-a rendu inutile) :
+**Depuis un clone neuf, le 2026-10-17** : le bloc du §2 tel quel, sans ligne ajoutée ni fichier déposé
+à la main, rejoué depuis `/tmp/gel-verif` sur un clone dont le `HEAD` était alors `a8eabca` — les
+commits non poussés à cet instant ne touchaient pas le cas → `exit 0` :
 
 ```text
 cas gelé : 2026-10-15-133423-promesse-memoire-avant-ecriture
@@ -169,6 +151,20 @@ empreinte True
 VERDICT   gel rejoué à l'identique
 → exit 0
 ```
+
+**Le garde-fou du §2 est toujours là, et il ne mord plus sur le gel publié.** Sa branche d'arrêt reste
+écrite pour un gel d'avant l'ADR-016 ; éprouvée le 2026-10-17 sur `bc126fe6` (commit `c925604`), hors du
+clone, elle rend ses trois lignes et son code :
+
+```text
+gel d'avant l'ADR-016 : des chemins absolus y sont écrits (fichiers[].chemin),
+donc un clone ne peut pas le rejouer sans réécrire ces chemins — c'est ce que
+l'ADR-016 a réparé.
+→ exit 3
+```
+
+C'est un résultat, pas une panne : la recette **dit** qu'elle ne peut pas rejouer ce gel-là, au lieu
+de rendre deux `False` qui accuseraient les mauvais fichiers. Le gel publié, lui, ne la déclenche pas.
 
 Un seul `False` suffit à faire tomber le gel : dans ce cas la recette sort en `1` et son dernier mot
 est **GEL CADUC**. Les deux lignes « dépôt public inconnu du gel » disent une limite du gel, pas une
@@ -200,7 +196,13 @@ plus aucun chemin de machine ([ADR-019](../DECISIONS.md)) : un tiers déclare la
 sans réécrire un octet du cas gelé.
 - **La recette ne juge pas la qualité du cas.** Elle dit que le texte scellé est intact, jamais qu'il
   est bien écrit, ni que l'attendu est juste.
-- **Rien de ceci n'atteste un run.** Aucun run n'a eu lieu : il n'y a ni produit, ni reçu, ni trace.
+- **Rien de ceci n'atteste un run.** La recette porte sur le gel : elle dit que le texte scellé est
+  intact, jamais qu'une session l'a ouvert, et aucune empreinte ne porte les pièces d'un run. Un run a
+  pourtant eu lieu le 2026-10-15 (`17:15:59`–`17:29:51`, verdict `non concluant`, aucun produit —
+  [PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)) et ses pièces sont publiées avec le reste :
+  `trace/echange-1.txt` (34 609 o), `trace/session-ses_ebfdd6595ffentQru7gA9UPLSc.json` (161 022 o),
+  `faits.json`, `veille-etat.txt`. Ce que la recette n'en dit pas : le moindre mot, et c'est voulu.
+  Ce run n'a laissé ni `receipt.json` ni `output.json`, antérieur au chemin sans produit (spec §9).
 
 ## 6. La version de l'opérateur
 

@@ -5,9 +5,13 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 ## Entrées
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — **la vue d'ensemble** : les acteurs et ce que chacun ne
-  voit jamais, les arbres et qui écrit où, les cinq commandes du harnais, la vie des artefacts, les
-  falsificateurs et le plafond du verdict, en cinq schémas. C'est par ici qu'un nouveau lecteur commence.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — **la vue d'ensemble**, et c'est par ici qu'un nouveau
+  lecteur commence : le dispositif fait exécuter une modification du **framework AIDD** (un framework de
+  compétences markdown pour assistants IA, publié sur `github.com/giak/framework`) par une session IA, et
+  nomme l'écart entre ce qu'elle annonce et ce qu'elle produit. Puis les acteurs et ce que chacun ne voit
+  jamais, les arbres et qui écrit où, les cinq commandes du harnais, la vie des artefacts, les
+  falsificateurs et le plafond du verdict, en cinq schémas. Le pourquoi du dépôt est à la
+  [VISION](docs/VISION.md).
 - [AGENTS.md](AGENTS.md) — le contrat de travail, autonome : il vaut pour tout ce qui s'écrit ici.
 - [docs/device/DEVICE.md](docs/device/DEVICE.md) — le dispositif en une page : ce qu'il fait, ce qu'il ne
   fait pas, ce qui part, ce qui revient, comment le récupérer et le lancer.
@@ -15,6 +19,8 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 46 contrôles qui éprouvent ses
+  refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/EXPLICATION.md](docs/EXPLICATION.md) — le projet raconté simplement, pour qui n'en
   connaît rien : analogies, schémas, état réel au 2026-10-15, échecs compris.
 - [docs/brainstorm/2026-10-15-201458-bilan-premier-run.md](docs/brainstorm/2026-10-15-201458-bilan-premier-run.md)
@@ -40,5 +46,15 @@ la conduite du run est écrite
 ([2026-10-15-154303-run.md](docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)).
 Le compte-rendu du run est dans
 [docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md](docs/device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md),
-et l'état du projet, ses trous et l'ordre de reprise sont au
+et les raisons de ce verdict, ses arbitrages et ses brainstorm sont au
 [bilan du premier run](docs/brainstorm/2026-10-15-201458-bilan-premier-run.md).
+
+**Au 2026-10-16.** Les trois trous du premier run sont comblés (reçu d'un run sans produit, chemin du
+§5 qui ne résolvait pas, lecture de la révision sous test non mesurée) et le client du second run est
+sondé : ses foyers, le mode *worktree* à refuser, le texte remis stocké octet pour octet. Le harnais a
+désormais son banc dans le dépôt, **46/46 PASS**, et le nom du dossier d'un run est tranché
+([ADR-023](docs/DECISIONS.md) : des tirets). Ce qui reste n'est plus une mesure mais un geste : ouvrir un
+projet Freebuff sur `<W>/terrain`, en mode direct et sans *worktree*, puis conduire le second run. L'état
+courant, ses trous et les prochains pas sont au [tableau de bord](docs/DASHBOARD.md). Et rien n'a encore
+produit d'écart : aucun `output.json` n'existe, `NEGATIVE.md` (casser quelque chose exprès et le voir
+signalé) et `ECART.md` (le compte-rendu rendu au framework) restent à écrire.

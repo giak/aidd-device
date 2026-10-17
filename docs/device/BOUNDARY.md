@@ -21,6 +21,11 @@ status: in-progress
 | terrain | `/home/giak/projects/audio-sync-tool` | lu, **jamais** écrit ; copie de travail par run |
 | le dispositif | `/home/giak/projects/aidd-device` | le seul arbre que le dispositif écrit |
 
+**Un même nom pour deux choses, et il faut le savoir** : `framework-origin` nomme ici la **source**
+(`/home/giak/projects/framework`), et il nomme aussi le **dossier qui porte sa copie**
+(`<racine>/<cas>/framework-origin`, dont le label de gel est « révision sous test »). Le texte remis à
+la session porte le second sens, le §3 parle du premier.
+
 Tout ce qui exécute tourne dans un répertoire jetable, hors de ces arbres. Le foyer, arrêté le
 2026-10-15 : `<racine>/<identifiant-du-cas>/`, qui porte `terrain/` — où la session écrit — et
 `framework-origin/`, lu seul. La **racine** se déclare une seule fois, au gel
@@ -94,6 +99,11 @@ qu'elle ne couvre pas, puisque ces deux lignes préexistaient à tout run et ne 
 dispositif : `.freebuff/` est écrit par le client, et la copie non suivie du méga-prompt est une
 copie périmée laissée hors de ma portée (arbitrage `4bb23eec`).
 
+**Relevé de clôture du 2026-10-16** (le geste de l'ADR-021, variante A), fait avant d'écrire le bilan
+du projet : origine `fe48de12`, porcelain **les deux mêmes lignes** ; terrain `416ec1f`, une ligne,
+`?? .freebuff/`. Aucune ligne nouvelle : rien de ce que le dispositif a écrit ce jour n'a touché ces
+deux arbres.
+
 ## 6. La preuve qu'aucun fichier du dispositif n'appartient au framework
 
 **La clause du v6 §10 est réparée** (ADR-014, 2026-10-15) : elle se mesure en **paires chemin +
@@ -146,12 +156,19 @@ n'est un fichier suivi du framework. Les deux chemins partagés y portent un aut
 neuf autres chemins du dispositif n'existent pas chez l'origine. Par chemin absolu, les 11 fichiers
 du dispositif vivent tous sous `/home/giak/projects/aidd-device`, aucun sous l'origine.
 
+**Remesuré le 2026-10-16** : 2 599 paires côté framework, **42** côté dispositif, **0 commune** — le
+nombre de fichiers suivis du dispositif a quintuplé, le verdict ne bouge pas.
+
 ## 7. La révision du dispositif
 
 ```text
-git -C /home/giak/projects/aidd-device rev-parse --short HEAD   → 39750fe   (branche main, relevé du 2026-10-15)
-git -C /home/giak/projects/aidd-device ls-files | wc -l         → 18
+git -C /home/giak/projects/aidd-device rev-parse --short HEAD   → 64901e3   (branche main, relevé du 2026-10-16)
+git -C /home/giak/projects/aidd-device ls-files | wc -l         → 42
 ```
+
+**Relevé du 2026-10-16** : 42 fichiers suivis. Les preuves et les pages de la journée sont entrées au
+dépôt par `64901e3` ; ce qui n'était pas encore commité au moment de ce relevé, `git status --porcelain`
+le nomme.
 
 Relevé du 2026-10-15, 15:13, après la réparation de la clause (§6) ; 11 fichiers suivis alors, et
 l'arbre modifié :

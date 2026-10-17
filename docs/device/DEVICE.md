@@ -14,9 +14,8 @@ status: in-progress
 l'opérateur, et nomme l'écart entre ce qu'elle annonce et ce qu'elle produit — en gardant de quoi
 refaire le départ, jamais la réponse.
 
-**Comment c'est câblé** : les acteurs, le trajet des fichiers, les cinq commandes et le plafond du
-verdict sont sur [ARCHITECTURE.md](../ARCHITECTURE.md). Cette page-ci dit ce qu'il fait, ne fait pas,
-comment le lancer et où le lire.
+**Comment c'est câblé** : acteurs, trajets des fichiers, cinq commandes et plafond du verdict sont au
+détail sur [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ## Ce qu'il fait
 
@@ -70,17 +69,17 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 Sous `runs/<horodatage>-<révision du framework>-<révision du dispositif>/` (des tirets, [ADR-023](../DECISIONS.md)) :
 `raw/<cas>/` et son manifeste,
 `last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
-jamais par l'opérateur (`run.mjs` : son chemin est `join(runDir, "output.json")`). Rien d'autre.
+jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`). Rien d'autre. La forme d'`output.json`
+et la phrase de verdict sont au §4 d'[ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ## Récupérer et lancer
 
 ```text
 git clone https://github.com/giak/aidd-device.git
-git -C aidd-device rev-parse --short HEAD   → d239b08   (branche main, relevé du 2026-10-16)
+git -C aidd-device rev-parse --short HEAD   → 64901e3   (branche main, relevé du 2026-10-16)
 ```
 
-Ce chiffre est un relevé, jamais une constante : il bouge à chaque séance poussée, et il se relève au
-moment où on le cite.
+Ce chiffre est un relevé, jamais une constante : il se relève au moment où on le cite.
 
 D'une autre machine : oui — les quatre arbres du cas sont publiés (§3 de [BOUNDARY.md](BOUNDARY.md)), le
 gel se rejoue ([REPLAY.md](REPLAY.md)), et le cas ne nomme plus aucun chemin de machine : la racine se
@@ -99,21 +98,9 @@ de travail déclarée une seule fois, et l'état des arbres avant ;
 5. `collect` puis `receipt` — produit verbatim, manifeste, reçu écrit à chaud ;
 6. `compare` — l'écart et la phrase de verdict, depuis le reçu seul.
 
-## Lire un écart
-
-`output.json` : un objet par cas — `{ cas, attendu, produit_brut, difference, verdict (conforme |
-écart | non concluant), limites (mord | ne mord pas | non évaluable), ecarte_comme_non_testable,
-gel_verifie }` —
-plus une phrase de verdict par exécution : « au vu de l'attendu écrit, le produit fait X ; l'attendu
-disait Y ». « La modification ne marche pas » n'est pas une réponse.
-
 ## Les noms du v6, et leur foyer
 
-Le contrat range tout sous `docs/` (ADR-002) ; les noms du v6 §10 sont conservés, le foyer diffère :
-
-| Noms du v6 §10 | Foyer |
-| --- | --- |
-| `DEVICE.md` (cette page), `BOUNDARY.md`, `CASES/`, `runs/`, `NEGATIVE.md`, `REFUSED.md`, `LIMITS.md`, `ATTEMPT.md` | `docs/device/` |
-| `ECART.md` | chez le framework, `aidd_docs/tasks/<année_mois>/<date_slug>/` |
-
-Nom prescrit, sans préfixe daté : ces pages sont des singletons du v6, que rien n'ordonne.
+Le contrat range tout sous `docs/` (ADR-002) et les noms du v6 §10 sont conservés : la correspondance
+des huit noms est au tableau de l'[ADR-013](../DECISIONS.md), et `ECART.md` seul se rend chez le
+framework, `aidd_docs/tasks/<année_mois>/<date_slug>/`. Ces noms sont prescrits, jamais préfixés
+d'une date : des singletons du v6.

@@ -1446,3 +1446,539 @@ amendement, lien mort de `DEVICE.md`) sont dans le bloc précédent, telles qu'�
 
 **Fermeture.** La séance est de nouveau close, cette fois sur ses trois rectifications. Travail toujours
 **non commité** : sept fichiers, aucun commit, aucune session ouverte.
+
+## Séance 19 — 2026-10-16 (le commit de la journée : `64901e3`)
+
+**Objectif.** Mettre au dépôt ce que les Séances 15 à 18 ont produit : le contrat le dit, un document non
+commité ne laisse rien à lire.
+
+**Fait.** Commit **`64901e3`**, « Trancher le nom du dossier d'un run, et réparer deux pages du dispositif »,
+sur `main` : 7 fichiers, **+445 / −29**. Par fichier : `ARCHITECTURE.md` (47), `DASHBOARD.md` (29),
+`DECISIONS.md` (39, l'ADR-023), `DEVICE.md` (3), la spec du run (6), la conduite (132, son §1.7), le journal
+(218, Séances 15 à 18 et la suite de la 18). Indexation **par nom** des sept chemins, jamais `git add -A`, et
+un garde avant le commit (`git diff --cached --name-only | wc -l` = 7, sinon abandon). Le [DASHBOARD](DASHBOARD.md)
+reçoit sa ligne et son en-tête.
+
+**Vérifié.** `git show --stat --oneline HEAD` → 7 fichiers, **445 insertions, 29 suppressions**, exactement le
+`git diff --stat` relevé avant l'indexation. `git status --porcelain` **vide** après le commit.
+`git log --oneline -1` → `64901e3`, sur `main`. **Aucun push** : le relecteur ne l'a pas demandé, et
+`origin/main` n'a pas été interrogé.
+
+**Ce que ce commit rend faux, sans réécrire personne.** Les séances 15, 16, 17 et 18 disent « rien n'est
+commité » : c'était vrai à l'instant où chacune s'écrivait, et ces blocs ne se réécrivent pas. Idem des
+mémoires `e1112361`, `0f0916a8`, `e0a566d7` et `2819def3`, qui portent la même phrase. L'état courant est ici.
+
+**Prochaines étapes.** Inchangées : le geste (ouvrir un projet Freebuff sur `<W>/terrain`, en mode direct,
+sans *worktree*), puis le second run sur le gel `0d9a2180`. Restent ouverts, consignés ailleurs : le
+frontmatter des trois skills, le commit debout de P5, les six décrochages, et le push de ce commit si le
+relecteur le demande.
+
+**Mémoires.** `4de9b689` — nouvelle : le commit, sa méthode, son contenu par fichier, et ce qu'il rend faux.
+
+**Fermeture.** La séance est close à cet instant, sur le commit **`64901e3`**. Ce bloc et la ligne du
+tableau de bord restent hors du dépôt : le second commit annoncé ici n'a pas eu lieu, la relecture s'étant
+arrêtée entre les deux. Aucune session ouverte, `run.mjs` intact.
+
+## Séance 20 — 2026-10-16 (le README de la racine, remis au vrai)
+
+**Objectif.** La question du relecteur : « le `README.md` est à jour ? ».
+
+**Fait.** Contrôle des dix puces de sa liste d'entrées et de sa section « État », puis **deux manques
+comblés**. Le banc du
+harnais, entré au dépôt le jour même, n'était pas dans la liste des entrées, là où [REPLAY](device/REPLAY.md)
+et [DEVICE](device/DEVICE.md) sont. Et l'« État » s'arrêtait au premier run et à son re-gel, en renvoyant au
+[bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) pour « l'ordre de reprise » alors que ses étapes 1
+à 3 sont faites : il porte désormais l'état au 2026-10-16 (les trois trous comblés, le client sondé, le banc
+**46/46 PASS**, [ADR-023](DECISIONS.md) tranchée) et renvoie au [tableau de bord](DASHBOARD.md) pour l'état
+courant, le bilan gardant les raisons et les arbitrages.
+
+**Vérifié.** Chaque affirmation chiffrée du README, relue contre sa pièce :
+
+| Ce que le README affirme | Pièce réinterrogée | Résultat |
+| --- | --- | --- |
+| 882 lignes, cinq commandes, `collect --sans-produit` | `wc -l run.mjs` ; les cinq fonctions de commande | **tient** |
+| le cas re-gelé, empreinte `0d9a2180` | `.empreinte` du gel | **tient** (`0d9a2180c0f1251f…`) |
+| le run du 2026-10-15, `17:16:12`–`17:29:51`, session `opencode` | `PV.md` et le bilan §« un run a-t-il eu lieu » | **tient** : la fenêtre est celle de la session, le dossier du run s'appelant `171559` |
+| ses entrées et ses liens | boucle sur chaque cible | **toutes résolvent** : 17 cibles distinctes, 0 morte |
+| le banc, **46/46 PASS** | `bash docs/device/harness/banc-harnais.sh` (Séance 17, rejoué depuis) | **tient**, `exit 0` |
+
+**Rectifications.** Deux. (1) La phrase de clôture de la Séance 19 annonçait deux commits et un arbre propre :
+le second n'a pas eu lieu. Corrigée pour dire ce qui est, plutôt qu'un état espéré. (2) Le premier jet de ce
+bloc annonçait « les douze entrées » du README, qui en porte **dix** : compté par `awk` sur les puces de sa
+section, et corrigé ici, qui cite désormais les dix puces et les 17 cibles de lien.
+
+**Prochaines étapes.** Inchangées : le geste (ouvrir un projet Freebuff sur `<W>/terrain`, en mode direct,
+sans *worktree*), puis le second run sur le gel `0d9a2180`. **Trois fichiers attendent leur commit** : ce
+bloc, le tableau de bord et le README.
+
+**Mémoires.** `e9f76f91` — nouvelle : le contrôle des dix entrées et de l'état du README, les deux manques
+comblés, et les deux rectifications de la séance.
+
+**Fermeture.** La séance est close à cet instant, sur un travail en partie **hors du dépôt** (le README, ce
+bloc, le tableau de bord) : aucun commit depuis `64901e3`, aucune session ouverte, `run.mjs` intact.
+
+## Séance 21 — 2026-10-16 (tour complet du projet, six pages remises au vrai, et un bilan daté)
+
+**Objectif.** La demande du relecteur : « fait un tour de tout le projet, mise à jour de docs, évaluation de
+l'architecture, que reste-t-il à faire, bref, fait un bilan détaillé ».
+
+**Fait.** Un tour mesuré du dépôt, **quatorze réparations** dans six pages vivantes, et un bilan daté au foyer
+des brainstorm : [2026-10-16-153204-bilan-du-projet.md](brainstorm/2026-10-16-153204-bilan-du-projet.md)
+(préfixe = naissance mesurée, `stat -c %w` → `2026-10-16 15:32:04`). Ici, ce qui a bougé :
+
+| Défaut | Pièce qui le dit | Réparation |
+| --- | --- | --- |
+| [DEVICE](device/DEVICE.md) à **1 004 mots** pour un plafond de 900 | v6 §10 l. 365 | ramené à **896** : « Lire un écart » renvoyé au §4 d'ARCHITECTURE, le tableau des huit noms du v6 réduit à son renvoi d'ADR-013, le lancement resserré ; contenu prescrit intact |
+| [EXPLICATION](EXPLICATION.md) annonçait **21 commits** et « poussé », le banc « jetable », DEVICE à 895 mots | son en-tête, ses §9, §11 | état complété au 2026-10-16 : 44 commits, dernier commit non poussé, banc au dépôt (**46/46**, ADR-022), DEVICE à 896 |
+| BOUNDARY §5 n'avait **pas de relevé de clôture** | ADR-021, variante A | relevé ajouté : les deux arbres rendent **les mêmes lignes** qu'au matin |
+| BOUNDARY §7 citait **`39750fe`** et 18 fichiers suivis | dérive nommée non corrigée depuis la Séance 10 | relevé du jour : `64901e3`, **42** suivis ; §6 remesuré : **0** paire commune sur 42 et 2 599 |
+| les **six constats** de la [relecture à froid](brainstorm/2026-10-16-133942-relecture-a-froid-des-entrees.md) | son §2 | six traités : « AIDD » défini au README, `run` et `cas` au lexique, ce qui n'existe pas encore dit, `framework-origin` averti à BOUNDARY §1, README ouvert par le dispositif et son pourquoi |
+| le `.freebuff/` du client et le mode *worktree* | conduite §1.7 | mesurés (37 octets) et nommés dans EXPLICATION §12 |
+| [PFD](PFD.md) et [DASHBOARD](DASHBOARD.md) portaient deux comptes de mots périmés | `wc -w` | DEVICE **896**, BOUNDARY **1 970** |
+| le DASHBOARD disait encore « le protocole de test : rien construit » | le harnais, le banc et le gel, qui existent | ligne passée à 🟨, avec ce qui manque : l'écart d'un run qui produit |
+
+**Vérifié.** Chaque chiffre du bilan, remesuré ce jour :
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| l'arbre et son remote | `git rev-list --count HEAD` ; `git rev-parse --short HEAD` ; `git rev-parse --short origin/main` | 44 · `64901e3` · `a8eabca` (**un commit non poussé**) |
+| aucun fichier du dispositif n'appartient au framework | paires chemin + contenu, `git ls-files -s` des deux arbres | 2 599 · 42 · **0 commune** |
+| le framework est intact | `git -C /home/giak/projects/framework status --porcelain` | 2 lignes, **identiques au relevé du 2026-10-15** |
+| le terrain est intact | même paire | `416ec1f`, 1 ligne, `?? .freebuff/` |
+| le gel tient | `.empreinte` du gel | `0d9a2180c0f1251f…` |
+| le harnais refuse ce qu'il doit | `bash docs/device/harness/banc-harnais.sh` | `46/46 PASS`, `exit 0` |
+| ses refus sont écrits | `grep -c 'refuse(' run.mjs` | 63 |
+| les liens des sept pages touchées et du bilan | boucle sur chaque cible | **0 mort** |
+| `run.mjs` intact | `git diff --quiet` | `exit 0` |
+
+**Dérives signalées, non corrigées.** Le `@` du v6 et des enregistrements datés (par décision, ADR-023) ;
+`.freebuff/project-id` dans l'arbre du dispositif (37 octets, ignoré par `.gitignore`) ; le worktree tiers du
+terrain (ADR-011) ; la copie périmée du v6 chez l'origine. Et la dérive **documentaire** elle-même : le banc
+éprouve le harnais, le relevé de clôture éprouve les arbres, **personne n'éprouve les chiffres écrits** —
+l'arbitrage est proposé au §4.7 du bilan, pas tranché ici.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Celles du bilan §5, dans l'ordre : le geste (ouvrir un projet Freebuff sur
+`<W>/terrain`, en mode direct, sans *worktree*) puis le second run ; le commit du jour et le push ;
+`NEGATIVE.md` puis `ECART.md` ; les trois manques transverses de la relecture ; le frontmatter des trois
+skills ; le commit debout de P5 ; l'arbitrage sur la dérive documentaire.
+
+**Mémoires.** `05c5233b` — nouvelle : le bilan, ses quatorze réparations, ses mesures, les dix fragilités
+nommées et l'ordre de ce qui reste.
+
+**Fermeture.** La séance est close à cet instant. Travail **non commité** : six pages vivantes, le journal, le
+nouveau bilan ; `HEAD` reste `64901e3`, aucune session ouverte, `run.mjs` intact.
+
+## Séance 22 — 2026-10-16 (RTK sous Freebuff : trois harnais, un shim éprouvé, un skill posé et prouvé)
+
+**Objectif.** La demande, en trois temps : rendre l'usage de RTK effectif sous Freebuff « de façon transparente
+et efficace » ; contester mes conclusions, sans flatterie ni complaisance ; puis poser le skill en fichier comme
+`mnemolite-mem-first`, et garder les traces de tout.
+
+**Fait.** Trois choses, toutes hors du dépôt sauf ce journal.
+
+1. **Le canal d'instructions de Freebuff, lu dans le bundle** (`resources/orchestrator/orchestrator.js`, révision
+   montée ce jour). Le bloc « Account skills » est recalculé **à chaque tour** : `accountSkillsContext` au
+   offset 9 745 830, puis préfixé au message utilisateur au 9 762 372. À l'inverse, `~/.AGENTS.md` n'est lu
+   qu'à l'ouverture du fil : `loadUserKnowledgeFiles` a **une** définition et **un** appel, dans
+   `initialSessionState`, et la copie injectée est donc figée pour le fil.
+2. **Les mesures rtk**, version 1.0.1 : `rtk rewrite` comme moteur de décision, le défaut des sondes
+   `--version`, et un shim éprouvé puis corrigé.
+3. **Le skill posé** : `~/.agents/skills/rtk-first/SKILL.md`, 2 178 octets, sha1-10 `0940cc0878`,
+   `description` de 853 caractères **entre guillemets doubles**, corps en cinq sections. Le verrou d'import a
+   été levé en renommant `imported.json` en `imported.json.bak-2026-10-16-1900`, puis l'app a été redémarrée.
+
+**Vérifié.** Chaque affirmation, avec la commande qui l'établit :
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le bloc de skills est par tour, `AGENTS.md` par fil | offsets lus dans `orchestrator.js` ; appelants de `loadUserKnowledgeFiles` | 9 745 830 / 9 762 372 ; 1 définition, 1 appel dans `initialSessionState` |
+| le harnais `codebuff` n'a pas de surface de hook | `grep` de sept noms de hook dans `app.asar` | 0 occurrence ; les 20 `onToolCall` et 19 `"hooks"` de l'orchestrateur sont le code Claude Code embarqué et la validation de ses settings |
+| Freebuff a trois harnais, pas un | `HARNESS_IDS`, `AGENT_OPTIONS`, `DEFAULT_HARNESS` | `codebuff` (défaut), `claude-code`, `codex` |
+| l'utilisateur n'est pas sous Claude | `harness_id` dans les bases `desktop-v2.db` | **35 fils, tous `codebuff`**, aucun `claude-code`, aucun `codex` |
+| le harnais `claude-code` chargerait les settings utilisateur | `claudePermissionOptions` | `settingSources: ["user"]`, `disableAllHooks: false` |
+| le hook rtk de Claude Code fonctionne | `printf '{"tool_name":"Bash","tool_input":{"command":"git status"}}' \| rtk hook claude` | `updatedInput` valant `rtk git status` |
+| `rtk rewrite` décide seul, quatre codes | boucle sur sept commandes | `git status` → 3, `echo hello` → 1, `git status > f` → 1, `echo $(date)` → 1, pipeline → 3 |
+| le shim filtre sans récurrence | bac `/tmp/rtk-poc2`, une entrée par commande | `git status` 403 → **28 octets**, `ls -al` 2 187 → **739**, codes 2 et 128 propagés |
+| le shim coûte | 20 × `git status`, avec et sans | 2,2 ms contre **62,4 ms** par appel |
+| un skill dont la description contient ` : ` disparaît en silence | js-yaml, le parseur du bundle, sur les quatre fichiers | `chatgpt-bridge` : `bad indentation of a mapping entry` ; les trois autres passent |
+| le skill est réellement importé | `imported.json`, dossier de révision, `current.json` | `["mnemolite-mem-first","rtk-first","visual-explainer"]`, révision **4**, quatre skills, et la ligne `rtk-first` présente dans le bloc injecté |
+| l'écart d'un octet entre source et copie matérialisée | tailles comparées | 2 178 source contre 2 177 matérialisée, à cause du `.trim()` de `cloudSkillSchema` |
+
+**Dérives signalées, non corrigées.** `headroom_memory.db` non suivi à la racine du dépôt (16:55, table
+`memories` à **0 ligne**) alors que le store réel est `~/.headroom/memory.db` ; instrumentation de `~/.claude`
+(`CLAUDE.md`, `RTK.md`, hook `PreToolUse`) écrite le jour même à **17:46**, une minute après l'archive rtk de
+`/tmp/rtk-up`, **attribution UNKNOWN** ; `chatgpt-bridge` reste écarté, par son propre frontmatter ; défaut
+amont de rtk 1.0.1 sur les sondes `--version` (`rtk wc --version` substitué, `rtk rg --version` en échec) ; et
+l'état du dépôt lui-même : **sept** fichiers modifiés et **deux** non suivis, antérieurs à cette séance et non
+touchés par elle.
+
+**Rectifications.** Quatre, toutes mesurées après coup contre moi-même. « La transparence est impossible sous
+Freebuff » était trop large : elle ne vaut que pour le harnais `codebuff`, le harnais `claude-code` étant déjà
+instrumenté par `~/.claude/settings.json`. Mon shim reconstruisait la commande avec `$*` et cassait les
+arguments espacés, `grep "deux mots" p.txt` rendant `mots: Aucun fichier ou dossier de ce nom` en exit 2,
+corrigé par `printf '%q '`. J'ai attribué à tort l'absence de `chatgpt-bridge` à la limite de 1 000 caractères :
+c'est son YAML. Enfin un de mes scripts a imprimé « vide = aucun fichier du dépôt modifié » alors que
+`git status` ne l'était pas.
+
+**Prochaines étapes.** Mesurer la conformité réelle du modèle, c'est-à-dire le fait que les commandes passent
+vraiment par rtk, contre la ligne de base relevée avant l'import : **44 117 commandes**, **2,2 M** de tokens
+économisés, **31,1 %** (`rtk gain`). Trancher le sort de `headroom_memory.db`. Remonter le défaut `--version`
+de rtk en amont. Et committer les documents du jour, sans quoi, règle du dépôt, ils ne sont pas lus.
+
+**Mémoires.** `bcf1ffba` — l'investigation RTK sous Freebuff, corrigée deux fois (harnais `claude-code`, piège
+YAML, shim corrigé). `82aeaf2c` — le texte exact du skill, ses plafonds et sa condition d'injection. `a53b820b`
+— la preuve de l'import après redémarrage.
+
+**Fermeture.** Séance close à cet instant. Hors dépôt : `~/.agents/skills/rtk-first/SKILL.md` et le renommage
+`imported.json.bak-2026-10-16-1900` dans le dossier de compte ; dans le dépôt : ce paragraphe seul. `HEAD`
+reste `64901e3`, `origin/main` à `a8eabca`, aucun commit ni push de ma part.
+
+## Séance 22 — 2026-10-16 (suite)
+
+**Objet de la suite.** Le journal ne portait pas encore deux volets de la même conversation : Headroom, et la
+recherche web. Les deux sont mesurés ici, avec leurs pièges.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| l'aller-retour Headroom fonctionne dans Freebuff | `headroom_compress` puis `headroom_retrieve`, texte à témoins `31415 / 27182 / 16180` | hash `bbfeca50187069a7980d5c53`, texte rendu **exactement**, témoins intacts, `source=local` |
+| Headroom n'économise pas forcément | deux charges de test | `router:noop` puis `router:protected:recent_code` → **0 token économisé**, et `savings_percent` affiche **100,0** : champ trompeur |
+| Headroom est branché mais non alimenté | `~/.agents/mcp.json` | `headroom` → `headroom mcp serve`, binaire 0.25.0 ; `headroom-memory` sur `~/.headroom/memory.db`, jamais écrit, MnemoLite reste la mémoire canonique |
+| les **deux** chemins de recherche web rendent de vrais résultats | `web_search` natif, puis `web_search` du serveur MCP `mcp-searxng-local` | 10 résultats organiques (Serper : `engine: google`, `credits: 1`) et 3 résultats étiquetés `Engine: google cse`, le serveur déclarant lui-même brave `Suspended`, duckduckgo `CAPTCHA`, google `access denied` |
+
+**Rectifications.** Une note antérieure disait que « la réparation searxng est confirmée fonctionnelle dans
+Freebuff » sur la foi d'un appel `web_search` : cet appel était celui de l'outil **natif**, adossé à Serper. Les
+deux outils portent le même nom, et la voie MCP searxng ne se prouve qu'en appelant **son** outil, ce qui est
+fait ici.
+
+**Prochaines étapes.** Celles de la séance : la conformité rtk mesurée contre 44 117 commandes et 31,1 %, le
+sort de `headroom_memory.db`, le défaut `--version` remonté en amont, et le commit des documents du jour.
+
+**Mémoires.** `ed625b01` — Headroom utilisable et réellement utilisé ici, rtk sans déclencheur mécanique.
+`a10f189b` — la voie MCP searxng vérifiée, distincte de l'outil natif `web_search`.
+
+**Fermeture.** Suite close à cet instant. Rien de plus dans le dépôt que ce paragraphe ; `HEAD` reste
+`64901e3`.
+
+## Séance 23 — 2026-10-16 (le skill `rtk-first` mis à l'épreuve : mécanisme prouvé, bénéfice marginal)
+
+**Objectif.** La demande : « teste le skill RTK, prouve-moi que cela fonctionne ».
+
+**Fait.** Un test à témoins, dans ce dépôt : compteur `rtk gain` avant et après, un lot de commandes écrites
+selon la règle du skill, un témoin **natif** pour chaque commande, puis deux lectures indépendantes, le
+registre d'rtk et la base du harnais.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| la règle arrive au modèle | bloc injecté de ce fil | ligne `rtk-first` avec sa description entière de **853** caractères |
+| la consigne est suivie | registre `rtk gain --history`, horodaté `21:09` et `21:10` | onze entrées : `rtk git status --short`, `rtk ls -al docs`, `rtk git log`, `rtk grep`, `rtk read`, `rtk git diff`, `rtk git status` |
+| le harnais enregistre ces commandes | base du fil, `parts_json` | `rtk git status --short .` en `seq138`, plus les lignes de diagnostic `seq130` à `seq146` |
+| le filtrage a lieu, là où il sert | octets, natif contre rtk | `git diff` **50 579 → 39 429** (−22 %), `ls -al docs` **662 → 208** (−68 %) |
+| le filtrage ne sert à rien, et parfois nuit | même protocole | `git status --short` 219 → 218 (0 %), `rtk read` sur 143 380 octets de prose **identique**, `rtk grep` 470 → **512**, donc plus gros |
+| les chiffres d'rtk sont des jetons estimés | arithmétique des deux sources | 454 / 4 ≈ 113 pour « 108 » annoncé ; 11 150 / 4 ≈ 2 787 pour « 2.9K » annoncé |
+
+**Dérives signalées, non corrigées.** Le compteur et le registre d'rtk ne s'incrémentent pas de la même façon :
+**+7** au compteur pour **8** entrées au registre, puis **+1** pour 2 entrées ; cause `UNKNOWN`. `rg` n'est pas
+installé sur cette machine, donc la ligne de comparaison `rg` du test est vide et **sans valeur**, elle est
+dite ici pour qu'on ne la relise pas comme un gain nul. Et le fond du sujet : sur un dépôt de prose markdown,
+les filtres d'rtk n'ont presque rien à grouper, donc le bénéfice y est marginal, ce qui ne dit rien du 31,1 %
+global affiché par `rtk gain`, venu de l'ère Claude Code.
+
+**Rectifications.** Aucune contre mes affirmations : le test confirme le mécanisme et **contredit l'attente de
+gain**, que personne n'avait quantifiée avant.
+
+**Prochaines étapes.** Décider si le skill reste en place au vu du gain mesuré ; mesurer sur une base qui
+contient du code plutôt que de la prose, seule façon de savoir où rtk paie ici ; le sort de
+`headroom_memory.db` ; le commit des documents du jour.
+
+**Mémoires.** `c40228f8` — le test, ses deux témoins, ses octets et son verdict.
+
+**Fermeture.** Séance close à cet instant. Aucune commande d'rtk n'a touché le dépôt : les onze appels étaient
+des lectures. `HEAD` reste `64901e3`, rien de nouveau dans l'arbre que ce paragraphe.
+
+## Séance 24 — 2026-10-16 (`headroom_memory.db` : vérifié, supprimé, cause reproduite)
+
+**Objectif.** Trancher le sort du fichier `headroom_memory.db` posé à la racine : dire s'il servait à quelque
+chose, l'effacer sinon, et nommer ce qui l'a créé plutôt que de le supposer.
+
+**Fait.** Fichier vérifié puis supprimé, et cause reproduite hors dépôt, dans un dossier jetable de `/tmp`,
+comme la frontière l'exige pour tout ce qui s'exécute.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| aucun contenu | `sqlite3 … "select count(*) from memories;"` | **0** ligne ; une seule table `memories`, schéma et douze index, rien d'autre |
+| suivi par personne | `git status --porcelain`, `git check-ignore -v` | `??` non suivi, et l'ignore ne répond rien |
+| tenu ouvert par personne | recherche dans `/proc/*/fd` | **0** |
+| non référencé par la configuration | `~/.agents/mcp.json`, entrée `headroom-memory` | `--db /home/giak/.headroom/memory.db`, argument **explicite** |
+| empreinte avant suppression | `sha256sum`, `stat` | `defac9ea…`, 57 344 octets, mtime `2026-10-16 16:55:21` |
+| supprimé, et rien laissé | `rm -v`, puis `test -e`, puis `git status` | `'headroom_memory.db' supprimé` ; plus de fichier ; `git` muet pour ce chemin |
+| la cause est dans le paquet | `grep -rn headroom_memory` sur `site-packages` | `headroom/cli/memory.py:38`, `default="headroom_memory.db"`, chemin **relatif** (paquet `headroom_ai 0.25.0`) |
+| la cause est reproduite | dossier jetable, `headroom memory list` puis `stats` | base de **56 Ko** créée dans le répertoire courant, deux fois ; `No memories found.` |
+| `--help` innocenté | dossier jetable, `headroom memory --help` seul | exit 0, **aucun** fichier créé |
+| la commande d'ici | base du fil, `seq116` | se termine par `headroom memory stats`, **sans `cd`**, donc dans la racine ; `seq116` à `16:56:47`, fichier à `16:55:21` |
+
+**Dérives signalées, non corrigées.** Deux. (1) C'est **ma** sonde du tour Headroom, à 16:55, qui a laissé une
+base SQLite dans un dépôt de documentation, et le paquet la déposera à chaque fois : le chemin par défaut est
+relatif au répertoire courant, donc toute sous-commande `headroom memory` sans `--db` lancée depuis un projet y
+recrée le fichier. (2) La base réellement configurée, `~/.headroom/memory.db`, est vide elle aussi, 0 ligne et
+dernière écriture au 13 juin : le serveur `headroom-memory` s'annonce dans les configurations sans avoir jamais
+rien stocké. Hors demande, non corrigé.
+
+**Rectifications.** Aucune contre mes affirmations antérieures : la veille disait ce fichier non expliqué, pas
+inexplicable, et il est maintenant expliqué et effacé.
+
+**Prochaines étapes.** Décider du commit des documents du jour, seul geste qui les fera survivre à la mémoire ;
+si `headroom memory` reste dans les habitudes, `<cmd> --db /home/giak/.headroom/memory.db` ou un dossier
+jetable.
+
+**Mémoires.** `a90a44ef` — le contrôle, la suppression et la cause reproduite.
+
+**Fermeture.** Séance close à cet instant. Rien de nouveau dans le dépôt que ce paragraphe ; `HEAD` reste
+`64901e3` et `headroom_memory.db` n'existe plus.
+
+## Séance 25 — 2026-10-16 (`context-mode` dans opencode : utile, utilisé, et trois recouvrements)
+
+**Objectif.** Répondre à la question du relecteur : le projet `https://github.com/mksglu/context-mode`, employé
+dans opencode, est-il utile, et les serveurs MCP déjà en place se marchent-ils sur les pieds.
+
+**Fait.** Une recherche web confiée à l'agent de recherche (dépôt, page des releases, manifeste du paquet,
+annonce de la v1.0.0 : quatre adresses lues), puis un audit local : configuration d'opencode, source du plugin,
+journal d'opencode, bases de session de `context-mode`, et ses propres outils de diagnostic. **Rien n'a été
+modifié**, ni configuration, ni dépôt.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| installé des deux façons | `opencode.json` | `mcp.context-mode` `enabled: true` **et** `plugins/context-mode.ts` (15 Ko) ; `plugin: []` |
+| le conflit annoncé par le README ne mord pas ici | `grep -n` sur le plugin | le plugin ne pousse que des hooks (`ctx.tool.hook("execute.before", …)`, ligne 196) ; **aucun** enregistrement d'outil |
+| les 11 outils viennent du MCP | journal opencode | `timestamp=2026-10-16T19:19:54.927Z … message="mcp connected" server=context-mode tools=11` |
+| il sert vraiment | `tool_calls` de la base `e0b8aac08e5ff3a9.db` | `ctx_execute` **240** appels / 481 842 octets rendus ; `ctx_batch_execute` 17 / 279 596 ; `ctx_execute_file` 5 / 7 506 |
+| il capture aussi la session | `session_events` de la même base | 4 776 `agent_usage`, 233 `user_prompt`, 210 `rule`, 115 `decision`, 107 `sandbox-execute`, 103 `file_edit` |
+| aucun blocage observé | recherche de `deny`/`blocked` dans les événements | **aucun** événement de refus |
+| deux hooks sur le même événement | `grep` des deux plugins | `context-mode.ts:196` et `rtk.ts:219` accrochent tous deux `tool.execute.before` |
+| doctrine injectée | `node_modules/context-mode/hooks/routing-block.mjs` | bloc `<context_window_protection>` : `ctx_batch_execute` en « outil de recherche primaire », `ctx_search` en priorité 0 pour l'état de session |
+| deux stockages distincts | `context-mode search` et `doctor` | le CLI lit `~/.gemini/context-mode/…` (plateforme détectée « Antigravity CLI »), opencode écrit `~/.config/opencode/context-mode/…` ; la recherche répond `No matches`, sur la mauvaise base |
+
+**Dérives signalées, non corrigées.** Deux recouvrements de doctrine et un partage de stockage bancal. (1) Trois
+mécanismes visent le même but, garder les octets bruts hors du contexte : `context-mode` par l'exécution en bac à
+sable, `headroom` par compression et restitution par empreinte, `rtk` par filtrage des sorties ; leurs gains ne
+s'additionnent pas, et le modèle doit choisir. (2) `ctx_search` est proposé en priorité 0 pour retrouver
+décisions et erreurs passées, alors que la règle du dépôt est Mnemolite d'abord : deux magasins, l'un alimenté
+tout seul par la session, l'autre curé. (3) `doctor` détecte la mauvaise plateforme et conseille de réparer des
+hooks Antigravity (`agy plugin install …`) quand le binaire est absent : conseil non actionnable. Enfin le
+paquet est sous Elastic License 2.0, ce qui n'est pas une licence libre au sens strict.
+
+**Rectifications.** Aucune contre moi-même dans cette séance. Une attente du README est en revanche démentie par
+l'état local, en faveur du relecteur : le conflit « plugin + entrée MCP ⇒ zéro outil » n'a pas lieu ici,
+puisque le plugin installé localement n'enregistre pas d'outils. À noter aussi sur la qualité de preuve : les
+citations du README viennent de la lecture faite par l'agent de recherche sur quatre adresses, pas de ma propre
+lecture ; tout ce qui est mesuré ici l'est en local.
+
+**Prochaines étapes.** Décision du relecteur, une seule : écrire une règle de préséance dans l'`AGENTS.md`
+d'opencode (MnemoLite canonique pour les faits, `ctx_search` pour l'état de session, `rtk` pour les commandes
+shell) plutôt que de désactiver une capacité mesurée comme utilisée. Non appliquée : elle touche la
+configuration d'un client, hors du périmètre demandé.
+
+**Mémoires.** `a49628ec` — l'audit, ses quatre constats, ses mesures et son verdict.
+
+**Fermeture.** Séance close à cet instant. Rien de nouveau dans le dépôt que ce paragraphe ; aucune
+configuration n'a été touchée, ni celle d'opencode, ni celle de Freebuff.
+
+## Séance 25 — 2026-10-16 (suite)
+
+**Objectif.** Fermer la seule affirmation de cette séance qui reposait sur une vérification trop étroite : le
+plugin `context-mode` enregistre-t-il des outils, ou seulement des hooks.
+
+**Fait.** Plugin relu à la bonne ligne, source du serveur relue, et nom réellement employé côté hôte retrouvé
+dans le journal d'opencode.
+
+**Rectification.** Mon premier contrôle portait sur un motif étroit, `registerTool`, `tool: {` et consorts, et il
+a conclu à tort à « aucun enregistrement d'outil ». Le plugin **enregistre bien les onze outils** :
+`await ctx.tool.transform((editor) => { … editor.add({ name: registered.name, … }) })`, lignes 143 et 154,
+après avoir posé `CONTEXT_MODE_EMBEDDED_PLUGIN_TOOLS=1` et importé `REGISTERED_CTX_TOOLS` de
+`build/server.js`. La phrase « le conflit du README ne mord pas ici » est donc remplacée, pas nuancée.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| le plugin enregistre des outils | lecture du plugin, lignes 143 et 154 | `ctx.tool.transform` puis `editor.add({ name: registered.name, … })` |
+| un garde-fou existe côté serveur | lecture de `build/server.js:115` | `shouldSuppressMcpToolsForNativePluginHost()` : supprime les outils si la plateforme est `opencode` ou `kilo` **et** si les réglages portent le plugin **et** l'ancienne entrée MCP |
+| le garde-fou n'a pas joué ici | journal d'opencode, et `opencode.json` | `mcp connected server=context-mode tools=11` ; `plugin: []` étant vide, la condition « plugin déclaré » est fausse |
+| le nom vu par le modèle est préfixé | journal d'opencode, lignes 26029 et 151434 | le hook écrit « Call `context-mode_ctx_execute(language, code)` » et cite `context-mode_ctx_fetch_and_index` |
+
+**Ce qui reste `UNKNOWN`, dit comme tel.** La liste d'outils effectivement vue par le modèle. Soit les deux
+familles coexistent, noms nus du plugin et noms préfixés du serveur, et la redondance est réelle, soit le client
+dédoublonne en silence : le journal ne porte aucun avertissement, et je n'ai pas observé de session. Trancher
+demande un tour dans une session opencode réelle, ou `ctx_stats` vu du modèle.
+
+**Prochaines étapes.** Inchangées, plus une : mesurer la liste réelle des outils `ctx_*` dans une session, au
+lieu de raisonner sur le code.
+
+**Mémoires.** `a49628ec` — corrigée une seconde fois à la source ; elle porte désormais le mécanisme du
+garde-fou, le nom préfixé et l'inconnu assumé.
+
+**Fermeture.** Suite close à cet instant. Aucune configuration touchée, aucune écriture hors ce paragraphe.
+
+## Séance 26 — 2026-10-16 (`context-mode` sous Freebuff : faisable, à moitié utile)
+
+**Objectif.** Répondre à la question du relecteur : peut-on employer `context-mode` sous Freebuff sans gêner ce
+qui existe déjà.
+
+**Fait.** Configuration MCP de Freebuff lue, adaptateurs du paquet énumérés, recherche de `freebuff` et
+`codebuff` dans le paquet, et sonde du mode MCP autonome dans un dossier jetable de `/tmp` avec stockage forcé.
+**Rien n'a été modifié.**
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| ce que Freebuff lit | lecture de `~/.agents/mcp.json` | 4 serveurs : `headroom`, `headroom-memory`, `mcp-searxng-local`, `mnemolite` ; `context-mode` **absent** |
+| variante | `~/.agents/.mcp.json` | un 5e serveur, `search` ; le dépôt n'a pas de `.agents/mcp.json` |
+| Freebuff n'est pas une plateforme connue | `grep -ri "codebuff\|freebuff"` sur `build/` | **aucune** occurrence ; adaptateurs : `antigravity`, `antigravity-cli`, `claude-code`, `codex`, `copilot-cli`, `cursor`, `gemini-cli`, `jetbrains-copilot`, `kimi`, `kiro` |
+| le mode MCP autonome marche | sonde JSON-RPC en dossier jetable | exit **0**, aucune erreur, **11** outils annoncés : `ctx_execute`, `ctx_batch_execute`, `ctx_execute_file`, `ctx_fetch_and_index`, `ctx_index`, `ctx_search`, `ctx_stats`, `ctx_doctor`, `ctx_upgrade`, `ctx_purge`, `ctx_insight` |
+| le stockage se fixe | `CONTEXT_MODE_DIR` vers un dossier temporaire | création de `<tmp>/store/sessions` : la variable est bien suivie |
+
+**Dérives signalées, non corrigées.** Sans adaptateur Freebuff, il n'y a **ni hooks, ni routage imposé, ni
+capture de session, ni reprise après compaction** : la moitié de la valeur du produit ne fonctionne pas là-bas, et
+il ne resterait que les onze outils. Corollaire favorable, et c'est la réponse à l'inquiétude : aucune collision
+mécanique n'est possible avec le plugin rtk, qui n'existe pas non plus sous Freebuff, et aucune collision de noms
+d'outils n'est possible puisque Freebuff expose les outils MCP par `search_mcp_tools` puis
+`call_mcp_tool(server, tool, …)` au lieu d'un registre plat. Le coût réel serait doctrinal : une quatrième
+destination pour la mémoire et la collecte, face au skill `rtk-first` et à la règle MnemoLite d'abord.
+
+**Rectifications.** Aucune.
+
+**Prochaines étapes.** Décision du relecteur, une seule : brancher ou non, et sous quelle forme. La forme propre
+serait une entrée MCP `context-mode` dans `~/.agents/mcp.json` avec `CONTEXT_MODE_DIR` **fixé** pour que la
+détection de plateforme ne choisisse pas un répertoire au hasard, plus une ligne de préséance. Non appliquée :
+la question portait sur la faisabilité, et la modification sort du dépôt.
+
+**Mémoires.** `575975b2` — la faisabilité, ses mesures et ses limites.
+
+**Fermeture.** Séance close à cet instant. Aucune configuration touchée, dans Freebuff comme dans opencode ; le
+dépôt ne gagne que ce paragraphe.
+
+## Séance 26 — 2026-10-16 (suite)
+
+**Objectif.** Réparer une affirmation plus forte que ma preuve : j'avais écrit « les 11 outils fonctionnent »
+alors que j'avais seulement constaté leur **annonce** par `tools/list`.
+
+**Fait.** Appel réel d'un outil dans la même sonde jetable, `tools/call` sur `ctx_stats`, stockage toujours
+forcé par `CONTEXT_MODE_DIR`.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| un outil répond vraiment | JSON-RPC `tools/call` sur `ctx_stats` | exit **0**, aucune erreur, réponse textuelle complète, sans passer par l'annonce seule |
+| le stockage forcé est bien utilisé | même sonde | création de `<tmp>/store/content` et `<tmp>/store/sessions` |
+| ce que l'outil dit de lui-même | sa propre réponse | « 1.2K conversations in OpenCode », « 37.8K events · 1.2K sessions · ~$48.40 saved lifetime », « 3.5 MB indexed », cinq adaptateurs « skipped » : Claude Code, Gemini CLI, Antigravity, Antigravity CLI, Kilo |
+
+**Rectification.** Ma phrase « les 11 outils fonctionnent » était trop forte au moment où je l'ai écrite : la
+bonne formulation était « annoncés et le serveur répond ». Elle est maintenant vraie, mais par cette mesure-ci,
+pas par la précédente.
+
+**Ce qui reste `UNKNOWN`.** Les chiffres que `ctx_stats` affiche sont tenus par le produit, pas par moi :
+« $48.40 saved » est son estimation, pas un relevé de facturation. Et détail qui mérite d'être dit : la sonde
+était isolée par `CONTEXT_MODE_DIR`, pourtant la partie « persistent memory » de sa réponse portait des chiffres
+globaux qui ne peuvent pas venir d'un magasin vide ; il a donc lu ailleurs, sans que je sache où.
+
+**Prochaines étapes.** Inchangées : décider si on le branche sous Freebuff, et sous quelle forme.
+
+**Mémoires.** `575975b2` — mise à jour, elle porte l'appel réel, les chiffres auto-déclarés et le flou de magasin.
+
+**Fermeture.** Suite close à cet instant. Aucune configuration touchée ; le dépôt ne gagne que ce paragraphe.
+
+## Séance 27 — 2026-10-16 (`context-mode` branché sous Freebuff : lanceur à stockage figé)
+
+**Objectif.** Brancher `context-mode` sous Freebuff avec le stockage figé, puis vérifier par un appel réel que
+les outils répondent sans que rien d'existant ne bouge.
+
+**Fait.** Un lanceur créé, une entrée MCP ajoutée après sauvegarde, et deux sondes : le serveur lui-même, et un
+serveur voisin pour prouver que rien n'a bougé. Première écriture de cette séance hors du dépôt, la session comptant déjà d'autres écritures de ce genre avant celle-ci.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| lanceur créé | `ls -l` | `/home/giak/.local/bin/context-mode-freebuff`, 981 octets, exécutable ; fixe `CONTEXT_MODE_DATA_DIR` et `CONTEXT_MODE_DIR`, puis `exec` le binaire |
+| sauvegarde faite avant toute écriture | `cp -p` | `~/.agents/mcp.json.bak-2026-10-16-213955` ; état initial 594 o, sha1-10 `b7006b251b` |
+| édition minimale et valide | `diff` avec la sauvegarde, `python3 -m json.tool` | une seule addition, cinq lignes ; JSON valide (exit **0**) |
+| les quatre voisins intacts | comparaison structurelle des deux versions | `mcp-searxng-local`, `mnemolite`, `headroom`, `headroom-memory` **IDENTIQUES** ; ajoutés `['context-mode']` ; supprimés `[]` |
+| état final | `sha1sum`, `stat` | 727 o, sha1-10 `3d2b6e2c69`, mtime `21:40:00` |
+| le serveur répond | sonde stdio JSON-RPC **par le lanceur de la config** | exit **0**, aucune erreur, **11** outils, appel réel `ctx_stats` rendu |
+| le stockage est bien figé | même sonde | `~/.context-mode/context-mode/content/ef57836a71e1da25.db` et `…/sessions/stats-pid-90159.json` |
+| rien d'existant ne bouge | appel réel `headroom_stats` | réponse normale (serveur `06cddfe2…`) |
+
+**Rectification.** J'avais présenté `CONTEXT_MODE_DIR` comme le moyen propre de figer le stockage. La lecture de
+`adapters/base.js` montre que le réglage **universel** est `CONTEXT_MODE_DATA_DIR` (il couvre aussi la mémoire
+persistante), `CONTEXT_MODE_DIR` ne décrivant que sessions et contenu indexé. Les deux sont posés, sur un arbre
+unique.
+
+**Dérives signalées, non corrigées.** Deux. (1) Le lanceur existe parce que **rien ne prouve** que le chargeur
+MCP de Freebuff transmette un champ `env` au processus enfant : le chargeur vit dans le binaire de l'application,
+non inspecté. Le motif du lanceur est celui de `mcp-searxng-local`, déjà éprouvé. (2) `~/.agents/.mcp.json` n'a
+pas été touché et porte désormais une liste différente de celle de `mcp.json` : l'écart est nommé ici, et il le
+reste tant qu'on ne sait pas qui lit ce second fichier.
+
+**Ce qui n'a pas pu être fait, et ne peut pas l'être par moi.** Le chargement de la nouvelle entrée exige un
+redémarrage de Freebuff, que seul le relecteur peut déclencher. Sans lui, la seule chose établie est que le
+serveur fonctionne **quand** Freebuff l'appellera, pas que Freebuff l'appelle.
+
+**Prochaines étapes.** Redémarrer Freebuff, puis vérifier depuis la session que le serveur apparaît et qu'un
+outil répond ; en cas d'échec du chargement, restaurer
+`~/.agents/mcp.json.bak-2026-10-16-213955`.
+
+**Mémoires.** `a1932044` — le branchement, ses preuves, son retour arrière et ce qui reste en attente.
+
+**Fermeture.** Séance close à cet instant. Hors dépôt : deux fichiers touchés, le lanceur créé et la
+configuration MCP augmentée d'une entrée ; dans le dépôt, ce paragraphe et rien d'autre.
+
+## Séance 27 — 2026-10-16 (suite)
+
+**Objectif.** Éprouver le lanceur dans un environnement d'exécution **minimal**, puisque celui que Freebuff
+transmet au processus enfant n'est pas connu.
+
+**Fait.** Sonde supplémentaire avec `env -i HOME=/home/giak PATH=/usr/bin:/bin`. Le lanceur a **échoué** :
+c'est le premier échec utile de cette séance. Cause trouvée, reproduite, corrigée, puis les deux environnements
+revalidés.
+
+**Rectification.** Le lanceur était **fragile** : le paquet se lance par son shebang `#!/usr/bin/env node`, or cet
+hôte expose `/usr/bin/node` en **v18.19.1**, trop vieux pour `context-mode` qui exige **>= 22.5**. Dans un
+environnement minimal, le serveur mourait donc (`exit 1`, zéro outil) sans que rien ne l'annonce, et cela serait
+arrivé à la première session Freebuff dépourvue du Node 22 dans son PATH. Le lanceur **résout désormais
+l'interpréteur lui-même** : parcours de `~/.local/share/pnpm/nodejs/*/bin/node`, `~/.nvm/versions/node/*/bin/node`,
+`/usr/local/bin/node`, `/usr/bin/node`, et premier candidat répondant à la condition `> 22` ou `= 22` avec mineure
+`>= 5`. État final : **1 977** octets, sha1-10 `84f2474b88`.
+
+**Vérifié.**
+
+| Ce qui est affirmé | Commande | Résultat |
+| --- | --- | --- |
+| la fragilité est réelle et reproductible | `env -i …` puis `/usr/bin/node` sur le bundle | `exit 1`, stderr rempli, **avant** correction ; `/usr/bin/node -v` -> `v18.19.1` |
+| le même bundle avec le bon Node passe | `env -i …` puis Node 22.12.0 de pnpm | `exit 0`, réponse `initialize` normale |
+| le lanceur corrigé tient en environnement normal | sonde complète | `exit 0`, **11** outils, appel réel `ctx_stats` |
+| le lanceur corrigé tient en environnement minimal | `env -i HOME=… PATH=/usr/bin:/bin` | `exit 0`, **11** outils, appel réel `ctx_stats` |
+| le stockage ne bouge pas | `ls` du magasin épinglé | nouveaux fichiers dans `/home/giak/.context-mode/context-mode/sessions` |
+
+**Ce qui reste `UNKNOWN`.** Toujours le même : le chargement de l'entrée par Freebuff, qui exige un redémarrage.
+Détail à retenir pour la suite : la résolution de Node retient le premier candidat **>= 22.5** trouvé, donc si
+plusieurs Node coexistent, le premier du parcours gagne ; le parcours est ordonné par préférence, pas par
+fraîcheur.
+
+**Prochaines étapes.** Inchangées : redémarrer Freebuff, puis vérifier depuis la session ; en cas d'échec du
+chargement, restaurer `~/.agents/mcp.json.bak-2026-10-16-213955`.
+
+**Mémoires.** `a1932044` — mise à jour : elle porte la résolution d'interpréteur, l'échec mesuré et les deux
+environnements validés.
+
+**Fermeture.** Suite close à cet instant. Rien d'autre que ce paragraphe et le lanceur corrigé.

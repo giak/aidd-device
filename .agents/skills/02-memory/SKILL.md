@@ -1,6 +1,6 @@
 ---
-name: Memory discipline
-description: MEMORY, Mnemolite, canonical facts: search→assert; writeback +command establishing the fact, date, status; dedup; readback. USE IF stating a fact this session has not established | recording one. NOT FOR contract rules | what a command here already proves better.
+name: 02-memory
+description: "MEMORY, Mnemolite, canonical facts: search→assert; writeback +command establishing the fact, date, status; dedup; readback. USE IF stating a fact this session has not established | recording one. NOT FOR contract rules | what a command here already proves better."
 ---
 ## MEMORY
 

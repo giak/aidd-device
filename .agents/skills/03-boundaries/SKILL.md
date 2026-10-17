@@ -1,6 +1,6 @@
 ---
-name: Repository boundaries
-description: TERRITORY 4 trees, what may be written where: origin NEVER modified in place; revision under test in a throwaway dir; terrain read-only; this repo. USE IF writing into any repository | creating a worktree | running anything that executes. NOT FOR ordinary edits inside this repo | reasoning.
+name: 03-boundaries
+description: "TERRITORY 4 trees, what may be written where: origin NEVER modified in place; revision under test in a throwaway dir; terrain read-only; this repo. USE IF writing into any repository | creating a worktree | running anything that executes. NOT FOR ordinary edits inside this repo | reasoning."
 ---
 ## TERRITORY
 

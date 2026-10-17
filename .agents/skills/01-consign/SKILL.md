@@ -1,5 +1,5 @@
 ---
-name: Consign and naming
+name: 01-consign
 description: CONSIGN trace entry, dated filename, task folder, frontmatter, proof, immutability, drift. USE IF must outlive the session | a file is created, renamed | moved. NOT FOR reasoning | verifying a claim | deciding what to build.
 ---
 ## CONSIGN

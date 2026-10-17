@@ -11,8 +11,9 @@ status: in-progress
 > aident à comprendre, elles ne prouvent rien. Chaque fait sérieux a sa source dans un autre document
 > de `docs/`, et ce document-ci n'est pas une source : il raconte.
 >
-> État décrit : **2026-10-15**, 21 commits, dépôt public ouvert. Un chiffre ici a toujours la même
+> État décrit : **2026-10-15**, complété le **2026-10-16**. Un chiffre ici a toujours la même
 > forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit `SUPPOSÉ`.
+> L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
 >
 > **Mis à jour le 2026-10-15 au soir**, sur une décision : le candidat du second run sera une session
 > **Freebuff**, à modèle hébergé. Ce que ça change est raconté au §9 bis, et les chiffres qui y sont
@@ -176,14 +177,20 @@ seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre
 | Ce qui existe | Son état |
 | --- | --- |
 | La fondation documentaire (journal, décisions, tableau de bord) | faite, et tenue depuis le 14 octobre |
-| La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, 895 mots pour une limite de 900 |
+| La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, **896 mots** pour une limite de 900 (v6 §10), mesuré le 2026-10-16 |
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
 | Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 5 commandes, 63 refus — dont `freeze --racine`, qui déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte qui refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` qui refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
 | Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, puis après le passage à la racine déclarée (empreinte `0d9a2180`, les anciens `bc126fe6`, `38fa91f4` et `07246039` détruits) : le cas nomme `$RACINE` — la racine que le gel déclare une fois — et le texte remis garde son chemin absolu, falsificateur `F9` ajouté |
 | Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
-| Le dépôt public | `https://github.com/giak/aidd-device`, 21 commits, poussé |
+| Le dépôt public | `https://github.com/giak/aidd-device` : **44 commits** au 2026-10-16, dont le dernier (`64901e3`) n'est **pas poussé** ; `origin/main` est au précédent |
 | **Un run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
+
+**Depuis, au 2026-10-16** : les trois trous du premier run sont comblés (reçu d'un run sans produit,
+chemin du texte, lecture de la révision sous test), le client du second run (Freebuff) a été sondé, le
+banc du harnais est entré au dépôt, et l'[ARCHITECTURE](ARCHITECTURE.md) a été écrite puis réparée deux
+fois. Ce qui reste n'est plus une mesure mais un geste : ouvrir un projet Freebuff sur la copie du cas,
+puis conduire le second run. Le détail est au [tableau de bord](DASHBOARD.md).
 
 Le candidat de cette première épreuve : une session IA à qui l'on donne **deux lignes en anglais** et
 rien d'autre — « lis la compétence *project-memory* qui est là, et applique-la à ce dépôt : il n'a
@@ -271,13 +278,15 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 
 - **La fondation documentaire.** Tout se trace, tout se date, rien ne se réécrit en silence : un
   journal de séance, un registre de décisions, un tableau de bord qui dit où en est le projet.
-- **Le harnais qui refuse au lieu de deviner.** Il a été éprouvé sur un banc jetable — `36/36 PASS`
-  selon le [journal](trace.md) — et ses commandes ont été réessayées le 2026-10-15 : chaque
-  refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart » quand la preuve ne le
-  porte pas. Depuis, un banc de douze contrôles éprouve le **re-hachage du cas** : les deux fichiers
-  du gel, la demande et l'attendu, et les huit références du framework sont relus sur le disque au
-  reçu et au jugement — `12/12` le 2026-10-15, dont un gel réécrit avec ses fichiers, que le harnais
-  refuse parce qu'il ne concorde plus avec lui-même.
+- **Le harnais qui refuse au lieu de deviner.** Il a été éprouvé sur un banc né **jetable** le
+  2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
+  2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
+  quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
+  `docs/device/harness/banc-harnais.sh`, **46 contrôles**, `46/46 PASS`, renommé avec son foyer
+  ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
+  **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
+  framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit
+  avec ses fichiers, que le harnais refuse parce qu'il ne concorde plus avec lui-même).
 - **Le gel tient.** Recalculé sur disque : les dix empreintes et l'empreinte globale concordent, et
   les quatre arbres rendent exactement le même état qu'au moment du scellé.
 - **La réparation de la clause du v6** (ADR-014) : un document extérieur mesuré impossible, réparé
@@ -309,9 +318,13 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 - **La mémoire de la session peut être réécrite en cours de route.** Sous Freebuff, au-delà d'un seuil,
   le client **compacte** : il résume son propre contexte. Si la trace ne le dit pas, personne ne peut
   dire ce que la session avait sous les yeux au moment du geste qui est jugé.
-- **Le client dépose un dossier dans le terrain.** `.freebuff/` apparaît dans la copie du projet de
-  travail ; sans le déclarer ni l'exclure, l'arbre `travail` paraîtra modifié et le reçu accusera à
-  tort.
+- **Le client dépose un dossier dans l'arbre qu'on lui ouvre.** Mesuré le 2026-10-16 :
+  `.freebuff/project-id`, **37 octets**, écrit par le client dans l'arbre ouvert. La copie du terrain n'en
+  porte pas encore, et son `.gitignore` ne l'ignore pas : la session y laissera `?? .freebuff/`. Sans le
+  déclarer ni l'exclure, l'arbre `travail` paraîtra modifié et le reçu accusera à tort.
+- **Le fil du client peut vivre en *worktree*.** Mesuré le 2026-10-16 : ouverte ainsi sur la copie du
+  terrain, la session y créerait une **branche** et déplacerait le `HEAD` gelé. À refuser avant d'ouvrir,
+  dans le même geste que le choix du dossier.
 - **On ne rejoue pas une réponse.** On peut seulement refaire le même départ.
 
 ## 13. Où lire les choses sérieuses
@@ -348,6 +361,8 @@ git clone https://github.com/giak/aidd-device
 | **framework-origin** | la boîte à fiches d'origine : lue, jamais écrite |
 | **session** | l'assistant IA à qui l'on remet la demande ; le « candidat » |
 | **trace machine** | l'enregistrement technique de la session, copié dans le dossier de l'épreuve |
+| **run** | une épreuve complète : un cas gelé, une session ouverte, un produit recueilli, un reçu à chaud, un verdict |
+| **cas** | la fiche de l'épreuve : la demande écrite, l'attendu scellé, le texte remis, le budget d'échanges |
 | **état A / état B** | A : un run a eu lieu. B : la session a été demandée, rien n'est encore revenu |
 | **état C** (proposé) | un run a eu lieu et n'a rien produit : le cas est instruit, pas conclu ([bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §5) |
 | **fenêtre de contexte** | combien de jetons une session peut tenir à la fois : mesurée, jamais devinée (§9 bis) |

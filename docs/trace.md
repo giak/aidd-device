@@ -2294,3 +2294,14 @@ DASHBOARD, le titre de la Séance 32 et la mémoire `85c25441`.
 
 **Fermeture.** Séance close à cet instant. Le dépôt gagne ce paragraphe ; il part dans le commit qui le porte,
 dont l'empreinte ne peut donc pas figurer ici. Aucun des quatre arbres n'a été touché.
+
+## Séance 33 — 2026-10-17 (suite)
+
+**Rectification.** La cellule « aucun lien mort dans les quinze fichiers » citait `](../…)` comme forme de
+lien : faute de frappe, la forme visée est celle d'un lien relatif ordinaire. Le contrôle rejoué en
+retirant les segments entre backticks rend **73 liens, 0 mort** ; le premier passage en comptait 76 parce
+qu'il lisait aussi trois motifs écrits en code, dont celui-là. La méthode était donc plus permissive que
+la mesure annoncée, jamais plus sévère.
+
+**Fermeture.** Cette suite part dans le commit qui la porte (`e1c292d` porte le paragraphe précédent).
+Aucun des quatre arbres n'a été touché.

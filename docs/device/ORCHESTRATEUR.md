@@ -53,7 +53,8 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 
 `cas` fabrique un **squelette** : le falsificateur de la promesse du skill reste marqué `a_remplir`, et
 tant qu'il l'est, le reçu porte la limite `attendu_incomplet` et le verdict plafonne à `non concluant`
-([ADR-039](../DECISIONS.md)). La personne remplit le §6 de la demande et la marque `P` de l'attendu, puis
+([ADR-039](../DECISIONS.md)). La personne remplit la ligne du §5 que la fabrique laisse ouverte, le §6 de la
+demande, la marque `P` de l'attendu et la première des deux réponses figées, puis
 re-gèle : `run.mjs freeze --refreeze` est la seule commande qui re-gèle, et l'orchestrateur ne l'appelle
 jamais.
 

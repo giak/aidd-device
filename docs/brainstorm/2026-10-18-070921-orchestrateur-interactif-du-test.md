@@ -33,7 +33,7 @@ verdict, sans lire une autre page que ce que l'orchestrateur lui montre.**
 Le dépôt sait déjà tout faire, mais rien ne prend par la main. Le premier cas a coûté un dossier de tâche
 entier : une spec, une conduite en six sections, une liste de contrôle, un kit d'ouverture, trois
 commandes de gel, un banc — et la personne doit savoir, avant de commencer, ce qu'est `$RACINE`, un gel,
-une porte, une fenêtre, un plafond de verdict. Le [guide](../guide-du-test-de-bout-en-bout.md) en trois
+une porte, une fenêtre, un plafond de verdict. Le [guide](../guide/guide-du-test-de-bout-en-bout.md) en trois
 chapitres réduit la marche à trois refus et un reçu de banc, mais il ne fabrique aucun cas : il enseigne
 sur celui qui existe.
 
@@ -156,7 +156,7 @@ la [conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-
 le kit d'ouverture (`aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/kit-ouverture.md`,
 **hors du dépôt** : un clone ne le porte pas),
 le [banc](../device/BANC.md), [DEVICE](../device/DEVICE.md), [BOUNDARY](../device/BOUNDARY.md),
-[REPLAY](../device/REPLAY.md), le [guide](../guide-du-test-de-bout-en-bout.md), le
+[REPLAY](../device/REPLAY.md), le [guide](../guide/guide-du-test-de-bout-en-bout.md), le
 [plan du guide](2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md) et le `--help` du harnais.
 
 **Non mesuré, et qui compte** : aucune personne étrangère au dépôt n'a jamais suivi ces pages ; le temps

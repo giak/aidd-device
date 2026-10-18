@@ -3263,7 +3263,7 @@ contrôles, les deux écarts, les limites.
 trois chapitres, lire un reçu, rejouer un gel, provoquer trois refus, chacun avec un geste copiable, une
 sortie **observée** et un refus provoqué. Puis consigner.
 
-**Fait.** Le guide naît au dépôt : `docs/guide-du-test-de-bout-en-bout.md`, né à `06:55:09` (`stat -c %w`),
+**Fait.** Le guide naît au dépôt : `docs/guide/guide-du-test-de-bout-en-bout.md`, né à `06:55:09` (`stat -c %w`),
 **256 lignes, 1 927 mots**, frontmatter `type: guide`, `status: in-progress` (253 et 1 886 avant la dernière
 retouche du 2026-10-18 : l'avertissement d'en-tête, qui disait « rien ne s'exécute dans les quatre arbres »,
 taisait le lien symbolique que le banc écrit puis retire dans l'espace de travail du cas). Son `§0` lit `CAS`, `W` et
@@ -3399,7 +3399,7 @@ mesurables par le banc.
 Dans le banc, six contrôles (113 à 118) et cinq fils fixtures. Pages remises : la conduite §1.5 et la chaîne
 de la liste de contrôle (nouvelle requête d'export), [BANC](device/BANC.md) (118 contrôles), [DEVICE](device/DEVICE.md),
 [ARCHITECTURE](ARCHITECTURE.md) (la ligne de `receipt`, F1 et F2), [EXPLICATION](EXPLICATION.md),
-[README](../README.md), le [guide](guide-du-test-de-bout-en-bout.md) (sortie observée refaite, sept champs),
+[README](../README.md), le [guide](guide/guide-du-test-de-bout-en-bout.md) (sortie observée refaite, sept champs),
 le [tableau de bord](DASHBOARD.md), et la spec de l'orchestrateur (ADR 036 à 038, contrôles à partir de 119).
 
 **Vérifié.**
@@ -3772,7 +3772,7 @@ pas.
 remis jusqu'aux deux refus F2 et F1, et fais-le lire par un lecteur qui ne connaît pas le dépôt pour mesurer
 ce qui passe. »
 
-**Fait — le chapitre.** Le [guide](guide-du-test-de-bout-en-bout.md) gagne son **chapitre 5**, « Lire le cas
+**Fait — le chapitre.** Le [guide](guide/guide-du-test-de-bout-en-bout.md) gagne son **chapitre 5**, « Lire le cas
 jouet, du texte remis aux deux refus », cinq gestes et cinq blocs de sortie observés : le texte remis (le §5
 de la demande, `$RACINE` substitué comme le fait `texteDuCas`), les deux arbres reconstruits par le script
 compagnon dans `/tmp/jouet` (têtes `1b3b632a…` / `62c48e16…`, celles du gel), le playbook en quatre lignes
@@ -4006,3 +4006,58 @@ Rien n'est commité.
 
 **Mémoires.** `b2cffe3d` : la ligne, son emplacement, la dérive de la ligne 11 corrigée, et ce
 qu'elle ne mesure pas.
+
+## Séance 64 — 2026-10-18 (le guide utilisateur, et le foyer `docs/guide/`)
+
+**Objectif.** La demande : « tu n'as toujours pas créé un guide pour utilisateur ; il y a
+`docs/guide-du-test-de-bout-en-bout.md` (qui n'a rien à faire là) et son brainstorm ; moi je veux guide
+utilisateur ! » Le constat était juste : la page existante est un guide **pédagogique** (lire un reçu,
+rejouer un gel, provoquer trois refus), et `ORCHESTRATEUR.md` un **runbook** pour un agent. Ni l'une ni
+l'autre ne dit à quelqu'un qui arrive avec un skill ce qu'il fait de son lundi matin.
+
+**Deux décisions, prises avant d'écrire.** Le lecteur : **quelqu'un qui arrive avec un skill à tester**.
+Le foyer : **`docs/guide/`**, où le guide pédagogique déménage. La [spec](tasks/2026_10/2026-10-18-170751-guide-utilisateur/2026-10-18-170751-spec.md)
+les enregistre avec ses critères.
+
+**Ce qui a été écrit.** [guide-utilisateur.md](guide/guide-utilisateur.md) : dix chapitres, des prérequis
+au verdict, avec les cinq commandes dans l'ordre, les trois gestes qui restent humains, une table des refus
+fréquents et de leur geste, et ce que le verdict n'atteste pas. **Toutes les sorties citées ont été
+observées le même jour** sur un bac `/tmp/guide-user` (un skill de trois règles, un terrain d'un fichier) :
+`cas` (empreinte `579db5ef`, 2 fichiers du cas, 0 référence, 4 arbres), `porte`
+(`passe_le 2026-10-18T17:07:33`, texte de `195` octets, sha `bb28f681`), `suite` (faits, export, copie d'un
+fichier), `fin` sans `--verdict` (bloc `▸ VERDICT PROPOSÉ — non concluant`), `fin --verdict conforme`
+(refus, `exit 1`), `fin --verdict non concluant` (reçu et output, `porte 5f5050f3`, `échanges 1/2`),
+`lire`. Le re-gel a été exercé à part : sur le cas complété, `freeze --refreeze` rend `5fe61d4f` là où la
+fabrique avait rendu `579db5ef`.
+
+**Le déplacement.** `git mv` vers `docs/guide/`, puis les **17** liens relatifs du guide pédagogique
+préfixés d'un `../` (il descend d'un niveau) ; les renvois vers lui suivent dans `README`, `DASHBOARD`,
+ce journal, les deux brainstorm et la spec du cas jouet. Aucun contenu n'est réécrit, seuls les chemins
+changent.
+
+**Un défaut trouvé en écrivant le guide, et corrigé.** `cas --cases <dossier absent>` **plantait** :
+`Error: ENOENT … open '/tmp/guide-user/cases/demo.request.md'`, avec une pile Node pour tout message. Un
+premier utilisateur, exactement celui à qui ce guide s'adresse, tombait dessus au premier geste.
+Correction : `mkdirSync(cases, { recursive: true })` dans `orchestrer.mjs`, **après** tous les refus, pour
+qu'une invocation refusée n'écrive toujours rien. Contrôle de [banc](device/BANC.md) **149** ajouté, et son
+falsificateur mesuré : la même commande sur une copie privée de cette ligne rend la pile et `exit 1`.
+
+**Une dérive corrigée dans le runbook.** [ORCHESTRATEUR.md](device/ORCHESTRATEUR.md) §2 énumérait ce que la
+personne remplit sans nommer la ligne du §5 que la fabrique laisse ouverte
+(`<<<LIGNE À REMPLIR PAR LA PERSONNE …>>>`) ni la première des deux réponses figées (`À REMPLIR — la phrase
+qui autorise l'écriture après le tableau`). Les deux sont désormais dans la liste.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **149/149 PASS**, `exit 0`, aucun `FAIL`.
+`node docs/device/harness/liens.mjs` → **46** fichiers, **511** liens hors code, **0 mort**, `exit 0`
+(**515** une fois cette section écrite, 509 avant les renvois du tableau de bord). `node --check orchestrer.mjs` → ok.
+
+**Ce que ça ne prouve pas.** Aucune session réelle n'a ouvert le cas de démonstration : les chapitres 5 et
+6 du guide lisent un **fil fabriqué** (trois messages, un tableau, un `write_file`) et le guide le dit
+avant le premier geste. Surtout, **aucun lecteur étranger n'a suivi le guide** : la promesse « tu finis
+sans lire une autre page » reste une hypothèse de rédaction, comme AC1 de la spec de l'orchestrateur.
+
+**Prochaines étapes.** Faire lire la page à quelqu'un qui n'a pas écrit le dispositif, puis ouvrir le second
+run (toujours aucun fil : `threads 0`, `messages 0`). Rien n'est commité.
+
+**Mémoires.** `6b966f30` : les deux décisions, le guide, le déplacement, le défaut `--cases` et son contrôle,
+et ce qui reste non mesuré.

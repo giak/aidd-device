@@ -22,7 +22,7 @@ status: in-progress
 > section 14 la liste de ce qui manque encore ; la section 12 corrige une affirmation fausse du 2026-10-17,
 > **aucun `receipt.json` n'existe dans ce dépôt**, et les pages qui parlaient d'un « reçu réel » parlaient
 > d'un reçu qui reste à écrire. Les trois chapitres minimaux de la section 10 sont écrits depuis, hors de ce
-> plan : [le guide](../guide-du-test-de-bout-en-bout.md), 256 lignes, né à 06:55:09.
+> plan : [le guide](../guide/guide-du-test-de-bout-en-bout.md), 256 lignes, né à 06:55:09.
 >
 > **Complété le 2026-10-18 (Séance 56)** : le guide compte **quatre** chapitres, le quatrième lit un tableau
 > et le fait manquer (355 lignes, rejoué, sorties observées) ; ce document reste le plan des trois autres
@@ -326,7 +326,7 @@ le `--help` du harnais, la
   et `preflight` exige `--run` : un guide écrit avant ce commit donnerait des commandes qui sortent en
   `exit 2`. C'est la raison de cette relecture ;
 - **le guide est écrit pour sa version minimale** : les chapitres de la section 10 vivent depuis le
-  2026-10-18 dans [le guide](../guide-du-test-de-bout-en-bout.md) (256 lignes à l'écriture, **355** depuis le
+  2026-10-18 dans [le guide](../guide/guide-du-test-de-bout-en-bout.md) (256 lignes à l'écriture, **355** depuis le
   chapitre du tableau, Séance 56 ; sorties observées, `liens.mjs` 35 fichiers et 0 lien mort le 2026-10-18,
   **38 fichiers et 0 lien mort** après la Séance 56) ; ce document reste le plan des trois autres chapitres ;
 - **le rendu Mermaid** a été vérifié **après** écriture, pas pendant : les cinq blocs extraits se rendent

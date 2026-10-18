@@ -926,6 +926,13 @@ const out=execFileSync('node',['$ORCH','lire','--cas','cas-test','--run','$O/run
 const blocs=out.split(/\n(?=▸ )/).filter(b=>b.trim());
 const long=blocs.filter(b=>b.trim().split('\n').length>6);
 process.exit(blocs.length>=1 && long.length===0 ?0:1)"
+# Le dossier des cas n'existe pas encore : `cas` le cree (drift mesure le 2026-10-18, le guide utilisateur
+# le premier : la commande sortait en ENOENT au lieu d'ecrire la demande).
+rm -rf "$O/cases-neuf"
+controle "149 cas cree son dossier --cases" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','cas','--skill','$OSKILL','--terrain','$OTERRAIN','--id','neuf','--racine','$O','--cases','$O/cases-neuf'],{stdio:'ignore',input:'',encoding:'utf8'});
+process.exit(['request.md','expected.json','freeze.json'].every(p=>fs.existsSync('$O/cases-neuf/neuf.'+p))?0:1)"
 
 echo
 echo "$PASS/$TOTAL PASS"

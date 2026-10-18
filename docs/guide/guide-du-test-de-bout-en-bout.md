@@ -8,11 +8,11 @@ status: in-progress
 # Guide du test de bout en bout — la version minimale
 
 > 2026-10-18, né à 06:55:09 (`stat -c %w`). Cinq chapitres, écrits depuis le plan
-> [2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md](brainstorm/2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md),
+> [2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md](../brainstorm/2026-10-17-134347-guide-pedagogique-du-test-de-bout-en-bout.md),
 > section 10 : lire un reçu (seuil 2), rejouer un gel (seuil 3), provoquer trois refus (seuil 6 en
 > miniature), lire un tableau et le faire manquer (F1 et F2, après H6), et — hors du parcours du plan,
 > parce qu'il manquait un cas montrable — lire le cas jouet du texte remis jusqu'aux refus F2 et F1
-> ([ADR-036](DECISIONS.md)). Le plan reste le plan, ses trois autres chapitres et ses décisions ouvertes
+> ([ADR-036](../DECISIONS.md)). Le plan reste le plan, ses trois autres chapitres et ses décisions ouvertes
 > sont là-bas.
 > Toutes les sorties citées ici ont été **observées le 2026-10-18** : les chapitres 2 et 3 sur `a60f2e5`,
 > les chapitres 1 et 4 sur le harnais de H6 (`dbd85ba`), le chapitre 5 sur l'arbre de travail au-dessus de
@@ -27,7 +27,7 @@ status: in-progress
 > le chapitre 4 n'écrit rien : il relit le dossier du chapitre 1 et y demande un refus, qui n'écrit pas, et
 > le chapitre 5 écrit deux arbres jetables sous `/tmp` avec le script du cas jouet, ses deux refus
 > n'écrivant rien ; le banc crée puis supprime **un lien symbolique** dans l'espace de travail du cas, son contrôle 41
-> échouant si l'espace n'est pas rendu propre ([BANC.md](device/BANC.md), §3). Si un de ces gestes écrit
+> échouant si l'espace n'est pas rendu propre ([BANC.md](../device/BANC.md), §3). Si un de ces gestes écrit
 > ailleurs, il a été mal copié.
 
 ## 0. Trois chemins, lus au gel, avant d'ouvrir un chapitre
@@ -128,7 +128,7 @@ demande, produit, trace, horodatages et verdict. Ni un compte-rendu, ni une preu
 
 ## 2. Rejouer un gel
 
-**Le geste.** La formule est celle du §1.1 de la [conduite du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) :
+**Le geste.** La formule est celle du §1.1 de la [conduite du run](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) :
 copie son bloc `python3`, ouvre-le depuis la racine du dépôt, et donne-lui le checkout de l'arbre gelé.
 
 ```bash
@@ -137,7 +137,7 @@ export RACINE_FRAMEWORK="$FRAMEWORK"       # le checkout de la révision sous te
 # colle ici le bloc `python3 - <<'PY' … PY` du §1.1, tel quel, puis lance-le
 ```
 
-Un lecteur qui n'a ni la machine ni les chemins suit plutôt la [recette de REPLAY](device/REPLAY.md), §2 :
+Un lecteur qui n'a ni la machine ni les chemins suit plutôt la [recette de REPLAY](../device/REPLAY.md), §2 :
 même formule, mais elle prend le cas dans un clone neuf et ne réécrit aucun chemin.
 
 **La sortie attendue.** Observée le 2026-10-18, `exit 0` :
@@ -329,7 +329,7 @@ d'outil sans nom précèdent le tableau, et le reçu écrit deux limites au lieu
 `l'ordre écriture/tableau n'est pas mesurable : la trace ne porte pas le nom des outils (H6)` et `outil(s)
 dont le nom évoque une écriture et qui ne nomment aucun chemin : write_todos … (H6)`. Et un tableau forgé
 dans la trace passe, comme le reste de l'export : la racine de confiance reste la base du client, ce que dit
-[ADR-035](DECISIONS.md).
+[ADR-035](../DECISIONS.md).
 
 **Le mot que ce chapitre installe : tableau.** Le bloc d'au moins trois lignes, à séparatrice, rendu dans
 une part `text` par un message `assistant`, et son instant. Il n'atteste pas que ce qu'il affiche est vrai :
@@ -339,7 +339,7 @@ il atteste **quand** il a été rendu, et c'est cet instant que F1 et F2 datent.
 
 Le cas jouet est le seul cas du dépôt dont les arbres se reconstruisent par une commande : deux dépôts de
 deux fichiers, un commit chacun, dates et signatures figées, donc les mêmes têtes sur toute machine
-([ADR-036](DECISIONS.md)). Sa demande tient en 49 lignes, son attendu en 48, son gel ne référence aucun
+([ADR-036](../DECISIONS.md)). Sa demande tient en 49 lignes, son attendu en 48, son gel ne référence aucun
 fichier du framework, et il n'a **jamais été ouvert** : le gel est daté du 2026-10-18 à 08:57:47, le budget
 de deux échanges est intact. Ce chapitre le traverse : la phrase remise à la session, le playbook qu'elle
 nomme, puis les deux refus qui tuent l'ordre promis, F2 et F1.
@@ -476,10 +476,10 @@ session a travaillé.
 
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
-| lire un reçu | [ARCHITECTURE.md](ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](device/BANC.md) | les 130 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
-| lire un tableau | [ADR-035](DECISIONS.md), [spec H6](tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
-| rejouer un gel | [REPLAY.md](device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
-| mener un run | [la conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |
-| écrire un cas | [la spec du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) | la demande, l'attendu, le gel, les falsificateurs |
-| lire le cas jouet | [la demande](device/CASES/2026-10-18-085308-cas-jouet.request.md), [l'attendu](device/CASES/2026-10-18-085308-cas-jouet.expected.json), [son script](device/CASES/2026-10-18-085308-cas-jouet-arbres.sh) | les deux arbres reconstruits à l'identique, les cinq falsificateurs, le budget de deux échanges, et ce que le cas écarte |
+| lire un reçu | [ARCHITECTURE.md](../ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
+| provoquer un refus | [BANC.md](../device/BANC.md) | les 130 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| lire un tableau | [ADR-035](../DECISIONS.md), [spec H6](../tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
+| rejouer un gel | [REPLAY.md](../device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
+| mener un run | [la conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |
+| écrire un cas | [la spec du run](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) | la demande, l'attendu, le gel, les falsificateurs |
+| lire le cas jouet | [la demande](../device/CASES/2026-10-18-085308-cas-jouet.request.md), [l'attendu](../device/CASES/2026-10-18-085308-cas-jouet.expected.json), [son script](../device/CASES/2026-10-18-085308-cas-jouet-arbres.sh) | les deux arbres reconstruits à l'identique, les cinq falsificateurs, le budget de deux échanges, et ce que le cas écarte |

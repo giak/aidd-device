@@ -332,6 +332,10 @@ function commandeCas(argv) {
     `<<<LIGNE À REMPLIR PAR LA PERSONNE : ce que ${basename(terrain || DEPOT)} est, et ce qu'il attend>>>`,
     ">>>DEMANDE",
   ].join("\n");
+  // `--cases` may name a store that does not exist yet: a newcomer fabricating cases has no reason to
+  // create it first, and the write below used to throw ENOENT instead of a refusal. It is created here,
+  // after every refusal above, so a refused invocation still leaves nothing behind.
+  mkdirSync(cases, { recursive: true });
   const demandepath = join(cases, `${id}.request.md`);
   writeFileSync(demandepath, `---
 name: Demande — ${id}

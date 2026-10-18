@@ -3441,5 +3441,43 @@ Ensuite la spec de l'orchestrateur (P1 : `porte`, `suite`, `fin`, `lire` sur le 
 de cas (P2).
 
 **Mémoires.** `db0aa214` (2026-10-18 05:38:41 UTC) : la forme, l'acte d'écriture et sa mesure, l'export, le
-reçu, le banc et l'état du second run.
+reçu, le banc et l'état du second run, puis la suite (commits et porte neuve) dans la même mémoire.
+
+## Séance 55 (suite) — 2026-10-18 (H6 commité, et la porte neuve du second run)
+
+**Objectif.** Fermer le second run : ouvrir un fil neuf, coller la demande, conduire `collect`, `faits`,
+`receipt`, `compare`. Le premier geste n'appartient à aucune machine : mesure faite, **0 fil** dans le projet
+`terrain-38d8d3f1` et aucun fil d'aucune base ne porte `<W>/terrain`, donc rien n'a été ouvert et aucun reçu
+n'a été écrit.
+
+**Décision, avant le geste humain.** Commiter H6 d'abord, puis passer une porte neuve sur la révision propre,
+plutôt que clore dans le dossier du `07:02:51` : le nom d'un run cite une révision, et une révision ne
+couvre que du commité.
+
+**Fait.** Deux commits : `7e05b9c` (la spec de l'orchestrateur, son brainstorm, la Séance 54, et le premier
+`gate.json` réel du projet gardé comme trace d'un passage) et `dbd85ba` (H6 : la forme, l'ADR-035, la spec,
+le banc à 118, les pages remises, cette Séance 55). Puis la **porte neuve** :
+`docs/device/runs/2026-10-18-075625-4c39e5c5-dbd85ba/`, passée à `07:56:25` (`exit 0`), gel `0d9a2180`,
+arbre `travail` `416ec1fa`, `porcelain` vide, texte `832036f7` (254 o), révision du dispositif `dbd85ba`.
+Et le kit d'ouverture, hors du dépôt, reçoit la requête d'export neuve : `outil` et `chemin_outil`,
+**374 caractères, 0 différence** avec la commande que `faits` écrit pour le même fil (comparée à la fixture
+`f113.json` du banc).
+
+**Vérifié**, sur l'arbre commité, avant la porte :
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **118/118 PASS**, `exit 0`, 0 `FAIL` |
+| `node docs/device/harness/liens.mjs` | 38 fichiers, **415** liens, **0 mort**, `exit 0` |
+| `node --check docs/device/harness/run.mjs` | `exit 0` |
+| `git status --porcelain`, après les deux commits | 0 ligne, puis une seule non suivie : le dossier de la porte neuve |
+
+**OPEN.** Aucun fil, donc aucune session : le run n'existe toujours pas, et le second reçu réel reste à
+écrire. Le dossier de la porte neuve n'est pas encore commité : il le sera avec le reçu, quand le run
+existera. Rien n'est poussé.
+
+**Prochaines étapes.** Les trois gestes humains : ouvrir un fil neuf, vide, en mode direct, avec la racine de
+projet posée sur `<W>/terrain` ; y coller le §1 de `kit-ouverture.md` (254 o, `sha256 832036f7…`), rien
+autour ; répondre seulement par une des deux phrases figées du §2. Ensuite la chaîne : export du §3.6
+(requête neuve), puis `faits`, `collect`, `receipt`, `compare` avec les cinq faits humains.
 

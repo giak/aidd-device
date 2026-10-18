@@ -4273,3 +4273,35 @@ affaibli pour la faire disparaître.
 
 **Mémoires.** `b353bb30` (le contrôle 153, étendu au runbook et son détail nommé), mise à jour puis
 relue.
+
+## Séance 69 — 2026-10-18 (le détail d'échec du banc devient un helper)
+
+**Objectif.** Rendre réutilisable ce que la séance 68 avait collé au contrôle 153 : un contrôle nomme ses
+raisons, le banc les imprime sous son `FAIL`, et plus aucune ligne d'impression ne dépend d'un numéro.
+
+**Fait.** `controle` porte désormais le contrat : un contrôle pose `DETAIL=<fichier>` **avant** l'appel, sa
+commande y écrit une raison par ligne, `controle` les imprime sous `FAIL`, préfixées `echec :`, efface le
+fichier et remet `DETAIL` à vide — donc aucun contrôle n'hérite du détail d'un autre. Le contrôle 153 ne
+garde que ce qui lui est propre : `DETAIL="$B/153-detail"` avant l'appel, et l'écriture dans `$DETAIL` côté
+`node -e` ; la ligne `sed` qui suivait l'appel est supprimée. Les 152 autres contrôles sont inchangés.
+
+**Vérifié.** Banc : **153/153 PASS**, `exit 0`, **0 `FAIL`**, **aucune** ligne `echec`
+(`/tmp/helper-pass.log`), et aucun `153-detail` dans le bac jetable ni au témoin ni après l'échec. Bout en
+bout, `--bidule` ajouté à la ligne `cas` d'`ORCHESTRATEUR.md` : `FAIL  153 guide et runbook contre le code
+exit=1 attendu=0`, ligne suivante `echec : runbook §2 : option --bidule hors de la section d usage de cas`,
+**152/153 PASS**, banc `exit 1`, détail effacé après lecture ; fichier restauré identique (`sha256
+9012d7df…`, `git diff` vide). Helper extrait des octets du banc (14 lignes) et rejoué seul
+(`/tmp/helper-test.sh`) : un contrôle qui passe avec un détail présent n'imprime rien et le fichier est
+effacé ; un contrôle qui tombe avec deux raisons imprime les deux ; le suivant n'hérite de rien ; `DETAIL`
+vide ou fichier absent rend un `FAIL` sans raison, sans erreur ; compte **2/5**.
+`node docs/device/harness/liens.mjs` → **46** fichiers, **537** liens hors code, **0 mort**, `exit 0`
+(536 avant cette séance : le renvoi au BANC ajouté ici).
+
+**Dérives signalées, non corrigées.** La limite du §6 du [BANC](device/BANC.md) ne bouge pas : un texte de
+refus attendu qui vit ailleurs dans le code reste indistinguable d'une branche morte. `DETAIL` est une
+convention de shell, pas une obligation : un contrôle qui l'oublie n'échoue pas, il se tait — le détail
+s'ajoute sous le verdict, il ne le décide pas.
+
+**Prochaines étapes.** Rien n'est commité ; le premier « test ça » réel reste en attente.
+
+**Mémoires.** `b353bb30` (le helper `DETAIL`), mise à jour puis relue.

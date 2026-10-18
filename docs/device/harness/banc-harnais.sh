@@ -50,13 +50,23 @@ echo "banc — cas $CAS, dépôt $REPO"
 echo "jetable $B (conservé pour inspection)"
 
 PASS=0; TOTAL=0
+# Un controle peut nommer ses raisons : il pose DETAIL=<fichier> avant l'appel, sa commande y ecrit une
+# raison par ligne quand elle tombe, et `controle` les imprime sous son FAIL, prefixees `echec :`. Le
+# fichier est efface apres lecture et DETAIL remis a vide : aucun controle n'herite du detail d'un autre,
+# et rien ne colle a un numero de controle (drift : le detail du 153 vivait sur une ligne apres son appel).
+DETAIL=""
 controle() { # nom, attendu, commande...
   local nom="$1" attendu="$2"; shift 2
   TOTAL=$((TOTAL+1))
   "$@" >/dev/null 2>&1
   local rc=$?
   if [ "$rc" = "$attendu" ]; then PASS=$((PASS+1)); printf 'PASS  %-46s exit=%s\n' "$nom" "$rc"
-  else printf 'FAIL  %-46s exit=%s attendu=%s\n' "$nom" "$rc" "$attendu"; fi
+  else
+    printf 'FAIL  %-46s exit=%s attendu=%s\n' "$nom" "$rc" "$attendu"
+    if [ -n "$DETAIL" ] && [ -s "$DETAIL" ]; then sed 's/^/      echec : /' "$DETAIL"; fi
+  fi
+  if [ -n "$DETAIL" ]; then rm -f "$DETAIL"; fi
+  DETAIL=""
 }
 refus-nomme() { # exit attendu, texte attendu, commande... — un refus explicite, pas une trace Node
   local voulu="$1" attendu="$2"; shift 2
@@ -961,8 +971,9 @@ controle "152 refus 13, terrain sale" 0 refus-nomme 1 "le terrain" bash -c "node
 # doivent y etre nommees, et les douze refus du runbook doivent etre ceux du §7 de la spec, chacun
 # eprouve par un controle du banc dont le texte attendu vit dans le code. Un renommage cote code, et
 # aucune des deux pages ne peut plus mentir en silence (drift : le guide a omis `--tel-quel`).
-# En cas d'echec, le controle ecrit ses confrontations rompues dans $B/153-detail, imprimees sous sa
-# ligne FAIL : le compte et l'exit ne changent pas, seul le silence tombe (une page qui ment se nomme).
+# En cas d'echec, le controle ecrit ses confrontations rompues dans $DETAIL, que `controle` imprime sous
+# sa ligne FAIL : le compte et l'exit ne changent pas, seul le silence tombe (une page qui ment se nomme).
+DETAIL="$B/153-detail"
 controle "153 guide et runbook contre le code" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 let usage='';try{execFileSync('node',['$ORCH'],{encoding:'utf8'});}catch(e){usage=(e.stdout||'')+(e.stderr||'');}
@@ -1004,9 +1015,8 @@ if(!Number.isFinite(douze))raisons.push('runbook : la phrase qui annonce le nomb
 if(refus.length!==douze)raisons.push('spec §7 : '+refus.length+' refus numerotes, '+douze+' annonce(s) par le runbook');
 for(let n=1;n<=douze;n++){const r=refus.find(x=>x.n===n),ex=eprouves.get(n)||[];if(!r)manque.push('spec '+n);if(!ex.length)manque.push('banc '+n);if(!r)raisons.push('spec §7 : refus '+n+' absent de la table');if(!ex.length)raisons.push('banc : aucun controle nomme refus '+n+',');for(const e of ex){if(r&&e.sortie!==r.sortie)manque.push('sortie '+n);if(!codes.includes(e.texte))manque.push('code '+n);if(r&&e.sortie!==r.sortie)raisons.push('refus '+n+' : le banc attend '+e.sortie+', la spec '+r.sortie);if(!codes.includes(e.texte))raisons.push('refus '+n+' : le texte attendu ne vit ni dans orchestrer.mjs ni dans run.mjs');}}
 const bon=annexe && offertes.length===5 && inconnues.length===0 && nonNommees.length===0 && cinq && refus.length===douze && manque.length===0;
-if(!bon)fs.writeFileSync('$B/153-detail',(raisons.length?raisons:['confrontation rompue non nommee — lire le code du controle']).join('\n')+'\n');
+if(!bon)fs.writeFileSync('$DETAIL',(raisons.length?raisons:['confrontation rompue non nommee — lire le code du controle']).join('\n')+'\n');
 process.exit(bon?0:1)"
-if [ -s "$B/153-detail" ]; then sed 's/^/      echec : /' "$B/153-detail"; fi
 
 echo
 echo "$PASS/$TOTAL PASS"

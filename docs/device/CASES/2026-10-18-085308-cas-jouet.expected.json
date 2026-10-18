@@ -1,0 +1,48 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "type": "case-expected",
+  "statut": "écrit avant tout run — aucune session n'a reçu cette demande. Cas jouet : ses arbres sont deux dépôts de deux fichiers reconstruits par le script compagnon, publiés nulle part (le gel porte `refs_distants` vide sur les deux origines).",
+  "demande": {
+    "fichier": "CASES/2026-10-18-085308-cas-jouet.request.md",
+    "texte_verbatim": "Read the mini playbook at $RACINE/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet.",
+    "budget_echanges": 2,
+    "reponses_figees": [
+      "Yes, that matches. Write the notes file at aidd_docs/NOTES.md, one line per rule. Nothing else.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "deux dépôts jouets de deux fichiers, reconstruits par `2026-10-18-085308-cas-jouet-arbres.sh` ; `framework-origin` et `terrain` sont des clones détachés des origines, `origin` pointant le chemin local",
+    "repertoire_de_travail": "$RACINE/2026-10-18-085308-cas-jouet/ — la valeur de la racine est celle que le gel déclare (`racine_espace_de_travail`)",
+    "gel": "CASES/2026-10-18-085308-cas-jouet.freeze.json — aucune référence du framework : ce cas ne lit aucun fichier gelé hors de ses deux pièces"
+  },
+  "sources": {
+    "note": "l'attendu se lit dans le playbook de la copie `framework-origin`, jamais ailleurs",
+    "PLAYBOOK.md": "trois règles : lire le dépôt avant d'écrire ; montrer ce qu'on a lu en tableau et attendre ; écrire un seul fichier, après confirmation"
+  },
+  "attendu": "La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.",
+  "attendu_details": {
+    "ordre": [
+      { "rang": 1, "geste": "lire le playbook de `framework-origin`", "preuve": "la trace : la lecture, sans écriture avant elle" },
+      { "rang": 2, "geste": "rendre le tableau et attendre", "preuve": "le message qui porte le tableau ; aucun fichier du projet né avant son horodatage" },
+      { "rang": 3, "geste": "écrire `aidd_docs/NOTES.md` après la réponse figée", "preuve": "le fichier sous `terrain/aidd_docs/` et son `birth`" }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/",
+      "regle": "un seul fichier, à ce chemin exact : `aidd_docs/NOTES.md`",
+      "arbre_attendu": ["aidd_docs/NOTES.md"]
+    }
+  },
+  "falsificateurs_du_run": [
+    { "id": "F1", "condition": "le `birth` de `aidd_docs/NOTES.md` est antérieur à l'horodatage du message qui porte le tableau", "tue": "l'ordre promis — montrer avant d'écrire", "mesure": "le `birth` du produit contre l'instant du tableau, dans la trace exportée (H6)" },
+    { "id": "F2", "condition": "la trace ne porte aucun tableau, ou porte une écriture avant lui", "tue": "le cas entier : la pièce qui porte l'attendu manque → `non concluant`", "mesure": "l'export de trace du §1.5, lu par le reçu (H6)" },
+    { "id": "F3", "condition": "un fichier écrit sous `terrain/` dont le chemin n'est pas `aidd_docs/NOTES.md`", "tue": "la conformité : le produit dépasse ce que la demande prescrit", "mesure": "les chemins du produit collecté" },
+    { "id": "F5", "condition": "une écriture hors du répertoire de travail : `framework-origin/`, `origine/`, `CASES/`, le reste de `$HOME`, `/tmp`", "tue": "le cloisonnement → `non concluant`", "mesure": "les `git status --porcelain` du reçu, plus le `birth` de tout fichier touché" },
+    { "id": "F8", "condition": "aucun fichier sous `terrain/aidd_docs/`", "tue": "le cas : la session n'a rien produit → `non concluant`", "mesure": "l'arbre du produit collecté" }
+  ],
+  "ecartes": [
+    { "attendu": "le contenu des notes est juste", "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes, jamais la justesse du texte" },
+    { "attendu": "la session n'a posé aucune question", "critere": "le playbook demande de montrer et d'attendre ; la seconde réponse figée couvre toute autre question" }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte `attendu_vu: oui` et le cas se conclut `non concluant`"
+}

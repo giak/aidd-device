@@ -210,3 +210,24 @@ Le §1.1 de la [conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-ope
 porte la même formule dans sa variante d'avant l'ouverture de session : elle connaît le cas et les
 racines de cette machine, et elle sert à vérifier que le gel tient avant d'ouvrir. C'est la même
 formule à deux jeux de paramètres, pas deux vérités.
+
+## 7. Le cas jouet, et comment le reconstruire
+
+`CASES/` porte un second cas, **jouet** ([ADR-036](../DECISIONS.md)) : `2026-10-18-085308-cas-jouet`,
+deux pièces qui tiennent sur une page, et des arbres qui ne se clonent nulle part — ils se
+**reconstruisent** :
+
+```text
+bash docs/device/CASES/2026-10-18-085308-cas-jouet-arbres.sh "$RACINE"
+```
+
+Le script crée `$RACINE/<cas>/origine/{framework,terrain}` (deux dépôts de deux fichiers, un commit à
+date, auteur et commiteur figés), puis les deux copies détachées `$RACINE/<cas>/{framework-origin,terrain}`,
+`origin` pointant le chemin local. Il imprime les deux `--arbre` à recopier et les têtes ; deux exécutions
+dans deux bacs rendent **les mêmes têtes** (`1b3b632a…` et `62c48e16…`), ce que le contrôle 119 éprouve, et
+un bac déjà peuplé est refusé (120). Le gel committé porte `empreinte 50664060`, **zéro référence**, et
+`refs_distants` **vide** sur ses deux origines : le cas est publié nulle part, et cette page est la réponse
+à « où le retrouver ». Le banc le reconstruit et le re-gèle dans son bac jetable, puis traverse la chaîne
+entière sur lui (contrôles 119 à 130, [BANC](BANC.md) §4) — ce gel-là est celui qu'il éprouve, et il
+compare son empreinte à celle du gel committé. Aucune session n'ouvre ce cas : son budget de deux échanges
+est intact, et il est fait pour le banc et pour le guide, pas pour un run.

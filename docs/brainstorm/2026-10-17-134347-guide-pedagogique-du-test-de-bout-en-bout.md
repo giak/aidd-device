@@ -23,6 +23,10 @@ status: in-progress
 > **aucun `receipt.json` n'existe dans ce dépôt**, et les pages qui parlaient d'un « reçu réel » parlaient
 > d'un reçu qui reste à écrire. Les trois chapitres minimaux de la section 10 sont écrits depuis, hors de ce
 > plan : [le guide](../guide-du-test-de-bout-en-bout.md), 256 lignes, né à 06:55:09.
+>
+> **Complété le 2026-10-18 (Séance 56)** : le guide compte **quatre** chapitres, le quatrième lit un tableau
+> et le fait manquer (355 lignes, rejoué, sorties observées) ; ce document reste le plan des trois autres
+> chapitres, et la liste de la section 14 perd la ligne du tableau.
 
 ## 1. La commande, et les trois guides qu'elle peut désigner
 
@@ -289,7 +293,9 @@ feront pas davantage : c'est là qu'il faut mesurer, pas à la fin.
   Le dépôt donne un guide versionné et relisible ; l'extérieur donne un guide qu'on imprime. La réponse
   change les liens et le ton, pas le contenu.
 - **Le cas jouet** : à écrire, ou à extraire du cas réel en retirant l'attendu ? Extraire coûte moins cher,
-  mais un cas retouché n'est plus gelé, donc ne s'exerce plus sur les mêmes refus.
+  mais un cas retouché n'est plus gelé, donc ne s'exerce plus sur les mêmes refus. — **Tranché le
+  2026-10-18** : écrit de zéro, arbres reconstruits par script, aucune référence du framework
+  ([ADR-036](../DECISIONS.md), Séance 60).
 - **Un document ou une série** : sept chapitres dans un fichier de 4 000 mots, ou sept pages liées ? Le
   dépôt préfère les pages courtes ; le lecteur préfère un seul fichier à imprimer.
 - **Ce que le guide ne couvrira pas** : l'écriture d'un cas (lecture C), les trois sources de trace autres
@@ -319,9 +325,10 @@ le `--help` du harnais, la
   lignes, `grep -c 'refuse('` → 148, `banc-harnais.sh` → 112/112 `PASS`, `exit 0`. H1 à H5 sont appliqués,
   et `preflight` exige `--run` : un guide écrit avant ce commit donnerait des commandes qui sortent en
   `exit 2`. C'est la raison de cette relecture ;
-- **le guide est écrit pour sa version minimale** : les trois chapitres de la section 10 vivent depuis le
-  2026-10-18 dans [le guide](../guide-du-test-de-bout-en-bout.md) (256 lignes, sorties observées, `liens.mjs`
-  35 fichiers et 0 lien mort) ; ce document reste le plan des quatre autres chapitres ;
+- **le guide est écrit pour sa version minimale** : les chapitres de la section 10 vivent depuis le
+  2026-10-18 dans [le guide](../guide-du-test-de-bout-en-bout.md) (256 lignes à l'écriture, **355** depuis le
+  chapitre du tableau, Séance 56 ; sorties observées, `liens.mjs` 35 fichiers et 0 lien mort le 2026-10-18,
+  **38 fichiers et 0 lien mort** après la Séance 56) ; ce document reste le plan des trois autres chapitres ;
 - **le rendu Mermaid** a été vérifié **après** écriture, pas pendant : les cinq blocs extraits se rendent
   (`mmdc` 11.4.2, `PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome`) en 5/5 `exit 0`, 0 nœud d'erreur,
   aucun `Syntax error` ; ce que le rendu ne prouve pas, c'est qu'une figure soit *utile* : seule la lecture
@@ -369,13 +376,15 @@ chapitres correspondants ne s'écrivent pas, même en brouillon.
 | # | Ce qui manque | Ce que ça bloque | Qui tranche |
 | --- | --- | --- | --- |
 | 1 | un reçu réel : `find . -name receipt.json` rend **0** au 2026-10-18 | le guide lit un reçu de banc et le dit ; un reçu réel donnerait au chapitre 1 sa pièce vraie et fermerait l'exercice 4 | le second run (§13) |
-| 2 | la forme mécanique du tableau de F1 (des lignes de tableau ? au moins deux ? dans un message `assistant` ?) | H6, donc la seconde moitié de la fenêtre | l'auteur de la spec H6 |
-| 3 | un cas jouet, à écrire ou à extraire du cas réel | l'amorce des chapitres, qui n'a aucun exemple montrable | l'auteur du guide |
+| 2 | la forme mécanique du tableau de F1 (des lignes de tableau ? au moins deux ? dans un message `assistant` ?) — **fermé** : H6 l'écrit (Séance 55) et le chapitre 4 du guide l'enseigne (Séance 56) | H6, donc la seconde moitié de la fenêtre | l'auteur de la spec H6 |
+| 3 | un cas jouet, à écrire ou à extraire du cas réel — **fermé** : écrit de zéro, quatre fichiers dans `CASES/`, ADR-036, contrôles 119 à 130, chapitre 5 du guide (Séance 60) | l'amorce des chapitres, qui n'a aucun exemple montrable | l'auteur du guide |
 | 4 | le chapitre 7 : `threads` compte **0** dans le projet du cas | la récompense du parcours | le second run |
 | 5 | les deux décisions du §11 : lecteur A ou C, un fichier ou sept pages, `docs/` ou hors dépôt | le ton et les liens, pas le contenu | l'auteur du guide |
-| 6 | un lecteur observé, ne serait-ce qu'un | les seuils du §3, le protocole du §8, les 40 minutes du §10 restent des hypothèses | une session de 90 minutes |
+| 6 | un lecteur observé, ne serait-ce qu'un — **toujours ouvert** : une lecture interne (l'auteur, les octets du chapitre 5, Séance 60) ne le remplace pas | les seuils du §3, le protocole du §8, les 40 minutes du §10 restent des hypothèses | une session de 90 minutes |
 | 7 | la place de `last-message.md` dans la chaîne (§13) | l'attestation de la pièce (2) sur un run mené par la chaîne | l'opérateur, au premier run |
 | 8 | les sorties attendues, versées telles quelles | les blocs du §4 sont décrits, jamais cités depuis une exécution datée | le second run |
 
-Les points 1, 4, 7 et 8 tombent ensemble : **un seul run les ferme**. Les points 2, 3 et 5 ne demandent
-qu'une décision, et le point 6 une heure de quelqu'un qui n'a pas écrit le guide.
+Les points 1, 4, 7 et 8 tombent ensemble : **un seul run les ferme**. Le point 5 ne demande qu'une décision,
+et le point 6 une heure de quelqu'un qui n'a pas écrit le guide. Le point 2 est fermé par H6 (Séance 55),
+son chapitre par la Séance 56 ; le point 3 par le cas jouet du 2026-10-18 (ADR-036), dont le chapitre 5
+traverse la chaîne entière (Séance 60).

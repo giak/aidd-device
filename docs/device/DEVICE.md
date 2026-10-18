@@ -48,8 +48,9 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 118 contrôles, [BANC.md](BANC.md)) et le premier cas gelé (`CASES/` :
-  demande, attendu, gel).
+  (`harness/banc-harnais.sh`, 148 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
+  ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, cinq commandes, ADR-038 à 040) et
+  deux cas gelés (`CASES/` : le cas réel et le cas jouet).
 - **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
   ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
@@ -87,7 +88,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `118/118 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `148/148 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
@@ -101,6 +102,10 @@ de travail déclarée une seule fois, et l'état des arbres avant ;
    l'export du §1.5 et y compte les échanges du fil contre le budget du cas (ADR-030, ADR-031, ADR-032,
    ADR-033) ;
 6. `compare` — l'écart et la phrase de verdict, depuis le reçu seul.
+
+Ces six étapes à la main ont désormais un enchaînement : `node docs/device/harness/orchestrer.mjs`
+(`cas`, `porte`, `suite`, `fin`, `lire`) les appelle dans l'ordre, imprime quatre blocs de narration, et
+laisse à la personne les trois gestes humains ([ORCHESTRATEUR.md](ORCHESTRATEUR.md)).
 
 ## Les noms du v6, et leur foyer
 

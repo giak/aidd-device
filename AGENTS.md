@@ -7,7 +7,13 @@ real ones.
 
 Rules unique to this repository live in its skills, one per nature: `01-consign`: trace, naming,
 frontmatter, drift; `02-memory`: Mnemolite; `03-boundaries`: the four trees; read them before writing
-here, consigning or touching a repository. This repository is the device: remote `origin` is
+here, consigning or touching a repository.
+
+Operator says `test ça` (a skill exercised end to end)|names a skill to test→READ
+`docs/device/ORCHESTRATEUR.md` BEFORE any gesture & FOLLOW it: that page owns the order & what is said;
+`docs/device/harness/orchestrer.mjs` computes, & a refusal is quoted, never rewritten.
+
+This repository is the device: remote `origin` is
 `https://github.com/giak/aidd-device.git`, branch `main` (`git remote -v`, `git ls-remote origin main`).
 Everything below applies everywhere.
 

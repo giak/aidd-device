@@ -62,11 +62,17 @@ ignore.
 
 ## 4. Le geste, dans l'ordre
 
-**4.0 Le dossier du run et la porte, avant d'ouvrir.** — **Passée le 2026-10-18 à `07:02:51`** :
-`docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44/gate.json`, `exit 0`, `gel 0d9a2180`, arbre
-`416ec1f` `porcelain 0 ligne`, texte `832036f7` (254 o), HEAD du dispositif `db61c44` (l'arbre était
-propre, donc le nom du run ne cite aucun travail non commité). Relancer `preflight` sur ce dossier sort
-maintenant en `exit 1` (`existe déjà`) : c'est le refus à éprouver, pas une panne. Depuis l'[ADR-034](../../../DECISIONS.md), le reçu
+**4.0 Le dossier du run et la porte, avant d'ouvrir.** — **Mise à jour du 2026-10-18, avant l'ouverture** :
+deux portes ont été passées pour ce run, une seule est **celle du run**. La première, le 2026-10-18 à
+`07:02:51` (`docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44/gate.json`, `exit 0`, `gel 0d9a2180`, arbre
+`416ec1f` `porcelain 0 ligne`, texte `832036f7` (254 o), HEAD du dispositif `db61c44`, l'arbre était propre)
+précède H6 et est **remplacée** : elle garde sa note datée et ne reçoit aucune pièce du run
+([ADR-037](../../../DECISIONS.md) : le dossier d'un run est la porte la plus récente passée pour son cas
+avant le premier message). La porte du run est la seconde, passée le 2026-10-18 à `07:56:25` :
+`docs/device/runs/2026-10-18-075625-4c39e5c5-dbd85ba/gate.json`, `exit 0`, mêmes gel, arbre et texte, HEAD
+du dispositif `dbd85ba`. Relancer `preflight` sur ce dossier sort maintenant en `exit 1` (`existe déjà`) :
+c'est le refus à éprouver, pas une panne. **Le dossier existe : le bloc ci-dessous ne sert qu'à un run neuf,
+il ne se relance pas ici.** Depuis l'[ADR-034](../../../DECISIONS.md), le reçu
 refuse un dossier de run sans `gate.json` : la porte se passe donc **avant** 4.1, dans le dossier du run, et
 son instant doit précéder le premier message. Le nom est celui du §4.6, et le dossier ne se crée qu'ici :
 
@@ -83,6 +89,12 @@ Attendu : `preflight ok — … ; porte docs/device/runs/…/gate.json`, `exit 0
 `texte.sha256` = `832036f7…`. Un refus arrête tout : **rien ne s'ouvre**. Relancer la même commande sort en
 `exit 1` (`existe déjà`) : une porte ne s'écrase pas, et c'est le premier refus que cette liste fait éprouver
 sans ouvrir de session. `$W` est celui du §1.
+
+> **Mesuré le 2026-10-18** ([répétition à blanc de la clôture](2026-10-18-083743-repetition-a-blanc-de-la-cloture.md)) :
+> `--texte` compare les **octets** du fichier au §5 substitué, l'octet près — un saut de ligne final de trop
+> fait refuser (« 256 octets reçus, 255 attendus »), et la longueur attendue dépend de la racine déclarée :
+> elle se relève au gel par `wc -c` (254 sur la racine réelle), jamais retenue de mémoire. Le fichier
+> `texte-a-remettre.txt` s'écrit donc **sans** saut de ligne final.
 
 **4.1 Ouvrir un fil neuf, vide, en mode direct.** Ni worktree, ni branche, ni « reprendre un fil ».
 

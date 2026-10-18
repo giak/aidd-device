@@ -1,0 +1,34 @@
+{
+  "type": "gate",
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "passe_le": "2026-10-18T07:56:25.728268995+0200",
+  "passe_le_epoch": 1792302985,
+  "repertoire": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json",
+    "empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "gele_le_epoch": 1792095084
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "head": "416ec1f",
+    "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/projects/audio-sync-tool"
+      }
+    ],
+    "refs_distants": [
+      "origin/main",
+      "origin/test/aidd-installation"
+    ]
+  },
+  "texte": {
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/texte-a-remettre.txt",
+    "sha256": "832036f776dcd93724d3db40e0da53c67ba4a138439c8b824f548ed50f384d40",
+    "octets": 254
+  }
+}

@@ -102,6 +102,14 @@ const USAGE = `usage: run.mjs <commande> [options]
   collect  --run <dir> --case <id> --sans-produit          (run sans produit, spec §9 :
            le manifeste est écrit avec fichiers: [] et produit_absent: true, sans
            --from ; sans lui, un run qui ne produit rien ne laissait aucun reçu)
+  texte    --case <id> [--cases <dir>]
+           imprime le §5 du cas, $RACINE substitué par la racine du gel — la même
+           dérivation que la porte et le reçu emploient (texteDuCas), écrite sans saut
+           de ligne final : la redirection vers texte-a-remettre.txt écrit alors
+           exactement les octets que preflight --texte acceptera. La dérivation reste
+           ici, une fois : une
+           deuxième copie dériverait comme deux copies du gabarit d'export auraient
+           dérivé (ADR-032)
   faits    --case <id> --base <desktop-v2.db> --fil <thread> --trace <fichier> --out <faits.json>
            --par <qui> --fin <date -Is> --temoignage <texte> [--attendu-vu oui|non] [--cases <dir>]
            écrit les faits que receipt lira, sans les inventer : session (application, identifiant,
@@ -111,7 +119,12 @@ const USAGE = `usage: run.mjs <commande> [options]
            antérieure au début, et un faits.json déjà écrit. --par, --fin et --temoignage sont
            les trois faits que seule une personne peut donner : rien ne les remplace
   receipt  --run <dir> --case <id> --faits <faits.json> [--verdict conforme|ecart|non concluant]
-           [--limite <texte> ...] [--cases <dir>]
+           [--limite <texte> ...] [--cases <dir>] [--sans-ecrire]
+           --sans-ecrire calcule tout et n'écrit rien : le verdict qu'il proposerait, le
+           nombre de limites et les morsures sont imprimés, et la même commande sans le
+           drapeau écrirait le reçu. C'est ce qui permet de connaître le verdict que les
+           falsificateurs imposent avant de consommer l'unique reçu (§6 : un reçu
+           reconstruit est un témoignage)
            refuse si un fichier du cas ou une référence du gel a changé depuis le gel
            (re-hachage, §3) : le gel est relu sur le disque, jamais cru sur parole. Refait
            aussi le contrôle d'origine du produit, sur le manifeste : toute source
@@ -141,6 +154,10 @@ const USAGE = `usage: run.mjs <commande> [options]
            antérieure au gel, d'un HEAD qui a bougé depuis elle, ou d'un texte qui n'est
            pas le §5 substitué, elle est refusée — et porte figure au reçu avec son
            sha256, que le juge relit.
+           Il lit aussi l'attendu du cas : un falsificateur marqué a_remplir: true
+           (le squelette de la fabrique, ADR-039) ajoute la limite attendu_incomplet et
+           plafonne le verdict à non concluant — l'attendu d'un cas fabriqué dit ce
+           qu'il ne sait pas encore, et le reçu ne le masque pas.
            Il lit enfin la forme mécanique du tableau dans la trace exportée (ADR-035,
            H6) : un bloc d'au moins trois lignes dans une part text d'un message
            assistant, sa deuxième ligne séparatrice, sa première au moins deux cellules.
@@ -188,7 +205,7 @@ const USAGE = `usage: run.mjs <commande> [options]
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CASES_DEFAULT = join(REPO, "docs", "device", "CASES");
-const BOOLEAN_FLAGS = new Set(["help", "refreeze", "sans-produit"]);
+const BOOLEAN_FLAGS = new Set(["help", "refreeze", "sans-produit", "sans-ecrire"]);
 const VERDICTS = new Set(["conforme", "ecart", "non concluant"]);
 const LIMITES = new Set(["mord", "ne mord pas", "non évaluable"]);
 // Labels whose revision the receipt names as its own fields (§6 `framework_rev`, `terrain_rev`).
@@ -1046,6 +1063,7 @@ function cmdReceipt(a) {
   const runDir = resolve(a.required("run"));
   const cas = a.required("case");
   const verdict = a.one("verdict") ?? "non concluant";
+  const sansEcrire = a.has("sans-ecrire");
   if (!VERDICTS.has(verdict)) usage(`--verdict vaut « ${verdict} », attendu : conforme | ecart | non concluant`);
   const casesDir = casesDirOf(a);
   const faitsPath = resolve(a.required("faits"));
@@ -1374,6 +1392,17 @@ function cmdReceipt(a) {
   if (!Number.isInteger(budget) || budget < 1) {
     refuse(`receipt : demande.budget_echanges vaut ${JSON.stringify(budget)}, attendu un entier positif — un budget illisible ne se mesure pas (H4)`);
   }
+  // The factory's expected is a skeleton: the skill's promise falsifier is left for the person to
+  // write, and it is marked `a_remplir: true` (ADR-039). An expectation that says what it does not
+  // know yet cannot conclude: the limit is written, and the verdict is capped here — the cap lives
+  // in the receipt because the receipt is the only piece that decides what a verdict may say. The
+  // flag is read from the expected file itself, never from the gel: the gel hashes a case, it does
+  // not interpret it.
+  const aRemplir = (function cherche(v) {
+    if (v === null || typeof v !== "object") return false;
+    if (Array.isArray(v)) return v.some(cherche);
+    return v.a_remplir === true || Object.values(v).some(cherche);
+  })(attendu);
   // One query: how many `user` messages the thread carries, and the message of rank `budget`, which is
   // the exchange that exhausts the budget when there is one. Null when the rank does not exist.
   const mesuresBudget = lireBase(
@@ -1564,8 +1593,17 @@ function cmdReceipt(a) {
   if (motifRefus.length && verdict !== "non concluant") {
     refuse(`receipt : verdict « ${verdict} » refusé, le verdict suit la preuve (§7) : ${motifRefus.join(" ; ")}`);
   }
+  if (aRemplir && verdict !== "non concluant") {
+    refuse(
+      `receipt : verdict « ${verdict} » refusé — l'attendu du cas porte un falsificateur marqué a_remplir, ` +
+        `et un attendu incomplet plafonne le verdict à « non concluant » tant que la personne ne l'a pas rempli (attendu_incomplet, ADR-039)`,
+    );
+  }
 
   const limites = [...a.all("limite")];
+  if (aRemplir) {
+    limites.push("l'attendu n'a pas de falsificateur de promesse : le jugement ne peut pas dire conforme (attendu_incomplet)");
+  }
   const ambigus = manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch >= gel.gele_le_epoch && f.birth_epoch - gel.gele_le_epoch <= 1);
   if (ambigus.length) {
     limites.push(`naissance à une seconde du gel (résolution du birth) : ${ambigus.map((f) => f.chemin).join(", ")} — la condition 1 du §5 ne les distingue pas`);
@@ -1635,11 +1673,45 @@ function cmdReceipt(a) {
     verdict,
     limites,
   };
+  // The dry run computes everything, refuses everything and writes nothing: it is how a person learns
+  // the verdict the falsifiers impose before the one receipt of the run is consumed. It is not a
+  // shortened path: every refusal above fired as usual, and the pieces it read were read the same way.
+  if (sansEcrire) {
+    const proposition = motifRefus.length
+      ? `non concluant (${motifRefus.length} morsure(s) : ${motifRefus[0]})`
+      : "conforme ou ecart — rien ne mord, la personne tranche (spec §3)";
+    console.log(
+      `receipt (à blanc) — ${cas} : verdict proposé ${proposition} ; produit ${manifeste.fichiers.length} fichier(s) ; ` +
+        `${limites.length} limite(s) ; rien n'a été écrit — sans --sans-ecrire, la même commande écrirait ${display(receiptPath)}`,
+    );
+    return;
+  }
   writeJson(receiptPath, recu);
   console.log(
     `receipt ok — ${cas} : verdict ${verdict} ; produit ${manifeste.fichiers.length} fichier(s) ; ` +
       `${limites.length} limite(s) ; ${display(receiptPath)}`,
   );
+}
+
+// ---------------------------------------------------------------------------
+// texte — the §5, substituted, printed once
+// ---------------------------------------------------------------------------
+// The text that goes to the session is derived here and nowhere else: `preflight --texte` compares
+// a file to this derivation byte for byte, the receipt re-derives it against the gate, and the
+// orchestrator writes the file by running this command. A second derivation would drift exactly the
+// way a second export template would have (ADR-032) — and the failure would be silent: a path that
+// resolves nowhere, read by a session that then answers about another directory.
+function cmdTexte(a) {
+  const cas = a.required("case");
+  const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "texte");
+  if (!gel) refuse(`texte : aucun gel ${display(gelPath)} — le §5 substitué se dérive du gel, et rien ne le devine`);
+  const derive = texteDuCas(gel, casesDir, "texte");
+  // No trailing newline: measured 2026-10-18, one extra newline made a 254-byte text weigh 255 and
+  // the gate refused it (256 read against 255 expected on another root). The redirect writes the
+  // bytes as they are, and the gate is the judge of whether they are the case's.
+  process.stdout.write(derive.texte);
 }
 
 // ---------------------------------------------------------------------------
@@ -1730,7 +1802,7 @@ function cmdCompare(a) {
   console.log(`compare ok — ${cas} : verdict ${verdict}, limites « ${limites} » ; ${display(outPath)}`);
 }
 
-const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare };
+const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare, texte: cmdTexte };
 const a = parseArgs(process.argv.slice(2));
 if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
   console.log(USAGE);

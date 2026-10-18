@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 118 contrôles qui éprouvent les refus et les acceptations de run.mjs et du contrôle de liens, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 148 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens et de l'orchestrateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -11,23 +11,27 @@ status: in-progress
 > (ADR-018) puis étendu au reste du harnais (ADR-020). Il change de nom en changeant de foyer :
 > « porte » ne nomme que la première des six commandes qu'il éprouve aujourd'hui ; les ADR-018 et 020,
 > datées, gardent l'ancien nom tel qu'elles l'ont écrit. V0.2 — 2026-10-18 : 118 contrôles, le groupe
-> 113 à 118 éprouve la forme mécanique du tableau (H6, ADR-035).
+> 113 à 118 éprouve la forme mécanique du tableau (H6, ADR-035). V0.3 — 2026-10-18 : **130** contrôles,
+> le groupe 119 à 130 traverse le **cas jouet** de bout en bout (ADR-036). V0.4 — 2026-10-18 : **148**
+> contrôles, le groupe 131 à 148 éprouve l'**orchestrateur interactif** (ADR-038 à 040) : les douze refus
+> du §7 de sa spec, un cas fabriqué puis gelé, un reçu de bout en bout, et le compte des lignes d'un bloc.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 118 contrôles, sans ouvrir
-aucune session et sans écrire dans le dépôt. Il éprouve deux instruments du dossier `harness/` : `run.mjs`,
-le harnais du run (contrôles 1 à 60, puis 64 à 118), et `liens.mjs`, le contrôle de liens des documents du
-dépôt (contrôles 61 à 63).
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 148 contrôles, sans ouvrir
+aucune session et sans écrire dans le dépôt. Il éprouve trois instruments du dossier `harness/` : `run.mjs`,
+le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers traversent un cas
+entier), `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63), et `orchestrer.mjs`,
+l'orchestrateur interactif (contrôles 131 à 148, qui traversent un cas **fabriqué** par lui).
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 118/118 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 148/148 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `118/118 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `148/148 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -47,8 +51,11 @@ Trois arrêts, `exit 2`, avant le premier contrôle :
 
 Un banc dont la pièce est absente compterait des accidents comme des refus : il se tait plutôt.
 
-Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50 et 66 à 118 lisent une base de client factice), un cas
-gelé et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf). Ces outils-là
+Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50, 66 à 118, 124 à 129 et 139 à 143 lisent une
+base de client factice), `git` (les contrôles 133 à 149 fabriquent un cas : copie, clones, gel), un cas gelé
+et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf), et — depuis V0.3 — les
+deux pièces du cas jouet avec son script compagnon : il s'arrête en `exit 2` s'ils manquent, comme du gel du
+cas réel. Ces outils-là
 ne sont pas supposés : `run.mjs` les déclare au `--help` et les sonde au démarrage, et les contrôles 57 à
 60 lui donnent un `PATH` amputé pour l'entendre refuser ([ADR-026](../DECISIONS.md)). Le banc, lui, ne
 sonde pas sa propre machine : il s'arrête ( `exit 2`) si le gel ou l'espace de travail manque, et laisse
@@ -61,9 +68,14 @@ une panne d'outil se voir dans un `FAIL`.
   échoue si l'espace n'est pas rendu propre). C'est la seule écriture hors du dossier jetable.
 - Jamais le dépôt, jamais les quatre arbres, jamais `run.mjs`. Aucune session n'est ouverte. Aucune porte
   n'est écrite à la main : les contrôles 104 à 108 et 112 partent d'un `gate.json` produit par `preflight`,
-  puis retouchent un seul champ.
+  puis retouchent un seul champ. Depuis V0.3, il **lit** `CASES/` — les deux pièces du jouet et son script —
+  et n'y écrit jamais : le cas jouet est reconstruit et re-gelé sous `$B`.
+- Depuis V0.4, il fabrique un cas **sous `$B/orch` uniquement** : les deux origines, leurs clones, les deux
+  pièces et le gel ne quittent pas le dossier jetable, et `--cases` pointe toujours là. Le fil de `suite`
+  est une ligne de la base du banc, recopiée dans un `$HOME` jetable (`$B/orch/home`), jamais lue dans la
+  vraie base du poste : l'orchestrateur découvre la base par `$HOME`, comme sur une machine neuve.
 
-## 4. Les 118, par groupe
+## 4. Les 148, par groupe
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
@@ -83,7 +95,9 @@ une panne d'outil se voir dans un `FAIL`.
 | 88 à 96 | l'export rejoué — deux acceptations, sept refus : intact (accepté, `trace_lue.sha256` égal au fichier et `rejoue_le` écrit), un octet ajouté, lignes permutées, requête retouchée, autre base citée, autre chemin d'export cité, message ajouté à la base après l'export (refus, les deux empreintes à l'appui), `compare` sur une trace intacte (accepté), `compare` sur une trace réécrite entre le reçu et le juge (refus) | ADR-032 |
 | 97 à 102 | le budget d'échanges mesuré contre les messages `user` du fil : un message sous le budget (accepté, `echanges{budget, utilises, epuise_par: null}`), trois messages pour un budget de trois (accepté, `epuise_par` nomme le seq 5 et son horodatage), quatre messages (refus nommant les deux chiffres, le seq en trop, et sans reçu écrit), le même avec `--verdict non concluant` (refus aussi : un dépassement n'est pas un plafond), attendu sans budget (refus), budget illisible (refus) — les deux derniers sur un cas recopié et **re-gelé** | ADR-033 |
 | 103 à 112 | la porte tracée et confrontée : un reçu sans `gate.json` (refus, « aucune porte »), une porte d'un autre cas, d'un autre gel (cas re-gelé), d'un autre arbre, datée avant le gel (refus nommés), un HEAD commité après la porte dans le clone du banc (refus), une porte intacte (acceptée, `porte.sha256`, `porte.gel_empreinte` et `porte.arbre.head_complet` au reçu, et le juge re-hache), une porte déjà là et un `--run` manquant (refus de `preflight`) | ADR-034 |
-| 113 à 118 | la forme mécanique du tableau, et F1 et F2 lues : un tableau de quatre lignes dans une part `text` (accepté, `tableau.present`, `lignes`, `colonnes`, `seq` et `ts` du message qui le porte ; la même forme en `reasoning` est écartée), une ligne de prose seule et un tableau de deux lignes (refus « la trace ne porte aucun tableau »), un `tool` nommé `write_file` portant `input.path` avant le tableau (refus nommant le `seq` et l'outil), un produit né avant l'instant du tableau (refus nommant le chemin), et un fil à outils sans nom ou sans chemin (accepté, aucune écriture comptée, les deux limites écrites). Les traces sont la sortie de la commande d'export du §1.5, jamais tapées à la main : l'export porte `outil` et `chemin_outil` depuis H6 | ADR-035 |
+| 113 à 118 | la forme mécanique du tableau, et F1 et F2 lues : un tableau de quatre lignes dans une part `text` (accepté, `tableau.present`, `lignes`, `colonnes`, `seq` et `ts` du message qui le porte ; la même forme en `reasoning` est écartée), avec un produit né après lui, donc **aucune morsure** de F1, une ligne de prose seule et un tableau de deux lignes (refus « la trace ne porte aucun tableau »), un `tool` nommé `write_file` portant `input.path` avant le tableau (refus nommant le `seq` et l'outil), un produit né avant l'instant du tableau (refus nommant le chemin), et un fil à outils sans nom ou sans chemin (accepté, aucune écriture comptée, les deux limites écrites). Les traces sont la sortie de la commande d'export du §1.5, jamais tapées à la main : l'export porte `outil` et `chemin_outil` depuis H6 | ADR-035 |
+| 119 à 130 | le **cas jouet**, et sa première fixture de bout en bout : le script compagnon rend les mêmes têtes dans deux bacs (119) et refuse un bac déjà peuplé (120) ; le gel du bac rend **l'empreinte du gel committé**, **zéro référence** et des `refs_distants` vides (121) ; la porte s'écrit en nommant l'arbre « travail » (122) et ne s'écrase pas (123) ; le produit se collecte sous `raw/` (124) ; les faits se dérivent du fil — **seize** valeurs (125) ; le reçu conclut `conforme`, tableau présent et falsificateurs muets (126) ; deux refus nommés : **F2** sur un fil sans tableau (127), **F1** sur un produit né avant lui (128) ; le juge écrit son `output.json` (129) ; et les deux pièces du cas tiennent sur une page — ≤ 55 + 60 lignes, ≤ 115 au total (130) | ADR-036 |
+| 131 à 148 | l'**orchestrateur interactif**, un refus par condition du §7 de sa spec : `--skill` absent (131) ou introuvable (132), skill dans un arbre déjà gelé (145), terrain qui est un des quatre arbres (146), cas déjà là (134), aucune racine possible (147), porte déjà là (137), `suite` sans porte (138) ou sur un fil inconnu du client (139), `fin` sans `last-message.md` (141) ou avec un verdict que la preuve interdit (142), `--budget 0` (135), `lire` sans reçu (144) ; deux acceptations : un cas **fabriqué puis gelé** (133) et sa chaîne entière — porte (136), faits, trace et copie (140), reçu et output (143) ; et le compte des lignes : aucun bloc de narration ne dépasse six lignes (148). Le produit naît après le gel, le fil est une ligne de la base du banc recopiée sous un `$HOME` jetable : rien n'ouvre de session, et rien n'écrit dans `CASES/` | ADR-038, ADR-039, ADR-040 |
 
 Chaque groupe porte ses **acceptations** autant que ses refus : un banc qui ne saurait que refuser
 passerait en refusant tout.
@@ -104,6 +118,15 @@ le dernier mot change. Deux règles, tenues par les contrôles existants :
 - **La qualité du cas.** Il dit que le harnais refuse ce qu'il doit refuser, jamais que l'attendu est juste.
 - **Ce qui est propre à une machine.** La naissance des fichiers et le `porcelain` gelé ne voyagent pas
   (§5 de [REPLAY.md](REPLAY.md)) : ces contrôles valent sur la machine qui a gelé, ou sur un gel rejoué
-  au même endroit.
+  au même endroit. Le cas jouet, lui, se reconstruit : son script rend les mêmes têtes ailleurs (119), et
+  le banc le re-gèle dans son bac — c'est ce gel-là qu'il éprouve, jamais celui de `CASES/`, dont il
+  compare seulement l'empreinte.
+- **Le cas jouet n'est pas un run.** Le `conforme` du contrôle 126 est **écrit par nous** sur une fixture :
+  il prouve que la chaîne l'accepte, jamais qu'un run le mériterait ; le budget du jouet n'est jamais
+  consommé, aucune session ne l'ouvre.
+- **Le cas fabriqué du contrôle 133 n'est pas un jugement.** Son attendu porte `a_remplir` par
+  construction : le `non concluant` du contrôle 143 est la valeur que le reçu impose, pas une opinion sur
+  un skill. Les contrôles 131 à 148 éprouvent l'enchaînement et les refus de l'orchestrateur, jamais la
+  qualité d'un cas qu'il aurait fabriqué sur un skill réel.
 - **Rien du dépôt.** Ce n'est ni un crochet, ni une CI, ni un contrôle de l'arbre : rien ne le déclenche
   seul, et il ne vérifie que le harnais (ADR-022). Une dérive du dépôt ne le réveille pas.

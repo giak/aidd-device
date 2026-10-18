@@ -1008,3 +1008,209 @@ donc le reçu d'un vrai run reste à écrire.
 **Falsificateur** : le tableau rendu seulement en `reasoning`, accepté — la forme est fausse ; le même
 tableau déplacé dans la part `text`, refusé — la forme est fausse aussi. Et `write_todos` avant le tableau,
 refusé comme une écriture : c'est le faux positif que la condition de chemin a mesuré, puis écarté.
+
+## ADR-036 — Un second cas, jouet, et sa nature (2026-10-18)
+
+**Contexte** : le plan du guide demande « un cas jouet, à écrire ou à extraire du cas réel », et le banc
+n'avait aucune fixture qui traverse **un cas entier** : chaque commande a ses contrôles, la couture entre
+elles n'était éprouvée que sur des morceaux recollés. Le cas réel ne s'y prête pas : ses arbres pèsent
+60 Mo, vivent sur cette machine, et un run a déjà eu lieu sur son gel.
+
+**Options** : (a) pas de cas jouet, le guide s'en passe ; (b) les arbres du jouet sont ceux du cas réel —
+rien à construire, mais le jouet ne s'ouvre que sur cette machine et n'ajoute rien ; (c) deux dépôts jouets
+**publiés** sur GitHub — l'esprit de l'ADR-017 à la lettre, au prix du réseau, de deux dépôts de plus et de
+quatre fichiers ; (d) deux dépôts de deux fichiers, **reconstruits par un script compagnon** à dates et
+signatures figées, sous la racine déclarée.
+
+**Choix** : (d), et la **forme 1** du brainstorm : la promesse en miniature — un tableau rendu, puis un
+fichier écrit après la réponse figée. Le cas `2026-10-18-085308-cas-jouet` porte deux pièces (demande,
+attendu) et son gel (`empreinte 50664060`, **zéro référence**), le script
+`2026-10-18-085308-cas-jouet-arbres.sh` vit dans `CASES/` avec un **tiret** — donc hors du préfixe `<cas>.`
+qui définit les fichiers du cas et l'empreinte —, et ses arbres portent `refs_distants` **vide** : le gel
+dit « publié nulle part », et le script est la réponse à « où les retrouver ». Les deux têtes sont épinglées
+(`1b3b632a…`, `62c48e16…`) : les figer a demandé de neutraliser trois réglages de git qui auraient pu
+réécrire les octets ou signer le commit (`core.autocrlf`, `commit.gpgsign`, nom et courriel posés par le
+script). Cinq falsificateurs, les **mêmes identifiants** que le cas réel pour que le guide les nomme une
+fois : F1 (produit né avant le tableau), F2 (aucun tableau, ou une écriture avant lui), F3 (chemin hors du
+§6), F5 (écriture hors du répertoire de travail), F8 (aucun produit) ; budget de **deux** échanges, qu'exige
+la lecture du budget au reçu (H4, ADR-033).
+
+**Conséquences** : `CASES/` porte son premier second cas ; le banc passe de **118 à 130** (contrôles 119 à
+130) et traverse la chaîne entière — gel, porte, export, faits, collect, reçu, juge — sur **un cas**, sans
+session, en refusant deux fois (F2 sans tableau, F1 produit né avant lui) ; `REPLAY.md` gagne le bloc de
+reconstitution du jouet, et le gel du cas réel (`0d9a2180`) n'est pas touché.
+
+**Limites dites** : aucune session n'ouvre ce cas, son budget n'est jamais consommé, et il n'est pas
+publié ; le `conforme` du contrôle 126 est **écrit par nous** sur une fixture — il prouve que la chaîne
+l'accepte, jamais qu'un run le mériterait ; le déterminisme du script vaut pour une machine dont git
+applique les réglages laissés par défaut (les trois neutralisés sont ceux qui l'auraient rompu ici) ; rien
+du client n'est éprouvé par ce cas.
+
+**Falsificateur** : deux exécutions du script sur deux machines rendant des têtes différentes — la
+reconstruction est fausse ; le re-gel du bac rendant une empreinte autre que celle du gel committé — le gel
+committé est faux.
+## ADR-037 — Un run, un dossier : une porte remplacée reste sur place et porte sa note (2026-10-18)
+
+**Contexte** : le second run n'est pas encore ouvert, et **deux portes** l'attendent —
+`docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44/gate.json`, passée le 2026-10-18 à 07:02:51 sur la
+révision de dispositif `db61c44` et **commitée** dans `7e05b9c` (le premier `gate.json` réel), et
+`docs/device/runs/2026-10-18-075625-4c39e5c5-dbd85ba/gate.json`, passée à 07:56:25 sur `dbd85ba` et non
+commitée. Mesuré le 2026-10-18 : les deux sont **identiques** une fois `passe_le` et `passe_le_epoch`
+ôtés — même gel `0d9a2180`, même arbre `416ec1f` et `porcelain` vide, même texte `832036f7` (254 octets).
+Entre les deux, H6 est entré (ADR-035) : le harnais qui produira les pièces n'est plus celui
+que le premier dossier nomme. ADR-034 prescrit qu'une porte s'écrive et que le reçu la
+confronte ; elle ne dit rien d'une porte **remplacée**, ni lequel de deux dossiers est celui du run. Le
+premier dossier porte en outre un `trace/` vide, que git ne suit pas.
+
+**Options** : (a) supprimer le dossier périmé — l'état le plus petit, mais effacerait un passage réel,
+exigerait un commit qui défait un autre, et rien ne dirait ensuite pourquoi une porte neuve est apparue ;
+(b) laisser les deux en l'état — l'ambiguïté reste, et l'opérateur choisit au moment de l'ouverture,
+exactement quand le §4.0 interdit d'improviser ; (c) garder le dossier périmé, l'annoter d'une note datée
+qui nomme sa remplaçante et la raison, et écrire la règle.
+
+**Choix** : (c). Le dispositif ne supprime pas une pièce datée ; il l'annote.
+
+**La règle.**
+
+1. **Un run, un dossier.** Le dossier du run est **la porte la plus récente passée pour ce cas avant le
+   premier message**. Il reçoit la trace, `faits.json`, la copie sous `raw/`, le reçu et le jugement ;
+   aucune pièce du run n'est écrite ailleurs.
+2. **Une porte remplacée reste, et se date.** Toute porte plus ancienne est une pièce close : elle ne reçoit
+   aucune pièce du run, elle n'est jamais réutilisée comme dossier de run, et elle porte une note datée qui
+   nomme sa remplaçante et la raison du remplacement.
+3. **Ce qui remplace une porte** : un commit du dispositif qui touche le harnais depuis son passage (le nom
+   du dossier cite la révision du dispositif, et le harnais qui jugera n'est plus celui-là) ; un re-gel du cas
+   (le reçu refuserait la porte : elle cite une autre empreinte) ; ou un dossier que l'opérateur nomme contre
+   une révision plus récente. Le remplacement se fait **avant** le premier message, jamais pendant le run.
+
+**Conséquences** : le dossier `2026-10-18-070251-4c39e5c5-db61c44` reçoit sa note datée et perd son
+`trace/` vide — **0 entrée**, un artefact, pas une pièce ; la
+[liste de contrôle](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-17-095643-liste-de-controle-ouverture-second-run.md)
+§4.0 reçoit le choix de la porte la plus récente et le renvoi ici ; le numéro **037** décale les trois ADR
+réservées de l'[orchestrateur](tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md)
+en **038, 039, 040**, même geste que celui qui les avait décalées de 036 à 037-039. Le harnais ne change
+pas : `receipt` lit le dossier qu'on lui donne, et rien en lui ne peut dire « lequel est le run » une fois
+deux portes écrites.
+
+**Ce que ce n'est pas** : une mesure. La règle est une discipline rendue visible, comme `attendu_vu` : ce
+qui la rend vraie, c'est que le dossier choisi porte toutes les pièces, et qu'aucune autre n'en porte. Elle
+ne remplace pas ADR-034, elle en règle le cas qu'elle avait laissé ouvert.
+
+**Falsificateur** : un run dont la trace ou le reçu vivent dans un dossier qui n'est pas la porte la plus
+récente passée pour son cas avant son premier message ; ou une porte remplacée sans sa note.
+
+## ADR-038 — L'orchestrateur est un couple page + commande, et la page ne recopie aucun refus (2026-10-18)
+
+**Contexte** : une personne qui ne connaît pas ce dépôt ne peut aujourd'hui traverser un test qu'en lisant
+la conduite, le harnais, les cas et le banc — quatre pages, dont aucune ne dit « commence ici ». Le
+[brainstorm](brainstorm/2026-10-18-070921-orchestrateur-interactif-du-test.md) §3 a écarté les trois
+formes possibles (un seul script, une page seule, un couple) au profit d'un **couple** : une page qui dit
+ce qui se dit et quand, une commande qui calcule. La raison est la dérive : un texte de refus recopié dans
+une page cesse d'être vrai au premier commit qui change le harnais, et personne ne le remarque, parce
+qu'une page ne teste pas.
+
+**Options** : (a) la page seule, avec les commandes et les refus copiés — lisible, et fausse dès le
+lendemain ; (b) la commande seule, sans page — exacte, et muette sur ce qu'une personne doit faire des
+trois gestes humains ; (c) le couple, la page renvoyant aux refus par leur condition, la commande les
+imprimant.
+
+**Choix** : (c).
+
+**La règle.**
+
+1. **La page ne recopie aucun texte de refus.** Elle nomme la condition et le renvoi ; le texte vient du
+   harnais, recopié tel quel par l'orchestrateur, jamais reformulé.
+2. **La commande n'improvise aucun contrôle.** Chaque garantie (gel re-haché, porte écrite en dernier,
+   produit collecté sous l'arbre gelé, reçu unique) reste dans `run.mjs` ; `orchestrer.mjs` enchaîne et
+   refuse, il ne vérifie pas à nouveau.
+3. **L'orchestrateur imprime quatre blocs et rien d'autre** ([ADR-040](#adr-040--le-contrat-de-narration-quatre-formes-six-lignes-la-commande-avant-sa-sortie-2026-10-18)),
+   et une étape qui refuse arrête la chaîne : il ne contourne pas un refus, ne relance pas la commande qui
+   a refusé, et ne réécrit jamais un reçu existant.
+4. **Il n'ouvre aucune session** : les trois gestes humains restent humains, et le runbook dit lesquels.
+
+**Conséquences** : `docs/device/ORCHESTRATEUR.md` (le runbook) et
+[`harness/orchestrer.mjs`](device/harness/orchestrer.mjs) (les cinq sous-commandes) naissent ensemble ; le banc
+gagne les contrôles **131 à 148**, un par refus du §7 de la spec plus les acceptations et le compte des
+lignes ; `suite` gagne `--produit`, parce que le chemin du produit est une lecture du skill que la fabrique
+ne fait pas, et deux refus qui n'étaient pas au tableau : aucun produit nommé, et un produit hors de l'arbre
+travail.
+
+**Ce que ce n'est pas** : une mesure du dispositif. Le couple rend le parcours lisible, il ne rend pas le
+verdict plus vrai ; un cas fabriqué le dit lui-même (attendu incomplet, [ADR-039](#adr-039--le-squelette-dattendu-sa-marque-a_remplir-et-la-limite-attendu_incomplet-qui-plafonne-le-verdict-2026-10-18)).
+
+**Falsificateur** : un texte de refus présent dans le runbook ; ou une garantie du harnais réécrite dans
+l'orchestrateur, au lieu d'être invoquée.
+
+## ADR-039 — Le squelette d'attendu, sa marque `a_remplir`, et la limite `attendu_incomplet` qui plafonne le verdict (2026-10-18)
+
+**Contexte** : la fabrique de cas ([spec §6](tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md))
+dérive tout ce qui est mécanique — la demande, les deux origines, le gel, les falsificateurs du dispositif
+(F3 à F9) — et ne peut pas dériver **la promesse du skill** : c'est une lecture, et une fabrique qui
+l'inventerait produirait un attendu plausible et faux. Le brainstorm §5 laissait trois issues : n'accepter
+qu'un skill qui a déjà un cas, écrire un squelette avec la promesse à remplir, ou déduire la promesse de la
+`description` du skill.
+
+**Options** : (a) refuser tout skill sans cas existant — sûr, et stérile : la fabrique ne fabrique rien ;
+(b) le squelette, la promesse marquée à remplir, et un verdict qui dit qu'il ne sait pas ; (c) déduire un
+falsificateur de forme de la `description` — ne marche que sur les skills dont la promesse est un ordre
+vérifiable, et ment sur les autres.
+
+**Choix** : (b).
+
+**La règle.**
+
+1. **La fabrique écrit un squelette** : les falsificateurs du dispositif d'emblée, la promesse du skill
+   marquée `{"id": "P", "a_remplir": true}`.
+2. **Le reçu lit la marque dans l'attendu, jamais dans le gel.** Le gel hache un cas, il ne l'interprète
+   pas ; et un attendu relu depuis le gel pourrait mentir sur son propre contenu.
+3. **La marque pose une limite et plafonne le verdict** : `limites` porte
+   « l'attendu n'a pas de falsificateur de promesse : le jugement ne peut pas dire conforme
+   (attendu_incomplet) », et un verdict autre que `non concluant` est refusé, avec le motif.
+4. **Le plafond vit dans `receipt`**, pas dans l'orchestrateur : le reçu est la seule pièce qui décide ce
+   qu'un verdict a le droit de dire, et un plafond hors du reçu se contournerait en appelant le harnais.
+
+**Conséquences** : `receipt` gagne la lecture récursive de la marque, la limite et le refus ; le contrat de
+sortie de `run.mjs` ne bouge pas ; l'orchestrateur n'écrit jamais un verdict que le reçu refuserait, et
+`fin` demande d'abord à blanc la valeur imposée. Mesuré le 2026-10-18 sur un cas fabriqué : `conforme`
+refusé nommant `attendu_incomplet`, `non concluant` écrit avec la limite, et un reçu de banc qui porte
+exactement une limite (contrôles 142 et 143).
+
+**Ce que ce n'est pas** : une mesure de la qualité. Un `non concluant` dû à l'attendu incomplet ne dit rien
+du skill : il dit que le juge n'a pas encore de quoi le juger.
+
+**Falsificateur** : un reçu `conforme` sur un cas dont l'attendu porte encore `a_remplir` ; ou une limite
+`attendu_incomplet` écrite sans que le verdict soit plafonné.
+
+## ADR-040 — Le contrat de narration : quatre formes, six lignes, la commande avant sa sortie (2026-10-18)
+
+**Contexte** : le brainstorm §3 promet qu'une personne qui ne connaît rien au dépôt finit sans lire une
+autre page que ce que l'orchestrateur imprime (AC1 de la [spec](tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md)).
+Une sortie de console brute ne tient pas cette promesse : elle dit ce qui est arrivé, jamais ce qui devait
+arriver, et une sortie recopiée sans sa commande ne se rejoue pas.
+
+**Options** : (a) laisser chaque commande imprimer ce qu'elle veut — lisible pour qui l'a écrite, opaque
+pour les autres ; (b) un bloc unique et long par exécution — complet, et illisible ; (c) quatre formes
+fermées, six lignes au plus, la commande précédant sa sortie.
+
+**Choix** : (c).
+
+**La règle.**
+
+1. **Quatre formes, et rien d'autre** : `▸ ÉTAPE n/N`, `▸ REFUS`, `▸ VERDICT`, `▸ FIN`.
+2. **Six lignes au plus**, `▸` compris, une ligne vide entre deux blocs, et **rien entre elles**.
+3. **La commande précède sa sortie** : `commande` dit ce qui a été lancé, `obtenu` recopie la console —
+   jamais un résumé, et jamais une sortie sans sa commande.
+4. **Un refus n'est pas reformulé** : `▸ REFUS` recopie le texte du harnais, puis dit ce qu'il empêche et
+   le geste qui suit, ou « rien : cette étape s'arrête ici ».
+5. **Le verdict dit ce qu'il n'atteste pas** : la dernière ligne de `▸ VERDICT` répète que le reçu atteste
+   qu'un run a eu lieu, jamais que le travail vaut.
+
+**Conséquences** : les quatre formes sont imprimées par `orchestrer.mjs` et écrites dans le runbook ; le banc
+les compte (contrôle 148 : aucun bloc de plus de six lignes sur la sortie de `lire`) ; la forme est un
+format, pas un style — un bloc de sept lignes est un défaut, et le contrôle le dit.
+
+**Ce que ce n'est pas** : une preuve de clarté. Le compte des lignes mesure la forme, jamais si la personne
+a compris ; AC1 ne se mesure qu'avec un lecteur étranger, et il n'a pas encore été mesuré.
+
+**Falsificateur** : une sortie de l'orchestrateur qui porte un bloc hors des quatre formes, plus de six
+lignes, ou une sortie sans la commande qui l'a produite.

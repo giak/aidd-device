@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 148 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens et de l'orchestrateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 153 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens et de l'orchestrateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -15,23 +15,30 @@ status: in-progress
 > le groupe 119 à 130 traverse le **cas jouet** de bout en bout (ADR-036). V0.4 — 2026-10-18 : **148**
 > contrôles, le groupe 131 à 148 éprouve l'**orchestrateur interactif** (ADR-038 à 040) : les douze refus
 > du §7 de sa spec, un cas fabriqué puis gelé, un reçu de bout en bout, et le compte des lignes d'un bloc.
+> V0.5 — 2026-10-18 : **153** contrôles ; 149 à 153 : `cas` crée son dossier `--cases`, un dépôt de skill ou un
+> terrain sale est **refusé** et `--tel-quel` porte l'arbre de travail (ADR-042), et l'annexe du guide est
+> comparée à l'usage réel de l'orchestrateur — la page ne peut plus nommer une option qui n'existe pas.
+> V0.6 — 2026-10-18 : le compte ne bouge pas, **153** ; le contrôle 153 s'étend à `ORCHESTRATEUR.md` : ses
+> cinq commandes et leurs options contre l'usage réel, et ses douze refus contre la table du §7 de la spec,
+> les contrôles « refus N » du banc et le texte que le code écrit — les deux pages qui parlent des commandes
+> ne peuvent plus mentir en silence.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 148 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 153 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve trois instruments du dossier `harness/` : `run.mjs`,
 le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers traversent un cas
 entier), `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63), et `orchestrer.mjs`,
-l'orchestrateur interactif (contrôles 131 à 148, qui traversent un cas **fabriqué** par lui).
+l'orchestrateur interactif (contrôles 131 à 153, qui traversent un cas **fabriqué** par lui).
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 148/148 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 153/153 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `148/148 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `153/153 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -52,7 +59,7 @@ Trois arrêts, `exit 2`, avant le premier contrôle :
 Un banc dont la pièce est absente compterait des accidents comme des refus : il se tait plutôt.
 
 Il lui faut `bash`, `node`, `sqlite3` (les contrôles 47 à 50, 66 à 118, 124 à 129 et 139 à 143 lisent une
-base de client factice), `git` (les contrôles 133 à 149 fabriquent un cas : copie, clones, gel), un cas gelé
+base de client factice), `git` (les contrôles 133 à 152 fabriquent un cas : copie, clones, gel), un cas gelé
 et son espace de travail ([REPLAY.md](REPLAY.md) rejoue le gel depuis un clone neuf), et — depuis V0.3 — les
 deux pièces du cas jouet avec son script compagnon : il s'arrête en `exit 2` s'ils manquent, comme du gel du
 cas réel. Ces outils-là
@@ -75,7 +82,7 @@ une panne d'outil se voir dans un `FAIL`.
   est une ligne de la base du banc, recopiée dans un `$HOME` jetable (`$B/orch/home`), jamais lue dans la
   vraie base du poste : l'orchestrateur découvre la base par `$HOME`, comme sur une machine neuve.
 
-## 4. Les 148, par groupe
+## 4. Les 153, par groupe
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
@@ -98,6 +105,7 @@ une panne d'outil se voir dans un `FAIL`.
 | 113 à 118 | la forme mécanique du tableau, et F1 et F2 lues : un tableau de quatre lignes dans une part `text` (accepté, `tableau.present`, `lignes`, `colonnes`, `seq` et `ts` du message qui le porte ; la même forme en `reasoning` est écartée), avec un produit né après lui, donc **aucune morsure** de F1, une ligne de prose seule et un tableau de deux lignes (refus « la trace ne porte aucun tableau »), un `tool` nommé `write_file` portant `input.path` avant le tableau (refus nommant le `seq` et l'outil), un produit né avant l'instant du tableau (refus nommant le chemin), et un fil à outils sans nom ou sans chemin (accepté, aucune écriture comptée, les deux limites écrites). Les traces sont la sortie de la commande d'export du §1.5, jamais tapées à la main : l'export porte `outil` et `chemin_outil` depuis H6 | ADR-035 |
 | 119 à 130 | le **cas jouet**, et sa première fixture de bout en bout : le script compagnon rend les mêmes têtes dans deux bacs (119) et refuse un bac déjà peuplé (120) ; le gel du bac rend **l'empreinte du gel committé**, **zéro référence** et des `refs_distants` vides (121) ; la porte s'écrit en nommant l'arbre « travail » (122) et ne s'écrase pas (123) ; le produit se collecte sous `raw/` (124) ; les faits se dérivent du fil — **seize** valeurs (125) ; le reçu conclut `conforme`, tableau présent et falsificateurs muets (126) ; deux refus nommés : **F2** sur un fil sans tableau (127), **F1** sur un produit né avant lui (128) ; le juge écrit son `output.json` (129) ; et les deux pièces du cas tiennent sur une page — ≤ 55 + 60 lignes, ≤ 115 au total (130) | ADR-036 |
 | 131 à 148 | l'**orchestrateur interactif**, un refus par condition du §7 de sa spec : `--skill` absent (131) ou introuvable (132), skill dans un arbre déjà gelé (145), terrain qui est un des quatre arbres (146), cas déjà là (134), aucune racine possible (147), porte déjà là (137), `suite` sans porte (138) ou sur un fil inconnu du client (139), `fin` sans `last-message.md` (141) ou avec un verdict que la preuve interdit (142), `--budget 0` (135), `lire` sans reçu (144) ; deux acceptations : un cas **fabriqué puis gelé** (133) et sa chaîne entière — porte (136), faits, trace et copie (140), reçu et output (143) ; et le compte des lignes : aucun bloc de narration ne dépasse six lignes (148). Le produit naît après le gel, le fil est une ligne de la base du banc recopiée sous un `$HOME` jetable : rien n'ouvre de session, et rien n'écrit dans `CASES/` | ADR-038, ADR-039, ADR-040 |
+| 149 à 153 | `cas` crée son dossier `--cases` quand il n'existe pas encore (149, le premier geste du guide utilisateur plantait en `ENOENT`) ; un dépôt de skill **sale** est refusé, les fichiers nommés (150), et `--tel-quel` porte l'arbre de travail dans la copie — la modification non commitée s'y trouve (151) ; un terrain sale est refusé (152) ; et les **deux pages qui parlent des commandes** ne peuvent plus mentir en silence (153) : chaque option de l'annexe du guide utilisateur existe dans l'usage réel et les cinq commandes offertes y sont nommées ; le runbook d'`ORCHESTRATEUR.md` est confronté au **code** — ses cinq commandes et chacune de leurs options contre l'usage réel, ses douze refus contre la table du §7 de la spec, un contrôle « refus N » du banc au code de sortie de cette table, et le texte attendu de chaque refus dans `orchestrer.mjs` ou `run.mjs` ; un échec se **nomme** : la ligne `FAIL` est suivie des confrontations rompues, une par ligne (`$B/153-detail`), sans que le compte ni l'`exit` changent | ADR-042 |
 
 Chaque groupe porte ses **acceptations** autant que ses refus : un banc qui ne saurait que refuser
 passerait en refusant tout.
@@ -126,7 +134,13 @@ le dernier mot change. Deux règles, tenues par les contrôles existants :
   consommé, aucune session ne l'ouvre.
 - **Le cas fabriqué du contrôle 133 n'est pas un jugement.** Son attendu porte `a_remplir` par
   construction : le `non concluant` du contrôle 143 est la valeur que le reçu impose, pas une opinion sur
-  un skill. Les contrôles 131 à 148 éprouvent l'enchaînement et les refus de l'orchestrateur, jamais la
+  un skill. Les contrôles 131 à 153 éprouvent l'enchaînement et les refus de l'orchestrateur, jamais la
   qualité d'un cas qu'il aurait fabriqué sur un skill réel.
+- **Un texte, pas une branche.** Le contrôle 153 lit les sources du harnais : il dit qu'un texte de refus
+  attendu par le banc y vit, jamais que la branche qui le produit est celle qui s'exécute — ce comportement
+  est tenu par les contrôles de refus eux-mêmes, qui lancent la commande. Une occurrence du même texte
+  ailleurs dans le code le satisfait : `aucune porte`, renommé dans `orchestrer.mjs`, y survit dans `run.mjs`
+  (refus du reçu) et le contrôle ne voit pas la différence. Le détail imprimé sous `FAIL` nomme la
+  **confrontation** rompue (l'option, la commande, le refus, la sortie), jamais la branche ni la cause.
 - **Rien du dépôt.** Ce n'est ni un crochet, ni une CI, ni un contrôle de l'arbre : rien ne le déclenche
   seul, et il ne vérifie que le harnais (ADR-022). Une dérive du dépôt ne le réveille pas.

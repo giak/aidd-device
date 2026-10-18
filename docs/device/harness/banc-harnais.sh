@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 148 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 153 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -956,6 +956,57 @@ git -C "$B/sale-terrain" add -A
 git -C "$B/sale-terrain" -c user.name=banc -c user.email=banc@invalid -c commit.gpgsign=false commit -q -m banc
 printf '\n// non commite\n' >> "$B/sale-terrain/README.md"
 controle "152 refus 13, terrain sale" 0 refus-nomme 1 "le terrain" bash -c "node '$ORCH' cas --skill '$OSKILL' --terrain '$B/sale-terrain' --id sale2 --racine '$O' --cases '$O/cases-sale' </dev/null"
+# Les deux pages qui parlent des commandes sont confrontees au code : l'annexe du guide et le runbook
+# d'ORCHESTRATEUR.md. Chaque option nommee doit exister dans l'usage reel, les cinq commandes offertes
+# doivent y etre nommees, et les douze refus du runbook doivent etre ceux du §7 de la spec, chacun
+# eprouve par un controle du banc dont le texte attendu vit dans le code. Un renommage cote code, et
+# aucune des deux pages ne peut plus mentir en silence (drift : le guide a omis `--tel-quel`).
+# En cas d'echec, le controle ecrit ses confrontations rompues dans $B/153-detail, imprimees sous sa
+# ligne FAIL : le compte et l'exit ne changent pas, seul le silence tombe (une page qui ment se nomme).
+controle "153 guide et runbook contre le code" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+let usage='';try{execFileSync('node',['$ORCH'],{encoding:'utf8'});}catch(e){usage=(e.stdout||'')+(e.stderr||'');}
+const guide=fs.readFileSync('$REPO/docs/guide/guide-utilisateur.md','utf8');
+const annexe=(guide.split(/\n## Annexe/)[1]||'');
+const q=String.fromCharCode(96);
+const options=[...new Set(annexe.match(/--[a-z][a-z-]*/g)||[])];
+const inconnues=options.filter(o=>!usage.includes(o));
+const offertes=['cas','porte','suite','fin','lire'].filter(c=>usage.split('\n').some(l=>l.startsWith('  '+c+' ')));
+const nonNommees=offertes.filter(c=>!annexe.includes('| '+q+c+q+' |'));
+const sections={};let cur=null;for(const l of usage.split('\n')){const m=l.match(/^  ([a-z][a-z-]*) +--/);if(m){cur=m[1];sections[cur]=l;}else if(cur&&l.startsWith('       '))sections[cur]+='\n'+l;}
+const runbook=fs.readFileSync('$REPO/docs/device/ORCHESTRATEUR.md','utf8');
+const lignes=[...runbook.matchAll(/^node docs\/device\/harness\/orchestrer\.mjs (\S+) (.*)$/gm)].map(m=>({cmd:m[1],opts:[...m[2].matchAll(/--[a-z][a-z-]*/g)].map(x=>x[0])}));
+const nommees=new Set(lignes.map(l=>l.cmd));
+const cinq=lignes.length===5&&nommees.size===5&&[...nommees].every(c=>sections[c])&&Object.keys(sections).every(c=>nommees.has(c))&&lignes.every(l=>l.opts.every(o=>(sections[l.cmd]||'').includes(o)));
+const spec=fs.readFileSync('$REPO/docs/tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md','utf8');
+const table=((spec.split(/\n## 7\. Les refus/)[1]||'').split(/\n## 8\./)[0]);
+const refus=[...table.matchAll(/^\| (\d+) \|[^|]*\|[^|]*\| (\d+) \|$/gm)].map(m=>({n:+m[1],sortie:+m[2]}));
+const mot=runbook.match(/Les (\S+) conditions sont celles du/);
+const mots={dix:10,onze:11,douze:12,treize:13,quatorze:14,quinze:15,seize:16};
+const douze=mot?(mots[mot[1]]||parseInt(mot[1],10)):NaN;
+const qq=String.fromCharCode(34);
+const banc=fs.readFileSync('$REPO/docs/device/harness/banc-harnais.sh','utf8');
+const codes=fs.readFileSync('$REPO/docs/device/harness/orchestrer.mjs','utf8')+fs.readFileSync('$REPO/docs/device/harness/run.mjs','utf8');
+const eprouves=new Map();
+for(const l of banc.split('\n')){if(!l.startsWith('controle '))continue;const p=l.split(qq);const m=(p[1]||'').match(/refus (\d+),/);const e=(p[2]||'').match(/refus-nomme (\d+)/);if(!m||!e||!p[3])continue;const n=+m[1];if(!eprouves.has(n))eprouves.set(n,[]);eprouves.get(n).push({sortie:+e[1],texte:p[3]});}
+const manque=[];
+const raisons=[];
+if(!annexe)raisons.push('annexe du guide : section ## Annexe introuvable');
+for(const o of inconnues)raisons.push('option '+o+' : absente de l usage de orchestrer.mjs');
+if(offertes.length!==5)raisons.push('usage : '+offertes.length+' commande(s) offerte(s) ['+offertes.join(', ')+'], cinq attendues');
+for(const c of nonNommees)raisons.push('annexe : la ligne de table de '+c+' manque');
+if(lignes.length!==5)raisons.push('runbook §2 : '+lignes.length+' ligne(s) de commande, cinq attendues');
+if(lignes.length===5&&nommees.size!==5)raisons.push('runbook §2 : une commande est nommee deux fois');
+for(const c of nommees)if(!sections[c])raisons.push('runbook §2 : la commande '+c+' n est pas offerte par l usage');
+for(const c of Object.keys(sections))if(!nommees.has(c))raisons.push('runbook §2 : la commande offerte '+c+' n y est pas nommee');
+for(const l of lignes)for(const o of l.opts)if(!(sections[l.cmd]||'').includes(o))raisons.push('runbook §2 : option '+o+' hors de la section d usage de '+l.cmd);
+if(!Number.isFinite(douze))raisons.push('runbook : la phrase qui annonce le nombre de conditions est introuvable');
+if(refus.length!==douze)raisons.push('spec §7 : '+refus.length+' refus numerotes, '+douze+' annonce(s) par le runbook');
+for(let n=1;n<=douze;n++){const r=refus.find(x=>x.n===n),ex=eprouves.get(n)||[];if(!r)manque.push('spec '+n);if(!ex.length)manque.push('banc '+n);if(!r)raisons.push('spec §7 : refus '+n+' absent de la table');if(!ex.length)raisons.push('banc : aucun controle nomme refus '+n+',');for(const e of ex){if(r&&e.sortie!==r.sortie)manque.push('sortie '+n);if(!codes.includes(e.texte))manque.push('code '+n);if(r&&e.sortie!==r.sortie)raisons.push('refus '+n+' : le banc attend '+e.sortie+', la spec '+r.sortie);if(!codes.includes(e.texte))raisons.push('refus '+n+' : le texte attendu ne vit ni dans orchestrer.mjs ni dans run.mjs');}}
+const bon=annexe && offertes.length===5 && inconnues.length===0 && nonNommees.length===0 && cinq && refus.length===douze && manque.length===0;
+if(!bon)fs.writeFileSync('$B/153-detail',(raisons.length?raisons:['confrontation rompue non nommee — lire le code du controle']).join('\n')+'\n');
+process.exit(bon?0:1)"
+if [ -s "$B/153-detail" ]; then sed 's/^/      echec : /' "$B/153-detail"; fi
 
 echo
 echo "$PASS/$TOTAL PASS"

@@ -78,8 +78,8 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `130/130 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
-au matin, avant les douze contrôles du cas jouet) ; les sept champs, observés le 2026-10-18 sur
+**La sortie attendue.** Le banc finit par `153/153 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+au matin, puis `130/130` l'après-midi avant les contrôles 149 à 153) ; les sept champs, observés le 2026-10-18 sur
 `B=/tmp/banc-harnais.icCmQG` :
 
 ```text
@@ -477,7 +477,7 @@ session a travaillé.
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
 | lire un reçu | [ARCHITECTURE.md](../ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](../device/BANC.md) | les 130 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| provoquer un refus | [BANC.md](../device/BANC.md) | les 153 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
 | lire un tableau | [ADR-035](../DECISIONS.md), [spec H6](../tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
 | rejouer un gel | [REPLAY.md](../device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
 | mener un run | [la conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |

@@ -4143,3 +4143,133 @@ tel-quel, donc rien ne dit ce qu'une session fait d'un arbre dont le `porcelain`
 scénario : que fait un agent qui suit le runbook, du début à la fin ? Rien n'est commité.
 
 **Mémoires.** `6b966f30` mise à jour (le refus, `--tel-quel`, les contrôles 150 à 152), pas dupliquée.
+
+## Séance 67 — 2026-10-18 (l'annexe du guide ne peut plus mentir en silence)
+
+**Objectif.** La demande : « ajoute un contrôle de banc qui compare l'annexe du guide aux options
+réellement offertes par l'orchestrateur, pour que la page ne puisse plus mentir en silence. » La dérive
+était acquise : l'annexe de [`docs/guide/guide-utilisateur.md`](guide/guide-utilisateur.md) a décrit quatre
+étapes quand `cas` en offrait cinq par `--tel-quel` (ADR-042, Séance 66), et rien ne l'a signalé.
+
+**Ce qui a été écrit.** Le contrôle **153** de `banc-harnais.sh`, sans toucher au harnais ni à
+l'orchestrateur : il retire la section « Annexe » du guide, en extrait les `--options` nommées, les compare
+à la sortie d'usage de `orchestrer.mjs` (lue par une invocation sans argument, `stdout` ou `stderr`), et
+exige que les cinq commandes que l'usage offre — lues comme les lignes `  <commande> ` — soient nommées
+dans une ligne de la table de l'annexe. Deux dents : aucune option inventée, aucune commande oubliée.
+`BANC.md` passe à **153** (description, lancement, groupes, la ligne du groupe 149 à 153, et le besoin de
+`git` ramené à 133 à 152), `DEVICE.md` et le tableau de bord suivent, et la
+[spec du guide](tasks/2026_10/2026-10-18-170751-guide-utilisateur/2026-10-18-170751-spec.md) gagne son
+**AC6** et une section §9.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **153/153 PASS**, `exit 0`, aucun `FAIL` ; le
+contrôle imprime `PASS  153 annexe du guide contre l'usage reel   exit=0`. Le falsificateur, mesuré à part
+sur trois copies : la logique du banc, extraite telle quelle et pointée sur le guide réel, rend `exit 0` ;
+sur une annexe qui nomme `--option-qui-n-existe-pas`, `exit 1` ; sur une annexe qui renomme `lire` en
+`relire`, `exit 1`. `node docs/device/harness/liens.mjs` → **46** fichiers, **532** liens hors code, **0 mort**, `exit 0`.
+
+**Rectification d'une mesure de cette séance.** Le premier essai du falsificateur a rendu `exit 1` trois
+fois, y compris sur le guide réel : l'extraction du code avait échoué et `node` sortait sur
+`MODULE_NOT_FOUND`. Ces trois `1` ne prouvaient rien ; le contrôle a été réextrait, et les trois codes
+ci-dessus sont ceux du second essai, où seul le guide réel sort `0`.
+
+**Double contrôle des pages vivantes**, demandé par l'opérateur dans la même séance (« tout doit être à
+jour et aligné »). Mesures faites, puis écritures : `wc -l` et `wc -w` sur les fichiers, `grep -c 'refuse('`
+sur `run.mjs` (150 occurrences, dont la définition, donc **149** appels), `node liens.mjs`.
+Corrigés, tous vivants : `README.md` (index du banc, 118 → **153**), `ARCHITECTURE.md` (118 → **153** deux
+fois, et `run.mjs` 1 636 → **1 814** lignes), `guide-du-test-de-bout-en-bout.md` (sortie attendue
+`130/130` → **`153/153`**, et « les 130 contrôles » → **153**), `DEVICE.md` (l'orchestrateur passe d'« ADR-038
+à 040 » à **ADR-038 à 042**), `DASHBOARD.md` (guide pédagogique 355 lignes / 2 986 mots → **485 / 4 275**,
+quatre → **cinq** chapitres ; orchestrateur 768 → **807** lignes ; banc 148/148 → **153/153**, liens 44/504 →
+**46/532** ; harnais 1 742 lignes et « 148 refus » → **1 814** lignes et **149** appels à `refuse(`).
+
+**Laissés tels quels, parce que datés et vrais à leur date** : les séances du journal, les ADR, les
+brainstorm et les specs, `EXPLICATION.md` (sa description dit « l'état réel au 2026-10-15 » : 118 contrôles,
+1 636 lignes), et le §État de `README.md` (2026-10-15 puis 2026-10-16 : 1 636 lignes, 50/50). Les réécrire
+serait falsifier un relevé ; le contrat du dépôt interdit d'y toucher.
+
+**Sondé sans y toucher** : les options `--` nommées par `ORCHESTRATEUR.md`, `BANC.md`, `DEVICE.md` et le
+guide existent toutes dans l'usage de l'orchestrateur, sauf `--refreeze` (commande `run.mjs`, que
+l'orchestrateur n'appelle jamais, §2), `--help` et `--short`/`--porcelain` (celles de `git`) : trois
+mentions justes, aucune dérive.
+
+**Ce que ça ne prouve pas.** Une **omission** reste invisible : une annexe qui tairait une option réelle
+passerait, parce qu'elle renvoie elle-même à `ORCHESTRATEUR.md` pour les options. Le contrôle garde la
+section « Annexe » de **ce** guide, rien d'autre : `ORCHESTRATEUR.md` et les pages du dispositif ne sont pas
+comparées à l'usage réel. Et rien ne le déclenche seul (ADR-004) : c'est un geste, pas un crochet.
+
+**Dérives signalées, non corrigées.** L'ordre `AGENTS.md` — spec avant code — n'a pas été tenu : le
+contrôle existait dans l'arbre de travail avant la section §9 de la spec, qui le consigne.
+
+**Prochaines étapes.** Le premier « test ça » réel, inchangé depuis deux séances. Rien n'est commité.
+
+**Mémoires.** `b353bb30` (le contrôle 153, l'annexe comparée à l'usage réel, la limite de l'omission, et l'alignement des pages vivantes), écrite, mise à jour puis relue.
+
+## Séance 68 — 2026-10-18 (le contrôle 153 confronte le runbook au code)
+
+**Objectif.** Étendre le contrôle 153 à [`docs/device/ORCHESTRATEUR.md`](device/ORCHESTRATEUR.md) : ses cinq
+commandes et ses douze refus confrontés au **code**, plus seulement à la table du guide — demande de
+l'opérateur, reçue après la séance 67, qui avait laissé cette moitié ouverte.
+
+**Fait.** Le bloc `node -e` du contrôle 153 (même numéro, le compte du banc ne bouge pas) lit désormais
+quatre choses de plus, en plus de l'annexe du guide :
+
+- les cinq lignes `node docs/device/harness/orchestrer.mjs <commande> …` du §2 : chaque commande doit être
+  une des cinq que l'usage réel offre, les cinq offertes doivent toutes être nommées, et chaque `--option`
+  d'une ligne doit exister dans la section d'usage de **cette** commande (l'usage est découpé sur ses
+  lignes `  <cmd> `) ;
+- la table du §7 de la spec de l'orchestrateur : douze lignes numérotées 1 à 12 ;
+- le nombre que le runbook annonce (« Les douze conditions sont celles du §7 de la spec ») : il doit être
+  celui de la table, et c'est lui qui fixe combien de refus sont exigés ;
+- pour chaque N de 1 à ce nombre : un contrôle du banc nommé `refus N,`, dont le code de sortie attendu
+  (`refus-nomme`) égale la colonne Sortie de la table, et dont le texte attendu se trouve dans les sources
+  `orchestrer.mjs` + `run.mjs`.
+
+**Fait (suite).** Le contrôle ne rend plus un `exit` muet. Il collecte ses confrontations rompues dans des
+raisons lisibles ; quand l'une tombe, il écrit `$B/153-detail` puis sort en `1`. La condition de succès est
+l'expression booléenne d'avant, recopiée une fois dans `bon` : mêmes cinq commandes, mêmes options, mêmes
+douze refus, mêmes textes. Le fichier n'est pas écrit quand tout passe. Le banc l'imprime sous sa ligne
+`FAIL`, préfixé `echec :`, par un `sed` **hors** de `controle` — qui, lui, jette stdout et stderr : le
+compte et l'`exit` du contrôle ne bougent pas, seule la raison apparaît. Ce qui est nommé : option absente
+de l'usage, commande offerte non nommée au §2, commande du §2 inconnue de l'usage, option hors de la
+section d'usage de sa commande, nombre de lignes ou de refus qui ne colle pas, refus absent de la table du
+§7, refus sans contrôle du banc, sortie qui diffère entre la table et le banc, texte attendu introuvable
+dans les deux sources — et en dernier recours `confrontation rompue non nommee`, pour qu'un échec ne se
+taise jamais.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **153/153 PASS**, `exit 0`, **0 `FAIL`**, ligne
+`PASS  153 guide et runbook contre le code            exit=0` (26 s). Falsificateur **extrait des octets du
+banc** (charge utile `node -e` relue dans le fichier) et pointé sur une copie `/tmp/blink` de six fichiers :
+témoin `exit 0` ; `--bidule` ajouté à la ligne `cas` → `1` ; `lire` renommé `relire` → `1` ; treizième refus
+dans la table du §7 → `1` ; refus 11 sortie `2`→`1` → `1` ; contrôle « refus 7 » renommé « refus 77 » → `1` ;
+`hors domaine` renommé dans `orchestrer.mjs` → `1`. Un cas rend `0` : `aucune porte` renommé dans
+`orchestrer.mjs`, parce que le même texte vit aussi dans `run.mjs` (refus du reçu) — le contrôle lit des
+textes dans les sources, pas la branche qui s'exécute, et le §6 du [BANC](device/BANC.md) le dit.
+`node docs/device/harness/liens.mjs` → **46** fichiers, **536** liens hors code, **0 mort**, `exit 0`.
+
+Détail du contrôle, éprouvé sur six mutations d'une copie du dépôt (charge utile de **4 685** octets
+extraite des octets du banc, sept passes) : témoin `exit 0`, aucun détail ; `--bidule` sur la ligne `cas` →
+« runbook §2 : option --bidule hors de la section d usage de cas » ; `lire`→`relire` → cinq lignes (annexe,
+commande inconnue, commande non nommée, deux options hors section) ; treizième refus → « 13 refus
+numerotes, 12 annonce(s) par le runbook » ; refus 11 sortie `2`→`1` → « le banc attend 2, la spec 1 » ;
+contrôle « refus 7 » renommé → « aucun controle nomme refus 7, » ; `hors domaine` renommé → « le texte
+attendu ne vit ni dans orchestrer.mjs ni dans run.mjs » ; les six sortent en `1`. Bout en bout, sur le banc
+réel avec `--bidule` ajouté à la ligne `cas` d'`ORCHESTRATEUR.md` : `FAIL  153 guide et runbook contre le
+code            exit=1 attendu=0`, puis `echec : runbook §2 : option --bidule hors de la section d usage de
+cas`, **152/153 PASS**, banc `exit 1` ; le fichier restauré est identique à l'octet (`sha256 9012d7df…`,
+`git diff` vide).
+
+**Dérives signalées, non corrigées.** L'ordre d'`AGENTS.md` — spec avant code — n'est pas tenu, comme à la
+séance 67 : le contrôle étendu a été écrit avant toute section de conception ; il est consigné ici, jamais
+excusé. La spec de l'orchestrateur §8 laisse au banc l'autorité sur ce qui est éprouvé, et le BANC porte la
+description du contrôle.
+
+**Rectifications.** (a) L'en-tête de `banc-harnais.sh` disait encore « 148 controls » — une phrase de
+commentaire ratée par les contrôles 149 à 152 ; corrigée à `153` dans le même geste, et dite ici. (b) Le
+premier jeu de mutations a rendu `0` sur `aucune porte` renommé : ce n'est pas un trou du contrôle mais sa
+nature (un texte, pas une branche) ; la limite est écrite au §6 du BANC, et le contrôle n'a pas été
+affaibli pour la faire disparaître.
+
+**Prochaines étapes.** Le premier « test ça » réel, inchangé depuis deux séances. Rien n'est commité.
+
+**Mémoires.** `b353bb30` (le contrôle 153, étendu au runbook et son détail nommé), mise à jour puis
+relue.

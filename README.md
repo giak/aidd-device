@@ -41,10 +41,11 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 Un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, session `opencode`) et s'est conclu
 **`non concluant`** : la session n'a rendu aucun tableau et n'a rien écrit. Le harnais est écrit
-([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 1 636 lignes, six commandes : `freeze`
+([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 1 814 lignes, six commandes : `freeze`
 — qui déclare une seule fois la racine des espaces de travail, dont dérivent les deux copies du cas —,
 `preflight` — la porte qui refuse d'ouvrir une session ailleurs que dans l'espace de travail gelé, et
-vérifie le texte remis —, `collect` — qui ne prend pour produit que ce que la session a écrit dans cet
+vérifie le texte remis —, `faits` — les seize valeurs que le reçu exigera, dérivées du fil et du gel —,
+`collect` — qui ne prend pour produit que ce que la session a écrit dans cet
 espace, et dont `collect --sans-produit` pour un run qui ne rend rien —,
 `receipt`, `compare`), le premier cas est **re-gelé** après le run, après le déplacement de l'espace de
 travail, puis après le passage à la racine déclarée (empreinte `0d9a2180`,
@@ -65,3 +66,14 @@ projet Freebuff sur `<W>/terrain`, en mode direct et sans *worktree*, puis condu
 courant, ses trous et les prochains pas sont au [tableau de bord](docs/DASHBOARD.md). Et rien n'a encore
 produit d'écart : aucun `output.json` n'existe, `NEGATIVE.md` (casser quelque chose exprès et le voir
 signalé) et `ECART.md` (le compte-rendu rendu au framework) restent à écrire.
+
+**Au 2026-10-18.** Le dispositif a sa face interactive : [ORCHESTRATEUR.md](docs/device/ORCHESTRATEUR.md)
+et `harness/orchestrer.mjs` (807 lignes, cinq commandes — `cas` fabrique et gèle un cas, `porte` écrit le
+texte et autorise l'ouverture, `suite` dérive faits, trace et copie, `fin` demande le verdict imposé puis
+écrit le reçu, `lire` relit sans écrire —), la ligne d'`AGENTS.md` qui route « test ça » vers cette page, et
+le [guide utilisateur](docs/guide/guide-utilisateur.md), qui ne demande aucune commande à la personne. Le
+banc du dépôt passe **153/153** (`exit 0`) et le contrôle de liens ne rend aucun lien mort sur 46 fichiers ;
+les deux pages qui parlent des commandes sont confrontées au code, donc aucune ne peut plus nommer une
+option ou un refus qui n'existe pas. Trois portes ont été passées, et aucune n'a encore reçu de reçu :
+aucun `receipt.json` n'existe. Ce qui reste n'est plus une mesure mais un geste : dire « test ça » et
+ouvrir le fil.

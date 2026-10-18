@@ -4333,3 +4333,26 @@ lecture, donc le bac conservé ne garde que le log.
 **Prochaines étapes.** Rien n'est commité.
 
 **Mémoires.** `b353bb30` (les refus nomment leurs raisons), mise à jour puis relue.
+
+## Séance 71 — 2026-10-18 (l'entrée README rattrape le dispositif)
+
+**Objectif.** Aligner la section État du README, première page lue, sur ce que le dispositif est devenu :
+l'orchestrateur interactif, le banc de 153 contrôles, le harnais à 1 814 lignes.
+
+**Fait.** Le paragraphe du premier run porte désormais `run.mjs` à **1 814** lignes, et sa liste de six
+commandes inclut `faits` — elle en nommait cinq sous le mot « six ». Un troisième paragraphe, daté du
+2026-10-18, nomme `ORCHESTRATEUR.md` et `harness/orchestrer.mjs` (807 lignes, cinq commandes), la ligne
+d'`AGENTS.md` qui route « test ça », le guide utilisateur, le banc à **153/153**, et l'absence de
+`receipt.json` : trois portes passées, aucun reçu. Le compte de liens n'est pas écrit en chiffre dans cette
+page (il bouge avec elle) mais en résultat : aucun lien mort sur 46 fichiers.
+
+**Vérifié.** `node docs/device/harness/liens.mjs` → **539** liens hors code, **0 mort**, `exit 0` (537
+avant : les deux renvois ajoutés ici). Le banc n'est pas relancé : aucun fichier qu'il lit n'a changé.
+
+**Dérives signalées, non corrigées.** Le paragraphe « Au 2026-10-16 » reste une photo datée (banc 50/50) :
+il n'est pas réécrit, la photo vaut à sa date ; `docs/EXPLICATION.md` porte encore « état réel au
+2026-10-15 ».
+
+**Prochaines étapes.** Rien n'est commité ; le premier « test ça » réel reste en attente.
+
+**Mémoires.** `b353bb30` (README aligné), mise à jour puis relue.

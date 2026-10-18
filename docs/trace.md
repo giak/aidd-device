@@ -3293,6 +3293,9 @@ l'entrée de lecture, et cette séance.
 | ch.3, `--run` absent | `exit 2`, « USAGE — --run requis » |
 | ch.3, dossier de run sans porte | `exit 1`, « aucune porte … ne distingue plus un run qui a passé preflight d'un run qui l'a sauté (H5) » |
 | les commandes du guide, rejouées d'un bloc après écriture | codes `0/1/0/1/2/1`, sorties conformes aux blocs cités |
+| `git commit` des six fichiers du guide et de sa consignation | `db61c44`, 30 lignes de message, arbre propre, `origin` non touché |
+| `preflight --run` sur le dossier du second run | `exit 0`, `docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44/gate.json` : huit champs, `gel 0d9a2180`, `arbre 416ec1f` `porcelain []`, `texte 832036f7` (254 o) |
+| les quatre arbres après la porte | inchangés : `framework` `fe48de12` 2 lignes, `audio-sync-tool` `416ec1f` 1 ligne, `framework-origin` `4c39e5c5` 0, copie `416ec1f` 0 |
 
 **Dérives signalées, non corrigées.** Le refus du harnais dit « **le** demande a changé depuis le gel » :
 faute d'accord dans `run.mjs` (ligne ~409), recopiée telle quelle au guide et nommée ici, pas réparée. Le
@@ -3301,21 +3304,83 @@ bord fait foi, la phrase n'est pas retouchée. Et le plan garde ses décisions o
 fichier ou sept pages, cas jouet) tandis que le guide est écrit en un fichier sous `docs/`, ce qui tranche
 le foyer **en pratique** sans que le plan le dise.
 
-**Rectifications.** La Séance 52 finissait par « Rien n'est commité » : faux depuis `a60f2e5`, et `4f86fbd`
+**Rectifications.** Le message du commit `db61c44` est parti tronqué à sa seizième ligne, un héritage mal
+fermé ayant coupé le texte ; `git commit --amend -F` l'a réécrit en entier (30 lignes), et c'est ce hash
+que le nom du dossier de run cite. La Séance 52 finissait par « Rien n'est commité » : faux depuis `a60f2e5`, et `4f86fbd`
 et `84be78f` le précédaient. Le plan du guide affirmait, section 12, que le premier run était « le seul reçu
 réel, et le seul sans porte » : **aucun `receipt.json` ni `output.json` n'existe**, mesuré ce jour par
 `find . -name receipt.json -o -name output.json` (0 ligne) ; le dossier `2026-10-15-171559-…` porte
 `faits.json`, `PV.md`, `ECART.md`, une trace partielle et trois fichiers de refus. Corrigé dans le plan, et
 le guide le dit avant son premier chapitre.
 
+**Et la porte du second run est passée.** Après le commit `db61c44`, qui rend au dispositif un arbre propre
+(le nom d'un run cite une révision, et une révision ne couvre que du commité), le dossier
+`docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44` a été créé et `preflight --run` y a écrit le
+**premier `gate.json` réel du projet**, à `07:02:51` : c'est la première porte d'un vrai run, et son
+instant précède le premier message puisqu'aucun fil n'est encore ouvert. Le second run est ouvert ; il
+n'attend plus que la session.
+
 **OPEN.** Le chapitre 1 lit un reçu de **banc** : sa session est une fixture (`identifiant "banc"`,
 `modele "aucun"`), donc le guide atteste une forme, pas un run. Aucun lecteur n'a suivi la page, donc les
 seuils du plan restent des hypothèses. Le guide de `docs/` n'est pas un guide hors dépôt : la question du
 foyer reste posée. **Rien n'est commité.**
 
-**Prochaines étapes.** Le second run, qui écrira le premier reçu réel et donnera au chapitre 1 sa pièce
-vraie ; puis les chapitres 1 et 4 à 7 du plan ; la forme mécanique du tableau (H6) et le cas jouet.
+**Prochaines étapes.** Le second run : ouvrir un fil neuf, vide et direct, dans le projet
+`terrain-38d8d3f1`, coller le §1 de `kit-ouverture.md`, répondre au plus par les deux réponses figées
+(§2.2 de la conduite), puis clore en cinq commandes à la main, `last-message.md` écrit entre `collect` et
+`receipt` (choix de l'opérateur, ce jour), pour que la pièce soit attestée. Viendront ensuite les
+chapitres 1 et 4 à 7 du plan, la forme mécanique du tableau (H6) et le cas jouet.
 
 **Mémoires.** `c0a251e5` (2026-10-18 04:56:18 UTC) : le guide, ses trois chapitres, ses sorties observées,
 ses limites.
+
+## Séance 54 — 2026-10-18 (l'orchestrateur interactif : « test ça », et le second run resté sans session)
+
+**Objectif.** Répondre à une demande de conception : qu'une personne qui ne connaît pas ce dépôt dise
+« test ça » et qu'un orchestrateur interactif la conduise jusqu'à un verdict, en expliquant chaque geste.
+Brainstorm puis spec, dans cet ordre, et aucun code avant approbation.
+
+**Fait.** Deux pièces écrites. Le [brainstorm](brainstorm/2026-10-18-070921-orchestrateur-interactif-du-test.md)
+(166 lignes, né à `07:09:21`) : la promesse en une phrase, les trois formes possibles de l'orchestrateur et
+la préférence pour un couple page + commande, le partage non négociable entre la machine et les trois
+gestes humains (mesurés : aucune interface de ligne de commande n'ouvre un fil, la base du client est la
+seule source de la trace), la fabrique de cas et son mur (l'attendu d'un skill ne se dérive pas), le contrat
+de narration en six lignes, cinq falsificateurs de l'orchestrateur (O1 à O5), et les décisions ouvertes. La
+[spec](tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md)
+(201 lignes, née à `07:10:18`, `status: pending`) : cinq critères d'acceptation falsifiables, le
+déclencheur et la ligne d'`AGENTS.md` à écrire, cinq sous-commandes (`cas`, `porte`, `suite`, `fin`,
+`lire`) avec leurs options exactes et leurs codes de sortie, ce que chacune écrit et ne touche jamais, les
+quatre formes de bloc de narration, les gabarits de la demande et du squelette d'attendu, douze refus, dix
+contrôles de banc à partir du 113, trois ADR à écrire, quatre décisions qui précèdent le code, et trois
+phases dont la première marche sur le cas existant.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `stat -c %w` sur les deux pièces | `07:09:21` et `07:10:18` ; les préfixes portaient `070840` et `070940`, donc deux renommages, et la ligne « né à » de chaque page porte l'instant mesuré |
+| `node docs/device/harness/liens.mjs`, premier passage | **3 liens morts**, tous dans la spec : deux chemins relatifs qui comptaient un niveau de trop vers le brainstorm, et un `AGENTS.md` à trois remontées au lieu de quatre |
+| `node docs/device/harness/liens.mjs`, après réparation | `exit 0`, 37 fichiers, **392** liens, **0 mort** |
+| l'état du second run, mesuré | `threads` = **0** dans chaque base du client (`~/.config/freebuff-desktop/projects/*/desktop-v2.db`) ; le dossier `docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44` porte sa porte, sans session |
+
+**Dérives signalées, non corrigées.** Aucune sur ces deux pages.
+
+**Rectifications.** La demande à laquelle cette séance répond était : « Le fil est ouvert et le texte
+collé : clore le second run ». **La mesure la contredit** : aucun fil n'a été créé, dans aucune base du
+client, sur aucun projet, et aucune session n'a donc reçu la demande. Rien n'a été clos, et la porte du
+second run reste ouverte sans session. C'est écrit ici plutôt que d'écrire un reçu pour un run qui n'a pas
+eu lieu.
+
+**OPEN.** Rien n'est codé : la spec attend l'approbation, et quatre décisions la précèdent (foyer du
+runbook, ligne d'`AGENTS.md`, terrain par défaut, lecteur visé). La fabrique de cas reste un squelette :
+l'attendu d'un skill ne se dérive pas, la spec le dit et plafonne le verdict en conséquence. La forme
+mécanique du tableau (H6) n'est toujours pas écrite. Le second run attend sa session. **Rien n'est
+commité.**
+
+**Prochaines étapes.** Approbation de la spec et de ses quatre décisions, puis **P1** : `porte`, `suite`,
+`fin`, `lire` sur le cas existant, éprouvés par le second run lui-même ; **P2** : la fabrique de cas
+(`cas`) ; **P3** : le runbook et la ligne d'`AGENTS.md`.
+
+**Mémoires.** `5ca2cb65` (2026-10-18 05:11:38 UTC) : la demande, les deux pièces, leurs mesures, les
+décisions ouvertes et l'état mesuré du second run.
 

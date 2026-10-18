@@ -50,29 +50,39 @@ echo "banc — cas $CAS, dépôt $REPO"
 echo "jetable $B (conservé pour inspection)"
 
 PASS=0; TOTAL=0
-# Un controle peut nommer ses raisons : il pose DETAIL=<fichier> avant l'appel, sa commande y ecrit une
-# raison par ligne quand elle tombe, et `controle` les imprime sous son FAIL, prefixees `echec :`. Le
-# fichier est efface apres lecture et DETAIL remis a vide : aucun controle n'herite du detail d'un autre,
-# et rien ne colle a un numero de controle (drift : le detail du 153 vivait sur une ligne apres son appel).
+# `controle` attribue a chaque controle son fichier de detail ($B/detail.<n>, renommable en posant DETAIL
+# avant l'appel) ; sa commande y ecrit une raison par ligne quand elle tombe, et `controle` les imprime
+# sous son FAIL, prefixees `echec :`. Le fichier est efface apres lecture et DETAIL remis a vide : aucun
+# controle n'herite du detail d'un autre, et rien ne colle a un numero de controle (drift : le detail du
+# 153 vivait sur une ligne apres son appel).
 DETAIL=""
 controle() { # nom, attendu, commande...
   local nom="$1" attendu="$2"; shift 2
   TOTAL=$((TOTAL+1))
+  local detail="${DETAIL:-$B/detail.$TOTAL}" # automatique ; un controle peut le nommer autrement
+  DETAIL="$detail"
   "$@" >/dev/null 2>&1
   local rc=$?
   if [ "$rc" = "$attendu" ]; then PASS=$((PASS+1)); printf 'PASS  %-46s exit=%s\n' "$nom" "$rc"
   else
     printf 'FAIL  %-46s exit=%s attendu=%s\n' "$nom" "$rc" "$attendu"
-    if [ -n "$DETAIL" ] && [ -s "$DETAIL" ]; then sed 's/^/      echec : /' "$DETAIL"; fi
+    if [ -s "$detail" ]; then sed 's/^/      echec : /' "$detail"; fi
   fi
-  if [ -n "$DETAIL" ]; then rm -f "$DETAIL"; fi
+  rm -f "$detail"
   DETAIL=""
 }
 refus-nomme() { # exit attendu, texte attendu, commande... — un refus explicite, pas une trace Node
   local voulu="$1" attendu="$2"; shift 2
-  local sortie rc
+  local sortie rc raisons=()
   sortie=$("$@" 2>&1); rc=$?
-  [ "$rc" = "$voulu" ] && printf '%s' "$sortie" | grep -qF -- "$attendu"
+  if [ "$rc" != "$voulu" ]; then raisons+=("sortie attendue $voulu, vue $rc"); fi
+  if ! printf '%s' "$sortie" | grep -qF -- "$attendu"; then raisons+=("texte attendu introuvable : $attendu"); fi
+  if [ ${#raisons[@]} -gt 0 ] && [ -n "${DETAIL:-}" ]; then
+    printf '%s\n' "${raisons[@]}" > "$DETAIL"
+    printf 'sortie vue : %s\n' "$(printf '%s' "$sortie" | head -n 1 | cut -c1-160)" >> "$DETAIL"
+    return 1
+  fi
+  [ ${#raisons[@]} -eq 0 ]
 }
 
 mkdir -p "$B/cases" "$B/cases2" "$B/trace" "$B/run"

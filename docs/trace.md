@@ -4305,3 +4305,31 @@ s'ajoute sous le verdict, il ne le décide pas.
 **Prochaines étapes.** Rien n'est commité ; le premier « test ça » réel reste en attente.
 
 **Mémoires.** `b353bb30` (le helper `DETAIL`), mise à jour puis relue.
+
+## Séance 70 — 2026-10-18 (les contrôles de refus nomment leurs raisons)
+
+**Objectif.** Étendre le détail d'échec aux contrôles de refus : quand un refus ne tombe pas comme attendu,
+le banc doit dire si c'est la sortie ou le texte qui manque, pas seulement `FAIL`.
+
+**Fait.** `controle` attribue désormais un fichier de détail à chacun (`$B/detail.<n>`), qu'un contrôle peut
+renommer en posant `DETAIL` avant l'appel ; `refus-nomme` l'écrit quand l'une de ses deux dents mord :
+`sortie attendue N, vue M`, `texte attendu introuvable : …`, puis la première ligne de la sortie réellement
+vue (160 caractères au plus). Aucun des contrôles de refus n'a été touché : les 153 appels héritent du
+comportement par `controle` et `refus-nomme`, et ceux qui n'écrivent rien continuent de se taire.
+
+**Vérifié.** Banc : **153/153 PASS**, `exit 0`, **0 `FAIL`**, **aucune** ligne `echec`, aucun `detail.*`
+restant dans le bac (`/tmp/refus-pass.log`). `aucune porte` → `pas de porte` dans `orchestrer.mjs` : seul
+`FAIL  138 refus 8, suite avant la porte              exit=1 attendu=0` tombe, suivi de `echec : texte
+attendu introuvable : aucune porte` et `echec : sortie vue : REFUS — suite : pas de porte … (refus 8)` ;
+**152/153 PASS**, banc `exit 1` ; fichier restauré identique (`sha256 86b4b8ce…`, `git diff` vide). Helper
+extrait des octets du banc (29 lignes) et rejoué seul : refus qui passe → `rc 0`, aucun détail ; sortie
+fausse → `sortie attendue 1, vue 0` et `sortie vue : present` ; texte absent → `texte attendu introuvable :
+aucune porte` ; les deux, via `controle` → `FAIL` puis deux lignes `echec` ; compte **1/2**.
+
+**Dérives signalées, non corrigées.** `refus-nomme` ne nomme que ses deux dents : un refus qui porterait
+plusieurs textes attendus n'en verrait qu'un, l'appel n'en passant qu'un motif. Le détail est effacé après
+lecture, donc le bac conservé ne garde que le log.
+
+**Prochaines étapes.** Rien n'est commité.
+
+**Mémoires.** `b353bb30` (les refus nomment leurs raisons), mise à jour puis relue.

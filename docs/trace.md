@@ -3384,3 +3384,62 @@ commité.**
 **Mémoires.** `5ca2cb65` (2026-10-18 05:11:38 UTC) : la demande, les deux pièces, leurs mesures, les
 décisions ouvertes et l'état mesuré du second run.
 
+## Séance 55 — 2026-10-18 (H6 appliqué : le tableau a une forme, et F1 et F2 la lisent)
+
+**Objectif.** Trancher H6, la dernière zone d'ombre de l'[étude antagoniste](brainstorm/2026-10-17-135619-etude-antagoniste-du-protocole.md)
+§6 : « « le tableau » n'est pas une forme ». F1 et F2 parlaient du message qui porte le tableau, et aucune
+définition mécanique n'existait : écrire la forme, l'instant, les refus et les limites, et les rendre
+mesurables par le banc.
+
+**Fait.** La [spec H6](tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md)
+(159 lignes, `status: done`) et l'[ADR-035](DECISIONS.md). Dans `run.mjs` : `tableauDeTrace` et `cellulesDe`
+(1027-1042), `FORME_TABLEAU` et `MOTS_ECRITURE` ; l'export gagne `outil` et `chemin_outil` (`requeteExport`,
+844-851) ; `receipt.json` gagne `tableau{forme, present, seq, ts, lignes, colonnes}`, trois falsificateurs
+(`tableau_absent`, `ecriture_avant_tableau`, `produit_ne_avant_le_tableau`), trois refus et deux limites.
+Dans le banc, six contrôles (113 à 118) et cinq fils fixtures. Pages remises : la conduite §1.5 et la chaîne
+de la liste de contrôle (nouvelle requête d'export), [BANC](device/BANC.md) (118 contrôles), [DEVICE](device/DEVICE.md),
+[ARCHITECTURE](ARCHITECTURE.md) (la ligne de `receipt`, F1 et F2), [EXPLICATION](EXPLICATION.md),
+[README](../README.md), le [guide](guide-du-test-de-bout-en-bout.md) (sortie observée refaite, sept champs),
+le [tableau de bord](DASHBOARD.md), et la spec de l'orchestrateur (ADR 036 à 038, contrôles à partir de 119).
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **118/118 PASS**, `exit 0`, 0 `FAIL`, jetable `/tmp/banc-harnais.icCmQG` |
+| la sonde du faux positif | `sed "s/ && p.chemin_outil !== null//"` sur `run.mjs`, puis `receipt` sur le fil du contrôle 118 : refus `une écriture précède le tableau : seq 2, outil « write_todos » (§5, F2)`, `exit 1` ; le harnais de sonde a été retiré |
+| la base du client | clés d'un `tool` : `kind,id,toolName,input,status,output,exitCode` ; `write_file` et `str_replace` portent `input.path`, `write_todos` `input.todos`, `run_terminal_command` `command` |
+| `node docs/device/harness/liens.mjs` | 38 fichiers, **415** liens, **0 mort**, `exit 0` (401 avant cette séance : c'est ce texte qui en ajoute, et le contrôle 61 du banc tient le dépôt à zéro) |
+| `node --check run.mjs`, `bash -n banc-harnais.sh` | ok |
+| le second run, mesuré | projet `terrain-38d8d3f1` : **0** fil ; la porte du 2026-10-18 reste ouverte sans session |
+| `git status --porcelain` | 13 fichiers modifiés, 4 non suivis (le brainstorm et la spec de l'orchestrateur, la spec H6, le dossier de run) ; rien n'est commité |
+
+**Dérives signalées, non corrigées.** Le [README](../README.md) §« Au 2026-10-16 » annonce « 50/50 PASS » et
+le haut de page donne `run.mjs` à 1 636 lignes (1 742 au 2026-10-18) : relevés de leur moment, la phrase
+renvoie au tableau de bord pour l'état courant, et la dérive reste nommée sans être retouchée (déjà signalée
+en Séance 53). Le `--help` et le refus de `collect` gardent « le demande a changé » (Séance 53).
+
+**Rectifications.** La spec de l'orchestrateur a été renumérotée dans ce geste : ses ADR passent de 035 à
+038 à 036 à 038, ses contrôles de banc partent de 119 au lieu de 113, et elle passe de 201 à 205 lignes ;
+sa ligne du tableau de bord porte les deux chiffres. La Séance 54 listait encore « la forme mécanique du
+tableau (H6) » parmi ce qui reste : c'est fait. La première écriture de H6 déclarait une famille de mots et rien d'autre, et la mesure l'a
+contredite : `write_todos` porte `write` sans écrire un fichier, donc la règle exige aussi un chemin nommé
+(`input.path`), la sonde est au tableau ci-dessus, et le contrôle 118 éprouve l'exclusion (aucune écriture
+comptée, deux limites dites). La spec a été renommée `2026-10-18-071627-spec-h6.md` : son premier préfixe
+portait `07:15:55`, relevé avant l'écriture, quand `stat -c %w` donne `07:16:27`, et l'écart reste nommé
+en tête de page.
+
+**OPEN.** Aucune session réelle n'a rendu de tableau devant ce harnais : les six contrôles sont des fixtures,
+donc F1 et F2 sont lus, pas exercés par un run. Le cas gelé n'est pas retouché. La forme ne voit pas une
+écriture faite en ligne de commande ; un tableau rendu en `reasoning` ne compte pas, à dessein ; un outil qui
+écrit par un autre champ que `path` échappe à la mesure, et le reçu le dit en limite quand son nom évoque une
+écriture. Le guide n'est toujours pas mesuré par un lecteur. **Rien n'est commité.**
+
+**Prochaines étapes.** Le second run, toujours sans session : ouvrir un fil neuf dans `terrain-38d8d3f1`,
+coller le §1 de `kit-ouverture.md`, puis clore avec la requête d'export de la conduite §1.5, celle du jour.
+Ensuite la spec de l'orchestrateur (P1 : `porte`, `suite`, `fin`, `lire` sur le cas existant) ou la fabrique
+de cas (P2).
+
+**Mémoires.** `db0aa214` (2026-10-18 05:38:41 UTC) : la forme, l'acte d'écriture et sa mesure, l'export, le
+reçu, le banc et l'état du second run.
+

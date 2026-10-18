@@ -55,7 +55,7 @@ révision sous test, le seul chemin que le gel te demande de fournir ailleurs.
 ## 1. Lire un reçu
 
 **Le geste.** Le banc écrit un reçu complet sans ouvrir de session : c'est la seule source de reçu
-aujourd'hui, et c'est dit. Lance-le, puis lis six champs.
+aujourd'hui, et c'est dit. Lance-le, puis lis sept champs.
 
 ```bash
 cd /home/giak/projects/aidd-device
@@ -66,19 +66,21 @@ node -e '
 const r = require(process.argv[1] + "/run/receipt.json");
 const l = (k, v) => console.log(k.padEnd(22), JSON.stringify(v));
 l("verdict", r.verdict); l("porte.passe_le", r.porte.passe_le); l("echanges", r.echanges);
-l("falsificateurs", r.falsificateurs); l("limites", r.limites); l("produit.absent", r.produit.absent);
+l("tableau", r.tableau); l("falsificateurs", r.falsificateurs); l("limites", r.limites);
+l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `112/112 PASS`, `exit 0` ; les six champs, observés le
-2026-10-18 sur `B=/tmp/banc-harnais.Enruf8` :
+**La sortie attendue.** Le banc finit par `118/118 PASS`, `exit 0` ; les sept champs, observés le
+2026-10-18 sur `B=/tmp/banc-harnais.icCmQG` :
 
 ```text
 verdict                "non concluant"
-porte.passe_le         "2026-10-18T06:50:35.151080548+0200"
+porte.passe_le         "2026-10-18T07:26:29.498146165+0200"
 echanges               {"budget":3,"utilises":1,"epuise_par":null}
-falsificateurs         {"birth_anterieur_au_gel":[],"arbre_de_travail_inchange":false,"produit_identique_a_une_empreinte_anterieure":[],"trace_sans_echange_dans_la_fenetre":true}
-limites                ["la session n'a rien produit : le produit est sa sortie brute (§9)","la trace exportée ne porte aucun échange dans la fenêtre du run (§5, condition 2)"]
+tableau                {"forme":"text/assistant, >=3 lignes, 2e ligne séparatrice, >=2 colonnes","present":false,"seq":null,"ts":null,"lignes":0,"colonnes":0}
+falsificateurs         {"birth_anterieur_au_gel":[],"arbre_de_travail_inchange":false,"produit_identique_a_une_empreinte_anterieure":[],"trace_sans_echange_dans_la_fenetre":true,"tableau_absent":true,"ecriture_avant_tableau":[],"produit_ne_avant_le_tableau":[]}
+limites                ["la session n'a rien produit : le produit est sa sortie brute (§9)","la trace exportée ne porte aucun échange dans la fenêtre du run (§5, condition 2)","la trace ne porte aucun tableau rendu par la session (§5, F2)"]
 produit.absent         true
 ```
 
@@ -86,10 +88,13 @@ produit.absent         true
 limites mordent, donc `non concluant`, et c'est le dispositif qui fonctionne, pas un échec.
 `porte.passe_le` est l'instant où la porte du chapitre 3 a été passée, avant le premier message.
 `echanges` mesure le fil contre le budget du cas : un message utilisateur sur les trois autorisés.
-`falsificateurs` est le plafond lu, pas une opinion : `arbre_de_travail_inchange` vaut `false` quand aucun
-produit n'existe ou quand l'arbre a bougé ; `trace_sans_echange_dans_la_fenetre` vaut `true`, et c'est lui
-qui produit la seconde limite. Aucun de ces six champs ne dit si le travail est bon : **un reçu atteste
-qu'un run a eu lieu et comment, jamais que ce qui en est sorti vaut quelque chose.**
+`tableau` porte la forme mécanique du tableau rendu par la session et son instant : ici `present` vaut
+`false`, donc F2 mord et la troisième limite le dit. `falsificateurs` est le plafond lu, pas une opinion :
+`arbre_de_travail_inchange` vaut `false` quand aucun produit n'existe ou quand l'arbre a bougé ;
+`trace_sans_echange_dans_la_fenetre` vaut `true`, et c'est lui qui produit la seconde limite ;
+`tableau_absent` vaut `true` ici, et `ecriture_avant_tableau` et `produit_ne_avant_le_tableau` restent vides
+parce que le reçu ne les mesure que si un tableau existe. Aucun de ces sept champs ne dit si le travail est
+bon : **un reçu atteste qu'un run a eu lieu et comment, jamais que ce qui en est sorti vaut quelque chose.**
 
 **Le refus provoqué.** Le reçu refuse de s'écrire deux fois : essaie.
 
@@ -99,7 +104,7 @@ node docs/device/harness/run.mjs receipt --run "$B/run" --case "$CAS" \
 ```
 
 ```text
-REFUS — receipt : /tmp/banc-harnais.Enruf8/run/receipt.json existe déjà — un reçu reconstruit est un
+REFUS — receipt : /tmp/banc-harnais.icCmQG/run/receipt.json existe déjà — un reçu reconstruit est un
 témoignage, jamais un reçu (§6)   → exit 1
 ```
 
@@ -238,8 +243,9 @@ son falsificateur G7).
 - **Elle ne mène aucun run.** Le chapitre 1 lit un reçu de banc, pas un reçu de run ; le premier reçu réel
   sera écrit par le second run, et il sera le seul à porter un `porte` venu d'une session.
 - **Elle ne couvre que trois pièces sur sept.** Le parcours du plan en compte sept ; écrire les quatre
-  autres demande une session ou une décision (la forme mécanique du tableau, le cas jouet, le foyer du
-  guide). La section 14 du plan tient la liste.
+  autres demande une session ou une décision (le tableau, dont la forme est écrite depuis le 2026-10-18
+  dans le harnais mais que cette page n'enseigne pas encore, le cas jouet, le foyer du guide). La
+  section 14 du plan tient la liste.
 - **Elle ne mesure pas son lecteur.** Les seuils du plan, son protocole à trois lecteurs et ses 40 minutes
   restent des hypothèses : personne n'a encore suivi cette page.
 - **Elle ne juge pas la qualité du cas.** Rejouer un gel dit que le texte scellé est intact, jamais qu'il
@@ -250,7 +256,7 @@ son falsificateur G7).
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
 | lire un reçu | [ARCHITECTURE.md](ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](device/BANC.md) | les 112 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| provoquer un refus | [BANC.md](device/BANC.md) | les 118 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
 | rejouer un gel | [REPLAY.md](device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
 | mener un run | [la conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |
 | écrire un cas | [la spec du run](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) | la demande, l'attendu, le gel, les falsificateurs |

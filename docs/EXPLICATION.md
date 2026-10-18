@@ -285,7 +285,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **112 contrôles**, `112/112 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **118 contrôles**, `118/118 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit

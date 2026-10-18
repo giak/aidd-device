@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 102 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 118 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -642,6 +642,67 @@ controle "111 preflight refus, --run manquant"    2 node "$H" preflight --case "
 node -e "const fs=require('fs'),p='$B/r109/gate.json';const g=JSON.parse(fs.readFileSync(p,'utf8'));
 g.passe_le_epoch=g.passe_le_epoch+1;fs.writeFileSync(p,JSON.stringify(g,null,2)+'\n')"
 controle "112 compare refus, porte réécrite"      0 refus-nomme 1 "ne rend plus son empreinte" node "$H" compare --run "$B/r109" --case "$CAS" --difference x --phrase y --verdict "non concluant" --limites "ne mord pas"
+
+# 113-118 : le tableau a une forme mécanique, et F1 et F2 la lisent (H6, ADR-035). Les fils portent
+# leurs parts, l'export reste celui du §1.5 exécuté par la commande que faits écrit : aucune trace n'est
+# tapée à la main. Un tableau rendu dans une part `reasoning` ne compte pas (113 le mesure : le tableau
+# gardé est celui de la part `text`), trois lignes sont exigées (114, 115), et une écriture est un `tool`
+# dont le nom porte un des mots déclarés ET dont l'entrée nomme un chemin — mesuré sur la base du client
+# de cette machine : `write_file` et `str_replace` portent `input.path`, `write_todos` porte `input.todos`
+# et n'est donc pas une écriture (118 le mesure : aucune écriture avant le tableau, deux limites dites).
+sqlite3 "$DBF" <<SQL
+insert into threads values('banc-tableau','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-tableau',1,'user',$D0,'[{"kind":"text","text":"banc, la demande"}]');
+insert into messages values('banc-tableau',2,'assistant',$(($D0+10000)),'[{"kind":"reasoning","text":"| capability | outil | preuve |\n| --- | --- | --- |\n| r | s | t |\n| u | v | w |"}]');
+insert into messages values('banc-tableau',3,'assistant',$(($D0+20000)),'[{"kind":"text","text":"voici le tableau lu du depot.\n\n| capability | outil | preuve |\n| --- | --- | --- |\n| a | write_file | b |\n| c | str_replace | d |\n\nfin du tableau"}]');
+insert into threads values('banc-prose','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-prose',1,'user',$D0,'[{"kind":"text","text":"banc, la demande"}]');
+insert into messages values('banc-prose',2,'assistant',$(($D0+20000)),'[{"kind":"text","text":"une ligne | seule | ne fait pas un tableau."}]');
+insert into threads values('banc-deux-lignes','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-deux-lignes',1,'user',$D0,'[{"kind":"text","text":"banc, la demande"}]');
+insert into messages values('banc-deux-lignes',2,'assistant',$(($D0+20000)),'[{"kind":"text","text":"| capability | outil |\n| --- | --- |"}]');
+insert into threads values('banc-ecriture','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-ecriture',1,'user',$D0,'[{"kind":"text","text":"banc, la demande"}]');
+insert into messages values('banc-ecriture',2,'assistant',$(($D0+10000)),'[{"kind":"tool","toolName":"write_file","input":{"path":"terrain/aidd_docs/x.md"},"status":"success"}]');
+insert into messages values('banc-ecriture',3,'assistant',$(($D0+20000)),'[{"kind":"text","text":"| capability | outil | preuve |\n| --- | --- | --- |\n| a | b | c |\n| d | e | f |"}]');
+insert into threads values('banc-sans-nom','$W/terrain','local','','','codebuff','aucun',$D0);
+insert into messages values('banc-sans-nom',1,'user',$D0,'[{"kind":"text","text":"banc, la demande"}]');
+insert into messages values('banc-sans-nom',2,'assistant',$(($D0+8000)),'[{"kind":"tool","toolName":"write_todos","input":{"todos":[]},"status":"success"}]');
+insert into messages values('banc-sans-nom',3,'assistant',$(($D0+10000)),'[{"kind":"tool","input":{"command":"ls"},"status":"success"}]');
+insert into messages values('banc-sans-nom',4,'assistant',$(($D0+20000)),'[{"kind":"text","text":"| capability | outil | preuve |\n| --- | --- | --- |\n| a | b | c |\n| d | e | f |"}]');
+SQL
+mkdir -p "$B/trace-h6"
+export-fil banc-tableau "$B/trace-h6/tableau.jsonl" "$B/f113.json" || { echo "ARRET — l'export de 113 ne s'écrit pas"; exit 2; }
+export-fil banc-prose "$B/trace-h6/prose.jsonl" "$B/f114.json" || { echo "ARRET — l'export de 114 ne s'écrit pas"; exit 2; }
+export-fil banc-deux-lignes "$B/trace-h6/deux.jsonl" "$B/f115.json" || { echo "ARRET — l'export de 115 ne s'écrit pas"; exit 2; }
+export-fil banc-ecriture "$B/trace-h6/ecriture.jsonl" "$B/f116.json" || { echo "ARRET — l'export de 116 ne s'écrit pas"; exit 2; }
+export-fil banc-tableau "$B/trace-h6/tableau117.jsonl" "$B/f117.json" || { echo "ARRET — l'export de 117 ne s'écrit pas"; exit 2; }
+export-fil banc-sans-nom "$B/trace-h6/sansnom.jsonl" "$B/f118.json" || { echo "ARRET — l'export de 118 ne s'écrit pas"; exit 2; }
+produit-run r113
+vide r114
+vide r115
+vide r116
+produit-run r117
+vide r118
+# F1 contre l'instant du tableau, pas contre le gel : la naissance du produit est reculée à dix secondes
+# après le début du run, vingt secondes avant le tableau (le manifeste est édité, la copie ne bouge pas).
+node -e "const fs=require('fs'),p='$B/r117/raw/$CAS/manifest.json';const m=JSON.parse(fs.readFileSync(p,'utf8'));
+m.fichiers[0].birth_epoch=$(($D0/1000+10));m.fichiers[0].birth=new Date(m.fichiers[0].birth_epoch*1000).toISOString();
+fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n')"
+controle "113 receipt, tableau lu, reasoning écarté" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r113','--case','$CAS','--faits','$B/f113.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r113/receipt.json','utf8'));
+process.exit(r.tableau.present===true && r.tableau.lignes===4 && r.tableau.colonnes===3 && r.tableau.seq===3 && r.tableau.ts===$(($D0+20000)) && r.falsificateurs.tableau_absent===false ?0:1)"
+controle "114 receipt refus, une ligne de prose"   0 refus-nomme 1 "la trace ne porte aucun tableau rendu par la session" node "$H" receipt --run "$B/r114" --case "$CAS" --faits "$B/f114.json" --verdict conforme
+controle "115 receipt refus, tableau de deux lignes" 0 refus-nomme 1 "la trace ne porte aucun tableau rendu par la session" node "$H" receipt --run "$B/r115" --case "$CAS" --faits "$B/f115.json" --verdict conforme
+controle "116 receipt refus, écriture avant le tableau" 0 refus-nomme 1 "une écriture précède le tableau : seq 2, outil « write_file »" node "$H" receipt --run "$B/r116" --case "$CAS" --faits "$B/f116.json" --verdict conforme
+controle "117 receipt refus, produit né avant le tableau" 0 refus-nomme 1 "un produit est né avant le tableau : README.md" node "$H" receipt --run "$B/r117" --case "$CAS" --faits "$B/f117.json" --verdict conforme
+controle "118 receipt, outils sans nom = limites dites" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$H','receipt','--run','$B/r118','--case','$CAS','--faits','$B/f118.json','--verdict','non concluant'],{stdio:'ignore'});
+const r=JSON.parse(fs.readFileSync('$B/r118/receipt.json','utf8'));
+process.exit(r.tableau.present===true && r.falsificateurs.ecriture_avant_tableau.length===0 && r.limites.some(l=>l.includes('la trace ne porte pas le nom des outils')) && r.limites.some(l=>l.includes('ne nomment aucun chemin : write_todos')) ?0:1)"
 
 echo
 echo "$PASS/$TOTAL PASS"

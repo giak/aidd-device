@@ -140,7 +140,13 @@ const USAGE = `usage: run.mjs <commande> [options]
            gel, d'un autre arbre que celui du gel, d'un autre dossier que celui du run,
            antérieure au gel, d'un HEAD qui a bougé depuis elle, ou d'un texte qui n'est
            pas le §5 substitué, elle est refusée — et porte figure au reçu avec son
-           sha256, que le juge relit
+           sha256, que le juge relit.
+           Il lit enfin la forme mécanique du tableau dans la trace exportée (ADR-035,
+           H6) : un bloc d'au moins trois lignes dans une part text d'un message
+           assistant, sa deuxième ligne séparatrice, sa première au moins deux cellules.
+           Le reçu écrit tableau{forme, present, seq, ts, lignes, colonnes} et confronte
+           F2 (aucun tableau, ou une écriture avant lui — l'export gagne outil et
+           chemin_outil) et F1 (naissance d'un produit contre l'instant du tableau).
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
            [--cases <dir>]
@@ -160,8 +166,12 @@ const USAGE = `usage: run.mjs <commande> [options]
     trace{source,chemin_exporte,commande} · cloisonnement{attendu_vu: oui|non}
     temoignage{qui,quand,texte}
 
-  receipt.json (spec §6) : les champs du §6, plus falsificateurs (les quatre
-    conditions du §5, toutes lues ici — la 2e lit l'export ligne à ligne), trace_lue
+  receipt.json (spec §6) : les champs du §6, plus tableau (la forme mécanique du
+    tableau rendu par la session, son instant, ses lignes et ses colonnes — H6),
+    falsificateurs (les quatre conditions du §5 et les trois de H6 : la 2e lit
+    l'export ligne à ligne, F2 y ajoute la présence du tableau et l'ordre des
+    écritures, F1 y ajoute la naissance des produits contre l'instant du tableau),
+    trace_lue
     (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
     fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
     (budget du cas, messages user du fil, et l'échange qui a épuisé le budget ;
@@ -833,7 +843,9 @@ const lireBase = (base, sql, ou) => {
 // [A-Za-z0-9_-], and the SQL holds no double quote, so the shell quoting is unambiguous.
 const requeteExport = (fil) =>
   `select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
-  `'open', json_extract(value,'$.open'), 'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
+  `'open', json_extract(value,'$.open'), 'outil', json_extract(value,'$.toolName'), ` +
+  `'chemin_outil', json_extract(value,'$.input.path'), ` +
+  `'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
   `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;`;
 const commandeExport = (base, fil, trace) => `sqlite3 -readonly ${base} "${requeteExport(fil)}" > ${trace}`;
 
@@ -987,6 +999,47 @@ function verifierCopie(dest, manifeste, ou) {
     verifie.last_message_sha256 = sha256File(dernierMessage);
   }
   return verifie;
+}
+
+// H6 (ADR-035) : F1 and F2 both speak of « the message that carries the table », and no mechanical form
+// existed, so both stayed human readings (study §6, ombre 3). The form is written here, once: a block of
+// at least three lines inside a `text` part of an assistant message, every line starting and ending with
+// `|`, its second line a separator of dashes, colons and spaces carrying at least one dash, its first
+// line at least two cells. What the session SHOWS is what it writes into a text part: a table rendered in
+// `reasoning` is not shown to the operator, and does not count.
+const FORME_TABLEAU = "text/assistant, >=3 lignes, 2e ligne séparatrice, >=2 colonnes";
+// A write act is a `tool` part whose name carries one of the declared words AND whose input names a path.
+// Measured on this machine's client base (2026-10-18): `write_file` and `str_replace` carry `input.path`,
+// `write_todos` carries `input.todos` and is the session's own bookkeeping, not a file of the product;
+// `run_terminal_command` carries a command and no path, so a write done through the shell escapes the
+// measure, which the limits say. The family is declared, never a client's tool list.
+const MOTS_ECRITURE = /(write|edit|create|patch|apply|delete|move|rename)/i;
+
+function cellulesDe(ligne) {
+  const t = typeof ligne === "string" ? ligne.trim() : "";
+  if (!t.startsWith("|") || !t.endsWith("|") || t.length < 2) return null;
+  return t.slice(1, -1).split("|").map((c) => c.trim());
+}
+
+// The first table of the trace, in the export's own order, or its absence said as one. The instant kept
+// is the `ts` of the message that carries it: that is what F1 lacked, and what a product's birth is now
+// compared to, in place of the freeze's instant only.
+function tableauDeTrace(parties) {
+  for (const p of parties) {
+    if (p.role !== "assistant" || p.kind !== "text" || p.text === null) continue;
+    const lignes = p.text.split("\n");
+    for (let i = 0; i + 2 < lignes.length; i++) {
+      const entete = cellulesDe(lignes[i]);
+      if (!entete || entete.length < 2) continue;
+      const sep = cellulesDe(lignes[i + 1]);
+      if (!sep || !sep.every((c) => /^[-: ]*$/.test(c)) || !sep.some((c) => c.includes("-"))) continue;
+      let n = 2;
+      while (i + n < lignes.length && cellulesDe(lignes[i + n])) n++;
+      if (n < 3) continue;
+      return { forme: FORME_TABLEAU, present: true, seq: p.seq, ts: p.ts, lignes: n, colonnes: entete.length };
+    }
+  }
+  return { forme: FORME_TABLEAU, present: false, seq: null, ts: null, lignes: 0, colonnes: 0 };
 }
 
 function cmdReceipt(a) {
@@ -1360,6 +1413,7 @@ function cmdReceipt(a) {
       `receipt : les horodatages du run (${horodatageDebut} → ${horodatageFin}) ne se lisent pas — la fenêtre du §5 ne se mesure pas, et la condition 2 avec elle`,
     );
   }
+  const partiesLues = [];
   const traceLue = {
     lignes: 0,
     echanges_dans_la_fenetre: 0,
@@ -1379,6 +1433,15 @@ function cmdReceipt(a) {
         traceLue.illisibles++;
         continue;
       }
+      partiesLues.push({
+        seq: entree?.seq ?? null,
+        role: entree?.role ?? null,
+        kind: entree?.kind ?? null,
+        outil: typeof entree?.outil === "string" ? entree.outil : null,
+        chemin_outil: typeof entree?.chemin_outil === "string" ? entree.chemin_outil : null,
+        text: typeof entree?.text === "string" ? entree.text : null,
+        ts: Number.isFinite(Number(entree?.ts)) ? Number(entree.ts) : null,
+      });
       const ts = Number(entree?.ts);
       if (!Number.isFinite(ts)) {
         traceLue.sans_horodatage++;
@@ -1447,6 +1510,23 @@ function cmdReceipt(a) {
   // receipt cites a product it has just measured, not one the manifest describes.
   const copieVerifiee = verifierCopie(join(runDir, "raw", cas), manifeste, "receipt");
 
+  // H6 (ADR-035) : the table's form, its instant, and the two conditions F1 and F2 declared and nothing
+  // read. A write is a `tool` part whose name carries one of the declared words — a declared family, not
+  // a client's tool list; a trace without the field can't be measured, and says so instead of passing.
+  const tableau = tableauDeTrace(partiesLues);
+  const ecrituresAvant = tableau.present
+    ? partiesLues
+        .filter((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil !== null && MOTS_ECRITURE.test(p.outil) && Number(p.seq) < Number(tableau.seq))
+        .map((p) => ({ seq: p.seq, ts: p.ts, outil: p.outil, chemin: p.chemin_outil }))
+    : [];
+  const produitsNeAvant = tableau.present && tableau.ts !== null
+    ? manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch * 1000 < tableau.ts).map((f) => ({ chemin: f.chemin, birth: f.birth, tableau_ts: tableau.ts }))
+    : [];
+  const outilsSansNom = partiesLues.filter((p) => p.kind === "tool" && p.outil === null).length;
+  // A family name without a named path is an act the rule cannot classify: said as a limit, named, never
+  // silently dropped (measured: `write_todos` is one on this machine).
+  const outilsEcritureSansChemin = [...new Set(partiesLues.filter((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil === null && MOTS_ECRITURE.test(p.outil)).map((p) => p.outil))];
+
   const falsificateurs = {
     birth_anterieur_au_gel: manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch < gel.gele_le_epoch).map((f) => f.chemin),
     arbre_de_travail_inchange: manifeste.fichiers.length > 0 && memeArbre(avantTravail, apresTravail),
@@ -1454,6 +1534,9 @@ function cmdReceipt(a) {
       .filter((f) => [...gel.fichiers, ...gel.references].some((g) => g.sha256 === f.sha256))
       .map((f) => f.chemin),
     trace_sans_echange_dans_la_fenetre: traceLue.echanges_dans_la_fenetre === 0,
+    tableau_absent: !tableau.present,
+    ecriture_avant_tableau: ecrituresAvant,
+    produit_ne_avant_le_tableau: produitsNeAvant,
   };
 
   const motifRefus = [];
@@ -1466,6 +1549,16 @@ function cmdReceipt(a) {
   }
   if (falsificateurs.trace_sans_echange_dans_la_fenetre) {
     motifRefus.push("la trace exportée ne porte aucun échange dans la fenêtre du run (§5, condition 2)");
+  }
+  if (falsificateurs.tableau_absent) {
+    motifRefus.push("la trace ne porte aucun tableau rendu par la session (§5, F2)");
+  }
+  if (falsificateurs.ecriture_avant_tableau.length) {
+    const e = falsificateurs.ecriture_avant_tableau[0];
+    motifRefus.push(`une écriture précède le tableau : seq ${e.seq}, outil « ${e.outil} » (§5, F2)`);
+  }
+  if (falsificateurs.produit_ne_avant_le_tableau.length) {
+    motifRefus.push(`un produit est né avant le tableau : ${falsificateurs.produit_ne_avant_le_tableau.map((p) => p.chemin).join(", ")} (§5, F1)`);
   }
 
   if (motifRefus.length && verdict !== "non concluant") {
@@ -1491,6 +1584,18 @@ function cmdReceipt(a) {
   }
   if (traceLue.sans_horodatage) {
     limites.push(`${traceLue.sans_horodatage} ligne(s) de la trace sans horodatage numérique — la fenêtre du §5 ne les date pas`);
+  }
+  if (outilsSansNom) {
+    limites.push("l'ordre écriture/tableau n'est pas mesurable : la trace ne porte pas le nom des outils (H6)");
+  }
+  if (tableau.present && tableau.ts === null) {
+    limites.push("le tableau n'est pas daté : la condition 1 du §5 se lit contre le gel seulement (H6)");
+  }
+  if (tableau.present && falsificateurs.ecriture_avant_tableau.length === 0 && outilsSansNom) {
+    limites.push("aucun acte d'écriture ne précède le tableau dans la trace, mais la trace ne dit pas tout ce qui a été écrit (H6)");
+  }
+  if (outilsEcritureSansChemin.length) {
+    limites.push(`outil(s) dont le nom évoque une écriture et qui ne nomment aucun chemin : ${outilsEcritureSansChemin.slice(0, 3).join(", ")} — l'ordre écriture/tableau ne les classe pas (H6)`);
   }
   for (const m of motifRefus) limites.push(m);
 
@@ -1519,6 +1624,7 @@ function cmdReceipt(a) {
     horodatage_fin: horodatageFin,
     trace,
     trace_lue: traceLue,
+    tableau,
     echanges,
     porte: porteLue,
     arbres,

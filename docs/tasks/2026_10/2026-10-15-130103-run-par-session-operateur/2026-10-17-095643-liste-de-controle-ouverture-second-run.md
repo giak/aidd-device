@@ -62,7 +62,11 @@ ignore.
 
 ## 4. Le geste, dans l'ordre
 
-**4.0 Le dossier du run et la porte, avant d'ouvrir.** Depuis l'[ADR-034](../../../DECISIONS.md), le reçu
+**4.0 Le dossier du run et la porte, avant d'ouvrir.** — **Passée le 2026-10-18 à `07:02:51`** :
+`docs/device/runs/2026-10-18-070251-4c39e5c5-db61c44/gate.json`, `exit 0`, `gel 0d9a2180`, arbre
+`416ec1f` `porcelain 0 ligne`, texte `832036f7` (254 o), HEAD du dispositif `db61c44` (l'arbre était
+propre, donc le nom du run ne cite aucun travail non commité). Relancer `preflight` sur ce dossier sort
+maintenant en `exit 1` (`existe déjà`) : c'est le refus à éprouver, pas une panne. Depuis l'[ADR-034](../../../DECISIONS.md), le reçu
 refuse un dossier de run sans `gate.json` : la porte se passe donc **avant** 4.1, dans le dossier du run, et
 son instant doit précéder le premier message. Le nom est celui du §4.6, et le dossier ne se crée qu'ici :
 
@@ -226,7 +230,7 @@ PORCELAIN=$(git -C "$REPO" status --porcelain)
 FIN=$(date -Is)
 # The query is written on one line, exactly as faits records it: a wrapped query would give a faits.json
 # whose trace.commande is an equivalent, not the command that produced the file.
-SQL="select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'\$.kind'), 'open', json_extract(value,'\$.open'), 'text', json_extract(value,'\$.text'), 'ts', m.ts) from messages m, json_each(m.parts_json) where m.thread_id='$FIL' order by m.seq, json_each.key;"
+SQL="select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'\$.kind'), 'open', json_extract(value,'\$.open'), 'outil', json_extract(value,'\$.toolName'), 'chemin_outil', json_extract(value,'\$.input.path'), 'text', json_extract(value,'\$.text'), 'ts', m.ts) from messages m, json_each(m.parts_json) where m.thread_id='$FIL' order by m.seq, json_each.key;"
 sqlite3 -readonly "$BASE" "$SQL" > "$RUN/trace/echange.jsonl" || { echo "REFUS — l'export de la trace a échoué ; le reçu n'aurait rien à compter" >&2; exit 1; }
 echo "trace — $(grep -c '' "$RUN/trace/echange.jsonl") ligne(s) lues dans $BASE"
 

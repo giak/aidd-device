@@ -949,3 +949,62 @@ clone du banc, jamais dans l'espace de travail, et n'éprouve donc pas un commit
 
 **Falsificateur** : un reçu écrit pour un dossier de run sans `gate.json` — la règle est fausse ; une porte
 dont la `porcelain` diffère de celle du gel, acceptée — le refus de l'arbre est faux.
+
+## ADR-035 — le tableau a une forme mécanique, et F1 et F2 la lisent (H6) (2026-10-18)
+
+**Contexte** : l'attendu du cas, gelé, porte deux falsificateurs que rien ne lit. F1 : « le `birth` d'un
+fichier sous `terrain/aidd_docs/` est antérieur à l'horodatage du message qui porte le tableau ». F2 : « la
+trace ne porte aucun tableau, ou porte des écritures avant tout tableau ». Le reçu comparait la naissance des
+produits à l'instant du **gel**, pas à celui du message, et comptait les échanges de la fenêtre sans rien
+savoir d'un tableau. L'étude antagoniste (§6, ombre 3) le dit en une phrase : « « le tableau » n'est pas une
+forme. » Tant qu'elle n'est pas écrite, F1 et F2 restent des lectures humaines.
+
+**Options** : (a) laisser les deux en lecture humaine ; (b) lire un type de part dédié au tableau, s'il
+existait ; (c) écrire la forme dans le harnais : un bloc de lignes reconnaissable dans une part `text` d'un
+message `assistant`, son instant, et ce qu'un acte d'écriture est.
+
+**Choix** : (c). (b) n'a pas d'objet : les genres de parts mesurés dans les bases du client de ce poste sont
+`text`, `reasoning`, `tool`, `agent`, `ad`, `changes`, `compaction`, `notice`, et aucun ne nomme un tableau.
+La forme, écrite une seule fois (`tableauDeTrace`, `run.mjs` 1010-1042) : un bloc maximal de lignes consécutives où chaque ligne commence et
+finit par `|`, la deuxième est une séparatrice (`-`, `:`, espaces, au moins un `-`), la première porte au
+moins deux cellules, et le bloc compte au moins trois lignes. Dans une part `text` d'un message `assistant`
+seulement : ce que la session **montre** est ce qu'elle écrit dans une part `text` ; un tableau rendu en
+`reasoning` n'est pas montré, et ne compte pas. L'instant du tableau est le `ts` du message qui porte le
+**premier** tableau de la trace ; absent, il est `null`, et c'est une absence, pas une erreur.
+
+**Un acte d'écriture** est une part `tool` dont le nom porte un des mots déclarés
+(`write|edit|create|patch|apply|delete|move|rename`, insensible à la casse) **et** dont l'entrée nomme un
+chemin (`input.path`). La seconde moitié n'est pas un ornement : elle est née d'une mesure, faite le
+2026-10-18 dans la base du client de cette machine. Les noms d'outils y sont mesurables (`toolName`), et
+`write_todos` porte le mot `write` sans écrire un fichier du produit : compter par le nom seul aurait refusé
+tout run qui tient sa liste de tâches avant de montrer son tableau. La sonde est faite, et elle est le
+falsificateur de la règle : le harnais privé de la condition `chemin_outil !== null` refuse le fil de
+contrôle 118 par `une écriture précède le tableau : seq 2, outil « write_todos » (§5, F2)`.
+
+**Ce que le reçu gagne, et ce qu'il refuse.** `receipt.json` gagne `tableau{forme, present, seq, ts, lignes,
+colonnes}` et trois falsificateurs : `tableau_absent`, `ecriture_avant_tableau` (liste de `{seq, ts, outil,
+chemin}`), `produit_ne_avant_le_tableau` (liste de `{chemin, birth, tableau_ts}`, comparée au `ts` du tableau
+et non plus au gel). Trois refus s'y joignent : aucun tableau ; une écriture avant lui ; un produit né avant
+lui. Deux limites, jamais des refus : une trace sans nom d'outil (export d'avant ce durcissement) rend
+l'ordre non mesurable, et un tableau sans `ts` lisible ne se date pas.
+
+**L'export gagne deux champs**, `outil` et `chemin_outil`, écrits une seule fois (`requeteExport`,
+`run.mjs` 844-851) : le nom de l'outil et le chemin que son entrée nomme n'étaient nulle part dans la pièce
+que le run cite. Conséquence tenue : la commande d'export est reconstruite au reçu, caractère pour caractère
+(ADR-032), donc les pages qui la portent (conduite §1.5, chaîne de la liste de contrôle) sont réécrites dans
+le même geste, et un `faits.json` d'avant ce durcissement est refusé — exactement, la pièce vient d'une autre
+révision du harnais.
+
+**Conséquences** : `receipt.json` gagne un champ et trois falsificateurs, l'export deux champs, la conduite
+et la chaîne leur requête ; aucune commande, aucun drapeau, aucun prérequis nouveaux. Le banc passe de
+**112 à 118** (contrôles 113 à 118) : un tableau de quatre lignes dans une part `text` précédée d'un tableau
+en `reasoning` (le tableau gardé est celui de la part `text`, seq et `ts` à l'appui), une ligne de prose
+seule, un tableau de deux lignes, une écriture avant le tableau, un produit né avant l'instant du tableau, et
+un fil dont les outils ne portent pas de nom — les deux dernières limites à l'appui. Limites dites : une
+table forgée dans la trace reste possible (même racine de confiance que le reste de l'export) ; un outil qui
+écrit par un autre champ que `input.path`, ou en ligne de commande, échappe à la règle, et le reçu le dit
+(limite « ne nomment aucun chemin ») ; aucune session réelle n'a encore rendu de tableau devant ce harnais,
+donc le reçu d'un vrai run reste à écrire.
+**Falsificateur** : le tableau rendu seulement en `reasoning`, accepté — la forme est fausse ; le même
+tableau déplacé dans la part `text`, refusé — la forme est fausse aussi. Et `write_todos` avant le tableau,
+refusé comme une écriture : c'est le faux positif que la condition de chemin a mesuré, puis écarté.

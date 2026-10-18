@@ -21,6 +21,9 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
 - [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 112 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
+- [docs/guide-du-test-de-bout-en-bout.md](docs/guide-du-test-de-bout-en-bout.md) — le guide d'usage, trois
+  chapitres pour l'instant (lire un reçu, rejouer un gel, provoquer trois refus) : chaque geste est copiable,
+  chaque sortie a été observée, et chaque chapitre se termine par un refus provoqué.
 - [docs/EXPLICATION.md](docs/EXPLICATION.md) — le projet raconté simplement, pour qui n'en
   connaît rien : analogies, schémas, état réel au 2026-10-15, échecs compris.
 - [docs/brainstorm/2026-10-15-201458-bilan-premier-run.md](docs/brainstorm/2026-10-15-201458-bilan-premier-run.md)

@@ -3257,3 +3257,65 @@ le premier à porter une porte.
 **Mémoires.** `1a6bc039` (2026-10-17 19:29:34 UTC) : la porte et ses champs, les neuf refus du reçu, les dix
 contrôles, les deux écarts, les limites.
 
+## Séance 53 — 2026-10-18 (les trois chapitres minimaux du guide, écrits et éprouvés)
+
+**Objectif.** Écrire la « plus petite version livrable » que le plan du guide annonçait (sa section 10) :
+trois chapitres, lire un reçu, rejouer un gel, provoquer trois refus, chacun avec un geste copiable, une
+sortie **observée** et un refus provoqué. Puis consigner.
+
+**Fait.** Le guide naît au dépôt : `docs/guide-du-test-de-bout-en-bout.md`, né à `06:55:09` (`stat -c %w`),
+**256 lignes, 1 927 mots**, frontmatter `type: guide`, `status: in-progress` (253 et 1 886 avant la dernière
+retouche du 2026-10-18 : l'avertissement d'en-tête, qui disait « rien ne s'exécute dans les quatre arbres »,
+taisait le lien symbolique que le banc écrit puis retire dans l'espace de travail du cas). Son `§0` lit `CAS`, `W` et
+`FRAMEWORK` dans le gel (un `eval` sur un `node -e`, aucun chemin retapé). Le chapitre 1 lit un reçu écrit
+par le banc, dit que c'est la seule source de reçu aujourd'hui, affiche six champs, propose quatre
+affirmations dont une fausse et provoque `receipt : … existe déjà`. Le chapitre 2 rejoue le gel par la
+formule du §1.1 de la conduite, puis le casse d'un octet dans un clone jetable. Le chapitre 3 provoque les
+trois refus annoncés par le plan, sans session : un dossier hors du gel, `--run` absent (`exit 2`), et un
+dossier de run sans `gate.json`. Ses
+sections 4 et 5 nomment ce que la version ne fait pas et où sont les sources. Le plan est corrigé sur deux
+points (sa section 12 : le guide n'est plus « pas écrit », et « le seul reçu réel » était faux) et sa
+section 14 dit désormais ce qu'un reçu réel changerait. `DASHBOARD.md` porte la ligne du guide, `README.md`
+l'entrée de lecture, et cette séance.
+
+**Vérifié.**
+
+| Commande | Résultat |
+| --- | --- |
+| `bash docs/device/harness/banc-harnais.sh` | **112/112 PASS**, `exit 0`, jetable `/tmp/banc-harnais.Enruf8` puis `/tmp/banc-harnais.VfwR1H` |
+| `node docs/device/harness/liens.mjs` | `exit 0`, 35 fichiers, **377** liens, **0 mort** |
+| `§0`, `eval` sur le gel | trois chemins, sortie recopiée au guide (`CAS`, `W`, `FRAMEWORK`) |
+| ch.1, lecture du reçu de banc (2026-10-18, `B=/tmp/banc-harnais.VfwR1H`) | six champs, `exit 0`, `porte.passe_le` `2026-10-18T06:55:35…` |
+| ch.1, seconde écriture du même reçu | `exit 1`, « un reçu reconstruit est un témoignage, jamais un reçu (§6) » |
+| ch.2, formule du §1.1 | **11 `True`** et `empreinte True`, `exit 0` |
+| ch.2, octet de plus dans un clone jetable (`/tmp/g-53/depot`) | `exit 1`, « le demande a changé depuis le gel — `a202f033` au disque, `5aac04fb` gelé » ; formule hors clone : `True` de nouveau |
+| ch.3, dossier hors du gel | `exit 1` |
+| ch.3, `--run` absent | `exit 2`, « USAGE — --run requis » |
+| ch.3, dossier de run sans porte | `exit 1`, « aucune porte … ne distingue plus un run qui a passé preflight d'un run qui l'a sauté (H5) » |
+| les commandes du guide, rejouées d'un bloc après écriture | codes `0/1/0/1/2/1`, sorties conformes aux blocs cités |
+
+**Dérives signalées, non corrigées.** Le refus du harnais dit « **le** demande a changé depuis le gel » :
+faute d'accord dans `run.mjs` (ligne ~409), recopiée telle quelle au guide et nommée ici, pas réparée. Le
+`README.md` §État est resté au 2026-10-16 et annonce « 50/50 PASS » quand le banc est à 112 : le tableau de
+bord fait foi, la phrase n'est pas retouchée. Et le plan garde ses décisions ouvertes (lecteur, foyer, un
+fichier ou sept pages, cas jouet) tandis que le guide est écrit en un fichier sous `docs/`, ce qui tranche
+le foyer **en pratique** sans que le plan le dise.
+
+**Rectifications.** La Séance 52 finissait par « Rien n'est commité » : faux depuis `a60f2e5`, et `4f86fbd`
+et `84be78f` le précédaient. Le plan du guide affirmait, section 12, que le premier run était « le seul reçu
+réel, et le seul sans porte » : **aucun `receipt.json` ni `output.json` n'existe**, mesuré ce jour par
+`find . -name receipt.json -o -name output.json` (0 ligne) ; le dossier `2026-10-15-171559-…` porte
+`faits.json`, `PV.md`, `ECART.md`, une trace partielle et trois fichiers de refus. Corrigé dans le plan, et
+le guide le dit avant son premier chapitre.
+
+**OPEN.** Le chapitre 1 lit un reçu de **banc** : sa session est une fixture (`identifiant "banc"`,
+`modele "aucun"`), donc le guide atteste une forme, pas un run. Aucun lecteur n'a suivi la page, donc les
+seuils du plan restent des hypothèses. Le guide de `docs/` n'est pas un guide hors dépôt : la question du
+foyer reste posée. **Rien n'est commité.**
+
+**Prochaines étapes.** Le second run, qui écrira le premier reçu réel et donnera au chapitre 1 sa pièce
+vraie ; puis les chapitres 1 et 4 à 7 du plan ; la forme mécanique du tableau (H6) et le cas jouet.
+
+**Mémoires.** `c0a251e5` (2026-10-18 04:56:18 UTC) : le guide, ses trois chapitres, ses sorties observées,
+ses limites.
+

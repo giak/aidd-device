@@ -26,7 +26,7 @@ consignait ces deux gestes ; c'est cette liste qui les nomme, et la Séance 28 d
 
 | Ce qui est affirmé | Commande | Résultat observé |
 | --- | --- | --- |
-| la porte autorise ce dossier | `node docs/device/harness/run.mjs preflight --case <cas> --repertoire $W/terrain --texte $W/texte-a-remettre.txt` | `ouverture autorisée dans …/terrain (HEAD 416ec1f, porcelain 0 ligne(s)) ; gel 0d9a2180 re-haché, 2 fichier(s) du cas et 8 référence(s) ; texte 832036f7 (254 octets) conforme au §5 substitué` — **`exit 0`** |
+| la porte autorise ce dossier | `node docs/device/harness/run.mjs preflight --case <cas> --repertoire $W/terrain --texte $W/texte-a-remettre.txt` | `ouverture autorisée dans …/terrain (HEAD 416ec1f, porcelain 0 ligne(s)) ; gel 0d9a2180 re-haché, 2 fichier(s) du cas et 8 référence(s) ; texte 832036f7 (254 octets) conforme au §5 substitué` — **`exit 0`**. Mesuré le 2026-10-17 **avant** l'ADR-034 : la même commande sort aujourd'hui en `exit 2`, `--run` étant obligatoire, et son `gate.json` n'apparaît dans la sortie qu'avec lui. La commande d'aujourd'hui est au §4.0 |
 | le gel tient, hors du harnais | la formule du §1.1, `RACINE_FRAMEWORK=$W/framework-origin` | **11/11 `True`** (2 fichiers, 1 `HEAD` d'arbre, 8 références), `empreinte True` sur `0d9a2180…` — **`exit 0`** |
 | le texte à remettre n'a pas bougé | `sha256sum $W/texte-a-remettre.txt` | `832036f7…` · **254** octets, mtime 2026-10-15 22:15 |
 | le texte que l'opérateur lira est le même | bloc `text` de `$W/mode-d-emploi.md`, comparé octet à octet | **254** octets, `832036f7…`, identique (`True`) |
@@ -61,6 +61,24 @@ nulle part. Il ne change ni `HEAD` ni `porcelain`, donc le gel ne le voit pas ; 
 ignore.
 
 ## 4. Le geste, dans l'ordre
+
+**4.0 Le dossier du run et la porte, avant d'ouvrir.** Depuis l'[ADR-034](../../../DECISIONS.md), le reçu
+refuse un dossier de run sans `gate.json` : la porte se passe donc **avant** 4.1, dans le dossier du run, et
+son instant doit précéder le premier message. Le nom est celui du §4.6, et le dossier ne se crée qu'ici :
+
+```text
+RUN=/home/giak/projects/aidd-device/docs/device/runs/$(date +%Y-%m-%d-%H%M%S)-4c39e5c5-$(git -C /home/giak/projects/aidd-device rev-parse --short HEAD)
+mkdir -p "$RUN"
+node /home/giak/projects/aidd-device/docs/device/harness/run.mjs preflight \
+  --case 2026-10-15-133423-promesse-memoire-avant-ecriture \
+  --repertoire $W/terrain --texte $W/texte-a-remettre.txt --run "$RUN"
+```
+
+Attendu : `preflight ok — … ; porte docs/device/runs/…/gate.json`, `exit 0`, et un fichier qui porte
+`type: gate`, `cas`, `passe_le`, `repertoire`, `gel.empreinte` = `0d9a2180…`, `arbre.head_complet` = `416ec1fa…`,
+`texte.sha256` = `832036f7…`. Un refus arrête tout : **rien ne s'ouvre**. Relancer la même commande sort en
+`exit 1` (`existe déjà`) : une porte ne s'écrase pas, et c'est le premier refus que cette liste fait éprouver
+sans ouvrir de session. `$W` est celui du §1.
 
 **4.1 Ouvrir un fil neuf, vide, en mode direct.** Ni worktree, ni branche, ni « reprendre un fil ».
 
@@ -104,14 +122,9 @@ l'[ADR-025](../../../DECISIONS.md), un **dossier** de trace absent est refusé (
 sous un dossier présent reste une **limite** « trace machine introuvable », et la pièce (1) manque sans que
 personne ne l'ait vu — c'est cette limite-là qu'il faut lire au reçu.
 
-**4.6 Le dossier du run.** Nommé à l'ouverture, révisions du gel :
-
-```text
-RUN=/home/giak/projects/aidd-device/docs/device/runs/$(date +%Y-%m-%d-%H%M%S)-4c39e5c5-$(git -C /home/giak/projects/aidd-device rev-parse --short HEAD)
-mkdir -p "$RUN"
-```
-
-La seconde révision nomme ce qui a produit la sortie : elle ne couvre que du commité. Un fichier modifié
+**4.6 Le dossier du run.** Celui du **§4.0**, déjà créé et déjà porteur de sa porte : il ne se renomme pas
+et ne se recrée pas à la clôture. Son nom mêle la révision du gel (`4c39e5c5`) et celle du dispositif qui
+produit la sortie. La seconde révision nomme ce qui a produit la sortie : elle ne couvre que du commité. Un fichier modifié
 après le commit qu'elle cite n'est pas nommé par elle — le reçu doit le dire plutôt que de laisser croire
 l'inverse.
 
@@ -127,11 +140,12 @@ projet il vient), lit la racine de l'espace de travail et la révision sous test
 retapées —, nomme le dossier du run, mesure la fin, exporte la trace (avant tout autre geste, §4.5), puis
 appelle `faits`, `collect`, `receipt`, `compare`. Elle n'écrit **rien** si l'un des cinq faits humains
 manque ou garde son gabarit `« <…> »`, et s'arrête au premier refus du harnais en laissant les pièces déjà
-écrites : une pièce sans reçu est un brouillon de preuve, jamais un reçu. Le dossier des runs est `docs/device/runs/` (`RUNS_DIR` le
-déplace) ; `collect` prend la branche produit si `terrain/aidd_docs` existe, `--sans-produit` sinon.
+écrites : une pièce sans reçu est un brouillon de preuve, jamais un reçu.Le dossier du run est nommé par l'opérateur au §4.0 : la chaîne le reçoit dans `RUN`, et refuse un dossier
+absent ou qui ne porte pas de `gate.json` ([ADR-034](../../../DECISIONS.md)). `collect` prend la branche
+produit si `terrain/aidd_docs` existe, `--sans-produit` sinon.
 
 ```bash
-FIL='<fil>' PAR='<qui a ouvert et cloture>' TEMOIGNAGE='<vos mots>' \
+RUN="$RUN" FIL='<fil>' PAR='<qui a ouvert et cloture>' TEMOIGNAGE='<vos mots>' \
 DIFFERENCE='<ce qui differe de l attendu>' PHRASE='<la phrase du jugement>' \
 VERDICT='non concluant' bash <<'CHAINE'
 set -uo pipefail
@@ -148,7 +162,7 @@ REPO=/home/giak/projects/aidd-device
 OUTILS=$REPO/docs/device/harness/run.mjs
 CAS=2026-10-15-133423-promesse-memoire-avant-ecriture
 GEL=$REPO/docs/device/CASES/$CAS.freeze.json
-RUNS=${RUNS_DIR:-$REPO/docs/device/runs}
+
 
 # The five facts only a person gives. Checked before the first byte is written: a run directory
 # without a receipt is a draft of evidence, and ADR-024 forbids inventing any of them.
@@ -193,12 +207,18 @@ IFS=$'\t' read -r RACINE CAS_G FW <<<"$GEL_LU"
 W="$RACINE/$CAS" ; TRAVAIL="$W/terrain"
 [ -d "$TRAVAIL" ] || { echo "REFUS — $TRAVAIL n'est pas un répertoire ; le run n'aurait où écrire" >&2; exit 1; }
 
-# 3. The run directory, named to the second, gel revision then device revision (spec §4, ADR-023).
+# 3. The run directory, named to the second, gel revision then device revision (spec §4, ADR-023). It
+# comes from the operator (§4.0), where the gate was already passed; the chain verifies it and never
+# names another.
 DEV=$(git -C "$REPO" rev-parse --short HEAD) || { echo "REFUS — $REPO : révision illisible ; rien n'a été écrit" >&2; exit 1; }
-mkdir -p "$RUNS" || exit 1
-RUN=$RUNS/$(date +%Y-%m-%d-%H%M%S)-$FW-$DEV
-mkdir "$RUN" || { echo "REFUS — $RUN existe déjà ; un dossier de run ne se réutilise pas" >&2; exit 1; }
-mkdir "$RUN/trace"
+# H5 (ADR-034) : the gate is passed before the session opens, in the run directory the operator named at
+# §4.0, and the receipt refuses a directory that carries none. The chain reuses that directory and never
+# writes a gate: a gate written now would be dated after the first message, which is exactly what the
+# receipt's HEAD and date checks are meant to keep visible.
+RUN="${RUN:-}"
+[ -n "$RUN" ] || { echo "REFUS — RUN absent : la porte se passe avant la session, dans le dossier du run (ADR-034) ; rien n'a été écrit" >&2; exit 1; }
+[ -d "$RUN" ] && [ -f "$RUN/gate.json" ] || { echo "REFUS — $RUN ne porte aucune porte (gate.json) : la passer avec preflight avant d'ouvrir (ADR-034) ; rien n'a été écrit" >&2; exit 1; }
+mkdir -p "$RUN/trace"
 PORCELAIN=$(git -C "$REPO" status --porcelain)
 [ -z "$PORCELAIN" ] || echo "note — $DEV ne nomme pas les $(printf '%s\n' "$PORCELAIN" | wc -l) fichier(s) modifiés du dispositif : le dire au reçu (§1.3)"
 
@@ -221,7 +241,9 @@ else
   echo "note — aucun aidd_docs sous $TRAVAIL : run sans produit (§9), ce qui suffit à « non concluant »"
 fi
 
-# 6. The hot receipt, then the judge on the receipt alone (§6, §8).
+# 6. The hot receipt, then the judge on the receipt alone (§6, §8). The gate was checked at step 3; it is
+# checked again here, because the receipt would refuse it and the message should say which piece moved.
+[ -f "$RUN/gate.json" ] || { echo "REFUS — la porte de $RUN a disparu entre-temps ; le reçu la refuserait (ADR-034)" >&2; exit 1; }
 node "$OUTILS" receipt --run "$RUN" --case "$CAS" --faits "$RUN/faits.json" --verdict "$VERDICT" || exit 1
 node "$OUTILS" compare --run "$RUN" --case "$CAS" --difference "$DIFFERENCE" --phrase "$PHRASE" \
   --verdict "$VERDICT" ${LIMITES:+--limites "$LIMITES"} || exit 1

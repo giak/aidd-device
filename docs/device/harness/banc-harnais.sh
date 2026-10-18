@@ -933,6 +933,29 @@ controle "149 cas cree son dossier --cases" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$ORCH','cas','--skill','$OSKILL','--terrain','$OTERRAIN','--id','neuf','--racine','$O','--cases','$O/cases-neuf'],{stdio:'ignore',input:'',encoding:'utf8'});
 process.exit(['request.md','expected.json','freeze.json'].every(p=>fs.existsSync('$O/cases-neuf/neuf.'+p))?0:1)"
+# Un depot de skill sale : `cas` sortait 0 et le clone perdait la modification, sans un mot (drift mesure le
+# 2026-10-18, scenario « je travaille sur un truc non commite »). Refus par defaut, `--tel-quel` porte l'arbre.
+rm -rf "$B/sale" "$O/cases-sale" "$O/tq"
+mkdir -p "$B/sale/skills/x"
+printf '# x\n' > "$B/sale/skills/x/SKILL.md"
+git -c init.defaultBranch=main -C "$B/sale" init -q
+git -C "$B/sale" add -A
+git -C "$B/sale" -c user.name=banc -c user.email=banc@invalid -c commit.gpgsign=false commit -q -m banc
+printf '\n6. non commitee.\n' >> "$B/sale/skills/x/SKILL.md"
+controle "150 refus 13, depot du skill sale" 0 refus-nomme 1 "non commit" bash -c "node '$ORCH' cas --skill '$B/sale/skills/x/SKILL.md' --terrain '$OTERRAIN' --id sale --racine '$O' --cases '$O/cases-sale' </dev/null"
+controle "151 cas --tel-quel porte la modification" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','cas','--skill','$B/sale/skills/x/SKILL.md','--terrain','$OTERRAIN','--id','tq','--racine','$O','--cases','$O/cases-sale','--tel-quel'],{stdio:'ignore',input:'',encoding:'utf8'});
+const copie=fs.readFileSync('$O/tq/framework-origin/skills/x/SKILL.md','utf8');
+process.exit(copie.includes('non commitee')?0:1)"
+rm -rf "$B/sale-terrain"
+mkdir -p "$B/sale-terrain"
+printf '# terrain sale\n' > "$B/sale-terrain/README.md"
+git -c init.defaultBranch=main -C "$B/sale-terrain" init -q
+git -C "$B/sale-terrain" add -A
+git -C "$B/sale-terrain" -c user.name=banc -c user.email=banc@invalid -c commit.gpgsign=false commit -q -m banc
+printf '\n// non commite\n' >> "$B/sale-terrain/README.md"
+controle "152 refus 13, terrain sale" 0 refus-nomme 1 "le terrain" bash -c "node '$ORCH' cas --skill '$OSKILL' --terrain '$B/sale-terrain' --id sale2 --racine '$O' --cases '$O/cases-sale' </dev/null"
 
 echo
 echo "$PASS/$TOTAL PASS"

@@ -1214,3 +1214,83 @@ a compris ; AC1 ne se mesure qu'avec un lecteur étranger, et il n'a pas encore 
 
 **Falsificateur** : une sortie de l'orchestrateur qui porte un bloc hors des quatre formes, plus de six
 lignes, ou une sortie sans la commande qui l'a produite.
+
+## ADR-041 — Le squelette est rempli par l'agent, et confirmé par la personne (2026-10-18)
+
+**Contexte** : le geste promis est « tu arrives, tu dis *test ça*, le dispositif te prend en main ». La
+première version du [guide utilisateur](guide/guide-utilisateur.md), écrite le jour même, en faisait
+l'inverse : cinq commandes à taper, un `expected.json` à éditer, un falsificateur à inventer, un re-gel à
+lancer. L'opérateur l'a relevé, et c'était juste : ce parcours demande à celui qui vient faire tester son
+skill de faire le travail de lecture du dispositif. [ADR-039](#adr-039--le-squelette-dattendu-sa-marque-a_remplir-et-la-limite-attendu_incomplet-qui-plafonne-le-verdict-2026-10-18)
+avait laissé la promesse du skill « à la personne » : la lettre de cette règle visait la fabrique, qui ne
+doit pas **inventer** une lecture, pas l'agent, qui peut la faire.
+
+**Options** : (a) la personne continue de remplir seule, et le guide reste une page d'exploitation ;
+(b) l'agent remplit le squelette sans rien demander, la personne lit le verdict ; (c) l'agent lit le skill,
+propose la promesse et le produit, la personne confirme ou corrige, puis l'agent écrit et re-gèle.
+
+**Choix** : (c).
+
+**La règle.**
+
+1. **L'agent lit le skill et propose** la promesse en une phrase, le produit attendu, la ligne du §5, le §6
+   de la demande, la marque `P` de l'attendu et la première des deux réponses figées.
+2. **La personne confirme ou corrige** ces six lectures. C'est son intention qui est jugée : l'agent ne la
+   devine pas, il la lui rend lisible.
+3. **La fabrique ne change pas.** `cas` écrit toujours un squelette marqué `a_remplir`, et le reçu plafonne
+   toujours à `non concluant` tant que la marque est là : la règle dit qui remplit, pas ce que la machine
+   devine.
+4. **Le re-gel reste explicite** (`freeze --refreeze`), appelé par l'agent après confirmation, jamais en
+   effet de bord d'une autre commande.
+
+**Conséquences** : `ORCHESTRATEUR.md` §2 et §4 disent qui remplit et qui tranche ; le guide utilisateur est
+réécrit autour de la prise en main, et les commandes passent en annexe. Le compte des gestes humains ne
+bouge pas (ouvrir le fil, coller le texte, répondre la phrase figée) : la personne gagne la lecture de son
+skill, pas une commande de moins à taper sur elle.
+
+**Ce que ce n'est pas** : une mesure. Rien ne vérifie *a posteriori* que la promesse confirmée était celle
+du skill ; c'est une lecture, et le reçu porte la phrase confirmée, pas la preuve qu'elle était juste.
+
+**Falsificateur** : un parcours où l'agent remplit la promesse et écrit le reçu sans que la personne l'ait
+confirmée ; ou une page qui rend une commande obligatoire à la personne sans qu'aucun geste humain ne
+l'exige.
+
+## ADR-042 — Un dépôt sale est refusé, sauf `--tel-quel` explicite (2026-10-18)
+
+**Contexte** : le scénario que l'opérateur a posé le 2026-10-18 : « je suis en train de travailler sur un
+truc (dernier commit, ou fichier modifié non commité) et je demande de tester ». Mesuré sur un bac : un
+skill modifié **non commité**, puis `cas` → `exit 0`, `freeze ok`, et `diff` entre l'arbre de travail et la
+copie sous test → **DIFFERENTE** ; le `porcelain` de `framework-origin` restait **vide**, et aucun message
+ne le disait. La cause est mécanique : `cas` clone `origine/framework` pour fabriquer `framework-origin`, et
+un clone ne porte que les commits. Le run aurait jugé le dernier commit pendant que la personne croyait
+tester son fichier ouvert.
+
+**Options** : (a) embarquer les modifications d'office dans la copie — rien à commiter, mais le test porte
+alors sur un état qui n'est dans aucune révision, sans que personne l'ait demandé ; (b) avertir sans
+bloquer — le run part quand même, et l'avertissement se perd dans la sortie ; (c) refuser par défaut, les
+fichiers nommés, avec un drapeau explicite `--tel-quel` pour porter l'arbre de travail tel quel.
+
+**Choix** : (c).
+
+**La règle.**
+
+1. **Un dépôt sale est refusé avant toute écriture.** `cas` lit `git status --porcelain` du dépôt qui porte
+   le skill, et du terrain quand il est donné ; non vide, il sort en `1`, nomme jusqu'à trois fichiers par
+   arbre et dit les deux issues : commiter, ou `--tel-quel`.
+2. **`--tel-quel` porte l'arbre, et le dit.** La copie est faite par copie du dossier au lieu d'un clone,
+   donc les modifications non commitées sont dans la copie sous test, et le `porcelain` non vide que le gel
+   enregistre atteste que ce run-là portait un arbre de travail.
+3. **Le terrain par défaut n'est pas concerné** : quand `--terrain` est absent, le clone jetable du dépôt
+   courant reste un clone, et le refus ne bloque pas l'essai rapide.
+4. **Le silence est interdit** : aucune forme ne laisse partir un run sur une copie qui n'est pas ce que la
+   personne a sous les yeux sans le lui dire.
+
+**Conséquences** : le banc gagne les contrôles **150** (dépôt du skill sale refusé), **151** (`--tel-quel`
+porte la modification) et **152** (terrain sale refusé) ; `ORCHESTRATEUR.md` §5 compte ce troisième refus
+propre à l'orchestrateur ; le guide utilisateur nomme la condition « ton dépôt doit être propre ».
+
+**Ce que ce n'est pas** : une mesure de ce que la personne voulait tester. `--tel-quel` dit « cet arbre,
+tel quel » ; il ne dit pas que cet arbre est le bon, ni qu'il correspond à une révision.
+
+**Falsificateur** : un run dont la copie sous test diffère de l'arbre de travail sans que le reçu ni le gel
+ne le disent ; ou un `--tel-quel` dont le gel enregistre un `porcelain` vide.

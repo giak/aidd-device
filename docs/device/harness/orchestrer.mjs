@@ -20,13 +20,15 @@ const HARNAIS = join(ICI, "run.mjs");
 const USAGE = `usage: orchestrer.mjs <commande> [options]
 
   cas    --skill <chemin> [--terrain <dépôt>] [--id <slug>] [--racine <chemin>]
-         [--budget <n>] [--cases <dir>]
+         [--budget <n>] [--cases <dir>] [--tel-quel]
          fabrique le cas : la demande et le squelette d'attendu dans --cases, les deux
          origines sous <racine>/<cas>/origine/, leurs deux clones que le gel dérive,
          puis le gel. Rien ne part vers une session. --terrain absent propose un clone
          jetable du dépôt courant (§2 de la spec). --budget défaut 3. Le falsificateur
          de la promesse du skill reste à écrire : marqué a_remplir, il plafonne le
-         verdict à non concluant (ADR-039)
+         verdict à non concluant (ADR-039). Un dépôt de skill ou un terrain sale est
+         refusé (la copie sous test serait le dernier commit, pas le disque) ; --tel-quel
+         porte les modifications non commitées dans la copie, telles quelles (ADR-042)
   porte  --cas <id> [--run <dir>] [--cases <dir>] [--repertoire <dir>]
          crée le dossier de run (défaut docs/device/runs/<horodatage>-<gel>-<aléa>),
          écrit texte-a-remettre.txt par la commande texte du harnais, passe la porte
@@ -264,7 +266,9 @@ function dedans(chemin, racines) {
 function commandeCas(argv) {
   const valeurs = litOptions(argv, {
     skill: "valeur", terrain: "valeur", id: "valeur", racine: "valeur", budget: "valeur", cases: "valeur",
+    "tel-quel": "drapeau",
   });
+  const telQuel = valeurs["tel-quel"] === true;
   const cases = casesDir(valeurs);
   const skillDonne = option(valeurs, "skill", { requis: false, question: "le chemin du skill à tester" });
   if (!skillDonne) refuse("cas : --skill est obligatoire — sans skill, il n'y a rien à tester ; rien ne s'écrit");
@@ -290,6 +294,27 @@ function commandeCas(argv) {
     if (!toplevel(terrain)) refuse(`cas : le terrain ${terrainDonne} n'est pas un dépôt git — un terrain sans révision ne se rejoue pas ; rien ne s'écrit`);
     if (resolve(terrain) === resolve(framework)) refuse(`cas : le skill et le terrain sont le même dépôt — le test écrirait dans la révision qu'il lit ; rien ne s'écrit`);
   }
+  // Un dépôt sale est refusé avant toute écriture : `git clone` ne copie que les commits, donc une
+  // modification non commitée disparaîtrait de la copie sous test sans un mot (mesuré le 2026-10-18 :
+  // `cas` sortait 0, le porcelain de `framework-origin` restait vide, le fichier modifié n'y était pas).
+  // `--tel-quel` lève le refus en portant l'arbre de travail dans la copie, et le dit au gel.
+  if (!telQuel) {
+    const sales = [];
+    const lireSale = (depot) =>
+      ((git(["-C", depot, "status", "--porcelain"], { refusSiEchec: false }) || "").split("\n").filter(Boolean));
+    const saleFramework = lireSale(framework);
+    if (saleFramework.length) sales.push(`le dépôt du skill ${framework} : ${saleFramework.slice(0, 3).join(", ")}${saleFramework.length > 3 ? `, … (${saleFramework.length})` : ""}`);
+    if (terrain) {
+      const saleTerrain = lireSale(terrain);
+      if (saleTerrain.length) sales.push(`le terrain ${terrain} : ${saleTerrain.slice(0, 3).join(", ")}${saleTerrain.length > 3 ? `, … (${saleTerrain.length})` : ""}`);
+    }
+    if (sales.length) {
+      refuse(
+        `cas : ${sales.join(" ; ")} — des modifications non commitées ne sont pas dans un clone, donc la copie sous test serait le dernier commit, pas ce que tu as sous les yeux ; commiter, ou passer --tel-quel pour tester l'arbre tel quel — rien ne s'écrit`,
+      );
+    }
+  }
+
   const budgetTexte = option(valeurs, "budget", { defaut: "3" });
   const budget = Number(budgetTexte);
   if (!Number.isInteger(budget) || budget < 1) usage(`--budget « ${budgetTexte} » hors domaine : un entier positif (refus 11)`);
@@ -318,11 +343,21 @@ function commandeCas(argv) {
     const clone = spawnSync("git", ["clone", "-q", "--no-hardlinks", DEPOT, join(origine, "terrain")], { encoding: "utf8" });
     if (clone.status !== 0) refuse(`cas : le terrain proposé (clone du dépôt courant) ne s'écrit pas : ${(clone.stderr || "").trim()}`);
   }
-  // Les deux copies que le gel dérive : sous cette racine, le cas doit déjà les avoir.
+  // Les deux copies que le gel dérive : sous cette racine, le cas doit déjà les avoir. `--tel-quel` les
+  // copie au lieu de les cloner, parce qu'un clone ne porte que les commits : la copie porte alors l'arbre
+  // de travail tel quel, modifications non commitées comprises, et son porcelain le dit au gel.
   for (const [source, label] of [["framework", "framework-origin"], ["terrain", "terrain"]]) {
     const cible = join(espace, label);
-    const r = spawnSync("git", ["clone", "-q", "--no-hardlinks", join(origine, source), cible], { encoding: "utf8" });
-    if (r.status !== 0) refuse(`cas : le clone ${cible} ne s'écrit pas : ${(r.stderr || "").trim()}`);
+    if (telQuel) {
+      try {
+        cpSync(join(origine, source), cible, { recursive: true, verbatimSymlinks: false });
+      } catch (e) {
+        refuse(`cas : la copie tel-quel de ${cible} a échoué (${e.message}) — rien ne se gèle sur une copie partielle`);
+      }
+    } else {
+      const r = spawnSync("git", ["clone", "-q", "--no-hardlinks", join(origine, source), cible], { encoding: "utf8" });
+      if (r.status !== 0) refuse(`cas : le clone ${cible} ne s'écrit pas : ${(r.stderr || "").trim()}`);
+    }
     spawnSync("git", ["-C", cible, "checkout", "-q", "--detach", "HEAD"], { encoding: "utf8" });
   }
 

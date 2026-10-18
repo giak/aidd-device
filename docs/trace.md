@@ -4061,3 +4061,85 @@ run (toujours aucun fil : `threads 0`, `messages 0`). Rien n'est commité.
 
 **Mémoires.** `6b966f30` : les deux décisions, le guide, le déplacement, le défaut `--cases` et son contrôle,
 et ce qui reste non mesuré.
+
+## Séance 65 — 2026-10-18 (le guide est réécrit autour de la prise en main)
+
+**Objectif.** Le relevé de l'opérateur, en une phrase : « le guide ne reflète pas le principe de
+l'orchestrateur : on arrive, on demande de tester un truc, cela nous prend en main pour conduire le test ;
+on n'a pas fait ça ? » Non. Le guide écrit à la Séance 64 faisait de la personne un opérateur : cinq
+commandes à taper, un `expected.json` à éditer, un falsificateur à inventer, un re-gel à lancer. La
+plomberie, pas la promesse de `AGENTS.md` et de l'[ADR-038](DECISIONS.md).
+
+**La décision.** L'opérateur tranche : **l'agent conduit, la personne confirme**. [ADR-041](DECISIONS.md)
+écrit la règle : l'agent lit le skill et propose la promesse, le produit attendu, la ligne du §5, le §6, la
+marque `P` et la première réponse figée ; la personne confirme ou corrige ; puis l'agent écrit et re-gèle.
+La fabrique ne bouge pas ([ADR-039](DECISIONS.md)) : elle dit qui remplit, pas ce que la machine devine.
+
+**Ce qui a été réécrit.** [guide-utilisateur.md](guide/guide-utilisateur.md) passe de l'exploitation à la
+prise en main : « test ça » et ce que l'agent déclenche, les deux choses à confirmer, les trois gestes qui
+restent à la personne, ce qu'elle lit à la fin (bloc `▸ VERDICT` observé le 2026-10-18), lire son verdict,
+quand ça s'arrête, ce que personne ne peut promettre ; les commandes ne vivent plus que dans une annexe de
+six lignes. `ORCHESTRATEUR.md` §2 dit qui remplit et §4 qui tranche ; la [spec du guide](tasks/2026_10/2026-10-18-170751-guide-utilisateur/2026-10-18-170751-spec.md)
+gagne son AC5 (aucune commande présentée comme un geste de la personne) et sa révision datée ; le README et
+le tableau de bord suivent.
+
+**Vérifié.** `node docs/device/harness/liens.mjs` → **46** fichiers, **520** liens hors code, **0 mort**,
+`exit 0` (**525** une fois cette section écrite). Le banc n'est pas relancé : aucun fichier du harnais ne bouge dans cette séance, et son dernier
+passage sur cet arbre (Séance 64) rendait **149/149 PASS**, `exit 0`.
+
+**Ce que ça ne prouve pas.** Que le parcours fonctionne : aucune session n'a encore dit « test ça » pour de
+vrai, et rien ne mesure qu'un agent suive la page. La promesse confirmée n'est pas vérifiée *a posteriori*
+contre le skill : le reçu porte la phrase confirmée, pas la preuve qu'elle était juste. Aucun lecteur
+étranger n'a suivi le guide.
+
+**Prochaines étapes.** Le premier « test ça » réel, sur un skill choisi ; puis la mesure d'AC1 par un
+lecteur étranger. Rien n'est commité.
+
+**Mémoires.** `6b966f30` mise à jour (le guide est réécrit ; l'ADR-041 dit qui remplit), pas dupliquée.
+
+## Séance 66 — 2026-10-18 (le scénario « je travaille sur un truc » : le clone perdait la modification)
+
+**Objectif.** La demande : « imaginons une utilisation : j'ouvre une session, je demande, je suis en train
+de travailler sur un truc (dernier commit, ou fichier modifié non commité dans le framework AIDD) et je
+demande de tester. Que se passe-t-il, comment je suis pris en main, pas à pas ? » Le scénario a été joué
+plutôt que raconté.
+
+**Ce que le scénario a trouvé.** Un skill modifié **non commité** : `cas` sortait `0`, `freeze ok`, et la
+copie sous test **ne portait pas la modification** (`diff` → `DIFFERENTE`, `porcelain` de
+`framework-origin` → `0`), sans un mot. Mécanique : `cas` fabrique `framework-origin` par `git clone`, et un
+clone ne porte que les commits. Le test aurait jugé le dernier commit pendant que la personne croyait
+tester son fichier ouvert. Avec un commit, la copie est identique et le gel enregistre la tête (`c7ba657`).
+
+**La décision.** L'opérateur tranche : **refuser, et exiger un choix explicite**. [ADR-042](DECISIONS.md) :
+`cas` refuse un dépôt de skill ou un terrain sale, nomme les fichiers, et propose commiter ou `--tel-quel` ;
+`--tel-quel` porte l'arbre de travail dans la copie, et le `porcelain` non vide que le gel enregistre le dit.
+
+**Ce qui a été écrit.** `orchestrer.mjs` gagne `--tel-quel` et le refus qui le précède (après tous les
+autres refus, donc une invocation refusée n'écrit rien) ; la copie tel-quel remplace le clone pour les deux
+arbres ; le banc gagne les contrôles **150** (dépôt sale refusé), **151** (`--tel-quel` porte la
+modification) et **152** (terrain sale refusé) ; `ORCHESTRATEUR.md` §5 compte ce troisième refus propre à
+l'orchestrateur, et le [guide utilisateur](guide/guide-utilisateur.md) nomme la condition « ton dépôt doit
+être propre ».
+
+**Deux pièges rencontrés en écrivant les contrôles.** Le premier : `freeze` refuse qu'un fichier du cas
+nomme la **racine en clair**, et un dépôt sale posé *sous* la racine des espaces de travail fait écrire son
+chemin dans `contexte.arbres` ; les deux dépôts sales du banc vivent donc hors de la racine. Le second : un
+contrôle qui salissait un arbre partagé du banc (`$OTERRAIN`) a été remplacé par son propre dépôt, pour ne
+pas laisser un arbre sale derrière lui si le nettoyage échouait.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **152/152 PASS**, `exit 0`, aucun `FAIL`.
+`node docs/device/harness/liens.mjs` → **46** fichiers, **526** liens hors code, **0 mort**, `exit 0` (**530** une fois cette section et le tableau de bord
+écrits).
+`node --check orchestrer.mjs` et `bash -n banc-harnais.sh` → ok. Le refus rejoue à la main rend, mot pour
+mot : `cas : le dépôt du skill /tmp/guide-user/framework : M skills/demo/SKILL.md — des modifications non
+commitées ne sont pas dans un clone…`, `exit 1` ; le même cas en `--tel-quel` sort `exit 0` avec une copie
+`IDENTIQUE` à l'arbre de travail.
+
+**Ce que ça ne prouve pas.** Que le scénario complet fonctionne : aucune session n'a encore ouvert un cas
+tel-quel, donc rien ne dit ce qu'une session fait d'un arbre dont le `porcelain` n'est pas vide ; et
+`--tel-quel` ne dit pas que l'arbre porté est celui que la personne voulait tester.
+
+**Prochaines étapes.** Le premier « test ça » réel, sur un skill choisi, et la même question posée au
+scénario : que fait un agent qui suit le runbook, du début à la fin ? Rien n'est commité.
+
+**Mémoires.** `6b966f30` mise à jour (le refus, `--tel-quel`, les contrôles 150 à 152), pas dupliquée.

@@ -22,8 +22,9 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 - [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 118 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/guide/guide-utilisateur.md](docs/guide/guide-utilisateur.md) — **le guide utilisateur** : tu
-  arrives avec un skill à tester, tu repars avec un reçu et un verdict, et tu sais ce que ce verdict
-  atteste. Cinq commandes, trois gestes humains, les refus fréquents et leur geste.
+  arrives avec un skill à tester, tu dis « test ça » dans une session d'agent, l'agent conduit, tu confirmes
+  ce qu'il a lu de ton skill, tu fais trois gestes, et tu lis le verdict avec la phrase qui dit ce qu'il
+  atteste. Les commandes ne sont qu'en annexe (ADR-041).
 - [docs/guide/guide-du-test-de-bout-en-bout.md](docs/guide/guide-du-test-de-bout-en-bout.md) — le guide
   pédagogique : lire un reçu, rejouer un gel, provoquer trois refus, lire un tableau, lire le cas
   jouet ; chaque sortie a été observée, et chaque chapitre se termine par un refus provoqué.

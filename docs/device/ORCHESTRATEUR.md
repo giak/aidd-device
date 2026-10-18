@@ -53,10 +53,12 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 
 `cas` fabrique un **squelette** : le falsificateur de la promesse du skill reste marqué `a_remplir`, et
 tant qu'il l'est, le reçu porte la limite `attendu_incomplet` et le verdict plafonne à `non concluant`
-([ADR-039](../DECISIONS.md)). La personne remplit la ligne du §5 que la fabrique laisse ouverte, le §6 de la
-demande, la marque `P` de l'attendu et la première des deux réponses figées, puis
-re-gèle : `run.mjs freeze --refreeze` est la seule commande qui re-gèle, et l'orchestrateur ne l'appelle
-jamais.
+([ADR-039](../DECISIONS.md)). **L'agent remplit ce squelette, la personne le confirme** ([ADR-041](../DECISIONS.md)) :
+il lit le skill, propose la promesse en une phrase, le produit attendu, la ligne du §5 que la fabrique
+laisse ouverte, le §6 de la demande, la marque `P` de l'attendu et la première des deux réponses figées ;
+la personne corrige ou confirme, puis l'agent écrit et re-gèle. `run.mjs freeze --refreeze` est la seule
+commande qui re-gèle, et l'orchestrateur ne l'appelle jamais : le re-gel est un geste de l'agent, explicite,
+jamais un effet de bord d'une autre commande.
 
 ## 3. Les quatre blocs
 
@@ -101,7 +103,8 @@ La commande précède sa sortie : le bloc dit ce qui a été lancé avant de dir
   falsificateurs imposent. Sans `--verdict`, l'orchestrateur l'imprime avec sa raison et n'écrit rien :
   c'est la personne qui tranche, et la même commande avec `--verdict` écrit le reçu une seule fois.
 - **La personne décide** de `--difference`, `--phrase` et `--limites` : trois faits qu'aucune commande ne
-  dérive, et que `compare` refuse vides.
+dérive, et que `compare` refuse vides. L'agent les propose, elle les tranche ; un agent qui les remplirait
+seul écrirait sa propre opinion dans la pièce qui doit rester la sienne.
 - **L'orchestrateur ne décide de rien.** Il ne contourne pas un refus, ne relance pas une commande qui a
   refusé, et ne réécrit jamais un reçu existant.
 
@@ -113,11 +116,14 @@ console, avec le code de sortie, et il nomme la pièce qui manque. Trois d'entre
 ensuite, parce que la personne peut les lever seule : une porte déjà là (un nouveau `--run`), un fil
 introuvable (ouvrir le fil d'abord), un verdict interdit (`--verdict` absent pour lire la valeur imposée).
 
-Deux refus sont propres à l'orchestrateur et ne figurent pas dans le tableau parce qu'ils n'existaient pas
+Trois refus sont propres à l'orchestrateur et ne figurent pas dans le tableau parce qu'ils n'existaient pas
 au harnais : **`suite` sans produit nommé** (ni `--produit`, ni `attendu_details.produit.racine`, ni
 fichier changé sous l'arbre de travail) et **`suite` sur un produit qui sort de l'arbre travail**. Le
 second est la porte de `collect`, lue avant lui par l'orchestrateur pour ne pas laisser le harnais écrire un
-manifeste que le reçu refusera.
+manifeste que le reçu refusera. Le troisième est né du scénario « je suis en train de travailler sur un truc » :
+**un dépôt de skill ou un terrain sale est refusé**, les fichiers nommés, parce qu'un clone ne porte que les
+commits et que la copie sous test serait le dernier commit sans le dire ; `--tel-quel` lève le refus en portant
+l'arbre de travail dans la copie, et le porcelain que le gel enregistre le dit ([ADR-042](../DECISIONS.md)).
 
 ## 6. Ce que ce dispositif n'atteste pas
 

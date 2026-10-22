@@ -5,16 +5,19 @@
 // vit dans run.mjs, et le texte d'un refus est recopié tel quel, jamais reformulé. Ce fichier ne sait que
 // trois choses : dériver ce qu'une personne ne peut pas retaper (la demande, la commande, le chemin), dire
 // l'étape en six lignes (le contrat de narration), et refuser quand une pièce manque.
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync,
 } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import { createServer } from "node:net";
+import { exportTrace as exporterTraceClient, session as sessionClient } from "./clients.mjs";
+import { ecrireRapport } from "./rapport.mjs";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
-const DEPOT = resolve(ICI, "../..");
+const DEPOT = resolve(ICI, "../../..");
 const HARNAIS = join(ICI, "run.mjs");
 
 const USAGE = `usage: orchestrer.mjs <commande> [options]
@@ -32,14 +35,25 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
   porte  --cas <id> [--run <dir>] [--cases <dir>] [--repertoire <dir>]
          crée le dossier de run (défaut docs/device/runs/<horodatage>-<gel>-<aléa>),
          écrit texte-a-remettre.txt par la commande texte du harnais, passe la porte
-         avec ce texte, puis imprime le texte à coller et les deux réponses figées.
+         avec ce texte, puis imprime le texte à coller, les deux réponses figées et la
+         durée observée du cas, lue dans ses reçus (n et réserves), avant l'ouverture de la session.
          Une porte ne s'écrase pas : un dossier qui porte déjà gate.json est refusé
-  suite  --cas <id> --fil <id> [--run <dir>] [--par <qui>] [--temoignage <texte>]
+  ouvrir --cas <id> --run <dir> [--cases <dir>] [--api <url>] [--modele <fournisseur/modèle>]
+         [--delai <minutes>]
+         ouvre la session opencode par l'API de son serveur — le sien sur un port libre, ou celui
+         que --api nomme —, envoie le texte que la porte a écrit (sha256 de gate.json vérifié),
+         puis joue la pause : à chaque question posée, envoie la réponse figée du cas et répond au
+         formulaire par l'option marquée Recommandé. S'arrête quand la session devient inactive,
+         et refuse au délai (défaut 30 min). N'écrit rien dans le run : elle imprime le fil, que
+         suite reçoit ensuite ; elle n'atteste aucun geste humain
+  suite  --cas <id> --fil <id> [--run <dir>] [--client auto|freebuff|opencode]
+         [--store <racine opencode>] [--par <qui>] [--temoignage <texte>]
          [--produit <chemin>] [--sans-produit] [--cases <dir>]
-         exporte la trace du fil (la commande que faits écrit, exécutée sans être
-         retapée), écrit faits.json, collecte le produit sous raw/<cas>/ — ou constate
-         son absence avec --sans-produit — puis s'arrête et nomme le chemin de
-         last-message.md. Aucune session n'est ouverte : le fil doit exister déjà
+         exporte la trace du fil par l'adaptateur du client, écrit faits.json, collecte
+         le produit sous raw/<cas>/ — ou constate son absence avec --sans-produit — puis
+         s'arrête et nomme le chemin de last-message.md. --client auto (défaut) essaie
+         Freebuff puis opencode ; les deux ou aucun sont des refus qui nomment --client.
+         Aucune session n'est ouverte : le fil doit exister déjà
   fin    --cas <id> [--run <dir>] --difference <texte> --phrase <texte>
          [--verdict conforme|ecart|non concluant] [--limites <texte>] [--cases <dir>]
          demande au reçu le verdict que les falsificateurs imposent (--sans-ecrire), le
@@ -48,6 +62,10 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
   lire   --cas <id> [--run <dir>]
          relit receipt.json et output.json et réimprime le bloc de verdict, sans rien
          écrire. Un reçu absent est refusé, son chemin nommé
+  rapport --cas <id> [--run <dir>] [--remplacer]
+         écrit RAPPORT.md à la racine du run, dérivé du reçu, de l'output et de la trace,
+         sans modèle ni réseau. Un rapport déjà présent est refusé sans --remplacer ;
+         fin l'écrit automatiquement quand le reçu et l'output viennent d'être écrits
 
 codes : 0 tout est allé au bout ; 1 refus motivé, le texte du harnais recopié tel quel ;
         2 commande mal formée (option absente, valeur hors domaine).
@@ -70,6 +88,63 @@ function ecrit(lignes) {
 }
 const uneLigne = (texte) => String(texte === null || texte === undefined ? "" : texte).replace(/\s+/g, " ").trim();
 
+// The duration of a case is read from its real receipts, never from a table that a new run cannot
+// move. Each receipt measures from the session's opening to the last message, then to the receipt:
+// the sample is the set of receipts whose `cas` is the one `porte` is opening. A receipt with a
+// missing, unparsable or negative instant is ignored; a `non concluant` verdict still counts, because
+// a verdict is not a duration. The numbers of models and tools are derived too; the gestures are not
+// compared, and the line says so.
+const dureeMin = (s) => `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s`;
+const entierDe5 = (s) => Math.ceil(s / 300) * 5;
+function recusDuCas(cas) {
+  const runs = join(DEPOT, "docs/device/runs");
+  if (!existsSync(runs)) return [];
+  const mesures = [];
+  for (const nom of readdirSync(runs)) {
+    const chemin = join(runs, nom, "receipt.json");
+    if (!existsSync(chemin)) continue;
+    let recu;
+    try {
+      recu = JSON.parse(readFileSync(chemin, "utf8"));
+    } catch {
+      continue;
+    }
+    if (!recu || recu.cas !== cas) continue;
+    const debut = Date.parse(recu.session?.ouverte_le ?? recu.session_verifiee?.ouverte_le ?? recu.horodatage_debut);
+    const fin = Date.parse(recu.horodatage_fin);
+    const ecrit = Date.parse(recu.recu_ecrit_le);
+    if (!Number.isFinite(debut) || !Number.isFinite(fin) || !Number.isFinite(ecrit)) continue;
+    if (fin < debut || ecrit < fin) continue;
+    mesures.push({
+      total_s: Math.round((ecrit - debut) / 1000),
+      modele: recu.session?.modele ?? recu.session_verifiee?.modele ?? null,
+      outil: recu.session?.outil ?? recu.session_verifiee?.outil ?? null,
+    });
+  }
+  return mesures;
+}
+function dureeDuCas(cas) {
+  const mesures = recusDuCas(cas);
+  if (mesures.length === 0) return { duree: "aucune mesure pour ce cas", echantillon: "0 run ; aucune durée ne se promet" };
+  const totaux = mesures.map((m) => m.total_s);
+  const bas = Math.min(...totaux);
+  const haut = Math.max(...totaux);
+  const modeles = new Set(mesures.map((m) => m.modele).filter(Boolean)).size;
+  const outils = new Set(mesures.map((m) => m.outil).filter(Boolean)).size;
+  const reserves = [];
+  if (modeles) reserves.push(`${modeles} modèle${modeles > 1 ? "s" : ""}`);
+  if (outils) reserves.push(`${outils} outil${outils > 1 ? "s" : ""}`);
+  reserves.push("gestes non comparés");
+  const mesure = bas === haut ? dureeMin(bas) : `${dureeMin(bas)} à ${dureeMin(haut)}`;
+  const fourchette = entierDe5(bas) === entierDe5(haut)
+    ? `${entierDe5(bas)} min`
+    : `${entierDe5(bas)} à ${entierDe5(haut)} min`;
+  return {
+    duree: `${fourchette}, ouverture et réponses comprises`,
+    echantillon: `${mesures.length} run${mesures.length > 1 ? "s" : ""} ; mesuré ${mesure} (session + harnais) ; ${reserves.join(", ")}`,
+  };
+}
+
 function blocEtape({ rang, total, titre, fait, commande, attendu, obtenu, lit }) {
   ecrit([
     `▸ ÉTAPE ${rang}/${total} — ${titre}`,
@@ -89,10 +164,12 @@ function blocRefus({ texte, empeche, geste }) {
     "",
   ]);
 }
-function blocFin({ etat, pieces, ensuite }) {
+function blocFin({ etat, pieces, duree = null, echantillon = null, ensuite }) {
   ecrit([
     `▸ FIN — ${etat}`,
     `  pièces              : ${pieces}`,
+    ...(duree ? [`  durée estimée       : ${duree}`] : []),
+    ...(echantillon ? [`  échantillon         : ${echantillon}`] : []),
     `  à lire ensuite      : ${ensuite}`,
     "",
   ]);
@@ -218,6 +295,14 @@ function racineParDefaut() {
   const home = process.env.HOME;
   return home ? join(home, "aidd-device-work") : null;
 }
+// The default case id is built from the skill's name. A file called `SKILL.md` names its folder, since
+// « skill » distinguishes no case; every other file keeps its stem. The result is slugged before the
+// domain check, because `basename(skill)` alone refused any uppercase name (`SKILL`, `PLAYBOOK`).
+function slugDeSkill(skill) {
+  const base = basename(skill);
+  const nom = base.toLowerCase() === "skill.md" ? basename(dirname(skill)) : base.replace(/\.[^.]+$/, "");
+  return nom.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
 function casesDir(valeurs) {
   return resolve(option(valeurs, "cases", { defaut: join(DEPOT, "docs/device/CASES") }));
 }
@@ -322,7 +407,10 @@ function commandeCas(argv) {
   const racine = option(valeurs, "racine", { defaut: null }) || racineParDefaut();
   if (!racine) refuse("cas : aucune --racine et aucun $HOME pour la déduire — l'espace de travail ne se devine pas ; rien ne s'écrit");
 
-  const id = option(valeurs, "id", { defaut: `${horodatage()}-${basename(skill).replace(/\.[^.]+$/, "")}` });
+  const idDonne = Object.prototype.hasOwnProperty.call(valeurs, "id");
+  const slugSkill = slugDeSkill(skill);
+  const id = option(valeurs, "id", { defaut: `${horodatage()}-${slugSkill}` });
+  if (!idDonne && !slugSkill) usage(`cas : le chemin « ${skillDonne} » ne donne aucun nom de cas — passe --id <slug>`);
   if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) usage(`--id « ${id} » hors domaine : des minuscules, des chiffres et des tirets`);
   const existants = existsSync(cases) ? readdirSync(cases).filter((n) => n.startsWith(id + ".")) : [];
   if (existants.length) refuse(`cas : le cas ${id} existe déjà (${existants.join(", ")}) — rien n'est écrasé ; pour le refaire, un re-gel explicite est une autre commande`);
@@ -406,7 +494,7 @@ ${texte}
 
 ## 6. Ce qu'elle doit produire
 
-**À REMPLIR** : le chemin exact du produit, relatif au répertoire de travail (\`attendu_details.produit.racine\` de l'attendu).
+**À REMPLIR** : le chemin exact du produit, relatif à la racine du cas (\`attendu_details.produit.racine\` de l'attendu), par exemple \`terrain/aidd_docs\`.
 
 ## 7. Ce qui lui est interdit
 
@@ -447,6 +535,12 @@ Answer from the repository. If it cannot be read there, say so and stop.
         "toute écriture git et tout appel réseau",
         "écrire dans les configurations d'outils IA du poste",
       ],
+    },
+    cloisonnement: {
+      lecture: { autorisees: ["terrain", "framework-origin"] },
+      ecriture: { autorisees: ["terrain/aidd_docs"] },
+      reseau: "interdit",
+      fichiers_de_contexte: "interdits",
     },
     attendu: "À REMPLIR — ce que la session doit faire, dans quel ordre, et la preuve de chaque geste.",
     attendu_details: {
@@ -521,7 +615,7 @@ function commandePorte(argv) {
   const texte = harnaisOuRefus(["texte", "--case", cas, "--cases", cases], "le texte remis à la session doit venir de la commande qui le dérive, jamais d'une recopie");
   const cheminTexte = join(run, "texte-a-remettre.txt");
   writeFileSync(cheminTexte, texte, "utf8");
-  harnaisOuRefus(
+  const sortiePreflight = harnaisOuRefus(
     ["preflight", "--case", cas, "--cases", cases, "--run", run, "--repertoire", repertoire, "--texte", cheminTexte],
     "aucune session ne s'ouvre sans porte : c'est la seule pièce qui distingue un run passé par la porte d'un run qui l'a sautée",
   );
@@ -530,7 +624,7 @@ function commandePorte(argv) {
     fait: "écrire le texte substitué, puis autoriser l'ouverture dans l'arbre travail",
     commande: commandeHarnais(["preflight", "--case", cas, "--run", run, "--repertoire", repertoire, "--texte", cheminTexte]),
     attendu: "« preflight ok », un gate.json à la fin, et rien avant",
-    obtenu: readFileSync(join(run, "gate.json"), "utf8").replace(/\s+/g, " ").slice(0, 220),
+    obtenu: uneLigne(sortiePreflight),
     lit: "le dossier autorisé est celui du gel, il n'a pas bougé depuis, et le texte remis est le §5 substitué",
   });
   const attendu = expectedDe(cas, cases);
@@ -547,9 +641,286 @@ function commandePorte(argv) {
   blocFin({
     etat: `porte passée, ${reponses.length} réponse(s) figée(s) — la session s'ouvre maintenant, et l'orchestrateur attend son fil`,
     pieces: `${join(run, "gate.json")}, ${cheminTexte}`,
-    ensuite: `ouvrir le fil dans ${repertoire}, coller le texte, puis orchestrer.mjs suite --cas ${cas} --fil <id-du-fil>`,
+    ...dureeDuCas(cas),
+    ensuite: `orchestrer.mjs ouvrir --cas ${cas} --run ${run} (la session opencode s'ouvre par l'API et joue la pause), ou ouvrir le fil dans ${repertoire} et coller le texte, puis orchestrer.mjs suite --cas ${cas} --fil <id-du-fil>`,
   });
   process.exit(0);
+}
+
+// ---------------------------------------------------------------------------------------------
+// ouvrir — la session par l'API d'opencode, et la pause jouée par le cas (spec 2026-10-22-000407).
+// La commande lance `opencode serve`, envoie le texte que la porte a écrit — jamais une recopie —,
+// et répond à chaque question par la réponse figée du cas puis par l'option marquée Recommandé. Elle
+// n'écrit rien : le fil se dit, et la chaîne suite → fin reste la seule qui mesure.
+
+class Refus extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "Refus";
+  }
+}
+
+const dormir = (ms) => new Promise((fin) => setTimeout(fin, ms));
+
+function portLibre() {
+  return new Promise((ok, ko) => {
+    const sonde = createServer();
+    sonde.once("error", ko);
+    sonde.listen(0, "127.0.0.1", () => {
+      const { port } = sonde.address();
+      sonde.close(() => ok(port));
+    });
+  });
+}
+
+function binaireOpencode() {
+  const dirs = (process.env.PATH || "").split(":").filter(Boolean);
+  return dirs.map((d) => join(d, "opencode")).find((c) => existsSync(c)) || null;
+}
+
+// Une seule requête, un seul refus : le serveur est celui d'opencode, son mot de passe vient de sa
+// propre sortie, et rien ne se devine quand il ne répond pas.
+async function requete(api, chemin, { methode = "GET", corps = null, motDePasse = null } = {}) {
+  const entetes = {};
+  if (corps !== null) entetes["content-type"] = "application/json";
+  if (motDePasse) entetes.authorization = "Basic " + Buffer.from(`opencode:${motDePasse}`).toString("base64");
+  let reponse;
+  try {
+    reponse = await fetch(api + chemin, {
+      method: methode, headers: entetes, body: corps === null ? undefined : JSON.stringify(corps),
+    });
+  } catch (e) {
+    throw new Refus(`${api}${chemin} ne répond pas (${e.cause ? e.cause.code : e.message}) — aucun serveur opencode à cette adresse`);
+  }
+  const texte = await reponse.text();
+  let json = null;
+  try {
+    json = texte ? JSON.parse(texte) : null;
+  } catch {
+    json = null;
+  }
+  return { code: reponse.status, json };
+}
+
+async function demarrerServeur(binaire) {
+  const port = await portLibre();
+  const enfant = spawn(binaire, ["serve", "--hostname", "127.0.0.1", "--port", String(port)], {
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let sortie = "";
+  let erreur = null;
+  enfant.on("error", (e) => {
+    erreur = e;
+  });
+  const lire = (bloc) => {
+    sortie += bloc.toString();
+  };
+  enfant.stdout.on("data", lire);
+  enfant.stderr.on("data", lire);
+  const arreter = () => {
+    try {
+      enfant.kill("SIGTERM");
+    } catch {
+      // déjà sorti : rien à arrêter
+    }
+  };
+  const limite = Date.now() + 20000;
+  while (Date.now() < limite) {
+    if (erreur) throw new Refus(`${binaire} ne se lance pas (${erreur.code || erreur.message}) — aucune session ne s'ouvre sans serveur`);
+    const url = sortie.match(/server listening on (http:\/\/\S+)/);
+    const motDePasse = sortie.match(/server password (\S+)/);
+    if (url && motDePasse) return { url: url[1], motDePasse: motDePasse[1], arreter };
+    if (enfant.exitCode !== null) {
+      arreter();
+      throw new Refus(`opencode serve est sorti (code ${enfant.exitCode}) — ${uneLigne(sortie).slice(0, 200)}`);
+    }
+    await dormir(150);
+  }
+  arreter();
+  throw new Refus(`opencode serve n'a annoncé ni son url ni son mot de passe en 20 s — ${uneLigne(sortie).slice(0, 200)}`);
+}
+
+async function envoyerTexte(api, fil, motDePasse, texte) {
+  const envoi = await requete(api, `/api/session/${fil}/prompt`, { methode: "POST", motDePasse, corps: { text: texte } });
+  if (envoi.code !== 200) {
+    throw new Refus(`le message ne part pas (${envoi.code}) — ${uneLigne(JSON.stringify(envoi.json)).slice(0, 200)}`);
+  }
+  return envoi.json?.data?.time?.created ?? Date.now();
+}
+
+async function estInactive(api, fil, motDePasse, reference) {
+  const liste = await requete(api, `/api/session/${fil}/message`, { motDePasse });
+  if (liste.code !== 200 || !Array.isArray(liste.json?.data)) {
+    throw new Refus(`les messages de ${fil} ne se lisent pas (${liste.code}) — sans eux, l'inactivité ne se constate pas`);
+  }
+  return liste.json.data.some((m) => m.type === "idle" && (m.time?.created ?? 0) >= reference);
+}
+
+// La règle de la spec §5 : l'option marquée Recommandé, sinon la première ; un tableau quand le champ
+// en est un ; le défaut d'un booléen ou d'un nombre ; et le refus pour tout le reste, parce qu'un texte
+// tapé à la place d'une personne n'est pas une réponse figée.
+function repondreAuFormulaire(formulaire) {
+  const answer = {};
+  const choix = [];
+  for (const champ of formulaire.fields || []) {
+    const cle = champ.key || champ.name;
+    if (!cle) throw new Refus(`le formulaire ${formulaire.id} a un champ sans clé — la réponse ne s'invente pas`);
+    const options = champ.options || [];
+    if (options.length) {
+      const preferee = options.find((o) => /recommand|recommended/i.test(`${o.label ?? ""} ${o.value ?? ""}`)) || options[0];
+      const valeur = preferee.value ?? preferee.label;
+      answer[cle] = champ.type === "array" ? [valeur] : valeur;
+      choix.push(`${cle} = ${uneLigne(valeur)}`);
+      continue;
+    }
+    if (champ.default !== undefined && ["boolean", "number", "integer"].includes(champ.type)) {
+      answer[cle] = champ.default;
+      choix.push(`${cle} = ${champ.default} (défaut du champ)`);
+      continue;
+    }
+    throw new Refus(`le formulaire ${formulaire.id} demande « ${cle} » sans option ni défaut — la commande ne tape pas un texte à la place d'une personne`);
+  }
+  return { corps: { answer }, choix };
+}
+
+async function commandeOuvrir(argv) {
+  const valeurs = litOptions(argv, {
+    cas: "valeur", run: "valeur", cases: "valeur", api: "valeur", modele: "valeur", delai: "valeur",
+  });
+  const cases = casesDir(valeurs);
+  const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
+  const minutesTexte = option(valeurs, "delai", { defaut: "30" });
+  const minutes = Number(minutesTexte);
+  if (!Number.isInteger(minutes) || minutes < 1) usage(`--delai « ${minutesTexte} » hors domaine : un entier de minutes, au moins 1`);
+  const modeleTexte = option(valeurs, "modele", { defaut: null });
+  let modele = null;
+  if (modeleTexte !== null) {
+    const coupe = modeleTexte.indexOf("/");
+    if (coupe < 1 || coupe === modeleTexte.length - 1) usage(`--modele « ${modeleTexte} » hors domaine : <fournisseur>/<modèle>`);
+    modele = { providerID: modeleTexte.slice(0, coupe), id: modeleTexte.slice(coupe + 1) };
+  }
+  const apiDonne = option(valeurs, "api", { defaut: null });
+  if (apiDonne !== null && !/^https?:\/\/\S+$/.test(apiDonne)) usage(`--api « ${apiDonne} » hors domaine : une url http(s), sans chemin`);
+
+  const gel = gelDe(cas, cases);
+  const run = runExiste(cas, valeurs);
+  const attendu = expectedDe(cas, cases);
+  const reponses = ((attendu.demande || {}).reponses_figees || []).filter((r) => typeof r === "string" && r.trim());
+
+  let code = 0;
+  let serveur = null;
+  try {
+    const porte = join(run, "gate.json");
+    if (!existsSync(porte)) throw new Refus(`aucune porte ${porte} — une session s'ouvre après preflight, jamais avant`);
+    const gate = JSON.parse(readFileSync(porte, "utf8"));
+    if (gate.cas !== cas) throw new Refus(`la porte ${porte} est celle du cas ${gate.cas}, pas de ${cas} — deux runs ne se mélangent pas`);
+    const cheminTexte = join(run, "texte-a-remettre.txt");
+    if (!existsSync(cheminTexte)) throw new Refus(`${cheminTexte} est absent — le texte de la porte est la seule chose que la session reçoit`);
+    const octets = readFileSync(cheminTexte);
+    const sha = createHash("sha256").update(octets).digest("hex");
+    const shaPorte = (gate.texte || {}).sha256;
+    if (shaPorte !== sha) {
+      throw new Refus(`${cheminTexte} n'est plus le texte que la porte a écrit (sha256 ${sha.slice(0, 8)} contre ${String(shaPorte).slice(0, 8)}) — la session ne reçoit pas un texte que la porte n'a pas autorisé`);
+    }
+    const geleTravail = (gel.arbres || []).find((t) => t.label === "travail");
+    if (!geleTravail) throw new Refus(`le gel de ${cas} ne nomme aucun arbre « travail » — la session n'a pas de dépôt où écrire`);
+    const travail = resolve(geleTravail.chemin);
+    if (!existsSync(travail)) throw new Refus(`l'arbre travail ${travail} n'existe pas — le gel le nomme, il ne le crée pas`);
+    if (!reponses.length) {
+      throw new Refus(`l'attendu de ${cas} ne fige aucune réponse (demande.reponses_figees) — sans elles, la pause se jouerait à la main, et c'est ce que cette commande retire`);
+    }
+
+    let api;
+    let motDePasse = null;
+    if (apiDonne !== null) {
+      api = apiDonne.replace(/\/+$/, "");
+      motDePasse = process.env.OPENCODE_SERVER_PASSWORD || null;
+    } else {
+      const binaire = binaireOpencode();
+      if (!binaire) throw new Refus("opencode est introuvable dans le PATH — sans serveur, aucune session ne s'ouvre ; installer opencode, ou nommer --api");
+      serveur = await demarrerServeur(binaire);
+      api = serveur.url;
+      motDePasse = serveur.motDePasse;
+    }
+
+    const creation = await requete(api, "/api/session", {
+      methode: "POST",
+      motDePasse,
+      corps: {
+        title: `run ${cas}`,
+        location: { directory: travail },
+        agent: "build",
+        ...(modele ? { model: modele } : {}),
+      },
+    });
+    if (creation.code !== 200 || !creation.json?.data?.id) {
+      throw new Refus(`la session ne s'ouvre pas (${creation.code}) — ${uneLigne(JSON.stringify(creation.json)).slice(0, 200)}`);
+    }
+    const fil = creation.json.data.id;
+    const m = creation.json.data.model;
+    const modeleReel = m ? `${m.providerID}/${m.id}` : "choisi par le serveur";
+
+    let reference = await envoyerTexte(api, fil, motDePasse, octets.toString("utf8"));
+    const jouees = [];
+    const limite = Date.now() + minutes * 60000;
+    for (;;) {
+      const attente = await requete(api, `/api/session/${fil}/form`, { motDePasse });
+      if (attente.code !== 200 || !Array.isArray(attente.json?.data)) {
+        throw new Refus(`les formulaires de ${fil} ne se lisent pas (${attente.code}) — la question ne se devine pas`);
+      }
+      const formulaire = attente.json.data[0];
+      if (formulaire) {
+        if (jouees.length >= reponses.length) {
+          throw new Refus(`la session a posé ${jouees.length + 1} question(s) et ${cas} n'en fige que ${reponses.length} — la suivante se fige dans l'attendu, jamais à la volée`);
+        }
+        // Le champ se remplit d'abord : un formulaire que la règle ne sait pas remplir se refuse
+        // avant qu'un message de plus parte vers la session.
+        const reponse = repondreAuFormulaire(formulaire);
+        reference = await envoyerTexte(api, fil, motDePasse, reponses[jouees.length]);
+        const envoi = await requete(api, `/api/session/${fil}/form/${formulaire.id}/reply`, {
+          methode: "POST", motDePasse, corps: reponse.corps,
+        });
+        if (envoi.code !== 204) {
+          throw new Refus(`le formulaire ${formulaire.id} refuse la réponse (${envoi.code}) — ${uneLigne(JSON.stringify(envoi.json)).slice(0, 200)}`);
+        }
+        jouees.push({ reponse: reponses[jouees.length], choix: reponse.choix });
+        continue;
+      }
+      if (await estInactive(api, fil, motDePasse, reference)) break;
+      if (Date.now() > limite) {
+        throw new Refus(`la session n'est pas devenue inactive en ${minutes} min — elle est peut-être encore vivante, et rien ne se conclut d'un tour inachevé`);
+      }
+      await dormir(2000);
+    }
+
+    blocEtape({
+      rang: 1, total: 1, titre: "la session",
+      fait: `ouvrir la session opencode dans ${travail}, envoyer le texte de la porte, jouer la pause`,
+      commande: serveur ? `opencode serve --hostname 127.0.0.1 --port ${String(serveur.url).split(":").pop()}` : `--api ${api}`,
+      attendu: `un fil, ${jouees.length} question(s) jouée(s), et une session inactive`,
+      obtenu: `${fil} ; ${jouees.length} question(s) ; modèle ${modeleReel} ; inactive`,
+      lit: "chaque réponse envoyée vient du cas : la pause n'a plus de geste à la main, et la trace la portera",
+    });
+    ecrit([
+      "Les réponses envoyées, dans l'ordre (le cas joue la pause, la personne ne la joue plus) :",
+      ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.choix.join(", ")}`),
+      "",
+      "Ce que ouvrir n'atteste pas : qu'une personne ait conduit le run. --par et --temoignage de suite le disent dans faits.json, et le reçu les relit.",
+      "",
+    ]);
+    blocFin({
+      etat: `session ${fil} inactive après ${jouees.length} question(s) — le run s'arrête là, et rien n'est encore mesuré`,
+      pieces: `aucune : ouvrir n'écrit rien ; le run tient à ${join(run, "gate.json")}`,
+      ensuite: `orchestrer.mjs suite --cas ${cas} --run ${run} --fil ${fil} --par « qui a réellement conduit le run » --temoignage « ce que ouvrir n'atteste pas »`,
+    });
+  } catch (e) {
+    if (!(e instanceof Refus)) throw e;
+    console.error("REFUS — " + e.message);
+    code = 1;
+  } finally {
+    if (serveur) serveur.arreter();
+  }
+  process.exit(code);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -573,12 +944,20 @@ function filDansBase(base, fil) {
   if (r.status !== 0) return false;
   return (r.stdout || "").trim() === "1";
 }
-function trouveBase(fil) {
+function essaiFreebuff(fil) {
   if (spawnSync("sqlite3", ["--version"], { encoding: "utf8" }).status !== 0) {
-    refuse("suite : sqlite3 est absent — la trace du fil vit dans la base du client, et elle ne se devine pas");
+    return { ok: false, raison: "sqlite3 est absent, donc aucune base Freebuff ne se lit" };
   }
-  for (const base of basesDuClient()) if (filDansBase(base, fil)) return base;
-  return null;
+  for (const base of basesDuClient()) if (filDansBase(base, fil)) return { ok: true, base };
+  return { ok: false, raison: `aucune base sous ${join(process.env.HOME || "~", ".config/freebuff-desktop/projects")} ne porte ce fil` };
+}
+function essaiOpencode(fil, { store, cwd }) {
+  try {
+    sessionClient("opencode", fil, { store, cwd });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, raison: e.message };
+  }
 }
 function runExiste(cas, valeurs, { requis = true } = {}) {
   const donnes = option(valeurs, "run", { defaut: null });
@@ -594,7 +973,7 @@ function runExiste(cas, valeurs, { requis = true } = {}) {
 function commandeSuite(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", temoignage: "valeur",
-    produit: "valeur", "sans-produit": "drapeau", cases: "valeur",
+    produit: "valeur", "sans-produit": "drapeau", cases: "valeur", client: "valeur", store: "valeur",
   });
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
@@ -606,10 +985,42 @@ function commandeSuite(argv) {
   }
   const fil = option(valeurs, "fil", { requis: false, question: "l'identifiant du fil ouvert dans le client" });
   if (!fil) refuse("suite : --fil est obligatoire — sans fil, il n'y a pas de trace, et rien ne s'invente (refus 7)");
-  const base = trouveBase(fil);
-  if (!base) refuse(`suite : le fil « ${fil} » n'existe dans aucune base du client (${join(process.env.HOME || "~", ".config/freebuff-desktop/projects")}) — ouvrir le fil d'abord, ou nommer le bon (refus 7)`);
+  const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
+  if (clientVoulu === "freebuff" && valeurs.store !== undefined) {
+    refuse("suite : --client freebuff refuse --store — ce store est celui d'opencode, et un client n'a qu'une source (refus 18)");
+  }
+  const storeBrut = option(valeurs, "store", { defaut: process.env.HOME ? join(process.env.HOME, ".local/share/opencode") : "" });
+  if (!storeBrut) refuse("suite : le store opencode se nomme par --store ou par HOME — sans lui, aucune session opencode ne se lit");
+  const store = resolve(storeBrut);
 
-  const travail = join(gel.racine_espace_de_travail, cas, "terrain");
+  const geleTravail = (gel.arbres ?? []).find((t) => t.label === "travail");
+  if (!geleTravail) refuse("suite : le gel ne nomme aucun arbre « travail » — le répertoire opencode ne se compare pas, et le produit n'a pas de source");
+  const travail = resolve(geleTravail.chemin);
+
+  let client;
+  let base = null;
+  if (clientVoulu === "freebuff") {
+    const essai = essaiFreebuff(fil);
+    if (!essai.ok) refuse(`suite : Freebuff ne connaît pas le fil « ${fil} » — ${essai.raison} ; ouvrir le fil d'abord, ou nommer le bon (refus 7)`);
+    client = "freebuff";
+    base = essai.base;
+  } else if (clientVoulu === "opencode") {
+    const essai = essaiOpencode(fil, { store, cwd: travail });
+    if (!essai.ok) refuse(`suite : opencode ne connaît pas le fil « ${fil} » dans ${travail} — ${essai.raison} ; ouvrir la session d'abord, ou nommer la bonne (refus 7)`);
+    client = "opencode";
+  } else {
+    const fb = essaiFreebuff(fil);
+    const oc = essaiOpencode(fil, { store, cwd: travail });
+    if (fb.ok && oc.ok) {
+      refuse(`suite : le fil « ${fil} » existe dans les deux clients (Freebuff ${fb.base}, opencode ${store}) — un run a un client, et --client le nomme (refus 10)`);
+    }
+    if (!fb.ok && !oc.ok) {
+      refuse(`suite : le fil « ${fil} » n'existe dans aucune base Freebuff, et opencode ne le connaît pas non plus — Freebuff : ${fb.raison} ; opencode : ${oc.raison} (refus 11)`);
+    }
+    client = fb.ok ? "freebuff" : "opencode";
+    base = fb.ok ? fb.base : null;
+  }
+
   mkdirSync(join(run, "trace"), { recursive: true });
   const trace = join(run, "trace", "echange.jsonl");
   if (!existsSync(trace)) writeFileSync(trace, "", "utf8");
@@ -618,26 +1029,30 @@ function commandeSuite(argv) {
 
   const par = option(valeurs, "par", { defaut: process.env.USER || "operateur" });
   const temoignage = option(valeurs, "temoignage", { defaut: "orchestrateur : le fil a été ouvert et suivi par la personne, aucune session n'est simulée" });
+  const argsFaits = ["faits", "--case", cas, "--cases", cases, "--client", client];
+  if (client === "freebuff") argsFaits.push("--base", base);
+  else argsFaits.push("--store", store);
+  argsFaits.push("--fil", fil, "--trace", trace, "--out", faits, "--par", par, "--fin", dateIso(), "--temoignage", temoignage);
   const sortieFaits = harnaisOuRefus(
-    ["faits", "--case", cas, "--cases", cases, "--base", base, "--fil", fil, "--trace", trace,
-      "--out", faits, "--par", par, "--fin", dateIso(), "--temoignage", temoignage],
+    argsFaits,
     "les faits sont ce que le reçu lira : un fait absent n'est pas un fait à remplir plus tard",
   );
-  const faitsLus = JSON.parse(readFileSync(faits, "utf8"));
-  const exportCmd = faitsLus.trace && faitsLus.trace.commande;
-  if (!exportCmd) refuse(`suite : ${faits} ne porte pas la commande d'export — la trace ne se recopie pas à la main (ADR-032)`);
-  const exp = spawnSync("bash", ["-c", exportCmd], { encoding: "utf8" });
-  if (exp.status !== 0) {
-    blocRefus({ texte: exp.stderr || `l'export a échoué (exit ${exp.status})`, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
+  let exp;
+  try {
+    exp = exporterTraceClient(client, fil, client === "freebuff"
+      ? { base, dest: trace }
+      : { store, cwd: travail, dest: trace, brut: join(run, "trace", "export-brut.json") });
+  } catch (e) {
+    blocRefus({ texte: e.message, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
     process.exit(1);
   }
   blocEtape({
     rang: 1, total: 2, titre: "la trace",
-    fait: "dériver les faits du fil, puis exécuter la commande d'export que les faits ont écrite",
-    commande: exportCmd,
+    fait: `dériver les faits du fil (${client}), puis exporter la trace par l'adaptateur du client`,
+    commande: exp.commande,
     attendu: "un faits.json et un export non vides, dans le dossier du run",
     obtenu: sortieFaits,
-    lit: "le reçu reconstruira cet export depuis la base : la pièce doit être exactement ce que la base rend",
+    lit: "le reçu rejouera cet export par le même adaptateur : la pièce doit être exactement ce que le client rend",
   });
 
   const produit = option(valeurs, "produit", { defaut: null });
@@ -733,6 +1148,10 @@ function commandeFin(argv) {
     process.exit(0);
   }
 
+  const cheminRapport = join(run, "RAPPORT.md");
+  if (existsSync(cheminRapport)) {
+    refuse(`fin : ${cheminRapport} existe déjà — un rapport ne doit pas rester à côté d'un reçu neuf ; le déplacer ou le nommer autrement, puis relancer`);
+  }
   const sortieReceipt = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", verdictDemande]);
   if (sortieReceipt.code !== 0) {
     blocRefus({
@@ -769,10 +1188,16 @@ function commandeFin(argv) {
     obtenu: sortieCompare.out,
     lit: "l'output reprend le verdict du reçu : deux pièces, une seule décision",
   });
+  let rapport;
+  try {
+    rapport = ecrireRapport({ runDir: run, cas, remplacer: false });
+  } catch (e) {
+    refuse(`${e.message} — le reçu et l'output sont écrits, la commande rapport peut les relire`);
+  }
   blocVerdict(recu, JSON.parse(readFileSync(join(run, "output.json"), "utf8")));
   blocFin({
-    etat: `run ${cas} clos — ${recu.verdict}`,
-    pieces: `${join(run, "receipt.json")}, ${join(run, "output.json")}`,
+    etat: `run ${cas} clos — ${recu.verdict}, rapport écrit`,
+    pieces: `${join(run, "receipt.json")}, ${join(run, "output.json")}, ${rapport.chemin}`,
     ensuite: `orchestrer.mjs lire --cas ${cas} --run ${run}`,
   });
   process.exit(0);
@@ -795,13 +1220,31 @@ function commandeLire(argv) {
   process.exit(0);
 }
 
+function commandeRapport(argv) {
+  const valeurs = litOptions(argv, { cas: "valeur", run: "valeur", remplacer: "drapeau" });
+  const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
+  const run = runExiste(cas, valeurs);
+  try {
+    const rapport = ecrireRapport({ runDir: run, cas, remplacer: valeurs.remplacer === true });
+    ecrit([`▸ RAPPORT — ${rapport.chemin}`, `  verdict             : ${rapport.verdict}`, ""]);
+  } catch (e) {
+    refuse(e.message);
+  }
+  process.exit(0);
+}
+
 // ---------------------------------------------------------------------------------------------
 
 const [commande, ...reste] = process.argv.slice(2);
-const COMMANDES = { cas: commandeCas, porte: commandePorte, suite: commandeSuite, fin: commandeFin, lire: commandeLire };
+const COMMANDES = {
+  cas: commandeCas, porte: commandePorte, ouvrir: commandeOuvrir, suite: commandeSuite,
+  fin: commandeFin, lire: commandeLire, rapport: commandeRapport,
+};
 if (!commande || commande === "--help" || commande === "-h") {
   process.stdout.write(USAGE + "\n");
   process.exit(commande ? 0 : 2);
 }
 if (!COMMANDES[commande]) usage(`commande inconnue « ${commande} » : ${Object.keys(COMMANDES).join(" | ")}`);
-COMMANDES[commande](reste);
+// `ouvrir` rend une promesse : elle s'attend ici, une seule fois, pour que son refus sorte en 1 et
+// que le serveur qu'elle a lancé soit arrêté avant la sortie.
+await COMMANDES[commande](reste);

@@ -61,8 +61,16 @@
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  commandeAttendue as commandeAttendueClient,
+  commandeExport,
+  session as sessionClient,
+  budget as budgetClient,
+  exportTrace as exporterTrace,
+  replayTrace as rejouerTrace,
+} from "./clients.mjs";
 
 const USAGE = `usage: run.mjs <commande> [options]
 
@@ -110,14 +118,18 @@ const USAGE = `usage: run.mjs <commande> [options]
            ici, une fois : une
            deuxième copie dériverait comme deux copies du gabarit d'export auraient
            dérivé (ADR-032)
-  faits    --case <id> --base <desktop-v2.db> --fil <thread> --trace <fichier> --out <faits.json>
-           --par <qui> --fin <date -Is> --temoignage <texte> [--attendu-vu oui|non] [--cases <dir>]
-           écrit les faits que receipt lira, sans les inventer : session (application, identifiant,
-           modele, ouverte_le), horodatage_debut (le premier message de l'utilisateur), le
-           répertoire de travail, la trace. Refuse un fil absent, un modèle vide, un chemin qui
-           ne résout pas, un fil hors de l'arbre « travail » du gel, un fil en worktree, une fin
-           antérieure au début, et un faits.json déjà écrit. --par, --fin et --temoignage sont
-           les trois faits que seule une personne peut donner : rien ne les remplace
+  faits    --case <id> --client <freebuff|opencode> [--base <desktop-v2.db>] [--store <dir>]
+           --fil <id> --trace <fichier> --out <faits.json> --par <qui> --fin <date -Is>
+           --temoignage <texte> [--attendu-vu oui|non] [--cases <dir>]
+           écrit les faits que receipt lira, sans les inventer : session (outil, application,
+           identifiant, modele, ouverte_le), horodatage_debut (le premier message de l'utilisateur),
+           le répertoire de travail, la trace. --client est optionnel : --base implique freebuff et
+           --store implique opencode ; les deux ensemble sont un refus. Freebuff lit desktop-v2.db en
+           -readonly ; opencode lit « opencode session export <id> » dans le répertoire de session et
+           normalise le JSON en JSONL. Refuse un fil absent, un modèle vide, un chemin qui ne résout
+           pas, un fil hors de l'arbre « travail » du gel, un fil en worktree, une fin antérieure au
+           début, et un faits.json déjà écrit. --par, --fin et --temoignage sont les trois faits que
+           seule une personne peut donner : rien ne les remplace
   receipt  --run <dir> --case <id> --faits <faits.json> [--verdict conforme|ecart|non concluant]
            [--limite <texte> ...] [--cases <dir>] [--sans-ecrire]
            --sans-ecrire calcule tout et n'écrit rien : le verdict qu'il proposerait, le
@@ -137,14 +149,16 @@ const USAGE = `usage: run.mjs <commande> [options]
            (ADR-028) : aucune mention, plusieurs fils, ou un autre fil, sont des refus.
            Il re-hache la copie sous raw/<case>/ contre le manifeste (ADR-030) : un
            fichier absent, en trop, ou dont le sha256 a changé, est un refus.
-           Il relit la base nommée par trace.base (ADR-031) : un fil absent, un
-           project_path hors de l'arbre gelé, un mode non local, un worktree, un modèle
-           ou une heure d'ouverture que la base démentent, sont des refus.
-           Il reconstruit l'export du §1.5 depuis cette base, sans jamais exécuter la
-           chaîne que la pièce cite (ADR-032) : trace.commande doit être égale, caractère
-           pour caractère, à la commande reconstruite, puis la requête s'exécute en
-           -readonly et ses octets se comparent au fichier exporté. Une différence est un
-           refus ; trace_lue porte le sha256 du fichier et l'heure du rejeu.
+           Il lit session.outil et trace.client, refuse s'ils diffèrent ou sortent de
+           freebuff|opencode (ADR-044). Pour Freebuff il relit la base nommée par trace.base
+           (ADR-031) : un fil absent, un project_path hors de l'arbre gelé, un mode non local,
+           un worktree, un modèle ou une heure d'ouverture que la base démentent, sont des
+           refus. Pour opencode il rejoue « opencode session export » dans trace.cwd et compare
+           info.id, location.directory, model, time.created et le premier user (ADR-043).
+           Il reconstruit la commande d'export, sans jamais exécuter la chaîne que la pièce
+           cite (ADR-032) : trace.commande doit être égale à la commande reconstruite, puis
+           l'export se rejoue et ses octets normalisés se comparent au fichier. Une différence
+           est un refus ; trace_lue et trace_verifiee portent le sha256 et l'heure du rejeu.
            Il lit le budget d'échanges du cas dans son attendu et compte les messages
            user du fil (ADR-033) : au-delà du budget, un refus qui nomme les deux
            chiffres et le message en trop, un dépassement n'étant pas un plafond de
@@ -157,10 +171,14 @@ const USAGE = `usage: run.mjs <commande> [options]
            Il lit aussi l'attendu du cas : un falsificateur marqué a_remplir: true
            (le squelette de la fabrique, ADR-039) ajoute la limite attendu_incomplet et
            plafonne le verdict à non concluant — l'attendu d'un cas fabriqué dit ce
-           qu'il ne sait pas encore, et le reçu ne le masque pas.
+           qu'il ne sait pas encore, et le reçu ne le masque pas. Il lit le bloc
+           cloisonnement (ADR-052) : lecture.autorisees fixe les racines lues,
+           ecriture.autorisees le cadre du produit, reseau et fichiers_de_contexte
+           les deux interdits déclarés. Un bloc absent ou invalide est un refus ; le
+           harnais ne retombe jamais sur le dossier du cas.
            Il lit enfin la forme mécanique du tableau dans la trace exportée (ADR-035,
            H6) : un bloc d'au moins trois lignes dans une part text d'un message
-           assistant, sa deuxième ligne séparatrice, sa première au moins deux cellules.
+           assistant, sa deuxième ligne séparatrice, sa première au moins une cellule.
            Le reçu écrit tableau{forme, present, seq, ts, lignes, colonnes} et confronte
            F2 (aucun tableau, ou une écriture avant lui — l'export gagne outil et
            chemin_outil) et F1 (naissance d'un produit contre l'instant du tableau).
@@ -170,24 +188,30 @@ const USAGE = `usage: run.mjs <commande> [options]
            refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
            dont le reçu cite une empreinte que le gel sur disque ne porte plus, ou dont
            la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032), ou dont
-           la porte citée ne rend plus le sien (ADR-034)
+           la porte citée ne rend plus le sien (ADR-034) ; il refuse aussi une phrase qui
+           nomme un nombre de colonnes différent de receipt.tableau.colonnes (ADR-048)
 
   prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
     git --version                  toutes les commandes — les quatre arbres, leur porcelain
     date --iso-8601=seconds        toutes les commandes — geler, collecter, recevoir, juger
     date -d @<epoch>               faits et receipt — l'epoch du fil en date locale
-    sqlite3 -version               faits et receipt — la base du client, en -readonly
+    sqlite3 -version               faits et receipt, client Freebuff — la base, en -readonly
+    opencode --version             faits et receipt, client opencode — l'export du CLI
 
-  faits.json (receipt) : session{application,identifiant,modele,ouverte_par,ouverte_le}
+  faits.json (receipt) : session{outil,application,identifiant,modele,ouverte_par,ouverte_le}
     horodatage_debut · horodatage_fin · repertoire_de_travail ·
-    trace{source,chemin_exporte,commande} · cloisonnement{attendu_vu: oui|non}
+    trace{client,source,chemin_exporte,commande} · cloisonnement{attendu_vu: oui|non}
     temoignage{qui,quand,texte}
+    trace gagne base pour Freebuff, store/cwd/export_brut pour opencode
 
   receipt.json (spec §6) : les champs du §6, plus tableau (la forme mécanique du
     tableau rendu par la session, son instant, ses lignes et ses colonnes — H6),
-    falsificateurs (les quatre conditions du §5 et les trois de H6 : la 2e lit
-    l'export ligne à ligne, F2 y ajoute la présence du tableau et l'ordre des
-    écritures, F1 y ajoute la naissance des produits contre l'instant du tableau),
+    falsificateurs (les quatre conditions du §5, les trois de H6 et la lecture hors
+    dossier : la 2e lit l'export ligne à ligne, F2 y ajoute la présence du tableau
+    et l'ordre des écritures, F1 y ajoute la naissance des produits contre l'instant
+    du tableau, question_sans_reponse y ajoute la question que la première écriture
+    suit sans réponse (ADR-058), et lecture_hors_dossier nomme toute lecture hors des racines de
+    cloisonnement.lecture.autorisees),
     trace_lue
     (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
     fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
@@ -195,7 +219,9 @@ const USAGE = `usage: run.mjs <commande> [options]
     un dépassement refuse au lieu de s'écrire), porte (le gate.json lu, son sha256,
     son instant, l'empreinte du gel et l'arbre qu'il dit avoir mesuré), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
-    re-hachés avant de s'écrire). produit.chemins donne les chemins bruts,
+    re-hachés avant de s'écrire), cloisonnement{attendu_vu, lecture{autorisees,
+    resolues}, ecriture{autorisees, resolues}, reseau, fichiers_de_contexte}.
+    produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
     repris sous arbres.avant, remesurés sous arbres.apres ; les labels framework-origin
     et terrain alimentent en plus framework_rev et terrain_rev.
@@ -214,6 +240,37 @@ const LABEL_TO_FIELD = { "framework-origin": "framework_rev", terrain: "terrain_
 // nothing to keep in sync by hand.
 const LABELS_DERIVES = { "revision-sous-test": "framework-origin", travail: "terrain" };
 const cheminDerive = (racine, cas, label) => join(racine, cas, LABELS_DERIVES[label]);
+
+// The judge writes a free sentence, and a free sentence is not judged. But the receipt measures the
+// table it saw: when the phrase names a number of columns, that number is a fact the judge can check.
+// The rule is deliberately mechanical — digits, or a French word from one to twenty, immediately
+// followed by « colonne(s) » — so the judge never pretends to understand prose. The false sentence
+// written on 2026-10-20 (« un tableau d'une colonne » against a receipt saying six) is the case this
+// closes; a negation or a compound word stays outside the rule, and BANC.md says so.
+const NOMBRES_EN_LETTRES = {
+  un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9,
+  dix: 10, onze: 11, douze: 12, treize: 13, quatorze: 14, quinze: 15, seize: 16, vingt: 20,
+};
+const MOTIF_COLONNES = /\b(\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|vingt)\s+colonnes?\b/gi;
+function colonnesCitees(phrase) {
+  const citees = [];
+  for (const m of phrase.matchAll(MOTIF_COLONNES)) {
+    const brut = m[1].toLowerCase();
+    const valeur = /^\d+$/.test(brut) ? Number(brut) : NOMBRES_EN_LETTRES[brut];
+    if (Number.isInteger(valeur)) citees.push({ valeur, texte: m[0] });
+  }
+  return citees;
+}
+function verifierPhraseColonnes(phrase, recu) {
+  const mesure = recu?.tableau;
+  if (!mesure || mesure.present !== true || !Number.isInteger(mesure.colonnes) || mesure.colonnes <= 0) return;
+  const fausse = colonnesCitees(phrase).find((citee) => citee.valeur !== mesure.colonnes);
+  if (!fausse) return;
+  const mot = fausse.valeur > 1 ? "colonnes" : "colonne";
+  refuse(
+    `compare : la phrase cite ${fausse.valeur} ${mot}, le reçu en mesure ${mesure.colonnes} (« ${fausse.texte} ») — une phrase ne peut pas contredire le tableau mesuré (§8)`,
+  );
+}
 
 function refuse(message) {
   console.error("REFUS — " + message);
@@ -248,12 +305,40 @@ const PREREQUIS = [
     sonde: ["-version"],
     pour: "lit la base du client en -readonly",
     commandes: ["faits", "receipt"],
+    client: "freebuff",
     remede: "installer sqlite3",
   },
+  {
+    outil: "opencode",
+    sonde: ["--version"],
+    pour: "exporte la session opencode",
+    commandes: ["faits", "receipt"],
+    client: "opencode",
+    remede: "installer opencode",
+  },
 ];
-function verifierPrerequis(cmd) {
-  for (const { outil, sonde, pour, commandes, remede } of PREREQUIS) {
+function clientDemande(cmd, a) {
+  if (cmd === "faits") {
+    const c = a.one("client");
+    if (c === "freebuff" || c === "opencode") return c;
+    if (a.one("base")) return "freebuff";
+    if (a.one("store")) return "opencode";
+    return "freebuff";
+  }
+  if (cmd === "receipt") {
+    try {
+      return JSON.parse(readFileSync(resolve(a.one("faits")), "utf8")).session?.outil ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+function verifierPrerequis(cmd, a) {
+  const client = clientDemande(cmd, a);
+  for (const { outil, sonde, pour, commandes, remede, client: pourClient } of PREREQUIS) {
     if (commandes && !commandes.includes(cmd)) continue;
+    if (pourClient && client !== pourClient) continue;
     try {
       execFileSync(outil, sonde, { stdio: ["ignore", "ignore", "pipe"] });
     } catch (e) {
@@ -823,6 +908,52 @@ function exigerChamp(objet, chemin, ou, quoi) {
   }
   return valeur;
 }
+// The case declares its frame, and the receipt reads it instead of assuming the case folder. A
+// missing block is a refusal, never a fallback to the old constant: a fallback would keep the
+// assumption the block exists to remove. Paths are relative to the case root and no absolute path
+// enters the block, so a case stays replayable on another machine; `..` is allowed because a case
+// may declare a frame outside its own folder, and the block says so explicitly.
+function lireCloisonnement(attendu, { cas, racineCas, ou }) {
+  const c = attendu?.cloisonnement;
+  if (c === null || typeof c !== "object" || Array.isArray(c)) {
+    refuse(`${ou} : l'attendu du cas ${cas} ne déclare aucun bloc cloisonnement — le cadre n'est plus supposé, il se lit (ADR-052)`);
+  }
+  const liste = (valeur, champ) => {
+    if (!Array.isArray(valeur) || valeur.length === 0) {
+      refuse(`${ou} : ${champ} doit être une liste non vide de chemins relatifs à la racine du cas (${cas}) — un cadre vide ne se lit pas (ADR-052)`);
+    }
+    for (const p of valeur) {
+      if (typeof p !== "string" || p.trim() === "" || isAbsolute(p)) {
+        refuse(`${ou} : ${champ} porte ${JSON.stringify(p)}, attendu un chemin relatif non vide — la racine du cas est le seul point d'ancrage (ADR-052)`);
+      }
+    }
+    return valeur.map((p) => p.trim());
+  };
+  const lecture = liste(c.lecture?.autorisees, "cloisonnement.lecture.autorisees");
+  const ecriture = liste(c.ecriture?.autorisees, "cloisonnement.ecriture.autorisees");
+  if (c.reseau !== "interdit" && c.reseau !== "autorise") {
+    refuse(`${ou} : cloisonnement.reseau vaut ${JSON.stringify(c.reseau ?? null)}, attendu « interdit » ou « autorise » (ADR-052)`);
+  }
+  if (c.fichiers_de_contexte !== "interdits" && c.fichiers_de_contexte !== "autorises") {
+    refuse(`${ou} : cloisonnement.fichiers_de_contexte vaut ${JSON.stringify(c.fichiers_de_contexte ?? null)}, attendu « interdits » ou « autorises » (ADR-052)`);
+  }
+  const produit = attendu?.attendu_details?.produit?.racine;
+  if (produit !== undefined && produit !== null && produit !== "") {
+    const produitResolu = resolve(racineCas, produit);
+    if (!ecriture.some((p) => estDans(produitResolu, resolve(racineCas, p)))) {
+      refuse(
+        `${ou} : le produit du cas (${produit}) n'est sous aucune racine de cloisonnement.ecriture.autorisees ` +
+          `(${ecriture.join(", ")}) — le cadre et le produit se contredisent (ADR-052)`,
+      );
+    }
+  }
+  return {
+    lecture: { autorisees: lecture, resolues: lecture.map((p) => resolve(racineCas, p)) },
+    ecriture: { autorisees: ecriture, resolues: ecriture.map((p) => resolve(racineCas, p)) },
+    reseau: c.reseau,
+    fichiers_de_contexte: c.fichiers_de_contexte,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // faits — what the receipt will read, derived where a machine holds it
@@ -853,22 +984,38 @@ const lireBase = (base, sql, ou) => {
   }
 };
 
-// The §1.5 export, written once. `faits` puts this string into the piece; the receipt rebuilds it from
-// the piece's fields and compares the two character for character (ADR-032). Two copies of the
-// template would drift, and the drift would be invisible: the receipt would refuse a command faits
-// itself wrote. The thread id is interpolated after both commands have refused anything but
-// [A-Za-z0-9_-], and the SQL holds no double quote, so the shell quoting is unambiguous.
-const requeteExport = (fil) =>
-  `select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
-  `'open', json_extract(value,'$.open'), 'outil', json_extract(value,'$.toolName'), ` +
-  `'chemin_outil', json_extract(value,'$.input.path'), ` +
-  `'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
-  `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;`;
-const commandeExport = (base, fil, trace) => `sqlite3 -readonly ${base} "${requeteExport(fil)}" > ${trace}`;
+// The §1.5 export, written once in clients.mjs. `faits` puts this string into the piece; the
+// receipt rebuilds it from the piece's fields and compares the two character for character
+// (ADR-032). Two copies of the template would drift, and the drift would be invisible: the
+// receipt would refuse a command faits itself wrote.
+
+function choisirClientFaits(a) {
+  const client = a.one("client");
+  const base = a.one("base");
+  const store = a.one("store");
+  if (client !== undefined && client !== "freebuff" && client !== "opencode") {
+    usage(`--client vaut « ${client} », attendu : freebuff | opencode`);
+  }
+  if (client === "freebuff") {
+    if (!base) refuse("faits : --client freebuff exige --base — le fil Freebuff vit dans desktop-v2.db, et rien ne le devine (refus 1)");
+    if (store) refuse("faits : --client freebuff refuse --store — ce store est celui d'opencode (refus 2)");
+    return "freebuff";
+  }
+  if (client === "opencode") {
+    if (base) refuse("faits : --client opencode refuse --base — la session opencode se lit par l'export de son CLI (refus 3)");
+    return "opencode";
+  }
+  if (base && store) refuse("faits : --base et --store sans --client nomment deux clients — choisir avec --client (refus 17)");
+  if (base) return "freebuff";
+  if (store) return "opencode";
+  usage("--client, --base ou --store est requis — le client est un fait du run, il ne se devine pas");
+}
 
 function cmdFaits(a) {
+  const client = choisirClientFaits(a);
+  if (client === "opencode") return cmdFaitsOpencode(a);
   const cas = a.required("case");
-  const base = resolve(a.required("base"));
+  const base = resolve(a.one("base"));
   const fil = a.required("fil");
   if (!/^[A-Za-z0-9_-]{1,120}$/.test(fil)) refuse(`faits : « ${fil} » n'est pas un identifiant de fil — lettres, chiffres, tirets et soulignés seulement`);
   const trace = resolve(a.required("trace"));
@@ -927,6 +1074,7 @@ function cmdFaits(a) {
 
   const faits = {
     session: {
+      outil: "freebuff",
       application: `Freebuff Desktop (desktop-v2.db${f.harness_id ? `, harness_id ${f.harness_id}` : ""})`,
       identifiant: f.id,
       modele: f.model,
@@ -936,13 +1084,82 @@ function cmdFaits(a) {
     horodatage_debut: debut,
     horodatage_fin: fin,
     repertoire_de_travail: travail,
-    trace: { source: `${display(base)} (tables threads, messages)`, base, chemin_exporte: trace, commande },
+    trace: { source: `${display(base)} (tables threads, messages)`, client: "freebuff", base, chemin_exporte: trace, commande },
     cloisonnement: { attendu_vu: attenduVu },
     temoignage: { qui: par, quand: fin, texte: temoignage },
   };
   writeJson(out, faits);
   console.log(`faits ok — ${cas} : fil ${f.id}, début ${debut}, fin ${fin} ; ${display(out)}`);
 }
+
+function cmdFaitsOpencode(a) {
+  const cas = a.required("case");
+  const fil = a.required("fil");
+  if (!/^[A-Za-z0-9_-]{1,120}$/.test(fil)) refuse(`faits : « ${fil} » n'est pas un identifiant de fil — lettres, chiffres, tirets et soulignés seulement`);
+  const trace = resolve(a.required("trace"));
+  const out = resolve(a.required("out"));
+  const par = a.required("par");
+  const fin = a.required("fin");
+  const temoignage = a.required("temoignage");
+  const attenduVu = a.one("attendu-vu") ?? "non";
+  if (attenduVu !== "oui" && attenduVu !== "non") refuse(`faits : --attendu-vu vaut « ${attenduVu} », attendu « oui » ou « non »`);
+  const storeBrut = a.one("store") ?? (process.env.HOME ? join(process.env.HOME, ".local/share/opencode") : "");
+  if (!storeBrut) refuse("faits : le store opencode se nomme par --store ou par HOME — sans lui, la session ne se lit pas");
+  const store = resolve(storeBrut);
+  if (!existsSync(dirname(out))) refuse(`faits : le dossier de ${display(out)} n'existe pas — les faits s'écrivent dans le dossier du run, ils ne le créent pas`);
+  if (existsSync(out)) refuse(`faits : ${display(out)} existe déjà — les faits s'écrivent une fois, à chaud ; un fichier reconstruit est un témoignage (§6)`);
+  if (!par.trim() || !temoignage.trim()) refuse(`faits : --par et --temoignage ne peuvent pas être vides — ces faits-là viennent de l'opérateur, jamais d'une machine`);
+  const casesDir = casesDirOf(a);
+  const gelPath = join(casesDir, `${cas}.freeze.json`);
+  const gel = lireJson(gelPath, "faits");
+  if (!gel) refuse(`faits : aucun gel ${display(gelPath)} — le répertoire du fil se compare à l'arbre « travail » du gel, sinon il n'y a rien à comparer`);
+  const geleTravail = (gel.arbres ?? []).find((t) => t.label === "travail");
+  if (!geleTravail) refuse("faits : le gel ne décrit aucun arbre « travail » — le répertoire du run ne se compare pas");
+  let s;
+  try {
+    s = sessionClient("opencode", fil, { store, cwd: geleTravail.chemin });
+  } catch (e) {
+    refuse(`faits : ${e.message}`);
+  }
+  const finMs = Date.parse(fin);
+  if (!Number.isFinite(finMs)) refuse(`faits : --fin « ${fin} » n'est pas une date lisible — l'heure de fin se lit avec date -Is`);
+  if (finMs < Date.parse(s.premier_message.ts)) refuse(`faits : la fin (${fin}) précède le début (${s.premier_message.ts}) — un run ne se termine pas avant d'avoir commencé`);
+  const brut = join(dirname(trace), "export-brut.json");
+  let exp;
+  try {
+    exp = exporterTrace("opencode", fil, { store, cwd: s.repertoire_de_travail, dest: trace, brut });
+  } catch (e) {
+    refuse(`faits : ${e.message}`);
+  }
+  const faits = {
+    session: {
+      outil: "opencode",
+      application: s.application,
+      identifiant: s.identifiant,
+      modele: s.modele,
+      ouverte_par: par,
+      ouverte_le: s.ouverte_le,
+    },
+    horodatage_debut: s.premier_message.ts,
+    horodatage_fin: fin,
+    repertoire_de_travail: s.repertoire_de_travail,
+    trace: {
+      source: exp.source,
+      client: "opencode",
+      store,
+      cwd: s.repertoire_de_travail,
+      chemin_exporte: trace,
+      export_brut: brut,
+      commande: exp.commande,
+    },
+    cloisonnement: { attendu_vu: attenduVu },
+    temoignage: { qui: par, quand: fin, texte: temoignage },
+  };
+  writeJson(out, faits);
+  console.log(`faits ok — ${cas} : fil ${s.identifiant}, début ${s.premier_message.ts}, fin ${fin}, client opencode ; ${display(out)}`);
+}
+
+// H1 (ADR-030)
 
 // H1 (ADR-030) : the copy under raw/ is the record the receipt cites, and nothing re-read it —
 // a copy rewritten or deleted after collect kept the manifest's word (study §3 F, G). The receipt
@@ -1022,15 +1239,21 @@ function verifierCopie(dest, manifeste, ou) {
 // existed, so both stayed human readings (study §6, ombre 3). The form is written here, once: a block of
 // at least three lines inside a `text` part of an assistant message, every line starting and ending with
 // `|`, its second line a separator of dashes, colons and spaces carrying at least one dash, its first
-// line at least two cells. What the session SHOWS is what it writes into a text part: a table rendered in
+// line at least one cell. What the session SHOWS is what it writes into a text part: a table rendered in
 // `reasoning` is not shown to the operator, and does not count.
-const FORME_TABLEAU = "text/assistant, >=3 lignes, 2e ligne séparatrice, >=2 colonnes";
+const FORME_TABLEAU = "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne";
 // A write act is a `tool` part whose name carries one of the declared words AND whose input names a path.
 // Measured on this machine's client base (2026-10-18): `write_file` and `str_replace` carry `input.path`,
 // `write_todos` carries `input.todos` and is the session's own bookkeeping, not a file of the product;
 // `run_terminal_command` carries a command and no path, so a write done through the shell escapes the
 // measure, which the limits say. The family is declared, never a client's tool list.
 const MOTS_ECRITURE = /(write|edit|create|patch|apply|delete|move|rename)/i;
+const MOTS_LECTURE = /(read|grep|glob|search|find|cat|view)/i;
+const MOTS_SHELL = /(shell|bash|terminal|command)/i;
+// ADR-058 : a question is a blocking act — the tool exists to stop the turn until the operator answers.
+// Its family is declared here, like the three above, never read from a client's tool list: a question
+// asked through another name escapes the measure, and the limits say so.
+const MOTS_QUESTION = /(question|ask_user)/i;
 
 function cellulesDe(ligne) {
   const t = typeof ligne === "string" ? ligne.trim() : "";
@@ -1042,21 +1265,496 @@ function cellulesDe(ligne) {
 // is the `ts` of the message that carries it: that is what F1 lacked, and what a product's birth is now
 // compared to, in place of the freeze's instant only.
 function tableauDeTrace(parties) {
-  for (const p of parties) {
+  for (let index = 0; index < parties.length; index++) {
+    const p = parties[index];
     if (p.role !== "assistant" || p.kind !== "text" || p.text === null) continue;
     const lignes = p.text.split("\n");
     for (let i = 0; i + 2 < lignes.length; i++) {
       const entete = cellulesDe(lignes[i]);
-      if (!entete || entete.length < 2) continue;
+      if (!entete || entete.length < 1) continue;
       const sep = cellulesDe(lignes[i + 1]);
       if (!sep || !sep.every((c) => /^[-: ]*$/.test(c)) || !sep.some((c) => c.includes("-"))) continue;
       let n = 2;
       while (i + n < lignes.length && cellulesDe(lignes[i + n])) n++;
       if (n < 3) continue;
-      return { forme: FORME_TABLEAU, present: true, seq: p.seq, ts: p.ts, lignes: n, colonnes: entete.length };
+      return { forme: FORME_TABLEAU, present: true, index, seq: p.seq, ts: p.ts, lignes: n, colonnes: entete.length };
     }
   }
-  return { forme: FORME_TABLEAU, present: false, seq: null, ts: null, lignes: 0, colonnes: 0 };
+  return { forme: FORME_TABLEAU, present: false, index: null, seq: null, ts: null, lignes: 0, colonnes: 0 };
+}
+
+// ---------------------------------------------------------------------------
+// shell — what a literal command does, and what it refuses to read (ADR-051)
+// ---------------------------------------------------------------------------
+// The trace carries the literal text of a tool's command (`commande`, written by clients.mjs).
+// This is not an interpreter: it splits the text into segments, follows a literal `cd`, expands
+// `~`, `$HOME` and a literal assignment referenced between double quotes, and names everything it
+// cannot resolve. A command it cannot read refuses `conforme` and leaves a limit: never a silence.
+// The initial directory is the gel's `travail`, because the trace records no cwd per command: the
+// scan follows the text, not what a failed `cd` would have done.
+const CLIENTS_RESEAU = new Set(["curl", "wget", "nc", "ssh"]);
+// ADR-053 : `/dev/null` is a sink, not a path. A redirection to it (`2>/dev/null`) or a tool writing its
+// output there (`-o /dev/null`) persists nothing and exists on every machine; counting it refused
+// `conforme` for a shell idiom. The set is closed to that one path: another device file stays counted,
+// and only the resolved path matches, so `dev/null` under the work tree remains an ordinary path.
+const PUITS_SHELL = new Set(["/dev/null"]);
+const estPuitsShell = (chemin) => PUITS_SHELL.has(chemin);
+// The commands whose non-option arguments are paths. `git status` is not one of them: `status` is
+// a verb, and reading it as a path under the work tree would only add noise.
+const COMMANDES_A_CHEMIN = new Set([
+  "cat", "ls", "head", "tail", "tee", "cp", "mv", "rm", "touch", "mkdir", "stat", "wc",
+  "grep", "sed", "find", "diff", "sha256sum", "sort", "uniq", "chmod", "ln", "cd", "du",
+  "file", "readlink", "realpath",
+]);
+
+const estCheminShell = (t) =>
+  t.startsWith("/") || t === "~" || t.startsWith("~/") || t === "." || t === ".." ||
+  t.startsWith("./") || t.startsWith("../") ||
+  (t.includes("/") && !/^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(t));
+
+// `;`, `&&`, `||` and `|` separate segments, outside quotes and outside `2>&1`. A lone `&` is a
+// background separator; `>` keeps its own meaning and is tokenized below.
+function segmentsShell(commande) {
+  const segments = [];
+  let courant = "";
+  let quote = null;
+  for (let i = 0; i < commande.length; i++) {
+    const c = commande[i];
+    if (quote !== null) {
+      courant += c;
+      if (c === quote) quote = null;
+      else if (c === "\\" && quote === '"' && i + 1 < commande.length) courant += commande[++i];
+      continue;
+    }
+    if (c === "'" || c === '"') { quote = c; courant += c; continue; }
+    if (c === "\\" && i + 1 < commande.length) { courant += c + commande[++i]; continue; }
+    if (c === ";" || c === "|") {
+      segments.push(courant);
+      courant = "";
+      if (c === "|" && (commande[i + 1] === "|" || commande[i + 1] === "&")) i++;
+      continue;
+    }
+    if (c === "&") {
+      if (commande[i + 1] === "&") { segments.push(courant); courant = ""; i++; continue; }
+      if (commande[i - 1] === ">" || /[0-9]/.test(commande[i + 1] ?? "")) { courant += c; continue; }
+      segments.push(courant);
+      courant = "";
+      continue;
+    }
+    courant += c;
+  }
+  segments.push(courant);
+  return segments.map((s) => s.trim()).filter(Boolean);
+}
+
+// A `for NAME in W1 W2 …; do … done` whose words are literals is unrolled before the segments are
+// read: the body is copied once per word with `$NAME` and `${NAME}` substituted outside single quotes.
+// The words stay literal — a glob is not expanded — and every shape the reader cannot bound (a word
+// built from `$`, a backtick or a parenthesis, a nested loop, a body that reassigns the name, a loop
+// never closed) is refused with its motif, never read as neutral. Recognising the keywords after
+// `segmentsShell` means a `for` inside quotes is not a loop.
+function substituerBoucle(texte, nom, valeur) {
+  let sortie = "";
+  let simple = false;
+  for (let i = 0; i < texte.length; i++) {
+    const c = texte[i];
+    if (c === "'") { simple = !simple; sortie += c; continue; }
+    if (simple) { sortie += c; continue; }
+    if (c === "\\" && i + 1 < texte.length) { sortie += c + texte[++i]; continue; }
+    if (c !== "$") { sortie += c; continue; }
+    const suite = texte.slice(i + 1);
+    const acc = /^\{([A-Za-z_][A-Za-z0-9_]*)\}/.exec(suite);
+    const nu = acc ? null : /^([A-Za-z_][A-Za-z0-9_]*)/.exec(suite);
+    const lu = acc ? acc[1] : nu ? nu[1] : null;
+    if (lu === null) { sortie += c; continue; }
+    if (lu === nom) { sortie += valeur; i += (acc ?? nu)[0].length; continue; }
+    sortie += acc ? `\${${lu}}` : `\$${lu}`;
+    i += (acc ?? nu)[0].length;
+  }
+  return sortie;
+}
+
+function deroulerBoucles(segments) {
+  const sortie = [];
+  for (let i = 0; i < segments.length; i++) {
+    const entete = /^for\s+([A-Za-z_][A-Za-z0-9_]*)\s+in\s+(.+)$/.exec(segments[i]);
+    if (!entete) { sortie.push(segments[i]); continue; }
+    const nom = entete[1];
+    const mots = entete[2].trim().split(/\s+/).filter(Boolean);
+    if (!mots.length) return { motif: `boucle « ${nom} » sans valeur` };
+    for (const mot of mots) {
+      if (/[$`(]/.test(mot)) return { motif: `boucle « ${nom} » non littérale` };
+    }
+    let profondeur = 1;
+    let j = i + 1;
+    const corps = [];
+    for (; j < segments.length; j++) {
+      const s = segments[j];
+      if (/^for\s+/.test(s)) profondeur++;
+      if (/^done\b/.test(s)) { profondeur--; if (profondeur === 0) break; }
+      corps.push(s);
+    }
+    if (profondeur !== 0) return { motif: `boucle « ${nom} » non fermée` };
+    if (corps.some((s) => /^for\s+/.test(s))) return { motif: `boucle « ${nom} » imbriquée` };
+    if (corps.some((s) => new RegExp(`(^|[\\s;&|])${nom}=`).test(s))) return { motif: `boucle « ${nom} » qui réaffecte la variable` };
+    const premier = corps.length ? corps[0].replace(/^do\b\s*/, "") : "";
+    const corpsNet = [premier, ...corps.slice(1)].filter((s) => s !== "");
+    for (const mot of mots) for (const s of corpsNet) sortie.push(substituerBoucle(s, nom, mot));
+    i = j;
+  }
+  return { segments: sortie };
+}
+
+// ADR-056 : a command substitution is read only when its text is bounded — parentheses balanced outside
+// quotes, no nested `$(`, no backtick inside, not empty, not the arithmetic form. Its inner command goes
+// through the same reader, so its effects are measured, and its *value* stays unknown: the word that
+// carries it is marked, and a marked word never becomes a path. The mark is a NUL byte, which no command
+// text carries, and it survives the literal assignment (`n=$(…)` then `$n`).
+const MARQUE_SUBSTITUTION = "\u0000";
+const MOTIF_VALEUR_SUBSTITUEE = "chemin construit par une substitution $(...) : valeur inconnue";
+const estMarque = (v) => typeof v === "string" && v.includes(MARQUE_SUBSTITUTION);
+
+function extraireSubstitution(texte, i, motifs) {
+  if (texte[i + 2] === "(") { motifs.push("arithmétique $((...)) non interprétée"); return null; }
+  let profondeur = 0;
+  let quote = null;
+  for (let j = i + 2; j < texte.length; j++) {
+    const c = texte[j];
+    if (quote !== null) {
+      if (c === quote) quote = null;
+      else if (c === "\\" && quote === '"' && j + 1 < texte.length) j++;
+      continue;
+    }
+    if (c === "'" || c === '"') { quote = c; continue; }
+    if (c === "\\") { j++; continue; }
+    if (c === "`") { motifs.push("substitution imbriquée non interprétée"); return null; }
+    if (c === "(") {
+      if (texte[j - 1] === "$") { motifs.push("substitution imbriquée non interprétée"); return null; }
+      profondeur++;
+      continue;
+    }
+    if (c === ")") {
+      if (profondeur > 0) { profondeur--; continue; }
+      const interieur = texte.slice(i + 2, j);
+      if (!interieur.trim()) { motifs.push("substitution vide"); return null; }
+      return { interieur, fin: j };
+    }
+  }
+  motifs.push("substitution $(...) non fermée");
+  return null;
+}
+
+// The inner command is read, never run: its reads, writes and network clients enter the lists of the
+// segment that carries it, and a refusal inside it refuses the whole command. ADR-056 for a substitution,
+// ADR-057 for `xargs` and `find -exec`: the three share this one merge, no second copy.
+function fusionnerEffets(interne, ctx, motifs) {
+  if (interne.motifs.length) { motifs.push(interne.motifs[0]); return false; }
+  for (const p of interne.chemins) ctx.ajouter(ctx.chemins, p);
+  for (const p of interne.ecritures) ctx.ajouter(ctx.ecritures, p);
+  for (const p of interne.reseaux) ctx.ajouter(ctx.reseaux, p);
+  return true;
+}
+
+function mesurerSubstitution(interieur, ctx, motifs) {
+  return fusionnerEffets(ctx.mesurer(interieur, ctx.cwd), ctx, motifs);
+}
+
+// ADR-057 : `{}` (and the replacement string of `xargs -I`) is a value the reader cannot know. It is
+// replaced by the same mark a substitution leaves, so a word built on it never becomes a path.
+function marquerPlaceholder(texte, remplacement) {
+  let sortie = texte.split("{}").join(MARQUE_SUBSTITUTION);
+  if (remplacement && remplacement !== "{}") sortie = sortie.split(remplacement).join(MARQUE_SUBSTITUTION);
+  return sortie;
+}
+
+// `xargs [options] [CMD ARG…]`: the options the tool accepts are skipped, `-a FILE` names a file it reads,
+// and the first word left is the command. Without a command, `xargs` runs `echo` and measures nothing.
+function lireXargs(args, ctx, motifs) {
+  const aValeur = new Set(["-I", "-n", "-L", "-P", "-d", "-E", "-s"]);
+  let remplacement = null;
+  let i = 0;
+  for (; i < args.length; i++) {
+    const a = args[i];
+    if (a === "--") { i++; break; }
+    if (aValeur.has(a)) { if (a === "-I") remplacement = args[i + 1] ?? null; i++; continue; }
+    if (a === "-a") { ctx.ajouter(ctx.chemins, cheminShell(args[i + 1] ?? "", ctx.cwd)); i++; continue; }
+    if (/^-[ILnPdEs]./.test(a) || /^-a./.test(a)) {
+      if (a.startsWith("-I")) remplacement = a.slice(2);
+      if (a.startsWith("-a")) ctx.ajouter(ctx.chemins, cheminShell(a.slice(2), ctx.cwd));
+      continue;
+    }
+    if (/^-[0rtpx]+$/.test(a) || !a.startsWith("-")) break;
+  }
+  const interne = args.slice(i);
+  if (!interne.length) return { ok: true };
+  if (ctx.profondeur > 0) return { ok: false, motif: "« xargs » imbriqué n'est pas interprété" };
+  const texte = marquerPlaceholder(interne.join(" "), remplacement);
+  return { ok: fusionnerEffets(ctx.mesurer(texte, ctx.cwd), ctx, motifs) };
+}
+
+// `find … -exec CMD ARG… ;` (or `-execdir`, `-ok`, and the `+` terminator): the inner command is read
+// from the option to its terminator, `{}` marked as an unknown value. A block without a terminator is
+// refused, never read as neutral.
+function lireFindExec(jetons, k, ctx, motifs) {
+  const ouvre = jetons.findIndex((t, j) => j > k && ["-exec", "-execdir", "-ok"].includes(t.mot));
+  if (ouvre < 0) return { ok: true };
+  let fin = -1;
+  for (let j = ouvre + 1; j < jetons.length; j++) {
+    if (jetons[j].mot === ";" || jetons[j].mot === "+") { fin = j; break; }
+  }
+  if (fin < 0) return { ok: false, motif: "« find -exec » non terminée" };
+  const mots = jetons.slice(ouvre + 1, fin).map((t) => t.mot).filter(Boolean);
+  if (!mots.length) return { ok: false, motif: "« find -exec » sans commande" };
+  if (ctx.profondeur > 0) return { ok: false, motif: "« find -exec » imbriqué n'est pas interprété" };
+  const texte = marquerPlaceholder(mots.join(" "), null);
+  return { ok: fusionnerEffets(ctx.mesurer(texte, ctx.cwd), ctx, motifs), debut: ouvre, fin };
+}
+
+// Inside double quotes only `$HOME` and a literal assignment recorded earlier in the same command
+// resolve; anything else is named as unresolved. Single quotes are literal, and a `\` escapes only
+// `$`, a backtick, `"` and itself — the other backslashes stay, as in the shell.
+function developperDouble(texte, vars, motifs, ctx) {
+  let sortie = "";
+  for (let i = 0; i < texte.length; i++) {
+    const c = texte[i];
+    if (c === "\\" && i + 1 < texte.length) {
+      const suivant = texte[i + 1];
+      if (suivant === "$" || suivant === "`" || suivant === '"' || suivant === "\\") { sortie += suivant; i++; continue; }
+      sortie += c;
+      continue;
+    }
+    if (c === "`") { motifs.push("backtick non interprété"); return sortie; }
+    if (c !== "$") { sortie += c; continue; }
+    if (texte[i + 1] === "(") {
+      const sub = extraireSubstitution(texte, i, motifs);
+      if (!sub) return sortie;
+      if (!mesurerSubstitution(sub.interieur, ctx, motifs)) return sortie;
+      sortie += MARQUE_SUBSTITUTION;
+      i = sub.fin;
+      continue;
+    }
+    if (texte[i + 1] === "?") { sortie += "$?"; i++; continue; }
+    let nom;
+    if (texte[i + 1] === "{") {
+      const fin = texte.indexOf("}", i + 2);
+      if (fin < 0) { motifs.push("accolade non fermée"); return sortie; }
+      nom = texte.slice(i + 2, fin);
+      i = fin;
+    } else {
+      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(texte.slice(i + 1));
+      if (!m) { sortie += "$"; continue; }
+      nom = m[0];
+      i += m[0].length;
+    }
+    if (nom === "HOME") { sortie += process.env.HOME ?? ""; continue; }
+    if (Object.prototype.hasOwnProperty.call(vars, nom)) { sortie += vars[nom]; continue; }
+    motifs.push(`variable non résolue « $${nom} »`);
+    sortie += "$" + nom;
+  }
+  return sortie;
+}
+
+function jetonsShell(segment, vars, motifs, ctx) {
+  const jetons = [];
+  let mot = "";
+  let ouvert = false;
+  const finir = () => { if (ouvert) { jetons.push({ mot, redirection: false }); mot = ""; ouvert = false; } };
+  for (let i = 0; i < segment.length; i++) {
+    const c = segment[i];
+    if (/\s/.test(c)) { finir(); continue; }
+    if (c === "'") {
+      const fin = segment.indexOf("'", i + 1);
+      if (fin < 0) { motifs.push("guillemet simple non fermé"); return []; }
+      mot += segment.slice(i + 1, fin);
+      ouvert = true;
+      i = fin;
+      continue;
+    }
+    if (c === '"') {
+      let j = i + 1;
+      let dedans = "";
+      let ferme = false;
+      while (j < segment.length) {
+        // The escape is kept for `developperDouble`, which decides what it means: dropping it here
+        // would turn `\$HOME` into an expansion the shell never made.
+        if (segment[j] === "\\" && j + 1 < segment.length && /["\\`$]/.test(segment[j + 1])) { dedans += segment[j] + segment[j + 1]; j += 2; continue; }
+        if (segment[j] === '"') { ferme = true; break; }
+        dedans += segment[j];
+        j++;
+      }
+      if (!ferme) { motifs.push("guillemet double non fermé"); return []; }
+      mot += developperDouble(dedans, vars, motifs, ctx);
+      ouvert = true;
+      i = j;
+      continue;
+    }
+    if (c === "\\") { if (i + 1 < segment.length) { mot += segment[++i]; ouvert = true; } continue; }
+    if (c === "`") { motifs.push("backtick non interprété"); return []; }
+    if (c === "$") {
+      if (segment[i + 1] === "(") {
+        const sub = extraireSubstitution(segment, i, motifs);
+        if (!sub) return [];
+        if (!mesurerSubstitution(sub.interieur, ctx, motifs)) return [];
+        mot += MARQUE_SUBSTITUTION;
+        ouvert = true;
+        i = sub.fin;
+        continue;
+      }
+      if (segment[i + 1] === "?") { mot += "$?"; ouvert = true; i++; continue; }
+      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(segment.slice(i + 1));
+      if (m) { motifs.push(`référence non quotée « $${m[0]} »`); return []; }
+      mot += "$";
+      ouvert = true;
+      continue;
+    }
+    if (c === ">") {
+      if (/^\d+$/.test(mot) && ouvert) { mot = ""; ouvert = false; } else finir();
+      if (segment[i + 1] === ">") { jetons.push({ mot: ">>", redirection: true }); i++; continue; }
+      if (segment[i + 1] === "&") { i += 2; while (i < segment.length && !/\s/.test(segment[i])) i++; i--; continue; }
+      jetons.push({ mot: ">", redirection: true });
+      continue;
+    }
+    mot += c;
+    ouvert = true;
+  }
+  finir();
+  return jetons;
+}
+
+// A literal path, resolved against the segment's directory; links are resolved when the target
+// exists, exactly as the read falsifier does, so a missing path is compared lexically.
+function cheminShell(mot, cwd) {
+  const brut = mot === "~" ? (process.env.HOME ?? "~") : mot.startsWith("~/") ? join(process.env.HOME ?? "~", mot.slice(2)) : mot;
+  const abs = isAbsolute(brut) ? resolve(brut) : resolve(cwd, brut);
+  return resolu(abs) ?? abs;
+}
+
+// The first non-option argument of `awk` and `sed` is their program, never a path: a range
+// `/^a$/,/^b$/` starts with `/` and used to be counted as an absolute path, outside the frame. `-f`
+// names a program file, which is a path and hides nothing; `-e` declares a script, so `sed` has no
+// positional program left. `awk -v x=1` takes its value separately, and that value is not the program.
+function indiceProgramme(jetons, k, nom, args) {
+  if (nom !== "awk" && nom !== "sed") return -1;
+  if (args.some((a) => a === "-f" || /^-f./.test(a))) return -1;
+  if (nom === "sed" && args.some((a) => a === "-e" || /^-e./.test(a))) return -1;
+  const aValeur = nom === "awk" ? new Set(["-v", "-F"]) : new Set();
+  for (let i = k + 1; i < jetons.length; i++) {
+    const t = jetons[i];
+    if (t.redirection) continue;
+    if (aValeur.has(t.mot)) { i++; continue; }
+    if (t.mot.startsWith("-")) continue;
+    return i;
+  }
+  return -1;
+}
+
+function effetsShell(commande, { cwd, profondeur = 0 }) {
+  const vars = {};
+  const chemins = [];
+  const ecritures = [];
+  const reseaux = [];
+  // One filter, at the only place an effect enters a list: a sink is ignored for reads and writes alike,
+  // and a word that carries a substitution's unknown value never enters one (ADR-056).
+  let refus = null;
+  const ajouter = (liste, valeur) => {
+    if (estMarque(valeur)) { refus = MOTIF_VALEUR_SUBSTITUEE; return; }
+    if (valeur && !estPuitsShell(valeur) && !liste.includes(valeur)) liste.push(valeur);
+  };
+  const arret = (motif) => ({ motifs: [motif], chemins: [], ecritures: [], reseaux: [] });
+  let courant = cwd;
+  const mesurer = (texte, ou) => effetsShell(texte, { cwd: ou, profondeur: profondeur + 1 });
+  const decoupe = deroulerBoucles(segmentsShell(commande));
+  if (decoupe.motif) return arret(decoupe.motif);
+  for (const segment of decoupe.segments) {
+    const motifs = [];
+    refus = null;
+    const ctx = { cwd: courant, profondeur, mesurer, ajouter, chemins, ecritures, reseaux };
+    const jetons = jetonsShell(segment, vars, motifs, ctx);
+    if (motifs.length) return arret(motifs[0]);
+    let k = 0;
+    while (k < jetons.length && !jetons[k].redirection) {
+      const m = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(jetons[k].mot);
+      if (!m) break;
+      const valeur = m[2];
+      if (valeur.includes("$") || valeur.includes("`") || valeur.includes("(") || /^~[^/]/.test(valeur)) {
+        return arret(`affectation non littérale « ${m[1]} »`);
+      }
+      vars[m[1]] = valeur === "~"
+        ? (process.env.HOME ?? "~")
+        : valeur.startsWith("~/")
+          ? join(process.env.HOME ?? "~", valeur.slice(2))
+          : valeur;
+      k++;
+    }
+    const nom = jetons[k] && !jetons[k].redirection ? basename(jetons[k].mot) : null;
+    if (estMarque(nom)) return arret("commande construite par une substitution $(...) : valeur inconnue");
+    const args = jetons.slice(k + 1).filter((t) => !t.redirection).map((t) => t.mot);
+    const nonOption = args.filter((a) => !a.startsWith("-"));
+
+    if (nom === "eval") return arret("« eval » n'est pas interprété");
+    // ADR-057 : `xargs` and `find -exec` are read when their inner command is literal; the block of a
+    // `find -exec` is then skipped by the path loop, since its words were read as a command, not as
+    // arguments of `find`.
+    let blocExec = null;
+    if (nom === "xargs") {
+      const lu = lireXargs(args, ctx, motifs);
+      if (motifs.length) return arret(motifs[0]);
+      if (!lu.ok) return arret(lu.motif);
+    }
+    if (nom === "find") {
+      const lu = lireFindExec(jetons, k, ctx, motifs);
+      if (motifs.length) return arret(motifs[0]);
+      if (!lu.ok) return arret(lu.motif);
+      if (lu.debut !== undefined) blocExec = lu;
+    }
+    // A commit or a checkout writes in the tree without naming a path, so no write target can be
+    // compared to the product: it is refused as unreadable rather than counted as neutral (§4.3).
+    if (nom === "git" && (nonOption[0] === "commit" || nonOption[0] === "checkout")) {
+      return arret(`« git ${nonOption[0]} » écrit sans chemin attribuable`);
+    }
+
+    for (let i = 0; i < jetons.length; i++) {
+      if (!jetons[i].redirection) continue;
+      const cible = jetons[i + 1];
+      if (!cible || cible.redirection) continue;
+      if (/^~[^/]/.test(cible.mot)) return arret(`« ${cible.mot} » : ~user n'est pas interprété`);
+      ajouter(ecritures, cheminShell(cible.mot, courant));
+    }
+    if (nom === "tee" || nom === "touch" || nom === "mkdir" || nom === "rm") {
+      for (const a of nonOption) ajouter(ecritures, cheminShell(a, courant));
+    }
+    if (nom === "cp" || nom === "mv") {
+      if (nonOption.length >= 2) ajouter(ecritures, cheminShell(nonOption[nonOption.length - 1], courant));
+    }
+    if (nom === "sed" && args.some((a) => a === "--in-place" || /^-i/.test(a))) {
+      const avecE = args.some((a) => a === "-e" || /^-e/.test(a));
+      for (const a of avecE ? nonOption : nonOption.slice(1)) ajouter(ecritures, cheminShell(a, courant));
+    }
+
+    if (CLIENTS_RESEAU.has(nom)) ajouter(reseaux, nom);
+    if (nom === "git" && ["fetch", "push", "clone"].includes(nonOption[0])) ajouter(reseaux, `git ${nonOption[0]}`);
+    if ((nom === "npm" || nom === "pip" || nom === "pip3") && nonOption[0] === "install") ajouter(reseaux, `${nom} install`);
+
+    const consomme = COMMANDES_A_CHEMIN.has(nom);
+    const programme = indiceProgramme(jetons, k, nom, args);
+    for (let i = k + 1; i < jetons.length; i++) {
+      if (blocExec && i >= blocExec.debut && i <= blocExec.fin) continue;
+      const v = jetons[i].mot;
+      if (i === programme || jetons[i].redirection || v === "" || v.startsWith("-")) continue;
+      if (/^~[^/]/.test(v)) return arret(`« ${v} » : ~user n'est pas interprété`);
+      if (!estCheminShell(v) && !consomme) continue;
+      ajouter(chemins, cheminShell(v, courant));
+    }
+    if (nom === "cd") {
+      const cible = args[0];
+      if (cible === undefined) courant = process.env.HOME ?? courant;
+      else if (cible === "-") return arret("« cd - » n'est pas interprété");
+      else if (estMarque(cible)) return arret(MOTIF_VALEUR_SUBSTITUEE);
+      else courant = cheminShell(cible, courant);
+    }
+    if (refus) return arret(refus);
+  }
+  return { motifs: [], chemins, ecritures, reseaux };
 }
 
 function cmdReceipt(a) {
@@ -1080,7 +1778,16 @@ function cmdReceipt(a) {
   const faits = lireJson(faitsPath, "receipt");
   if (!faits) refuse(`receipt : faits illisibles : ${display(faitsPath)}`);
 
+  const outil = exigerChamp(faits, "session.outil", "receipt", "faits.json");
+  if (outil !== "freebuff" && outil !== "opencode") {
+    refuse(`receipt : session.outil vaut « ${outil} », attendu freebuff | opencode — le client est un fait du run, et un reçu ne lit pas un schéma qu'il ne connaît pas (ADR-044)`);
+  }
+  const clientTrace = exigerChamp(faits, "trace.client", "receipt", "faits.json");
+  if (clientTrace !== outil) {
+    refuse(`receipt : session.outil vaut « ${outil} », trace.client vaut « ${clientTrace} » — un run a un client, et deux champs qui se contredisent ne nomment aucun run (ADR-044)`);
+  }
   const session = {
+    outil,
     application: exigerChamp(faits, "session.application", "receipt", "faits.json"),
     identifiant: exigerChamp(faits, "session.identifiant", "receipt", "faits.json"),
     modele: exigerChamp(faits, "session.modele", "receipt", "faits.json"),
@@ -1091,10 +1798,18 @@ function cmdReceipt(a) {
   const horodatageFin = exigerChamp(faits, "horodatage_fin", "receipt", "faits.json");
   const travail = resolve(exigerChamp(faits, "repertoire_de_travail", "receipt", "faits.json"));
   const trace = {
+    client: clientTrace,
     source: exigerChamp(faits, "trace.source", "receipt", "faits.json"),
     chemin_exporte: exigerChamp(faits, "trace.chemin_exporte", "receipt", "faits.json"),
     commande: exigerChamp(faits, "trace.commande", "receipt", "faits.json"),
   };
+  if (outil === "freebuff") {
+    trace.base = resolve(exigerChamp(faits, "trace.base", "receipt", "faits.json"));
+  } else {
+    trace.store = resolve(exigerChamp(faits, "trace.store", "receipt", "faits.json"));
+    trace.cwd = resolve(exigerChamp(faits, "trace.cwd", "receipt", "faits.json"));
+    trace.export_brut = resolve(exigerChamp(faits, "trace.export_brut", "receipt", "faits.json"));
+  }
   const attenduVu = exigerChamp(faits, "cloisonnement.attendu_vu", "receipt", "faits.json");
   if (attenduVu !== "oui" && attenduVu !== "non") refuse(`receipt : cloisonnement.attendu_vu vaut « ${attenduVu} », attendu « oui » ou « non »`);
   const temoignage = {
@@ -1226,6 +1941,8 @@ function cmdReceipt(a) {
         `un reçu ne recopie pas ce qu'il ne peut pas situer (§7)`,
     );
   }
+  let sessionVerifiee;
+  if (outil === "freebuff") {
   // The identifiant was copied from faits.json and compared to nothing. One piece does name the
   // thread: the export command, which faits builds with the run's thread id (§1.5). The receipt reads
   // it there and refuses a file that describes one run while its command reads another (ADR-028).
@@ -1310,7 +2027,8 @@ function cmdReceipt(a) {
       `receipt : la base date le premier message du fil « ${session.identifiant} » à ${debutBase}, le reçu dit ${horodatageDebut} — le début du run est démenti`,
     );
   }
-  const sessionVerifiee = {
+  sessionVerifiee = {
+    outil: "freebuff",
     base,
     fil: filBase.id,
     project_path: filBase.project_path,
@@ -1319,6 +2037,54 @@ function cmdReceipt(a) {
     ouverte_le: ouverteBase,
     premier_message: debutBase,
   };
+  } else {
+    // opencode : le store et le cwd sont des faits du run, pas des chemins de confort. Le reçu
+    // rejoue l'export par l'adaptateur, dans le répertoire que faits a nommé, et confronte les
+    // champs normalisés à ceux de la pièce.
+    if (!existsSync(trace.store)) {
+      refuse(`receipt : le store opencode (${trace.store}) n'existe pas — la session rejouée se lirait nulle part (ADR-044)`);
+    }
+    if (!statSync(trace.store).isDirectory()) {
+      refuse(`receipt : le store opencode (${trace.store}) n'est pas un répertoire — un store se lit, il ne s'improvise pas (ADR-044)`);
+    }
+    if (!existsSync(trace.cwd)) {
+      refuse(`receipt : le répertoire de session opencode (${trace.cwd}) ne résout pas — la trace se rejouerait ailleurs (ADR-044)`);
+    }
+    if (!statSync(trace.cwd).isDirectory()) refuse(`receipt : le répertoire de session opencode (${trace.cwd}) n'est pas un répertoire`);
+    if (resolu(trace.cwd) !== resolu(travail)) {
+      refuse(`receipt : trace.cwd vaut ${trace.cwd}, le gel nomme « travail » ${travail} — la trace se rejouerait dans un autre arbre que celui du run (refus 16)`);
+    }
+    let s;
+    try {
+      s = sessionClient("opencode", session.identifiant, { store: trace.store, cwd: trace.cwd });
+    } catch (e) {
+      refuse(`receipt : ${e.message}`);
+    }
+    if (s.application !== session.application) {
+      refuse(`receipt : la session opencode se nomme « ${s.application} », le reçu dit « ${session.application} » — l'application du reçu est démentie`);
+    }
+    if (s.modele !== session.modele) {
+      refuse(`receipt : la session opencode dit le modèle « ${s.modele} », le reçu dit « ${session.modele} » — le modèle du reçu est démenti (refus 15)`);
+    }
+    if (s.ouverte_le !== session.ouverte_le) {
+      refuse(`receipt : la session opencode ouvre à ${s.ouverte_le}, le reçu dit ${session.ouverte_le} — l'heure d'ouverture est démentie (refus 15)`);
+    }
+    if (s.premier_message.ts !== horodatageDebut) {
+      refuse(`receipt : la session opencode date son premier message à ${s.premier_message.ts}, le reçu dit ${horodatageDebut} — le début du run est démenti (refus 15)`);
+    }
+    if (resolu(s.repertoire_de_travail) !== resolu(travail)) {
+      refuse(`receipt : la session opencode ouvre ${s.repertoire_de_travail}, le reçu dit ${travail} — des faits d'un run ouvert ailleurs nomment un produit que le gel ne couvre pas`);
+    }
+    sessionVerifiee = {
+      outil: "opencode",
+      store: trace.store,
+      fil: s.identifiant,
+      repertoire_de_travail: s.repertoire_de_travail,
+      modele: s.modele,
+      ouverte_le: s.ouverte_le,
+      premier_message: s.premier_message.ts,
+    };
+  }
   // Condition 2 of §5 asks the trace to carry at least one exchange inside the run's window. The
   // receipt asserted it could not read the export at all; it reads it now — a JSONL line per part,
   // `ts` in epoch milliseconds as the §1.5 query writes it. What the file has wrong is counted and
@@ -1335,7 +2101,9 @@ function cmdReceipt(a) {
   // keeps the bytes undecoded, and compares their sha256 to the file's. Order matters: H3 has just
   // established that the base is readable and holds this thread, and the window is counted only
   // after, because counting the exchanges of a file not shown to come from the base counts text.
-  const commandeAttendue = commandeExport(base, session.identifiant, traceExportee);
+  const commandeAttendue = outil === "freebuff"
+    ? commandeExport(trace.base, session.identifiant, traceExportee)
+    : commandeAttendueClient("opencode", session.identifiant, { store: trace.store, cwd: trace.cwd });
   if (trace.commande !== commandeAttendue) {
     refuse(
       `receipt : trace.commande n'est pas la commande que ce run reconstruit — la pièce cite « ${court(trace.commande)} », ` +
@@ -1344,27 +2112,29 @@ function cmdReceipt(a) {
     );
   }
   let traceRejouee = null;
+  let brutInstable = false;
   if (existsSync(traceExportee)) {
-    let octets;
+    let rejoue;
     try {
-      octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(session.identifiant)], { maxBuffer: 64 * 1024 * 1024 });
+      rejoue = rejouerTrace(outil, session.identifiant, outil === "freebuff" ? { base: trace.base } : { store: trace.store, cwd: trace.cwd });
     } catch (e) {
-      if (e.code === "ENOENT") refuse(`receipt : sqlite3 introuvable — le rejeu de l'export ne se devine pas`);
-      refuse(
-        `receipt : le rejeu de l'export sur ${display(base)} a échoué — ` +
-          `${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"} ; la pièce (1) du §5 ne se vérifie pas (H2)`,
-      );
+      refuse(`receipt : ${e.message}`);
     }
     const empreinteFichier = sha256File(traceExportee);
-    const empreinteRejeu = createHash("sha256").update(octets).digest("hex");
-    if (empreinteRejeu !== empreinteFichier) {
+    if (rejoue.sha256 !== empreinteFichier) {
+      const quoi = outil === "freebuff" ? "ce que la base rend" : "ce que le client rend";
       refuse(
-        `receipt : la trace exportée ne rend pas ce que la base rend pour le fil « ${session.identifiant} » — ` +
-          `${empreinteFichier.slice(0, 8)} au fichier, ${empreinteRejeu.slice(0, 8)} au rejeu (${display(traceExportee)}) ; ` +
-          `le fichier a été réécrit, tronqué ou complété après l'export, et la condition 2 du §5 se lirait sur un texte qui n'est plus la base`,
+        `receipt : la trace exportée ne rend pas ${quoi} pour le fil « ${session.identifiant} » — ` +
+          `${empreinteFichier.slice(0, 8)} au fichier, ${rejoue.sha256.slice(0, 8)} au rejeu (${display(traceExportee)}) ; ` +
+          `le fichier a été réécrit, tronqué ou complété après l'export, et la condition 2 du §5 se lirait sur un texte qui n'est plus le client`,
       );
     }
-    traceRejouee = { sha256: empreinteFichier, rejoue_le: localIso() };
+    traceRejouee = outil === "freebuff"
+      ? { sha256: empreinteFichier, rejoue_le: localIso() }
+      : { outil: "opencode", commande: commandeAttendue, cwd: trace.cwd, sha256: empreinteFichier, brut_sha256: rejoue.brut_sha256 ?? null, rejoue_le: localIso() };
+    if (outil === "opencode" && rejoue.brut_sha256 && existsSync(trace.export_brut)) {
+      brutInstable = sha256File(trace.export_brut) !== rejoue.brut_sha256;
+    }
   }
   // H4 (ADR-033) : the case fixes a budget of exchanges (request.md §8), and nothing measured it. A
   // session that took thirty exchanges produced the same receipt (study §4, W4). The count comes from
@@ -1382,6 +2152,10 @@ function cmdReceipt(a) {
   })();
   const attendu = lireJson(attenduPath, "receipt");
   if (!attendu) refuse(`receipt : aucun attendu ${display(attenduPath)} — le budget d'échanges du cas se lit là, et un reçu ne le devine pas (H4)`);
+  const racineCas = gel.racine_espace_de_travail
+    ? resolu(resolve(gel.racine_espace_de_travail, cas)) ?? resolve(gel.racine_espace_de_travail, cas)
+    : resolve(travail, "..");
+  const cadre = lireCloisonnement(attendu, { cas, racineCas, ou: "receipt" });
   const budget = attendu.demande?.budget_echanges;
   if (budget === undefined) {
     refuse(
@@ -1405,28 +2179,29 @@ function cmdReceipt(a) {
   })(attendu);
   // One query: how many `user` messages the thread carries, and the message of rank `budget`, which is
   // the exchange that exhausts the budget when there is one. Null when the rank does not exist.
-  const mesuresBudget = lireBase(
-    base,
-    `select json_object('utilises', (select count(*) from messages where thread_id = '${session.identifiant}' and role = 'user'), ` +
-      `'epuise_seq', (select seq from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget - 1}), ` +
-      `'epuise_ts', (select ts from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget - 1}));`,
-    "receipt",
-  );
+  let mesuresBudget;
+  try {
+    mesuresBudget = budgetClient(outil, session.identifiant, budget, outil === "freebuff" ? { base: trace.base } : { store: trace.store, cwd: trace.cwd });
+  } catch (e) {
+    refuse(`receipt : ${e.message}`);
+  }
   if (mesuresBudget === null || !Number.isInteger(mesuresBudget.utilises)) {
     refuse(
-      `receipt : la base ${display(base)} n'a pas rendu le compte des messages utilisateur du fil « ${session.identifiant} » — ` +
+      `receipt : le client n'a pas rendu le compte des messages utilisateur du fil « ${session.identifiant} » — ` +
         `le budget d'échanges ne se mesure pas, et rien ne l'invente (H4)`,
     );
   }
   if (mesuresBudget.utilises > budget) {
-    const auDela = lireBase(
-      base,
-      `select json_object('seq', seq, 'ts', ts) from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget};`,
-      "receipt",
-    );
+    const auDela = outil === "freebuff"
+      ? lireBase(
+          trace.base,
+          `select json_object('seq', seq, 'ts', ts) from messages where thread_id = '${session.identifiant}' and role = 'user' order by seq limit 1 offset ${budget};`,
+          "receipt",
+        )
+      : { seq: mesuresBudget.au_dela_seq ?? null, ts: mesuresBudget.au_dela_ts ?? null };
     refuse(
       `receipt : le fil « ${session.identifiant} » porte ${mesuresBudget.utilises} messages utilisateur, le cas en autorise ${budget} — ` +
-        `le premier au-delà du budget est le seq ${auDela?.seq ?? "?"}${auDela ? ` (${isoDeMs(auDela.ts, "receipt")})` : ""} : ` +
+        `le rang ${budget + 1} (seq ${auDela?.seq ?? "?"}${auDela ? `, ${isoDeMs(auDela.ts, "receipt")}` : ""}) est au-delà du budget : ` +
         `un run qui dépasse le budget d'échanges n'est pas celui que le cas décrit, ses réponses figées s'arrêtant à la ${budget}e (H4, §8 de la demande)`,
     );
   }
@@ -1463,11 +2238,13 @@ function cmdReceipt(a) {
         continue;
       }
       partiesLues.push({
+        index: partiesLues.length,
         seq: entree?.seq ?? null,
         role: entree?.role ?? null,
         kind: entree?.kind ?? null,
         outil: typeof entree?.outil === "string" ? entree.outil : null,
         chemin_outil: typeof entree?.chemin_outil === "string" ? entree.chemin_outil : null,
+        commande: typeof entree?.commande === "string" ? entree.commande : null,
         text: typeof entree?.text === "string" ? entree.text : null,
         ts: Number.isFinite(Number(entree?.ts)) ? Number(entree.ts) : null,
       });
@@ -1545,8 +2322,8 @@ function cmdReceipt(a) {
   const tableau = tableauDeTrace(partiesLues);
   const ecrituresAvant = tableau.present
     ? partiesLues
-        .filter((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil !== null && MOTS_ECRITURE.test(p.outil) && Number(p.seq) < Number(tableau.seq))
-        .map((p) => ({ seq: p.seq, ts: p.ts, outil: p.outil, chemin: p.chemin_outil }))
+        .filter((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil !== null && MOTS_ECRITURE.test(p.outil) && Number(p.index) < Number(tableau.index))
+        .map((p) => ({ seq: p.seq, index: p.index, ts: p.ts, outil: p.outil, chemin: p.chemin_outil }))
     : [];
   const produitsNeAvant = tableau.present && tableau.ts !== null
     ? manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch * 1000 < tableau.ts).map((f) => ({ chemin: f.chemin, birth: f.birth, tableau_ts: tableau.ts }))
@@ -1555,26 +2332,215 @@ function cmdReceipt(a) {
   // A family name without a named path is an act the rule cannot classify: said as a limit, named, never
   // silently dropped (measured: `write_todos` is one on this machine).
   const outilsEcritureSansChemin = [...new Set(partiesLues.filter((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil === null && MOTS_ECRITURE.test(p.outil)).map((p) => p.outil))];
+  // ADR-058 : a question left unanswered. The write act is H6's (a family name AND a named path, no second
+  // copy of the rule); the question is the last one before it, and the answer is a `user` part strictly
+  // between the two. Without one, the session did not wait: the client annulled the question, and the pause
+  // the case asks for was never measured. A question no write follows has nothing to compare, so it stays
+  // silent — the limit names what this leaves out (a question in free text, a write through the shell).
+  const premiereEcriture = partiesLues.find((p) => p.kind === "tool" && p.outil !== null && p.chemin_outil !== null && MOTS_ECRITURE.test(p.outil)) ?? null;
+  const questionSansReponse = [];
+  if (premiereEcriture) {
+    const questions = partiesLues.filter((p) => p.kind === "tool" && p.outil !== null && MOTS_QUESTION.test(p.outil) && Number(p.index) < Number(premiereEcriture.index));
+    const q = questions.length ? questions[questions.length - 1] : null;
+    if (q) {
+      const reponse = partiesLues.some((p) => p.role === "user" && Number(p.index) > Number(q.index) && Number(p.index) < Number(premiereEcriture.index));
+      if (!reponse) {
+        questionSansReponse.push({
+          seq_question: q.seq, index_question: q.index, outil: q.outil,
+          seq_ecriture: premiereEcriture.seq, index_ecriture: premiereEcriture.index,
+        });
+      }
+    }
+  }
+  // A read outside the roots the case declares is a breach of the request's §7, whether or not the file
+  // exists: the session had no business opening the kit of another case. The roots come from
+  // `cloisonnement.lecture.autorisees`, never from the trace nor from a constant; relative paths are the
+  // session's, resolved from the work tree. Links are resolved when the target exists; a path that does
+  // not resolve is compared lexically, so a missing target cannot hide the breach. A `shell` part has no
+  // `chemin_outil`: its text is read separately (ADR-051), so this falsifier is never fed by it twice.
+  const cheminDepuis = (p) => {
+    const abs = isAbsolute(p) ? resolve(p) : resolve(travail, p);
+    return resolu(abs) ?? abs;
+  };
+  // ADR-054 : what the session read, resolved, earliest line kept. The product is compared to these
+  // paths at receipt time, so a copy of a file read before it was born is F7's second form — the gel's
+  // hashes alone never reach a snapshot left outside the frozen trees.
+  const lecturesFaites = new Map();
+  const noterLecture = (chemin, seq, ts) => {
+    if (typeof chemin !== "string" || chemin === "") return;
+    const c = cheminDepuis(chemin);
+    const deja = lecturesFaites.get(c);
+    if (!deja || Number(ts) < Number(deja.ts)) lecturesFaites.set(c, { seq, ts: Number(ts) });
+  };
+  const lecturesHorsDossier = [];
+  const outilsLectureSansChemin = new Set();
+  const outilsShell = new Set();
+  const outilsShellSansCommande = new Set();
+  for (const p of partiesLues) {
+    if (p.kind !== "tool" || p.outil === null) continue;
+    if (MOTS_SHELL.test(p.outil) && p.commande === null) outilsShellSansCommande.add(p.outil);
+    if (!MOTS_LECTURE.test(p.outil)) continue;
+    if (p.chemin_outil === null) {
+      outilsLectureSansChemin.add(p.outil);
+      continue;
+    }
+    noterLecture(p.chemin_outil, p.seq, p.ts);
+    if (!cadre.lecture.resolues.some((r) => estDans(cheminDepuis(p.chemin_outil), r))) {
+      lecturesHorsDossier.push({ seq: p.seq, index: p.index, ts: p.ts, outil: p.outil, chemin: p.chemin_outil });
+    }
+  }
 
+  // ADR-051 : the five effects the product and the declared paths did not reach. The product's root comes
+  // from the attendu, never from a constant; when the case declares none (`--sans-produit`, or no
+  // `attendu_details.produit.racine`), every literal write target is listed and the receipt says why.
+  const racineProduit = typeof attendu?.attendu_details?.produit?.racine === "string" && attendu.attendu_details.produit.racine.trim() !== ""
+    ? resolve(racineCas, attendu.attendu_details.produit.racine)
+    : null;
+  const shellHorsDossier = [];
+  const shellEcritureHorsProduit = [];
+  const shellNonInterpretable = [];
+  const appelsReseau = [];
+  for (const p of partiesLues) {
+    if (p.kind !== "tool" || p.outil === null || !MOTS_SHELL.test(p.outil)) continue;
+    outilsShell.add(p.outil);
+    const entree = { seq: p.seq, index: p.index, ts: p.ts, outil: p.outil, commande: p.commande };
+    if (p.commande === null) {
+      shellNonInterpretable.push({ ...entree, motif: "commande absente" });
+      continue;
+    }
+    const effets = effetsShell(p.commande, { cwd: travail });
+    if (effets.motifs.length) {
+      shellNonInterpretable.push({ ...entree, motif: effets.motifs[0] });
+      continue;
+    }
+    for (const chemin of effets.chemins) {
+      noterLecture(chemin, p.seq, p.ts);
+      if (!cadre.lecture.resolues.some((r) => estDans(chemin, r))) shellHorsDossier.push({ ...entree, chemin });
+    }
+    for (const chemin of effets.ecritures) {
+      if (racineProduit === null || !estDans(chemin, racineProduit)) shellEcritureHorsProduit.push({ ...entree, chemin });
+    }
+    if (cadre.reseau === "interdit") for (const motif of effets.reseaux) appelsReseau.push({ ...entree, motif });
+  }
+
+  // ADR-051 : the new paths the gate did not see. `porcelain` is relative to the work tree, so each path
+  // is prefixed `terrain/` before it meets the product root. Only additions are attributed: a modified or
+  // deleted path was already known to the gate, and the limit says the comparison does not retain it.
+  const porcelainAvant = new Set(arbrePorte.porcelain ?? []);
+  const nouveauxPorcelain = (apresTravail.porcelain ?? []).filter((l) => !porcelainAvant.has(l));
+  const produitRel = racineProduit === null ? null : relative(racineCas, racineProduit).split(sep).join("/");
+  const horsProduit = [];
+  for (const ligne of nouveauxPorcelain) {
+    const brut = ligne.slice(3).trim().replace(/\/+$/, "");
+    if (!brut) continue;
+    const noms = brut.includes(" -> ") ? [brut.split(" -> ").pop()] : [brut];
+    for (const nom of noms) {
+      const cheminRel = `terrain/${nom.replace(/\/+$/, "")}`;
+      if (produitRel !== null && estDans(cheminRel, produitRel)) continue;
+      const nature = /(^|\/)\.freebuff(\/|$)/.test(cheminRel)
+        ? "artefact_client"
+        : /(^|\/)(AGENTS|CLAUDE)\.md$/.test(cheminRel) || /(^|\/)\.github\/copilot-instructions\.md$/.test(cheminRel)
+          ? "contexte"
+          : "produit";
+      // The declared interdict commands the bite: a case that authorizes context files gets no entry
+      // for one (ADR-051). An artifact of the client is a limit, never a bite.
+      if (nature === "contexte" && cadre.fichiers_de_contexte !== "interdits") continue;
+      if (!horsProduit.some((h) => h.chemin === cheminRel)) horsProduit.push({ chemin: cheminRel, nature });
+    }
+  }
+
+  // ADR-054 : F7's second form, measured on the files the trace names as read. The read must precede
+  // the product's birth, the file must lie outside the product, still exist, be an ordinary file, and
+  // carry the product's sha256. A read file changed or deleted since is not recognised, and the limit
+  // below says so rather than letting the silence pass for an absence of copy.
+  // ADR-055 : `birth_epoch` is a whole second (`stat -c %W`), so a read stamped in that same second may
+  // precede or follow the real birth. Only a strictly earlier second proves the order; the equal second
+  // stays out of the bite and is named in a limit instead, as the gel's one-second ambiguity already is.
+  const copiesDuneLecture = [];
+  const frontieresDuneLecture = [];
+  if (racineProduit !== null) {
+    for (const f of manifeste.fichiers) {
+      if (f.birth_epoch === null) continue;
+      const sourceProduit = resolu(f.source) ?? f.source;
+      for (const [lu, { seq, ts }] of lecturesFaites) {
+        if (lu === sourceProduit || estDans(lu, racineProduit)) continue;
+        if (!Number.isFinite(ts)) continue;
+        const seconde = Math.floor(ts / 1000);
+        if (seconde > f.birth_epoch) continue;
+        if (!existsSync(lu)) continue;
+        let st;
+        try { st = lstatSync(lu); } catch { continue; }
+        if (!st.isFile() || st.isSymbolicLink()) continue;
+        if (sha256File(lu) !== f.sha256) continue;
+        if (seconde === f.birth_epoch) {
+          frontieresDuneLecture.push({ chemin: f.chemin, source: lu, seq });
+          continue;
+        }
+        copiesDuneLecture.push({ chemin: f.chemin, source: lu, sha256: f.sha256, seq });
+      }
+    }
+  }
   const falsificateurs = {
     birth_anterieur_au_gel: manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch < gel.gele_le_epoch).map((f) => f.chemin),
     arbre_de_travail_inchange: manifeste.fichiers.length > 0 && memeArbre(avantTravail, apresTravail),
-    produit_identique_a_une_empreinte_anterieure: manifeste.fichiers
-      .filter((f) => [...gel.fichiers, ...gel.references].some((g) => g.sha256 === f.sha256))
-      .map((f) => f.chemin),
+    produit_identique_a_une_empreinte_anterieure: [
+      ...manifeste.fichiers
+        .filter((f) => [...gel.fichiers, ...gel.references].some((g) => g.sha256 === f.sha256))
+        .map((f) => ({ chemin: f.chemin, source: "gel", sha256: f.sha256 })),
+      ...copiesDuneLecture,
+    ],
     trace_sans_echange_dans_la_fenetre: traceLue.echanges_dans_la_fenetre === 0,
     tableau_absent: !tableau.present,
     ecriture_avant_tableau: ecrituresAvant,
     produit_ne_avant_le_tableau: produitsNeAvant,
+    question_sans_reponse: questionSansReponse,
+    lecture_hors_dossier: lecturesHorsDossier,
+    shell_hors_dossier: shellHorsDossier,
+    shell_ecriture_hors_produit: shellEcritureHorsProduit,
+    shell_non_interpretable: shellNonInterpretable,
+    reseau: appelsReseau,
+    hors_produit: horsProduit,
   };
 
+  // ADR-051 : a bite either blocks `conforme` only, or blocks every verdict but `non concluant`. A file
+  // of the product written outside the product's root is a deviation the session can be charged with, so
+  // it allows `ecart`; a file of context, an unreadable command, network, a read outside the frame, and
+  // the four §5 conditions say the run is not measurable as the case describes, so they force
+  // `non concluant`. `ecart` with no bite stays allowed: the judge may have read a difference the receipt
+  // does not measure.
   const motifRefus = [];
+  const motifsEcart = [];
   if (attenduVu === "oui") motifRefus.push("le cloisonnement est rompu : l'attendu a été vu (§3, §9)");
+  if (falsificateurs.lecture_hors_dossier.length) {
+    const l = falsificateurs.lecture_hors_dossier[0];
+    motifRefus.push(`une lecture est sortie du cadre déclaré : seq ${l.seq}, outil « ${l.outil} », chemin ${l.chemin} (demande §7)`);
+  }
+  if (falsificateurs.shell_hors_dossier.length) {
+    const e = falsificateurs.shell_hors_dossier[0];
+    motifRefus.push(`une commande shell sort du cadre déclaré : seq ${e.seq}, outil « ${e.outil} », chemin ${e.chemin} (demande §7)`);
+  }
+  if (falsificateurs.shell_ecriture_hors_produit.length) {
+    const e = falsificateurs.shell_ecriture_hors_produit[0];
+    motifRefus.push(`une commande shell écrit hors du produit : seq ${e.seq}, outil « ${e.outil} », chemin ${e.chemin} (§4)`);
+  }
+  if (falsificateurs.shell_non_interpretable.length) {
+    const e = falsificateurs.shell_non_interpretable[0];
+    motifRefus.push(`une commande shell n'est pas interprétable : seq ${e.seq}, motif « ${e.motif} » (ADR-051)`);
+  }
+  if (falsificateurs.reseau.length) {
+    const e = falsificateurs.reseau[0];
+    motifRefus.push(`un appel réseau interdit : seq ${e.seq}, « ${court(e.motif)} » (cloisonnement.reseau)`);
+  }
+  for (const f of falsificateurs.hors_produit) {
+    if (f.nature === "produit") motifsEcart.push(`un fichier hors du produit a été écrit : ${f.chemin} (§4)`);
+    else if (f.nature === "contexte") motifRefus.push(`un fichier de contexte est écrit hors du produit : ${f.chemin} (§4, fichiers_de_contexte)`);
+  }
   if (manifeste.fichiers.length === 0) motifRefus.push("la session n'a rien produit : le produit est sa sortie brute (§9)");
   if (falsificateurs.birth_anterieur_au_gel.length) motifRefus.push(`un fichier produit est né avant le gel : ${falsificateurs.birth_anterieur_au_gel.join(", ")} (§5, condition 1)`);
   if (falsificateurs.arbre_de_travail_inchange) motifRefus.push("le produit existe et l'arbre de travail est inchangé (§5, condition 3)");
   if (falsificateurs.produit_identique_a_une_empreinte_anterieure.length) {
-    motifRefus.push(`le produit est identique à un fichier déjà présent avant le run : ${falsificateurs.produit_identique_a_une_empreinte_anterieure.join(", ")} (§5, condition 4)`);
+    const cites = falsificateurs.produit_identique_a_une_empreinte_anterieure.map((f) => `${f.chemin} ← ${f.source}`);
+    motifRefus.push(`le produit est identique à un fichier déjà présent avant le run : ${cites.join(", ")} (§5, condition 4)`);
   }
   if (falsificateurs.trace_sans_echange_dans_la_fenetre) {
     motifRefus.push("la trace exportée ne porte aucun échange dans la fenêtre du run (§5, condition 2)");
@@ -1589,18 +2555,42 @@ function cmdReceipt(a) {
   if (falsificateurs.produit_ne_avant_le_tableau.length) {
     motifRefus.push(`un produit est né avant le tableau : ${falsificateurs.produit_ne_avant_le_tableau.map((p) => p.chemin).join(", ")} (§5, F1)`);
   }
+  if (falsificateurs.question_sans_reponse.length) {
+    const q = falsificateurs.question_sans_reponse[0];
+    motifRefus.push(
+      `la session a posé une question et écrit sans réponse : question seq ${q.seq_question} (outil « ${q.outil} »), écriture seq ${q.seq_ecriture} — la pause demandée n'a pas eu lieu (ADR-058)`,
+    );
+  }
 
   if (motifRefus.length && verdict !== "non concluant") {
     refuse(`receipt : verdict « ${verdict} » refusé, le verdict suit la preuve (§7) : ${motifRefus.join(" ; ")}`);
   }
+  // The incomplete expectation comes before the product-outside-the-product bite: it is a property of
+  // the case, not of the run, and it is the one a person can act on first (ADR-039).
   if (aRemplir && verdict !== "non concluant") {
     refuse(
       `receipt : verdict « ${verdict} » refusé — l'attendu du cas porte un falsificateur marqué a_remplir, ` +
         `et un attendu incomplet plafonne le verdict à « non concluant » tant que la personne ne l'a pas rempli (attendu_incomplet, ADR-039)`,
     );
   }
+  if (verdict === "conforme" && motifsEcart.length) {
+    refuse(`receipt : verdict « conforme » refusé, un fichier est hors du produit (§4) : ${motifsEcart.join(" ; ")} — un écart ne se dit pas conforme`);
+  }
 
   const limites = [...a.all("limite")];
+  limites.push(
+    `le cas limite l'écriture à ${cadre.ecriture.autorisees.join(", ")} ; ce reçu compare les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture)`,
+  );
+  if (cadre.reseau === "interdit") {
+    limites.push(
+      "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    );
+  }
+  if (cadre.fichiers_de_contexte === "interdits") {
+    limites.push(
+      "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    );
+  }
   if (aRemplir) {
     limites.push("l'attendu n'a pas de falsificateur de promesse : le jugement ne peut pas dire conforme (attendu_incomplet)");
   }
@@ -1609,6 +2599,9 @@ function cmdReceipt(a) {
     limites.push(`naissance à une seconde du gel (résolution du birth) : ${ambigus.map((f) => f.chemin).join(", ")} — la condition 1 du §5 ne les distingue pas`);
   }
   if (!existsSync(traceExportee)) limites.push("trace machine introuvable au chemin exporté — pièce (1) absente (§7 : verdict possible, limite dite)");
+  if (brutInstable) {
+    limites.push("export_brut_instable : le brut rejoué diffère du brut conservé — le JSONL normalisé reste la condition, le brut n'est qu'une pièce datée (ADR-046)");
+  }
   if (sourcesNonVerifiables.length) {
     limites.push(
       `source du produit non résolvable au reçu : ${sourcesNonVerifiables.map((f) => `${f.chemin} ← ${f.source}`).join(", ")} — ` +
@@ -1635,7 +2628,64 @@ function cmdReceipt(a) {
   if (outilsEcritureSansChemin.length) {
     limites.push(`outil(s) dont le nom évoque une écriture et qui ne nomment aucun chemin : ${outilsEcritureSansChemin.slice(0, 3).join(", ")} — l'ordre écriture/tableau ne les classe pas (H6)`);
   }
+  limites.push(
+    "la pause n'est mesurée que par l'outil de question déclaré (nom portant `question` ou `ask_user`) et contre le premier acte d'écriture nommé : une demande d'accord écrite dans un texte, une écriture faite par une commande shell, et un outil de question d'un autre nom ne sont pas vus (ADR-058)",
+  );
+  if (outilsLectureSansChemin.size) {
+    limites.push(`outil(s) de lecture sans chemin : ${[...outilsLectureSansChemin].slice(0, 3).join(", ")} — la lecture hors dossier ne les classe pas`);
+  }
+  if (outilsShell.size) {
+    limites.push(
+      `les commandes shell sont lues quand leur texte est littéral (${[...outilsShell].slice(0, 3).join(", ")}) ; une commande construite dynamiquement n'est pas interprétée, et le reçu le dit`,
+    );
+    limites.push(
+      "le répertoire initial d'une commande shell est le `travail` du gel ; le reçu suit le texte, donc un `cd` qui aurait échoué ne déplace pas la lecture (ADR-051)",
+    );
+    limites.push(
+      "`/dev/null` est un puits : il n'est ni une lecture ni une écriture, les autres fichiers de périphérique restent comptés (ADR-053)",
+    );
+  }
+  if (outilsShellSansCommande.size) {
+    limites.push(`shell_sans_commande : la trace ne porte aucune commande pour ${[...outilsShellSansCommande].slice(0, 3).join(", ")} — ses effets ne sont pas mesurés`);
+  }
+  if (falsificateurs.shell_non_interpretable.length) {
+    limites.push(
+      `${falsificateurs.shell_non_interpretable.length} commande(s) shell non interprétable(s) : ${falsificateurs.shell_non_interpretable.slice(0, 2).map((e) => `seq ${e.seq} (${e.motif})`).join(", ")} — leurs effets ne sont pas mesurés`,
+    );
+  }
+  if (lecturesFaites.size) {
+    limites.push(
+      "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
+    );
+  }
+  if (frontieresDuneLecture.length) {
+    limites.push(
+      `lecture dans la seconde de naissance du produit (résolution du birth) : ${frontieresDuneLecture
+        .map((e) => `${e.chemin} ← ${e.source} (seq ${e.seq})`)
+        .join(", ")} — l'ordre n'est pas décidable à la seconde, F7 ne mord pas, et un produit copié et lu dans cette seconde lui échappe (ADR-055)`,
+    );
+  }
+  const artefactsClient = falsificateurs.hors_produit.filter((f) => f.nature === "artefact_client");
+  if (artefactsClient.length) {
+    limites.push(
+      `artefact_client : ${artefactsClient.map((f) => f.chemin).join(", ")} — un artefact du client a été écrit hors du produit, et le reçu ne le compte pas comme une écriture de la session`,
+    );
+  }
+  if (racineProduit === null) {
+    limites.push(
+      "le cas ne déclare aucune racine de produit : tous les chemins nouveaux du porcelain sont listés hors du produit, et aucun n'est distingué d'un produit légitime (ADR-051)",
+    );
+  }
+  if (nouveauxPorcelain.length) {
+    limites.push(
+      "hors_produit ne retient que les chemins nouveaux du porcelain : une modification ou une suppression d'un fichier déjà présent hors du produit n'est pas attribuée au run (ADR-051)",
+    );
+    limites.push(
+      "un dossier non suivi est une seule entrée du porcelain : le reçu nomme le dossier, pas chacun de ses fichiers ; les entrées sont comparées comme des chaînes, sans décoder les guillemets de git",
+    );
+  }
   for (const m of motifRefus) limites.push(m);
+  for (const m of motifsEcart) limites.push(m);
 
   const produit = {
     absent: manifeste.fichiers.length === 0,
@@ -1662,12 +2712,13 @@ function cmdReceipt(a) {
     horodatage_fin: horodatageFin,
     trace,
     trace_lue: traceLue,
+    trace_verifiee: traceRejouee,
     tableau,
     echanges,
     porte: porteLue,
     arbres,
     produit,
-    cloisonnement: { attendu_vu: attenduVu },
+    cloisonnement: { attendu_vu: attenduVu, ...cadre },
     temoignage,
     falsificateurs,
     verdict,
@@ -1679,7 +2730,9 @@ function cmdReceipt(a) {
   if (sansEcrire) {
     const proposition = motifRefus.length
       ? `non concluant (${motifRefus.length} morsure(s) : ${motifRefus[0]})`
-      : "conforme ou ecart — rien ne mord, la personne tranche (spec §3)";
+      : motifsEcart.length
+        ? `ecart (${motifsEcart.length} morsure(s) hors produit : ${motifsEcart[0]})`
+        : "conforme ou ecart — rien ne mord, la personne tranche (spec §3)";
     console.log(
       `receipt (à blanc) — ${cas} : verdict proposé ${proposition} ; produit ${manifeste.fichiers.length} fichier(s) ; ` +
         `${limites.length} limite(s) ; rien n'a été écrit — sans --sans-ecrire, la même commande écrirait ${display(receiptPath)}`,
@@ -1784,6 +2837,8 @@ function cmdCompare(a) {
     refuse(`compare : verdict « ${verdict} » refusé — le reçu conclut « non concluant » : ${recu.limites.join(" ; ")}`);
   }
 
+  verifierPhraseColonnes(phrase, recu);
+
   const produitBrut = join(runDir, "raw", cas);
   const sortie = {
     cas,
@@ -1810,5 +2865,5 @@ if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
 }
 const commande = COMMANDS[a.cmd];
 if (!commande) usage(`commande inconnue : ${a.cmd}`);
-verifierPrerequis(a.cmd);
+verifierPrerequis(a.cmd, a);
 commande(a);

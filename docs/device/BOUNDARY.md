@@ -78,6 +78,10 @@ partie de la réponse à la question 1 du §11.
 - Dans le terrain : `.kilo/worktrees/**`, le worktree tiers constaté et conservé (ADR-011), qui
   n'entre dans aucune copie de travail.
 - Vers une session : `CASES/*.expected.json` ne part jamais (spec §3), pas plus que ce journal.
+- Le **store opencode** (`~/.local/share/opencode` par défaut) est lu par `opencode session export`, jamais
+  écrit par le dispositif : c'est le CLI qui écrit le sien, et l'adaptateur ne fait que normaliser
+  l'export (ADR-043, ADR-046). Le store est un chemin du run, pas un arbre gelé : il n'entre ni dans le
+  gel ni dans le produit, et un store absent est un refus du reçu, jamais un store créé.
 
 ## 5. La preuve que le framework est intact
 

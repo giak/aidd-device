@@ -1,6 +1,6 @@
 ---
 name: Explication — le projet raconté simplement
-description: Le dispositif expliqué à qui n'en connaît rien — analogies, schémas, et l'état réel du projet au 2026-10-15, échecs compris
+description: Le dispositif expliqué à qui n'en connaît rien — analogies, schémas, et l'état réel du projet au 2026-10-20, échecs compris
 type: explication
 status: in-progress
 ---
@@ -11,13 +11,14 @@ status: in-progress
 > aident à comprendre, elles ne prouvent rien. Chaque fait sérieux a sa source dans un autre document
 > de `docs/`, et ce document-ci n'est pas une source : il raconte.
 >
-> État décrit : **2026-10-15**, complété le **2026-10-16**. Un chiffre ici a toujours la même
-> forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit `SUPPOSÉ`.
-> L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
+> État décrit : **2026-10-15**, complété le **2026-10-16**, puis le **2026-10-20**. Un chiffre ici a
+> toujours la même forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit
+> `SUPPOSÉ`. L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
 >
-> **Mis à jour le 2026-10-15 au soir**, sur une décision : le candidat du second run sera une session
-> **Freebuff**, à modèle hébergé. Ce que ça change est raconté au §9 bis, et les chiffres qui y sont
-> donnés sont lus dans la base de Freebuff elle-même.
+> **Mis à jour le 2026-10-15 au soir**, sur une décision : le candidat du second run serait une session
+> **Freebuff**, à modèle hébergé. Ce que ça change est raconté au §9 bis. Le premier run réel qui a suivi
+> a finalement été **opencode**, le 2026-10-20 ; les chiffres Freebuff restent des mesures du client, pas
+> du run.
 
 ## 1. L'idée, en une image de cuisine
 
@@ -123,19 +124,19 @@ sequenceDiagram
   Note over Dis: étape 7, verdict conforme, écart ou non concluant
 ```
 
-Le harnais — `docs/device/harness/run.mjs`, 1 636 lignes, aucune dépendance — n'a que six
+Le harnais — `docs/device/harness/run.mjs`, 2 834 lignes, aucune dépendance, et `clients.mjs` pour la
+frontière des deux clients — n'a que six
 commandes : `freeze` (avant, qui déclare la racine des espaces de travail une seule fois et en dérive
 les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie le dossier et le texte
-remis, puis écrit `gate.json` dans le dossier du run), `collect`, `faits` (les seize valeurs exigées par le reçu, dérivées du fil du client et du gel), `receipt`,
-`compare`. Il **refuse** plutôt que de deviner :
-148 refus sont écrits dans son code (`grep -c 'refuse(' docs/device/harness/run.mjs`, mesuré le
-2026-10-17) — un produit déjà collecté, un lien symbolique dans la copie, une porte absente ou passée
-sur un autre arbre, un
-produit venu d'ailleurs que de l'espace de travail gelé, un reçu réécrit, un cas dont un fichier ne
-concorde plus avec le gel — au reçu comme au jugement —, une
-session qu'on s'apprête à ouvrir dans le mauvais dossier, un texte remis qui n'est pas celui du cas,
-un gel pris sur un cas qui écrit la machine, un verdict que la preuve ne porte pas…). Il ne décide rien tout seul et n'ouvre aucune
-session : le candidat, c'est un humain qui l'ouvre.
+remis, puis écrit `gate.json` dans le dossier du run), `collect`, `faits` (les valeurs exigées par le reçu,
+dérivées du fil ou de la session opencode et du gel), `receipt`, `compare`. Il **refuse** plutôt que de
+deviner : un produit déjà collecté, un lien symbolique dans la copie, une porte absente ou passée
+sur un autre arbre, un produit venu d'ailleurs que de l'espace de travail gelé, un reçu réécrit, un cas
+dont un fichier ne concorde plus avec le gel, au reçu comme au jugement, une session qu'on s'apprête à
+ouvrir dans le mauvais dossier, un texte remis qui n'est pas celui du cas, un gel pris sur un cas qui
+écrit la machine, un verdict que la preuve ne porte pas…). Il ne décide rien tout seul et n'ouvre aucune
+session : en principe, une personne ouvre le candidat ; le run du 2026-10-20 a été ouvert par l'agent via
+l'API d'opencode, et son reçu le dit.
 
 Trois pièces attestent qu'un run a eu lieu, de la plus forte à la plus faible : **la trace machine**
 (la seule que l'opérateur n'écrit pas), **l'état des arbres et les dates de naissance des fichiers**,
@@ -167,15 +168,19 @@ suffit à faire tomber le dossier, et il se conclut alors « non concluant » :
 | la copie existe mais **la cuisine est propre** | le plat est sorti sans que personne n'ait cuisiné |
 | la copie est **mot pour mot** une page déjà présente | recopiage, pas travail |
 
-## 9. Où en est le projet, au 2026-10-15
+## 9. Où en est le projet, au 2026-10-20
 
-**La phrase honnête : l'instrument est construit, la première épreuve a eu lieu le 2026-10-15… et
-elle n'a rien produit.** Les documents appelaient l'état d'avant l'**état B** : aucune session n'avait
+**La phrase honnête : l'instrument est construit, un run opencode réel a produit un reçu le
+2026-10-20, et ce reçu conclut `non concluant`.** Le premier run, le 2026-10-15, n'avait rien produit.
+Le run du 2026-10-20 a produit un fichier, mais hors du chemin attendu ; son tableau d'une colonne avait
+laissé F2 mordre avant l'ADR-047, qui a élargi la forme sans changer le produit. Il atteste la chaîne, pas
+la promesse du skill. Les documents appelaient l'état d'avant l'**état B** : aucune session n'avait
 reçu la demande. Ce premier run ouvre un état que le v6 ne nomme pas — un run qui a eu lieu sans
 produit —, appelé **état C** dans le [bilan du premier run](brainstorm/2026-10-15-201458-bilan-premier-run.md)
-: le cas est instruit, pas conclu. Donc **rien ne prouve encore que le dispositif fonctionne** —
-seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre a tenu sur un run réel
-(les quatre arbres identiques au gel après le run, le gel rejoué `exit 0`).
+: le cas est instruit, pas conclu. Donc **rien ne prouve encore que la promesse du skill tient** ; ce
+qui est établi, c'est que le dispositif est écrit, qu'il refuse ce qu'il doit refuser, que son cadre a
+tenu sur un run réel, et qu'un run a laissé un reçu `non concluant` (les quatre arbres identiques au gel
+après le run, le gel rejoué `exit 0`).
 
 | Ce qui existe | Son état |
 | --- | --- |
@@ -183,17 +188,21 @@ seulement qu'il est écrit, qu'il refuse ce qu'il doit refuser, et que son cadre
 | La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, **896 mots** pour une limite de 900 (v6 §10), mesuré le 2026-10-16 |
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
-| Le harnais — [run.mjs](device/harness/run.mjs) | écrit ; 6 commandes, 86 refus — dont `freeze --racine`, qui déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte qui refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` qui refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; et `collect --sans-produit`, qui permet à un run sans produit de laisser quand même un reçu et un verdict |
-| Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, puis après le passage à la racine déclarée (empreinte `0d9a2180`, les anciens `bc126fe6`, `38fa91f4` et `07246039` détruits) : le cas nomme `$RACINE` — la racine que le gel déclare une fois — et le texte remis garde son chemin absolu, falsificateur `F9` ajouté |
+| Le harnais — [run.mjs](device/harness/run.mjs) | écrit, **2 869 lignes**, 6 commandes, banc **227/227 PASS** ; `freeze --racine` déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; `collect --sans-produit` permet à un run sans produit de laisser quand même un reçu et un verdict ; une lecture hors du cadre que l'attendu du cas déclare interdit `conforme`, et un attendu sans bloc `cloisonnement` est refusé ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ; `clients.mjs` sépare Freebuff et opencode ([ADR-043](DECISIONS.md)) ; `rapport.mjs`, **525 lignes**, écrit le rapport utilisateur depuis le reçu, l'output et la trace, appelé par `fin` et reconstructible par `rapport` ([ADR-050](DECISIONS.md)) |
+| Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, après le passage à la racine déclarée, puis le 2026-10-21 pour le bloc `cloisonnement` (empreinte `ba1096aa` ; les anciennes `0d9a2180`, `bc126fe6`, `38fa91f4` et `07246039` détruites) : le cas nomme `$RACINE` — la racine que le gel déclare une fois —, le texte remis garde son chemin absolu, et le bloc déclare `terrain` et `framework-origin` en lecture, `terrain/aidd_docs` en écriture ([ADR-052](DECISIONS.md)) |
 | Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
-| Le dépôt public | `https://github.com/giak/aidd-device` : **44 commits** au 2026-10-16, dont le dernier (`64901e3`) n'est **pas poussé** ; `origin/main` est au précédent |
-| **Un run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
+| Le dépôt public | `https://github.com/giak/aidd-device` : l'historique publié suit `origin/main` ; le travail du 2026-10-20 n'est pas encore commité |
+| **Un premier run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
+| **Un second run réel du cas « promesse mémoire »** | **il a eu lieu le 2026-10-21** (`07:51:03`–`08:11:07`, session opencode `ollama/qwen3:8b` `ses_ea2fcbb86ffeStrQPkoONhWbXb`, ouverte et conduite par l'agent) et s'est conclu **`non concluant`** : la skill a été lue, puis la session a posé une question, tenté quatre scans par `execute` en `ReferenceError`, fait un `glob` et s'est arrêtée sans tableau ni produit ; `1/3` échanges mesurés, le formulaire de réponse n'étant pas compté ([reçu](device/runs/2026-10-21-073817-0d9a2180-30b82d0/receipt.json), [rapport](device/runs/2026-10-21-073817-0d9a2180-30b82d0/RAPPORT.md)) |
+| **Le premier reçu réel** | **écrit le 2026-10-20** par le run opencode du cas jouet : session `ses_ea564a976ffevcpzB4aY03ELBF`, deux échanges sur deux, `receipt.json` et `output.json` écrits, verdict `non concluant` ; produit `terrain/aidldocs/NOTES.md` au lieu de `aidd_docs/NOTES.md`, et F2 mordait parce que le tableau rendu n'a qu'une colonne ; le reçu est resté tel quel, et depuis l'ADR-047 la même trace rend `tableau.present = true` ([reçu](device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json)) |
 
-**Depuis, au 2026-10-16** : les trois trous du premier run sont comblés (reçu d'un run sans produit,
-chemin du texte, lecture de la révision sous test), le client du second run (Freebuff) a été sondé, le
-banc du harnais est entré au dépôt, et l'[ARCHITECTURE](ARCHITECTURE.md) a été écrite puis réparée deux
-fois. Ce qui reste n'est plus une mesure mais un geste : ouvrir un projet Freebuff sur la copie du cas,
-puis conduire le second run. Le détail est au [tableau de bord](DASHBOARD.md).
+**Depuis, au 2026-10-20** : les trois trous du premier run sont comblés (reçu d'un run sans produit,
+chemin du texte, lecture de la révision sous test), le client Freebuff a été sondé, le banc du harnais
+est entré au dépôt, et compte **190 contrôles**, l'[ARCHITECTURE](ARCHITECTURE.md) a été écrite puis réparée,
+et un run opencode réel a laissé le premier `receipt.json` et le premier `output.json` du dépôt. H6 accepte
+désormais un tableau d'une colonne ([ADR-047](DECISIONS.md)). Ce qui reste n'est plus une mesure mais un
+geste : ouvrir un run Freebuff par une personne si ce client doit être éprouvé. Le détail est au
+[tableau de bord](DASHBOARD.md).
 
 Le candidat de cette première épreuve : une session IA à qui l'on donne **deux lignes en anglais** et
 rien d'autre — « lis la compétence *project-memory* qui est là, et applique-la à ce dépôt : il n'a
@@ -226,8 +235,9 @@ Deux leçons, et la seconde a servi tout de suite :
    poids déjà sur le disque et ne change que la fenêtre : rien à télécharger, aucun service à
    redémarrer, aucun octet de poids en double.
 
-**Et le second run change de client : ce sera une session Freebuff**, dont le modèle est hébergé. Le
-plafond local disparaît donc, mais deux choses ne disparaissent pas :
+**La décision du 2026-10-15 était de changer de client pour une session Freebuff**, à modèle hébergé.
+Le premier run réel qui a suivi a en fait été **opencode**, le 2026-10-20, avec un modèle local ; la
+décision Freebuff reste ouverte. Quand ce client sera rouvert, deux choses ne disparaîtront pas :
 
 - **La fenêtre n'est pas une constante à citer.** Relevé dans la base de Freebuff elle-même
   (`~/.config/freebuff-desktop/projects/<projet>-<uuid>/desktop-v2.db`, champ `metrics_json` de chaque
@@ -285,7 +295,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **118 contrôles**, `118/118 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **227 contrôles**, `227/227 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit
@@ -303,14 +313,18 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   personne extérieure peut-elle récupérer le dispositif ? » se répond désormais « oui ». Pour « le
   faire tourner », les quatre arbres du cas sont eux aussi publiés depuis le 2026-10-15, chacun par la
   branche que le gel nomme ([ADR-017](DECISIONS.md)) : l'environnement se reconstitue. Reste « lire un
-  écart » : un run a eu lieu le 2026-10-15, mais il n'a rien produit et le harnais a refusé de
-  lui écrire un reçu, donc aucun `output.json` n'existe encore.
+  écart » : le run du 2026-10-20 a laissé un `output.json`, mais il est `non concluant` ; aucun écart
+  n'est encore nommé sur un produit conforme.
 
 ## 12. Ce qui pourrait encore casser
 
-- **Rien n'est prouvé par ce run.** Les 36/36, les 12/12 et les refus testent l'outil, pas la
-  promesse de la fiche ; le premier run réel a montré que le cadre tient et que le harnais refuse —
-  il n'a rien montré de la promesse, faute de produire.
+- **Rien n'est prouvé par ce run.** Les 227 contrôles et les refus testent l'outil, pas la promesse de
+  la fiche. Le run du 2026-10-20 a produit un fichier hors du chemin attendu ; l'ADR-047 a corrigé la
+  lecture de son tableau, pas le produit. Il a montré que la chaîne écrit un reçu, pas que le skill tient
+  sa promesse.
+- **Le premier reçu réel n'est pas un parcours humain.** Ses trois gestes ont été faits par l'agent via
+  l'API d'opencode, pas par une personne devant l'interface ; le reçu atteste la session et la trace,
+  pas la tenue littérale du guide utilisateur.
 - **Le dispositif n'est pas une prison.** Il ne bloque pas un agent qui veut écrire ailleurs : il le
   constate après coup. La seule vraie protection du cadre est la racine de projet choisie à
   l'ouverture.

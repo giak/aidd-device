@@ -225,9 +225,32 @@ Le script crée `$RACINE/<cas>/origine/{framework,terrain}` (deux dépôts de de
 date, auteur et commiteur figés), puis les deux copies détachées `$RACINE/<cas>/{framework-origin,terrain}`,
 `origin` pointant le chemin local. Il imprime les deux `--arbre` à recopier et les têtes ; deux exécutions
 dans deux bacs rendent **les mêmes têtes** (`1b3b632a…` et `62c48e16…`), ce que le contrôle 119 éprouve, et
-un bac déjà peuplé est refusé (120). Le gel committé porte `empreinte 50664060`, **zéro référence**, et
+un bac déjà peuplé est refusé (120). Le gel du dépôt porte `empreinte 27fb38ab` depuis le re-gel du
+2026-10-22 ([ADR-060](../DECISIONS.md) ; il portait `50664060` puis `ea4523ef`), **zéro référence**, et
 `refs_distants` **vide** sur ses deux origines : le cas est publié nulle part, et cette page est la réponse
 à « où le retrouver ». Le banc le reconstruit et le re-gèle dans son bac jetable, puis traverse la chaîne
 entière sur lui (contrôles 119 à 130, [BANC](BANC.md) §4) — ce gel-là est celui qu'il éprouve, et il
 compare son empreinte à celle du gel committé. Aucune session n'ouvre ce cas : son budget de deux échanges
 est intact, et il est fait pour le banc et pour le guide, pas pour un run.
+
+## 8. Rejouer un export de trace, selon le client
+
+Le reçu ne recopie pas une commande : il la reconstruit et rejoue l'export par `harness/clients.mjs`.
+La même recette vaut pour les deux clients, à la source près.
+
+- **Freebuff** : `sqlite3 -readonly <desktop-v2.db> "<requête du §1.5>"`, puis comparaison octet à
+  octet avec `trace/echange.jsonl`. La base est relue, le fil doit y être, et `trace.base` la nomme.
+- **opencode** : `opencode session export <id>` dans `trace.cwd`, JSON normalisé en JSONL par
+  l'adaptateur, puis comparaison du `sha256` normalisé. L'export brut (`trace/export_brut`) est haché
+  et conservé ; s'il diffère au rejeu, le reçu écrit la limite `export_brut_instable`, jamais un refus :
+  `info.time.updated` et les jetons bougent quand la session bouge (ADR-046). `trace.store` doit exister,
+  `trace.cwd` doit résoudre au `travail` du gel, et un JSONL modifié après l'export est refusé.
+
+Depuis l'ADR-051, le JSONL normalisé porte `commande` sur chaque ligne `tool` : un export produit avant
+ce champ ne rend plus les mêmes octets au rejeu, donc un reçu ancien n'est pas rejoué, il reste la pièce
+datée de son run (§6, ADR-051). Une ligne `shell` sans `commande` — trace ancienne, ou outil qui n'en
+donnera jamais — produit `shell_non_interpretable` motif « commande absente » et la limite
+`shell_sans_commande` : le scan ne suppose pas l'absence d'effet.
+
+Les contrôles 154 à 171 ([BANC](BANC.md) §4) éprouvent cette recette sur un faux `opencode` et des fixtures :
+ils prouvent l'adaptateur, pas le CLI réel.

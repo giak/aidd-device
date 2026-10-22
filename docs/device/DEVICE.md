@@ -24,7 +24,9 @@ détail sur [ARCHITECTURE.md](../ARCHITECTURE.md).
 - Il conserve le produit tel quel, et seulement s'il vient de l'espace de travail gelé (ADR-020) —
   copie verbatim, manifeste `sha256`/taille/`birth`.
 - Il rend un écart nommé et une phrase de verdict qui compare, sans attribuer de faute (v6 §8).
-- Il emporte la trace machine du run, sans laquelle « le run a eu lieu » n'est qu'une parole.
+- Il emporte la trace machine du run, sans laquelle « le run a eu lieu » n'est qu'une parole : la base
+  du fil pour Freebuff, l'export du CLI pour opencode, normalisé en JSONL par la même frontière
+  (`harness/clients.mjs`, ADR-043).
 
 ## Ce qu'il ne fait pas
 
@@ -48,10 +50,15 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 153 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
-  ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, cinq commandes, ADR-038 à 042) et
-  deux cas gelés (`CASES/` : le cas réel et le cas jouet).
-- **Manquent** : l'export de trace — geste du run, pas du harnais — et le compte-rendu `ECART.md`.
+  (`harness/banc-harnais.sh`, 227 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
+  ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, sept commandes, ADR-038 à 042 et
+  ADR-059, et
+  `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et deux cas gelés (`CASES/` : le cas réel
+  et le cas jouet).
+- **Manquent** : le compte-rendu `ECART.md`.
+- **Deux clients** : Freebuff (base `desktop-v2.db`, lu en `-readonly`, `sqlite3` requis) et opencode
+  (session exportée par `opencode session export`, `opencode` requis ; son store est lu, jamais écrit).
+  Le client est un fait du run (`session.outil`, `trace.client`), pas un paramètre du cas (ADR-044).
 - **État B** (v6 §7) : rendu une fois, le 2026-10-15 — `non concluant`, aucun produit
   ([PV](runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md)).
 
@@ -69,8 +76,13 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 
 Sous `runs/<horodatage>-<révision du framework>-<révision du dispositif>/` (des tirets, [ADR-023](../DECISIONS.md)) :
 `raw/<cas>/` et son manifeste,
-`gate.json` (la porte, ADR-034), `last-message.md`, `trace/`, `receipt.json`, et `output.json`, l'écart écrit par `compare` (le juge),
-jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`). Rien d'autre. La forme d'`output.json`
+`gate.json` (la porte, ADR-034), `last-message.md`, `trace/`, `receipt.json`, `output.json`, l'écart écrit par `compare` (le juge),
+jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`), et `RAPPORT.md`, la vue
+déterministe du reçu, de l'output et de la trace ([ADR-050](../DECISIONS.md)). Le reçu porte
+`cloisonnement` : les racines de lecture et d'écriture que l'attendu du cas déclare, résolues, plus
+`reseau` et `fichiers_de_contexte` ; `falsificateurs.lecture_hors_dossier` nomme toute lecture hors des
+racines de lecture ([ADR-052](../DECISIONS.md)), et un attendu sans bloc est refusé (ADR-049 pour la
+mesure, ADR-052 pour le cadre lu). Rien d'autre. La forme d'`output.json`
 et la phrase de verdict sont au §4 d'[ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ## Récupérer et lancer
@@ -88,7 +100,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `153/153 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `227/227 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
@@ -97,7 +109,8 @@ de travail déclarée une seule fois, et l'état des arbres avant ;
    l'espace de travail que le gel nomme `travail`, encore dans l'état gelé (ADR-018), puis elle écrit
    `<dossier>/gate.json`, ce qu'elle vient de mesurer (ADR-034) ; le reçu refuse un run sans cette trace ;
 4. l'opérateur ouvre une session neuve et lui remet le texte verbatim — geste humain, sans commande ;
-5. `collect`, l'export, `faits` (les faits que le reçu lira, dérivés du fil et du gel), puis `receipt` —
+5. `collect`, l'export par le client, `faits` (les faits que le reçu lira, dérivés du fil ou de la
+   session, et du gel), puis `receipt` —
    produit verbatim, manifeste, reçu écrit à chaud ; le reçu re-hache la copie, relit la base, y rejoue
    l'export du §1.5 et y compte les échanges du fil contre le budget du cas (ADR-030, ADR-031, ADR-032,
    ADR-033) ;

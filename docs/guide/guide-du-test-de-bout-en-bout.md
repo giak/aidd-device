@@ -81,7 +81,7 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `236/236 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+**La sortie attendue.** Le banc finit par `258/258 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
 au matin, puis `130/130` l'après-midi, `149/149` après l'orchestrateur, `153/153` avant les contrôles
 des deux clients, `171/171` avant l'ADR-047, puis `193/193` avant les effets hors cadre) ; les sept
 champs, observés le 2026-10-18 sur

@@ -156,7 +156,7 @@ ces sept commandes n'attestent pas vivent dans [ORCHESTRATEUR](device/ORCHESTRAT
 
 Sous elle, `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 253 contrôles, sans ouvrir de session ni écrire dans le dépôt
+le dépôt, `docs/device/harness/banc-harnais.sh` : 258 contrôles, sans ouvrir de session ni écrire dans le dépôt
 ([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
 compte strict hors code, compte naïf imprimé à côté, refus d'un lien mort en prose ([ADR-027](DECISIONS.md)). Ses outils hors de Node — `git`, `date` GNU,
 `sqlite3` pour la base Freebuff, `opencode` pour l'export de l'autre client — sont déclarés au `--help` et
@@ -422,7 +422,7 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 253 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| le banc qui éprouve le harnais, ses 258 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |

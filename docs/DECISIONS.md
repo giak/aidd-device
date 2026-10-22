@@ -2213,3 +2213,44 @@ Ce n'est pas non plus un jugement de qualité : déclarer `agent` ne dégrade ni
 seul rendant `conduite.mode: "humain"` ; une copie du run `spike-annees` dont le `faits.json` réécrit avec
 `conduite {mode: "agent", qui: "ouvrir"}` rend un verdict autre que `non concluant`, ou dont une limite
 affirme que la conduite est prouvée.
+
+## ADR-072 — Une question en texte est une pause, elle aussi (2026-10-22)
+
+**Contexte.** Le run `2026-10-22-151155-bee028f8-e2df6dc` rejoue le cas `plan-simple` sur
+`ollama/qwen3:8b`. La trace porte deux fichiers distincts lus, un `glob`, un chargement de skill, puis au
+seq 9 un texte `assistant` qui finit par « Would you like to proceed with creating the implementation plan
+using this skill? » et rien d'autre. Aucun formulaire, aucune écriture, huit limites, verdict
+`non concluant`. `ouvrir` ne connaissait que `GET …/form` : il aurait vu zéro formulaire, un `idle`, et
+conclu, sans envoyer la réponse figée. La pause n'aurait pas été jouée.
+
+**Décision.** `ouvrir` lit aussi le dernier texte d'un message `assistant` postérieur à sa référence.
+Si sa dernière ligne non vide **hors bloc de code** se termine par `?`, c'est une question en texte :
+la réponse figée suivante part comme message `user`, une seule fois, et le bloc dit qu'elle a été jouée.
+Le message auquel une réponse a déjà été envoyée est exclu par son `id`, et un part `text` qui commence
+par `<system-reminder>` n'est pas un texte du modèle. Un formulaire garde la priorité ; la question en texte n'est examinée qu'une fois la session inactive,
+jamais pendant un tour. S'il ne reste aucune réponse figée, le refus est celui de la spec 000407, avec le
+même texte : la question suivante se fige dans l'attendu, jamais à la volée. La détection est mécanique et
+bornée : un `?` dans un bloc de code ne compte pas, et le dernier texte est le seul examiné.
+
+**Conséquences.** Cinq contrôles, **254** à **258**, contre le serveur factice des contrôles 224 à 227 :
+une question en texte reçoit la réponse une fois (254) ; un formulaire répond d'abord, puis une question
+en texte reçoit la réponse suivante, sans double envoi (255) ; trois questions pour deux réponses figées
+refusent la troisième (256) ; un `?` dans un bloc ne déclenche rien (257) ; un rappel système terminé par `?` est écarté (258). Le banc passe à **258/258
+PASS**. `ORCHESTRATEUR`, `BANC`, `ARCHITECTURE`, `EXPLICATION`, `README`, `DEVICE` et le guide portent le
+nouveau compte.
+
+**Mesure après coup.** Un run neuf, `2026-10-22-165953-bee028f8-bc24b7c`, même cas et même gel,
+`ollama/qwen3:8b`, a été ouvert par `ouvrir` : **13 min 24 s**, `1/3` échanges, **0 question**, aucun
+produit. La session s'est arrêtée sur un texte `<system-reminder>` au seq 9, qui ne finit pas par `?` ;
+`ouvrir` a conclu sans inventer de réponse, et le reçu est `non concluant` à **8** limites. Le chemin
+de la question en texte n'a donc été exercé que par les contrôles **254 à 258**, pas par une session
+réelle : un run dont le modèle pose un texte terminé par `?` reste à faire.
+
+**Ce que ce n'est pas** : une compréhension de la question. Un texte rhétorique qui finit par `?` reçoit
+la réponse figée ; c'est une limite, dite au bloc et lisible dans la trace. Ce n'est pas non plus un
+formulaire : aucun champ n'est rempli, aucune option n'est choisie, et la réponse vient toujours de
+`demande.reponses_figees`. Le cas, le gel et l'attendu ne changent pas.
+
+**Falsificateur** : une réponse figée envoyée deux fois au même texte ; une question en texte non jouée
+alors qu'une réponse restait ; un formulaire qui perd la priorité ; un `?` dans un bloc de code qui
+déclenche un envoi ; un `exit 0` alors que la session est encore vivante.

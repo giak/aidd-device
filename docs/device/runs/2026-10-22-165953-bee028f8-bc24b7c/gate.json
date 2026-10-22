@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-21-173843-plan-simple",
+  "passe_le": "2026-10-22T16:59:53.609744409+0200",
+  "passe_le_epoch": 1792681193,
+  "repertoire": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.freeze.json",
+    "empreinte": "bee028f8714ff4c80d98a2119af2bdef5315ec778c3990683dd2ca3c28a15d76",
+    "gele_le_epoch": 1792597241
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+    "head": "416ec1f",
+    "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/test/aidd-installation"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-22-165953-bee028f8-bc24b7c/texte-a-remettre.txt",
+    "sha256": "302b9da535de6f6bde9c2f064656f09787b0febf609d55b57d67c0466b262732",
+    "octets": 562
+  }
+}

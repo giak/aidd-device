@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 253 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 258 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -87,6 +87,13 @@ status: in-progress
 > suivie d'une écriture sans ligne `user` entre les deux mord et nomme les deux seq, la réponse entre les
 > deux laisse le reçu muet, et `conforme` passe.
 
+> V0.38 — 2026-10-22 : **258** contrôles ; 254 à 258 éprouvent la **question en texte** (ADR-072) : une
+> question posée par un texte `assistant` dont la dernière ligne hors bloc finit par `?` reçoit la réponse
+> figée du cas, une fois (254) ; un formulaire garde la priorité, puis une question en texte reçoit la
+> réponse suivante sans double envoi (255) ; une troisième question, pour deux réponses figées, refuse en
+> nommant le compte (256) ; un `?` dans un bloc de code ne déclenche aucun envoi (257) ; un rappel
+> `<system-reminder>` terminé par `?` n’en est pas un (258). Le serveur factice
+> des contrôles 224 à 227 sert les cinq modes, toujours sans réseau.
 > V0.37 — 2026-10-22 : **253** contrôles ; 251 à 253 éprouvent la **conduite déclarée** (ADR-071) :
 > `faits --conduite agent` écrit `conduite{mode, qui, quand}` sans `temoignage`, et le reçu le recopie avec
 > la limite qui dit qu'elle est déclarée (251) ; `--conduite` absente ou hors de `agent | humain` sort en
@@ -154,7 +161,7 @@ status: in-progress
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 253 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 258 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -168,7 +175,7 @@ confondait, la plage d'un `awk` et la variable d'une boucle littérale (contrôl
 substitution de commande bornée, lue sans que sa valeur devienne un chemin (contrôles 214 à 217), puis
 la commande interne d'`xargs` et de `find -exec` (contrôles 218 à 221), la question que la première
 écriture suit sans réponse (contrôles 222 et 223), la session qu'`ouvrir` ouvre et conduit par l'API
-(contrôles 224 à 227), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
+(contrôles 224 à 227), puis la question posée en texte, jouée sans formulaire (contrôles 254 à 258), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
 lectures des deux autres cas gelés (contrôles 231 à 233), et une phrase et un conseil pour chaque règle
 que les reçus portent (contrôle 234), le refus d'une lecture mal formée, sans qu'aucune pièce ne
 s'écrive (contrôles 235 et 236), puis la phase 0 de l'instrument (contrôles 237 à 243) : le produit sous
@@ -183,13 +190,13 @@ la valeur absente ou hors domaine refusée en `2`, et un faits antérieur lu ave
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 253/253 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 258/258 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `253/253 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `258/258 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -270,6 +277,7 @@ une panne d'outil se voir dans un `FAIL`.
 | 210 à 211 | les deux défauts de l'orchestrateur mesurés en Séance 96 : `cas --skill <…>/PLAYBOOK.md` **sans `--id`** crée un cas `<horodatage>-playbook` avec ses trois pièces (210) ; `porte` affiche un `obtenu` qui commence par `preflight ok`, nomme le `gate.json` et mesure plus de 220 caractères, au lieu du JSON coupé au milieu d'un chemin (211) | — |
 | 218 à 221 | **`xargs` et `find -exec` littéraux** (ADR-057) : `echo x | xargs grep -n plan README.md` laisse `conforme` passer — les options d'`xargs` sont sautées et sa commande interne est lue (218) ; `find . -exec cat ../hors-cadre.md ;` fait mordre `shell_hors_dossier`, qui nomme la lecture interne (219) ; `find . -exec cat {} ;` est refusé avec le motif « valeur inconnue » — `{}` n'est pas un chemin (220) ; `find . -exec cat` est refusé avec le motif « non terminée » — le bloc doit se fermer (221). Rétablir le refus d'un bloc fait tomber les quatre ; ignorer les effets internes fait tomber le 219 et le 220 | [ADR-057](../DECISIONS.md) |
 | 224 à 227 | **`ouvrir`**, la session ouverte par l'API et la pause jouée par le cas (ADR-059) : sans `gate.json`, `ouvrir` refuse en nommant la porte (224) ; avec un `PATH` vide et aucun `--api`, elle refuse en nommant `opencode` (225) ; contre un serveur factice, elle envoie le texte de `texte-a-remettre.txt` **verbatim** — comparé octet pour octet —, puis la réponse figée du cas comme message **avant** de répondre au formulaire, dont la réponse est l'option `(Recommended)` ; `exit 0`, le fil est imprimé avec « inactive », et le dossier du run est **inchangé** (226) ; un serveur qui pose trois questions pour deux réponses figées fait refuser la troisième (« n'en fige que 2 »), après deux réponses envoyées (227). Le serveur est en `node:http` : aucune session réelle, aucun réseau | [ADR-059](../DECISIONS.md) |
+| 254 à 258 | la **question en texte** (spec du 2026-10-22 15:26, ADR-072) : contre le serveur factice des contrôles 224 à 227, un texte `assistant` dont la dernière ligne finit par `?` reçoit la réponse figée **une fois**, `exit 0`, et le bloc nomme la question (254) ; un formulaire répond d'abord, puis une question en texte reçoit la réponse suivante : trois messages, un formulaire, aucune réponse deux fois (255) ; trois questions en texte pour deux réponses figées font refuser la troisième (« n'en fige que 2 »), `exit 1`, sans envoyer de réponse de plus (256) ; un `?` présent seulement dans un bloc de code ne déclenche aucun envoi et le bloc compte zéro question (257) ; un rappel système qui finit par `?` est écarté et le bloc compte zéro question (258). Le serveur factice ne parle à aucun réseau | ADR-072 |
 | 228 à 230 | la **page utilisateur** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les huit sections, une ligne par geste (5), et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](../DECISIONS.md) |
 | 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les trois types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](../DECISIONS.md) |
 | 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les seize clés que les reçus du dépôt portent, `pause_non_tenue` et `shell_invalide` comprises, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend dix-sept lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
@@ -324,7 +332,7 @@ le dernier mot change. Trois règles, tenues par les contrôles existants :
   construction : le `non concluant` du contrôle 143 est la valeur que le reçu impose, pas une opinion sur
   un skill. Les contrôles 131 à 153 éprouvent l'enchaînement et les refus de l'orchestrateur, jamais la
   qualité d'un cas qu'il aurait fabriqué sur un skill réel.
-- **Un faux serveur n'est pas opencode.** Les contrôles 224 à 227 prouvent `ouvrir` contre un serveur
+- **Un faux serveur n'est pas opencode.** Les contrôles 224 à 227 et 254 à 258 prouvent `ouvrir` contre un serveur
   factice qui imite cinq routes : ils disent que la commande envoie le bon texte, joue les réponses dans
   le bon ordre et refuse les cas nommés, jamais que l'API de la version installée se comporte ainsi.
   `opencode serve` lui-même, son mot de passe imprimé et la forme réelle d'un formulaire ne sont tenus

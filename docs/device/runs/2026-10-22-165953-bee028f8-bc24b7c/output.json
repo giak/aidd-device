@@ -1,0 +1,23 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "attendu": "La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-10-22-165953-bee028f8-bc24b7c/raw/2026-10-21-173843-plan-simple",
+  "difference": "Aucun produit : la session a lu le skill et le dépôt, puis s'est arrêtée sur un rappel système, sans poser de question ni écrire un seul fichier ; le terrain est resté propre.",
+  "verdict": "non concluant",
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "phrase": "La session s'arrête sur un rappel système, sans tableau ni produit, donc ce run ne dit rien de la promesse du skill.",
+  "gel_verifie": {
+    "le": "2026-10-22T17:14:07+02:00",
+    "empreinte": "bee028f8714ff4c80d98a2119af2bdef5315ec778c3990683dd2ca3c28a15d76",
+    "fichiers": 2,
+    "references": 9
+  },
+  "juge_le": "2026-10-22T17:14:07+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-22-165953-bee028f8-bc24b7c/receipt.json"
+}

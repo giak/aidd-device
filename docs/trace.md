@@ -6736,3 +6736,76 @@ le commentaire du §6 sur l'issue #1079. Sinon, le pilote s'arrête là : un `co
 local, leurs limites.
 
 **Mémoires.** Aucune écrite.
+
+## Séance 119 — 2026-10-22 (le même cas, un second modèle : la question en texte)
+
+**Objectif.** Rejouer `2026-10-21-173843-plan-simple` sur un **second modèle**, `ollama/qwen3:8b`, pour
+voir si le dispositif mesure la même promesse sans changer de cas, de gel ni de texte. Le choix du
+modèle est celui de l'opérateur : local, gratuit, et déjà employé par les runs du cas jouet.
+
+**Fait.** Porte `2026-10-22-151155-bee028f8-e2df6dc` passée à `15:11:55` sur le terrain à `416ec1f`,
+texte de **562 o** (sha256 `302b9da5`), session `ses_e9c428877ffeKbNNmfYT4OYNuN` ouverte à `15:12:03`,
+**11 min 30 s**, **1** échange sur **3**, conduite `agent`. La trace porte **dix** messages :
+
+- seq 2 et 8 : `read` de `skills/01-plan/SKILL.md`, deux fois ;
+- seq 4 : `read` de `README.md` ; seq 5 : `glob` sur `static/src` ; seq 7 : chargement du skill ;
+- seq 9 : un texte `assistant` qui finit par « Would you like to proceed with creating the implementation
+  plan using this skill? », puis plus rien. Aucune écriture, aucun tableau, terrain propre.
+
+Le reçu rend **`non concluant`**, **8** limites, `tableau.present: false`, `budget 1/3`, et les deux
+limites qui disent le run : « la session n'a rien produit » et « la trace ne porte aucun tableau ».
+
+**Ce que ça établit.** Le dispositif prend un second modèle sans changer une ligne : même cas, même gel,
+même texte, même verdict possible. Le modèle s'arrête sur la même promesse, et le reçu refuse de
+conclure : ce run ne dit rien du skill, il dit que la session n'a pas montré le tableau ni écrit le plan.
+La conduite est déclarée par un agent, et le reçu le redit.
+
+**Le défaut que le run révèle, lu dans le code.** `ouvrir` ne connaît que le formulaire : `GET …/form`
+vide, puis `estInactive` vrai, et il conclut. Une question posée en texte, suivie d'un `idle`, n'est
+jamais jouée : la réponse figée reste dans l'attendu. Ce n'est pas mesuré dans ce run (la session a été
+pilotée par l'agent, pas par `ouvrir`), c'est lu dans la boucle d'`orchestrer.mjs` ; c'est assez pour une
+spec, pas pour un reçu.
+
+**Ce que le juge a écrit de faux.** Son `difference` dit « quatre fichiers du dépôt ». La trace en porte
+**deux** distincts, `SKILL.md` lu deux fois, plus un `glob` et un chargement de skill. Le verdict ne
+dépend pas de ce texte, mais le texte est faux et il est consigné ici : le `difference` est une phrase
+libre, le reçu ne la confronte pas à la trace.
+
+**Suite.** Une spec est écrite, non appliquée :
+[`2026-10-22-152613-ouvrir-question-en-texte`](tasks/2026_10/2026-10-22-152613-ouvrir-question-en-texte/2026-10-22-152613-spec.md).
+Elle traite la question en texte comme une pause, avec quatre contrôles (254 à 257) et un nouveau run du
+même cas. Le code n'est pas touché tant qu'elle n'est pas approuvée.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 120 — 2026-10-22 (la question en texte entre dans `ouvrir`, et le banc le prouve)
+
+**Objectif.** Appliquer la spec `2026-10-22-152613` : `ouvrir` doit jouer une question posée en texte,
+pas seulement un formulaire, sans double envoi et sans dépasser les réponses figées.
+
+**Fait.** `orchestrer.mjs` gagne `messagesDe`, `estInactive(messages, reference)`,
+`derniereLigneHorsBloc` et `questionEnTexte` ; la boucle lit les messages quand la session est inactive,
+prend le dernier texte `assistant` postérieur à la référence, et joue la réponse figée si sa dernière
+ligne non vide hors bloc finit par `?`. Le formulaire reste prioritaire. Le refus 10 est le même que
+pour un formulaire. Le serveur factice des contrôles 224 à 227 reçoit cinq modes ; les contrôles
+**254 à 258** couvrent la question jouée, le formulaire puis le texte, la troisième question sans
+réponse figée, le `?` dans un bloc de code et le rappel système écarté.
+
+**Vérifié.**
+- `bash docs/device/harness/banc-harnais.sh` => **258/258 PASS**, `exit 0`, **0** `FAIL` ; les 224 à 227
+  passent inchangés, les 254 à 258 passent avec le serveur factice.
+- `node --check` sur `orchestrer.mjs` et `bash -n` sur le banc => `0`.
+- Un run neuf, `2026-10-22-165953-bee028f8-bc24b7c`, même cas, même gel, `ollama/qwen3:8b`, ouvert par
+  `ouvrir` : **13 min 24 s**, `1/3` échanges, **0 question**, aucun produit. La session s'est arrêtée sur
+  un texte `<system-reminder>` au seq 9, qui ne finit pas par `?` ; `ouvrir` a conclu sans jouer de
+  réponse. Reçu **`non concluant`**, **8** limites, `tableau.present: false`, `question_sans_reponse: null`.
+
+**Ce que ça établit.** Le code de la question en texte est éprouvé par les contrôles 254 à 258 ; le banc
+ne régresse pas ; `ouvrir` ne fabrique pas une réponse quand aucune question n'est reconnue. Le run réel
+ne prouve pas le chemin en session : le modèle n'a pas posé la question cette fois. C'est une limite
+dite, pas un `conforme` obtenu.
+
+**Suite.** Rejouer le même cas avec un modèle qui pose une question en texte, ou fabriquer un cas jouet
+dont la sortie est une question ; le contrôle 256 dit déjà ce qui doit arriver à la troisième.
+
+**Mémoires.** Aucune écrite.

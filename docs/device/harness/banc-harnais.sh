@@ -2276,6 +2276,15 @@ const voulues = mode === "exces" ? 3 : 1;
 let posees = 0;
 let formPending = false;
 let idleAt = 0;
+let assistant = null;
+let horloge = 0;
+const tick = () => Date.now() + (++horloge);
+const questionTexte = "Would you like to proceed with the implementation plan?";
+const texteBloc = "Le point est dans un bloc :\n```text\nEst-ce une question ?\n```\nRien d'autre.";
+const poserTexte = (texte) => {
+  assistant = { id: "msg_a" + tick(), type: "assistant", time: { created: tick() }, content: [{ type: "text", text: texte }] };
+  idleAt = tick();
+};
 
 const formulaire = (n) => ({
   id: "frm_" + n,
@@ -2308,21 +2317,52 @@ const serveur = http.createServer((req, res) => {
     }
     if (req.method === "POST" && url === "/api/session/ses_banc/prompt") {
       prompts.push(JSON.parse(corps).text);
-      if (prompts.length === 1) { posees = 1; formPending = true; }
-      idleAt = 0;
-      return envoi(200, { data: { id: "msg_u" + prompts.length, type: "user", time: { created: Date.now() } } });
+      const n = prompts.length;
+      const cree = tick();
+      if (mode === "accepter" || mode === "exces") {
+        if (n === 1) { posees = 1; formPending = true; }
+        idleAt = 0;
+      } else if (mode === "texte") {
+        if (n === 1) poserTexte(questionTexte);
+        else idleAt = tick();
+      } else if (mode === "texte-formulaire") {
+        if (n === 1) { posees = 1; formPending = true; }
+        else if (n === 2) idleAt = 0;
+        else idleAt = tick();
+      } else if (mode === "texte-exces") {
+        poserTexte("Question " + n + " ?");
+      } else if (mode === "texte-bloc") {
+        if (n === 1) poserTexte(texteBloc);
+      } else if (mode === "texte-rappel") {
+        if (n === 1) poserTexte("<system-reminder>\nContinuer ?\n</system-reminder>?");
+      }
+      return envoi(200, { data: { id: "msg_u" + n, type: "user", time: { created: cree } } });
     }
     if (req.method === "GET" && url === "/api/session/ses_banc/form") {
       return envoi(200, { data: formPending ? [formulaire(posees)] : [] });
     }
     if (req.method === "POST" && url.startsWith("/api/session/ses_banc/form/frm_")) {
       answers.push(JSON.parse(corps));
-      if (posees < voulues) { posees += 1; formPending = true; idleAt = 0; } else { formPending = false; idleAt = Date.now(); }
+      if (mode === "texte-formulaire") {
+        formPending = false;
+        poserTexte(questionTexte);
+      } else if (posees < voulues) {
+        posees += 1;
+        formPending = true;
+        idleAt = 0;
+      } else {
+        formPending = false;
+        idleAt = tick();
+      }
       res.writeHead(204);
       return res.end();
     }
     if (req.method === "GET" && url === "/api/session/ses_banc/message") {
-      return envoi(200, { data: idleAt ? [{ id: "msg_idle", type: "idle", time: { created: idleAt }, outcome: "succeeded" }] : [] });
+      const data = idleAt ? [
+        ...(assistant ? [assistant] : []),
+        { id: "msg_idle", type: "idle", time: { created: idleAt }, outcome: "succeeded" },
+      ] : [];
+      return envoi(200, { data });
     }
     envoi(404, { error: "route inconnue " + req.method + " " + url });
   });
@@ -2354,6 +2394,43 @@ if (mode === "accepter") {
     raisons.push("le formulaire n'a pas reçu l'option Recommandé : " + JSON.stringify(answers[0]));
   }
   if (!sortie.includes("inactive")) raisons.push("le bloc ne dit pas la session inactive");
+} else if (mode === "texte") {
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 2) raisons.push(prompts.length + " message(s) envoyé(s), 2 attendus");
+  else {
+    if (prompts[0] !== texte) raisons.push("le premier message n'est pas le texte de la porte, octet pour octet");
+    if (prompts[1] !== figees[0]) raisons.push("le second message n'est pas la réponse figée du cas");
+  }
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("texte, question")) raisons.push("le bloc ne nomme pas la question jouée en texte");
+  if (!sortie.includes("1 question(s)")) raisons.push("le bloc ne compte pas la question jouée");
+} else if (mode === "texte-formulaire") {
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 3) raisons.push(prompts.length + " message(s) envoyé(s), 3 attendus");
+  else {
+    if (prompts[0] !== texte) raisons.push("le premier message n'est pas le texte de la porte");
+    if (prompts[1] !== figees[0]) raisons.push("la réponse figée ne part pas avant le formulaire");
+    if (prompts[2] !== figees[1]) raisons.push("la seconde réponse figée ne part pas après la question en texte");
+  }
+  if (answers.length !== 1) raisons.push(answers.length + " réponse(s) au formulaire, 1 attendue");
+  if (!sortie.includes("2 question(s)")) raisons.push("le bloc ne compte pas les deux questions jouées");
+} else if (mode === "texte-exces") {
+  if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
+  if (!sortie.includes("n'en fige que 2")) raisons.push("le refus ne nomme pas les deux réponses figées : " + sortie.split("\n")[0]);
+  if (prompts.length !== 3) raisons.push(prompts.length + " message(s) envoyé(s), 3 attendus");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+} else if (mode === "texte-bloc") {
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (sortie.includes("texte, question")) raisons.push("un ? dans un bloc a été pris pour une question");
+  if (!sortie.includes("0 question(s)")) raisons.push("le bloc ne dit pas qu'aucune question n'est jouée");
+} else if (mode === "texte-rappel") {
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (sortie.includes("texte, question")) raisons.push("un rappel système a été pris pour une question");
+  if (!sortie.includes("0 question(s)")) raisons.push("le bloc ne dit pas qu'aucune question n'est jouée");
 } else {
   if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
   if (!sortie.includes("n'en fige que 2")) raisons.push("le refus ne nomme pas les deux réponses figées : " + sortie.split("\n")[0]);
@@ -2367,6 +2444,11 @@ controle "224 refus, ouvrir sans porte" 0 refus-nomme 1 "aucune porte" bash -c "
 controle "225 refus, opencode introuvable" 0 refus-nomme 1 "introuvable dans le PATH" env PATH=/nonexistent "$(command -v node)" "$ORCH" ouvrir --cas cas-test --cases "$O/cases" --run "$O/run"
 controle "226 ouvrir, texte, réponse figée et formulaire" 0 node "$O/faux-serveur.mjs" "$B/detail.226" accepter "$O/run" cas-test "$O/cases" "$ORCH"
 controle "227 refus, plus de questions que de réponses figées" 0 node "$O/faux-serveur.mjs" "$B/detail.227" exces "$O/run" cas-test "$O/cases" "$ORCH"
+controle "254 ouvrir, question en texte jouée" 0 node "$O/faux-serveur.mjs" "$B/detail.254" texte "$O/run" cas-test "$O/cases" "$ORCH"
+controle "255 ouvrir, formulaire puis texte" 0 node "$O/faux-serveur.mjs" "$B/detail.255" texte-formulaire "$O/run" cas-test "$O/cases" "$ORCH"
+controle "256 refus, texte sans réponse figée" 0 node "$O/faux-serveur.mjs" "$B/detail.256" texte-exces "$O/run" cas-test "$O/cases" "$ORCH"
+controle "257 texte sans question, ? dans un bloc" 0 node "$O/faux-serveur.mjs" "$B/detail.257" texte-bloc "$O/run" cas-test "$O/cases" "$ORCH"
+controle "258 rappel système, jamais une question" 0 node "$O/faux-serveur.mjs" "$B/detail.258" texte-rappel "$O/run" cas-test "$O/cases" "$ORCH"
 
 # 228-230 : la page utilisateur (ADR-061). Un reçu synthétique suffit : rien n'ouvre de session, et les
 # contrôles portent sur le contrat de forme, sur les trois états d'un geste et sur le déterminisme.

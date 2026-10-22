@@ -43,8 +43,9 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          [--delai <minutes>]
          ouvre la session opencode par l'API de son serveur — le sien sur un port libre, ou celui
          que --api nomme —, envoie le texte que la porte a écrit (sha256 de gate.json vérifié),
-         puis joue la pause : à chaque question posée, envoie la réponse figée du cas et répond au
-         formulaire par l'option marquée Recommandé. S'arrête quand la session devient inactive,
+         puis joue la pause : à chaque question posée — formulaire ou question en texte —, envoie la
+         réponse figée du cas et répond au formulaire par l'option marquée Recommandé. S'arrête quand la
+         session devient inactive,
          et refuse au délai (défaut 30 min). N'écrit rien dans le run : elle imprime le fil, que
          suite reçoit ensuite ; elle n'atteste aucun geste humain
   suite  --cas <id> --fil <id> [--run <dir>] [--client auto|freebuff|opencode]
@@ -778,12 +779,53 @@ async function envoyerTexte(api, fil, motDePasse, texte) {
   return envoi.json?.data?.time?.created ?? Date.now();
 }
 
-async function estInactive(api, fil, motDePasse, reference) {
+async function messagesDe(api, fil, motDePasse) {
   const liste = await requete(api, `/api/session/${fil}/message`, { motDePasse });
   if (liste.code !== 200 || !Array.isArray(liste.json?.data)) {
     throw new Refus(`les messages de ${fil} ne se lisent pas (${liste.code}) — sans eux, l'inactivité ne se constate pas`);
   }
-  return liste.json.data.some((m) => m.type === "idle" && (m.time?.created ?? 0) >= reference);
+  return liste.json.data;
+}
+
+function estInactive(messages, reference) {
+  return messages.some((m) => m.type === "idle" && (m.time?.created ?? 0) >= reference);
+}
+
+// Une question n'a pas toujours la forme d'un formulaire : le modèle écrit sa demande et rend la main.
+// La règle est mécanique et bornée — le dernier texte d'un message `assistant` postérieur à la
+// référence, sa dernière ligne non vide hors bloc de code, terminée par `?`.
+function derniereLigneHorsBloc(texte) {
+  let dansBloc = false;
+  let ligne = "";
+  for (const brute of String(texte).split(/\r?\n/)) {
+    if (/^\s*```/.test(brute)) {
+      dansBloc = !dansBloc;
+      continue;
+    }
+    if (!dansBloc && brute.trim() !== "") ligne = brute.trimEnd();
+  }
+  return ligne;
+}
+
+function questionEnTexte(messages, reference, dejaRepondu = null) {
+  let dernier = null;
+  for (const m of messages) {
+    const role = m.type ?? m.info?.role ?? m.role;
+    if (role !== "assistant" || m.id === dejaRepondu) continue;
+    const cree = Number(m.time?.created ?? m.info?.time?.created);
+    if (!Number.isFinite(cree) || cree < reference) continue;
+    const parts = Array.isArray(m.parts) ? m.parts : Array.isArray(m.content) ? m.content : [];
+    // Un rappel système ajouté par le client n'est pas un texte du modèle : le run 165953 s'est arrêté
+    // sur un `<system-reminder>`, et il ne doit jamais devenir une question.
+    const textes = parts.filter((p) => p && p.type === "text" && typeof p.text === "string"
+      && !p.text.trimStart().startsWith("<system-reminder>"));
+    const texte = textes.length ? textes[textes.length - 1].text : (typeof m.text === "string" ? m.text : "");
+    if (texte.trim() === "") continue;
+    if (!dernier || cree >= dernier.cree) dernier = { cree, texte, id: m.id ?? null };
+  }
+  if (!dernier) return null;
+  const ligne = derniereLigneHorsBloc(dernier.texte);
+  return ligne.endsWith("?") ? { ligne, id: dernier.id } : null;
 }
 
 // La règle de la spec §5 : l'option marquée Recommandé, sinon la première ; un tableau quand le champ
@@ -892,6 +934,7 @@ async function commandeOuvrir(argv) {
 
     let reference = await envoyerTexte(api, fil, motDePasse, octets.toString("utf8"));
     const jouees = [];
+    let dejaRepondu = null;
     const limite = Date.now() + minutes * 60000;
     for (;;) {
       const attente = await requete(api, `/api/session/${fil}/form`, { motDePasse });
@@ -916,7 +959,19 @@ async function commandeOuvrir(argv) {
         jouees.push({ reponse: reponses[jouees.length], choix: reponse.choix });
         continue;
       }
-      if (await estInactive(api, fil, motDePasse, reference)) break;
+      const messages = await messagesDe(api, fil, motDePasse);
+      if (estInactive(messages, reference)) {
+        const question = questionEnTexte(messages, reference, dejaRepondu);
+        if (!question) break;
+        if (jouees.length >= reponses.length) {
+          throw new Refus(`la session a posé ${jouees.length + 1} question(s) et ${cas} n'en fige que ${reponses.length} — la suivante se fige dans l'attendu, jamais à la volée`);
+        }
+        const indice = jouees.length;
+        reference = await envoyerTexte(api, fil, motDePasse, reponses[indice]);
+        dejaRepondu = question.id;
+        jouees.push({ reponse: reponses[indice], choix: ["texte"], forme: "texte", question: question.ligne });
+        continue;
+      }
       if (Date.now() > limite) {
         throw new Refus(`la session n'est pas devenue inactive en ${minutes} min — elle est peut-être encore vivante, et rien ne se conclut d'un tour inachevé`);
       }
@@ -933,7 +988,7 @@ async function commandeOuvrir(argv) {
     });
     ecrit([
       "Les réponses envoyées, dans l'ordre (le cas joue la pause, la personne ne la joue plus) :",
-      ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.choix.join(", ")}`),
+      ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.forme === "texte" ? `texte, question « ${uneLigne(j.question).slice(0, 60)} »` : j.choix.join(", ")}`),
       "",
       "Ce que ouvrir n'atteste pas : qui a conduit le run. suite le déclare par --conduite agent|humain, et le reçu le recopie sans le vérifier.",
       "",

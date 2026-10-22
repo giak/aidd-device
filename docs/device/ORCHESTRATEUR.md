@@ -29,7 +29,8 @@ L'ouverture d'un fil Freebuff reste à la main, et la source du client — base 
    faire pour opencode ;
 2. **coller** le texte que `porte` imprime, sans le retaper — ou laisser `ouvrir` l'envoyer ;
 3. **répondre** par une des deux phrases figées du cas, jamais par une autre — `ouvrir` les envoie dans
-   l'ordre, et répond aux formulaires par l'option marquée Recommandé.
+   l'ordre, répond aux formulaires par l'option marquée Recommandé, et joue aussi une question posée en
+   texte quand sa dernière ligne hors bloc de code finit par `?`.
 
 Aucun de ces trois gestes n'est attesté par une pièce : `ouvrir` les automatise, il ne les prouve pas.
 
@@ -55,7 +56,7 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 | --- | --- | --- |
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | `--cases` (deux pièces et le gel), `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
-| `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
+| `ouvrir` | le fil de la session, la réponse figée de chaque question — formulaire ou texte —, l'option marquée Recommandé | rien : elle imprime le fil |
 | `suite` | les faits, l'export de trace par l'adaptateur du client, le dernier message (dernière part `text` d'un assistant, hachée dans `faits.json`, [ADR-065](../DECISIONS.md)), la copie du produit, et l'annexe du scratch quand le cas le déclare | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json` et la copie, plus `annexe/<cas>/manifest.json` et sa copie |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
@@ -66,9 +67,11 @@ Elle lance `opencode serve` sur un port libre de `127.0.0.1` — ou se branche s
 passe vient de `OPENCODE_SERVER_PASSWORD` —, lit le mot de passe que le serveur imprime, crée la session
 dans l'arbre `travail` du gel, puis envoie `texte-a-remettre.txt` **verbatim** après avoir vérifié le
 `sha256` de `gate.json` : le texte que la session reçoit est celui que la porte a autorisé, pas une
-recopie. Elle attend ensuite la question, envoie la réponse figée suivante du cas comme message, répond au
+recopie. Elle attend ensuite la question — un formulaire, ou un texte `assistant` dont la dernière ligne
+non vide hors bloc de code finit par `?` —, envoie la réponse figée suivante du cas comme message, répond au
 formulaire par l'option marquée « Recommandé » (à défaut la première), et s'arrête quand la session devient
-inactive ; au délai (30 min par défaut), elle refuse sans conclure. Elle n'écrit **rien** dans le dossier
+inactive ; au délai (30 min par défaut), elle refuse sans conclure. Une question en texte ne crée aucun
+formulaire : la réponse part comme message `user`, une seule fois, et le bloc dit qu'elle a été jouée. Elle n'écrit **rien** dans le dossier
 du run : le fil qu'elle imprime est le `--fil` de `suite`. Ce qu'elle n'atteste pas — qui a conduit le run,
 et le choix des options du formulaire — se dit dans `faits.json` : `suite` exige `--conduite agent|humain` et
 `--par`, et le reçu recopie ce bloc avec la limite qui dit qu'il est déclaré, jamais vérifié
@@ -192,8 +195,8 @@ l'arbre de travail dans la copie, et le porcelain que le gel enregistre le dit (
 `ouvrir` a ses propres refus, qui ne rejoignent pas le tableau : aucune porte, un texte dont le `sha256`
 n'est plus celui de la porte, un gel sans arbre `travail`, un attendu sans réponse figée, `opencode`
 introuvable, un serveur muet ou qui rend `401`, une session ou un message refusés, un champ de formulaire
-que la règle du §2 ne remplit pas, une question de plus que le cas n'en fige, et le délai dépassé. Chacun
-sort en `1` et nomme la pièce ; le banc les éprouve (224, 225, 227).
+que la règle du §2 ne remplit pas, une question de plus que le cas n'en fige — formulaire ou texte —, et
+le délai dépassé. Chacun sort en `1` et nomme la pièce ; le banc les éprouve (224, 225, 227, 256).
 
 Le client est un fait du run, jamais un paramètre du cas ([ADR-044](../DECISIONS.md)). `suite` sans
 `--client` essaie Freebuff puis opencode : deux clients qui connaissent le fil sont un refus qui nomme

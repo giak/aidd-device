@@ -19,7 +19,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
-- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 253 contrôles qui éprouvent ses
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 258 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/guide/guide-utilisateur.md](docs/guide/guide-utilisateur.md) — **le guide utilisateur** : tu
   arrives avec un skill à tester, tu dis « test ça » dans une session d'agent, l'agent conduit, tu confirmes
@@ -122,7 +122,7 @@ jouet un `ecart` dont la différence repose sur des appels que le reçu ne mesur
 écrivent désormais un [`RESULTAT.md`](docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/RESULTAT.md) à
 côté du rapport technique : huit sections, un tableau geste par geste, trois états (tenu, violé, non
 observé), et une lecture déclarée par le cas ([ADR-061](docs/DECISIONS.md)) ; une lecture mal formée est
-refusée avant toute écriture. Le banc passe à **236/236**, et le contrôle de liens rend **973 liens sur 156
+refusée avant toute écriture. Le banc passe à **258/258**, et le contrôle de liens rend **1 148 liens sur 179
 fichiers, 0 mort**. Le quatrième cas, `spike-annees` (skill `aidd-pm/05-spike`, gel `0052c168`, 11
 références), a sa porte passée (`ae54c1a3`, 748 octets) et **aucune session ouverte** : le prochain geste
 est de le jouer.

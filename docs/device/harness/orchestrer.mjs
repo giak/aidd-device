@@ -15,6 +15,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
 import { exportTrace as exporterTraceClient, session as sessionClient } from "./clients.mjs";
 import { ecrireRapport } from "./rapport.mjs";
+import { ecrireResultat } from "./resultat.mjs";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const DEPOT = resolve(ICI, "../../..");
@@ -58,7 +59,9 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          [--verdict conforme|ecart|non concluant] [--limites <texte>] [--cases <dir>]
          demande au reçu le verdict que les falsificateurs imposent (--sans-ecrire), le
          laisse trancher si --verdict est absent, sinon écrit receipt.json, puis
-         output.json (compare), puis réimprime le bloc de verdict
+         output.json (compare), RAPPORT.md, et RESULTAT.md quand CASES/<cas>.lecture.json
+         déclare la lecture qui apparie chaque geste attendu à une mesure (ADR-061), puis
+         réimprime le bloc de verdict
   lire   --cas <id> [--run <dir>]
          relit receipt.json et output.json et réimprime le bloc de verdict, sans rien
          écrire. Un reçu absent est refusé, son chemin nommé
@@ -315,6 +318,18 @@ function expectedDe(cas, cases) {
   const chemin = join(cases, `${cas}.expected.json`);
   if (!existsSync(chemin)) refuse(`orchestrer : aucun attendu ${chemin} — un cas sans attendu ne se juge pas`);
   return JSON.parse(readFileSync(chemin, "utf8"));
+}
+// La lecture d'un cas (ADR-061) : la pièce qui apparie un geste attendu à une mesure du reçu. Elle
+// n'est pas dans le gel, et son absence n'est pas une erreur : le rapport technique s'écrit quand même,
+// et l'absence de page utilisateur est dite.
+function lectureDe(cas, cases) {
+  const chemin = join(cases, `${cas}.lecture.json`);
+  if (!existsSync(chemin)) return null;
+  try {
+    return JSON.parse(readFileSync(chemin, "utf8"));
+  } catch {
+    refuse(`orchestrer : la lecture ${chemin} est illisible — une page utilisateur ne s'invente pas`);
+  }
 }
 function runParDefaut(cas, gel) {
   const alea = randomBytes(4).toString("hex").slice(0, 7);
@@ -1152,6 +1167,10 @@ function commandeFin(argv) {
   if (existsSync(cheminRapport)) {
     refuse(`fin : ${cheminRapport} existe déjà — un rapport ne doit pas rester à côté d'un reçu neuf ; le déplacer ou le nommer autrement, puis relancer`);
   }
+  const cheminResultat = join(run, "RESULTAT.md");
+  if (existsSync(cheminResultat)) {
+    refuse(`fin : ${cheminResultat} existe déjà — le résultat d'un run ne se réécrit pas ; le déplacer, puis relancer`);
+  }
   const sortieReceipt = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", verdictDemande]);
   if (sortieReceipt.code !== 0) {
     blocRefus({
@@ -1194,10 +1213,19 @@ function commandeFin(argv) {
   } catch (e) {
     refuse(`${e.message} — le reçu et l'output sont écrits, la commande rapport peut les relire`);
   }
+  const lecture = lectureDe(cas, cases);
+  let resultat = null;
+  if (lecture) {
+    try {
+      resultat = ecrireResultat({ runDir: run, cas, attendu: expectedDe(cas, cases), lecture, remplacer: false });
+    } catch (e) {
+      refuse(`${e.message} — le reçu, l'output et le rapport sont écrits`);
+    }
+  }
   blocVerdict(recu, JSON.parse(readFileSync(join(run, "output.json"), "utf8")));
   blocFin({
-    etat: `run ${cas} clos — ${recu.verdict}, rapport écrit`,
-    pieces: `${join(run, "receipt.json")}, ${join(run, "output.json")}, ${rapport.chemin}`,
+    etat: `run ${cas} clos — ${recu.verdict}, rapport écrit${resultat ? ", page utilisateur écrite" : " (aucune lecture déclarée : pas de page utilisateur)"}`,
+    pieces: [join(run, "receipt.json"), join(run, "output.json"), rapport.chemin, ...(resultat ? [resultat.chemin] : [])].join(", "),
     ensuite: `orchestrer.mjs lire --cas ${cas} --run ${run}`,
   });
   process.exit(0);
@@ -1225,8 +1253,16 @@ function commandeRapport(argv) {
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
   const run = runExiste(cas, valeurs);
   try {
-    const rapport = ecrireRapport({ runDir: run, cas, remplacer: valeurs.remplacer === true });
+    const remplacer = valeurs.remplacer === true;
+    const rapport = ecrireRapport({ runDir: run, cas, remplacer });
     ecrit([`▸ RAPPORT — ${rapport.chemin}`, `  verdict             : ${rapport.verdict}`, ""]);
+    const lecture = lectureDe(cas, casesDir(valeurs));
+    if (lecture) {
+      const resultat = ecrireResultat({ runDir: run, cas, attendu: expectedDe(cas, casesDir(valeurs)), lecture, remplacer });
+      ecrit([`▸ RESULTAT — ${resultat.chemin}`, `  pour la personne     : ce que le run a montré, et ce qu'elle peut décider`, ""]);
+    } else {
+      ecrit(["▸ RESULTAT — aucun", "  le cas ne déclare aucune lecture : aucune page utilisateur ne s'invente", ""]);
+    }
   } catch (e) {
     refuse(e.message);
   }

@@ -1347,10 +1347,10 @@ controle "179 rapport, conforme, liens et déterminisme" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
 const run='$RB/r179', rp=run+'/RAPPORT.md';
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync(rp,'utf8'), h=sha(rp);
 fs.unlinkSync(rp);
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 process.exit(t.includes('conforme') && t.includes('NOTES.md') && t.includes('aucun falsificateur') && t.includes('receipt.json') && t.includes('trace/echange.jsonl') && h===sha(rp) ?0:1)"
 rapport-copie "$REPO/docs/device/runs/2026-10-20-202333-50664060-1028c8b" "$RB/r180"
 controle "180 rapport, non concluant, tableau absent et chemin produit" 0 node -e "
@@ -1417,7 +1417,7 @@ const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('c
 const run='$RB/r187';
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const avant=[sha(run+'/receipt.json'),sha(run+'/output.json')];
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync(run+'/RAPPORT.md','utf8');
 const apres=[sha(run+'/receipt.json'),sha(run+'/output.json')];
 process.exit(t.includes(\"L'écart nommé par le juge\") && t.includes('second fichier aidddocs/NOTES.md') && t.includes(\"Relire l'écart nommé par le juge\") && !t.includes('Aucune action dérivée') && avant[0]===apres[0] && avant[1]===apres[1] ?0:1)"
@@ -1435,7 +1435,7 @@ const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('c
 const run='$RB/r188';
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const avant=[sha(run+'/receipt.json'),sha(run+'/output.json')];
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync(run+'/RAPPORT.md','utf8');
 const apres=[sha(run+'/receipt.json'),sha(run+'/output.json')];
 process.exit(t.includes('| tableau_absent |') && t.includes(\"L'écart nommé par le juge\") && t.includes('second fichier aidddocs/NOTES.md') && t.includes('Vérifier que la session rend un tableau') && t.includes(\"Relire l'écart nommé par le juge\") && !t.includes('Aucune action dérivée') && avant[0]===apres[0] && avant[1]===apres[1] ?0:1)"
@@ -1452,7 +1452,7 @@ const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('c
 const run='$RB/r189';
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const avant=[sha(run+'/receipt.json'),sha(run+'/output.json')];
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync(run+'/RAPPORT.md','utf8');
 const apres=[sha(run+'/receipt.json'),sha(run+'/output.json')];
 process.exit(t.includes('Aucune action dérivée ; relire le reçu et le produit.') && !t.includes(\"L'écart nommé par le juge\") && !t.includes(\"Relire l'écart nommé par le juge\") && avant[0]===apres[0] && avant[1]===apres[1] ?0:1)"
@@ -1469,7 +1469,7 @@ const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('c
 const run='$RB/r190';
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const avant=[sha(run+'/receipt.json'),sha(run+'/output.json')];
-execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run],{stdio:'ignore'});
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync(run+'/RAPPORT.md','utf8');
 const apres=[sha(run+'/receipt.json'),sha(run+'/output.json')];
 process.exit(t.includes('non concluant') && t.includes('limite de banc') && t.includes('Relire la limite') && !t.includes(\"L'écart nommé par le juge\") && !t.includes('une difference qui ne doit pas sortir') && !t.includes(\"Relire l'écart nommé par le juge\") && !t.includes('Aucune action dérivée') && avant[0]===apres[0] && avant[1]===apres[1] ?0:1)"
@@ -2305,6 +2305,50 @@ controle "224 refus, ouvrir sans porte" 0 refus-nomme 1 "aucune porte" bash -c "
 controle "225 refus, opencode introuvable" 0 refus-nomme 1 "introuvable dans le PATH" env PATH=/nonexistent "$(command -v node)" "$ORCH" ouvrir --cas cas-test --cases "$O/cases" --run "$O/run"
 controle "226 ouvrir, texte, réponse figée et formulaire" 0 node "$O/faux-serveur.mjs" "$B/detail.226" accepter "$O/run" cas-test "$O/cases" "$ORCH"
 controle "227 refus, plus de questions que de réponses figées" 0 node "$O/faux-serveur.mjs" "$B/detail.227" exces "$O/run" cas-test "$O/cases" "$ORCH"
+
+# 228-230 : la page utilisateur (ADR-061). Un reçu synthétique suffit : rien n'ouvre de session, et les
+# contrôles portent sur le contrat de forme, sur les trois états d'un geste et sur le déterminisme.
+U="$B/utilisateur"
+mkdir -p "$U/r228/trace" "$U/r229"
+node -e "
+const fs=require('fs');
+const cas='$JOUET';
+const base={cas,verdict:'ecart',session:{outil:'opencode',modele:'opencode/banc-modele'},horodatage_debut:'2026-10-22T10:00:00+02:00',horodatage_fin:'2026-10-22T10:05:00+02:00',echanges:{utilises:2,budget:2},produit:{chemins:['raw/'+cas+'/NOTES.md'],fichiers:[{chemin:'NOTES.md'}]},falsificateurs:{tableau_absent:false,ecriture_avant_tableau:[],question_sans_reponse:[],reseau:[],lecture_hors_dossier:[],shell_hors_dossier:[],hors_produit:[]}};
+const ecrire=(d,r)=>{fs.mkdirSync(d,{recursive:true});fs.writeFileSync(d+'/receipt.json',JSON.stringify(r,null,2)+'\n');fs.writeFileSync(d+'/output.json',JSON.stringify({verdict:r.verdict,difference:'le banc a lu une difference hors mesure'},null,2)+'\n')};
+ecrire('$U/r228',base);
+const sansQuestion=JSON.parse(JSON.stringify(base));
+delete sansQuestion.falsificateurs.question_sans_reponse;
+sansQuestion.falsificateurs.reseau=[{seq:5,quoi:'un appel'}];
+ecrire('$U/r229',sansQuestion);
+fs.writeFileSync('$U/r228/trace/echange.jsonl',JSON.stringify({seq:2,kind:'tool',outil:'read',chemin_outil:'/x/PLAYBOOK.md',ts:1})+'\n'+JSON.stringify({seq:3,kind:'tool',outil:'question',chemin_outil:null,ts:2})+'\n');
+"
+controle "228 rapport, page utilisateur écrite" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r228','--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync('$U/r228/RESULTAT.md','utf8');
+const corps=t.split('\n').filter((l)=>!/^(name|description|type|status):/.test(l)).join('\n').replace(/\]\([^)]*\)/g,']()');
+const interdit=corps.match(/\b(morsures?|mord(?:ent)?|falsificateurs?|porcelain|plafonn(?:é|ée|és|ées)|seq)\b|\braw\//i);
+const sections=[1,2,3,4,5,6,7,8].every((i)=>t.includes('## '+i+'.'));
+const gestes=(fs.readFileSync('$REPO/docs/device/CASES/$JOUET.lecture.json','utf8').match(/\"geste\"/g)||[]).length;
+const tableau=t.split('## 4.')[1].split('## 5.')[0];
+const lignes=(tableau.match(/^\| (?!Attendu|---)/gm)||[]).length;
+process.exit(sections && !interdit && lignes===gestes ?0:1)"
+controle "229 page utilisateur, trois états d'un geste" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r229','--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync('$U/r229/RESULTAT.md','utf8');
+process.exit(t.includes('**violé**') && t.includes('non observé') && !/\| attendre l'accord de l'opérateur \|[^\n]*\| tenu \|/.test(t) ?0:1)"
+controle "230 page utilisateur, déterminisme et refus d'écrasement" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
+const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r228','--remplacer'],{stdio:'ignore'});
+const a=sha('$U/r228/RESULTAT.md');
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r228','--remplacer'],{stdio:'ignore'});
+const b=sha('$U/r228/RESULTAT.md');
+fs.unlinkSync('$U/r228/RAPPORT.md');
+let refuse=false,texte='';
+try{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r228'],{stdio:'pipe'})}catch(e){refuse=true;texte=String(e.stderr)}
+process.exit(a===b && refuse && texte.includes('RESULTAT.md') ?0:1)"
 
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 

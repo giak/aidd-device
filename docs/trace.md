@@ -6362,3 +6362,373 @@ colonnes constantes, 0 inégale ; `liens.mjs` → **161 fichiers, 1 020 liens, 0
 d'`orchestrer.mjs`, avant de repasser sur les seize fichiers écrits à la main.
 
 **Mémoires.** Aucune écrite.
+
+## Séance 112 — 2026-10-22 (ce que le run spike-annees dit du protocole, et la phase 0)
+
+**Objectif.** Lire le dernier run comme une critique du protocole, et écrire ce qui le répare, sans toucher
+au code.
+
+**Le constat.** Sur six morsures, quatre viennent de l'instrument ou du cas : `hors_produit` sur le parent
+du produit (`terrain/aidd_docs`, parce que le `porcelain` replie un dossier non suivi), `lecture_hors_dossier`
+sur la racine du cas que la demande nomme elle-même, la demande qui n'exige pas le tableau que F2 exige, et
+la pause mesurée par l'outil `question` seul. Un trou s'y ajoute : deux scripts écrits par l'outil `write`
+sous `/tmp/opencode/spike_annees/` n'ont produit aucune morsure, alors que les commandes `shell` sont lues.
+
+**Les pièces.** [Brainstorm daté](brainstorm/2026-10-22-100513-protocole-apres-le-run-spike.md) : huit
+problèmes, leur couche, les remèdes et quatre décisions, D1 tranchée le jour même pour la phase 0.
+[Spec de la phase 0](tasks/2026_10/2026-10-22-100513-phase-0-instrument/2026-10-22-100513-spec.md) :
+porcelain étendu côté après-run avec préfixe connu sauté, `ecriture_hors_dossier` mesurant les chemins
+d'écriture, racine du cas lisible et dite, `last-message.md` écrit par `suite` et haché dans `faits.json` ;
+sept contrôles de banc (237 à 243), quatre ADR (062 à 065), un critère de sortie mesuré sur une copie du
+run privée de son reçu, et cinq morsures attendues, ni plus ni moins.
+
+**Rien n'est appliqué.** La spec est `status: pending` ; aucun module, aucun cas, aucun gel, aucun reçu
+n'est touché. La phase 1 (cas : `scratch`, tableau, pause) et la phase 2 (sémantique) restent ouvertes.
+
+**Vérifié.** `yaml.safe_load` sur les deux pièces ; `liens.mjs` → **163 fichiers, 1 031 liens, 0 mort**,
+`exit 0` ; `git diff --check` → 0.
+
+**Prochaines étapes.** Approuver la phase 0, l'appliquer, puis mesurer la copie du run au reçu à blanc.
+
+**Mémoires.** Aucune écrite.
+
+### Séance 112 (suite) — la phase 0 appliquée, et ses cinq morsures
+
+**Objectif.** Appliquer la [spec de la phase 0](tasks/2026_10/2026-10-22-100513-phase-0-instrument/2026-10-22-100513-spec.md),
+et la prouver sur une copie du dernier run.
+
+**Fait.** (1) `receipt` mesure son côté après-run avec `git status --porcelain --untracked-files=all`,
+saute un chemin sous un dossier déjà non suivi avant le run et un ancêtre de la racine du produit
+(ADR-062) ; le contrôle 199 nomme désormais `terrain/aidddocs/NOTES.md`, plus le dossier. (2) Un
+falsificateur `ecriture_hors_dossier` lit le chemin des parts `tool` de la famille d'écriture contre
+`cloisonnement.ecriture.resolues` (ADR-063) ; `rapport.mjs` gagne sa section 6.2, `resultat.mjs` sa phrase
+et son conseil. (3) `cloisonnement.lecture` gagne `racine_du_cas`, comparé par **égalité** : la première
+rédaction l'ajoutait aux racines résolues, et le banc l'a démentie — les contrôles 192 (cadre rétréci) et
+215 (lecture interne d'une substitution) tombaient, parce que la contenance avalait `terrain`,
+`framework-origin` et `origine` (ADR-064). (4) `suite` écrit `raw/<cas>/last-message.md` depuis la
+dernière part `text` d'un assistant, l'atteste dans `faits.json`, et le reçu re-hache et reconfronte le
+texte à la trace (ADR-065). (5) Une relecture d'un fichier que la session a elle-même écrit n'alimente
+plus `lecture_hors_dossier` ; l'écriture porte déjà la morsure (ADR-066).
+
+**Vérifié.**
+- Copie de `runs/2026-10-22-092354-0052c168-496fbe8` sous `/tmp/p0-proof`, sans `receipt.json` :
+  `node docs/device/harness/run.mjs receipt --run /tmp/p0-proof --case 2026-10-22-092005-spike-annees
+  --faits /tmp/p0-proof/faits.json --verdict "non concluant"` => `exit 0`, et **cinq** clés non vides :
+  `tableau_absent`, `ecriture_hors_dossier:6` (seq 42, 47, 49, 51, 53, 54), `shell_hors_dossier:21`,
+  `shell_ecriture_hors_produit:5`, `shell_non_interpretable:1` ; `hors_produit: []`,
+  `lecture_hors_dossier: []`. `--sans-ecrire` imprime « non concluant (5 morsure(s) : une écriture d'outil
+  sort du cadre déclaré : seq 42 …) ».
+- `bash docs/device/harness/banc-harnais.sh` => **243/243 PASS**, `exit 0` ; `bash -n` => `0`.
+- `node --check` sur `run.mjs`, `orchestrer.mjs`, `rapport.mjs`, `resultat.mjs` => `0`.
+- `orchestrer.mjs rapport` sur la copie : section `### 6.2 Les écritures d'outil hors dossier`, une entrée
+  de morsure, piste « Vérifier ce que la session a écrit avec un outil d'écriture hors du dossier
+  autorisé… » ; un reçu du 2026-10-22 sans le champ rend son rapport avec la phrase d'absence, sans refus.
+
+**Dérives signalées, non corrigées.** Le nombre de parts de `shell_hors_dossier` passe de 22 à 21 sur ce
+run, et sa composition change : la racine du cas cesse de mordre, les sous-dossiers `origine/` recommencent
+— c'est le sens d'ADR-064, mais aucun contrôle ne fixe ce nombre. La règle de l'ancêtre (ADR-062) n'est
+atteinte par aucun contrôle sur ce git : `--untracked-files=all` ne replie plus de dossier, et le banc le
+dit au §6.
+
+**Prochaines étapes.** Phase 1 du [brainstorm](brainstorm/2026-10-22-100513-protocole-apres-le-run-spike.md) :
+le `scratch` déclaré sous l'arbre (D2), le tableau demandé par le gabarit (D3), la pause mesurée sans
+l'outil `question` (problème 6), et la collecte du `scratch` en annexe (problème 4).
+
+**Mémoires.** Aucune écrite : le fait tient dans le reçu et le banc, et Mnemolite n'a pas été appelé.
+
+## Séance 113 — 2026-10-22 (l'issue framework, du brouillon au dépôt)
+
+**Objectif.** Proposer le protocole de test au dépôt `ai-driven-dev/framework` sous forme d'issue, dans
+la forme de ses formulaires, sans y porter le dispositif.
+
+**Le constat.** Le dépôt cible vérifie les artéfacts, pas ce qu'un modèle fait d'une skill. Ses
+formulaires imposent cinq champs (`Problem`, `Scope`, `Acceptance criteria`, `Prior art in this repo`,
+`Out of scope`) et un titre `type(scope):`. `aidd-qa/01-acceptance-qa`, `03-assert`, `05-review` et
+`06-test` jugent le produit ; aucun ne lit la session.
+
+**Les pièces.** [Brainstorm daté](brainstorm/2026-10-22-113217-issue-framework-protocole-de-test.md),
+trois versions (détaillée, principe d'abord, reçu d'abord), le corps final extrait par `awk`, et l'issue
+publiée : https://github.com/ai-driven-dev/framework/issues/1079, titre
+`feat(framework): test what a skill makes an agent do`.
+
+**Vérifié.** `gh issue view 1079` => `OPEN`, 94 lignes, corps identique au fichier à la nouvelle ligne
+près ajoutée par `--jq` (`diff` : `94a95`) ; rendu relevé dans le navigateur : 8 sections, 2 blocs de
+code, 5 cases à cocher ; chiffres du POC relevés sur `main` distant : 14 reçus, 9 `non concluant`,
+4 cas gelés ; `liens.mjs` => 164 fichiers, 1 043 liens, 0 mort.
+
+**Dérives signalées, non corrigées.** Le `README.md` et `BANC.md` du dépôt distant annoncent encore
+treize reçus et 236 contrôles, alors que `main` porte 14 reçus et que le banc local est à 243 ; la phase 0
+et ces relevés ne sont pas poussés (13 fichiers modifiés). L'issue ne cite ni 236 ni 243, donc rien de
+faux n'est publié.
+
+**Prochaines étapes.** Réponse d'un mainteneur ; puis la page de protocole ou le cas pilote selon ses
+réponses (foyer, propriété de l'attendu, skill).
+
+**Mémoires.** Aucune écrite.
+
+## Séance 114 — 2026-10-22 (la phase 1 du protocole : le scratch, le tableau et la pause)
+
+**Objectif.** Appliquer la
+[spec de la phase 1](tasks/2026_10/2026-10-22-115048-phase-1-le-cas/2026-10-22-115048-spec.md), écrite à
+11:50:48 : rendre au cas un espace d'écriture légitime, demander le tableau par le gabarit, et mesurer la
+pause sur un tour de la personne sans exiger l'outil `question`.
+
+**Fait.** (1) `cloisonnement.ecriture.scratch` est un chemin relatif à la racine du cas : lisible et
+scriptible, jamais compté comme produit, collecté par `collect --annexe` sous `annexe/<cas>/` avec un
+manifeste `role: annexe` que le reçu vérifie et cite ; `suite` collecte l'annexe quand le dossier existe ;
+le gabarit autorise `terrain/.scratch/` et exige un produit autosuffisant (ADR-067). (2)
+`attendu_details.tableau.requis` vaut vrai par défaut, faux rend l'absence muette et nomme la limite ; le
+gabarit demande un tableau après la phrase de qualification (ADR-068). (3) `attendu_details.pause.requis`
+vaut faux par défaut ; la pause se mesure par une part `user` entre l'ouverture et la première écriture
+nommée, un tour manquant fait mordre `pause_non_tenue`, et `question_sans_reponse` reste une rupture
+distincte ; le gabarit écrit `requis: true` (ADR-069). `rapport.mjs` et `resultat.mjs` portent la phrase et
+le conseil de la nouvelle morsure ; `lecture.json` du cas spike-annees déclare que la pause n'est plus
+lue par l'outil.
+
+**Vérifié.**
+- Copie de `runs/2026-10-22-092354-0052c168-496fbe8` sous `/tmp/p1-sortie`, sans `receipt.json` :
+  `node docs/device/harness/run.mjs receipt --run /tmp/p1-sortie --case 2026-10-22-092005-spike-annees
+  --cases docs/device/CASES --faits /tmp/p1-sortie/faits.json --verdict "non concluant"` => `exit 0`,
+  `pause {requise: false, mesuree: true, seq_reponse: 25, seq_ecriture: 26, outil_ecriture: "write"}`,
+  `pause_non_tenue: []`, `tableau_absent: true`, `verdict: non concluant`. Aucune part `question` dans la
+  trace ; `--sans-ecrire` imprime les cinq morsures et le seq 42.
+- `bash docs/device/harness/banc-harnais.sh` => **248/248 PASS**, `exit 0`. Le 246 supprime le champ
+  `tableau` de l'attendu du banc et le re-gèle : il éprouve le défaut vrai, pas un champ déclaré. Le 244
+  porte une part `user` en seq 3 entre l'ouverture et l'écriture en seq 4, et mesure la pause tenue sans
+  aucun outil `question`.
+- `node --check` sur `run.mjs`, `orchestrer.mjs`, `rapport.mjs`, `resultat.mjs` => `0` ; `bash -n` sur le
+  banc => `0` ; `docs/device/harness/liens.mjs` => 165 fichiers, 1 064 liens, **0 mort**, `exit 0` ;
+  `git diff --check` => `0`.
+- Les quatre `freeze.json` de `CASES/` sont inchangés ; aucun `receipt.json` du dépôt n'est réécrit.
+
+**Complété en cours de vérification.** `rapport.mjs` ne connaissait pas `pause_non_tenue` : le rapport
+technique l'aurait rendu sous son identifiant brut, faute de phrase. Il porte désormais la phrase et l'ordre,
+et le contrôle 234 nomme la quinzième clé, pour que la règle reste couverte par la phrase et le conseil.
+
+**Ce que la mesure a corrigé.** La table du §6 de la spec annonçait un 246 pour le tableau et un 247 pour
+la pause ; le banc les porte dans l'autre sens, et la spec le dit désormais. La fixture de pause du 244
+donnait une part `user` au contenu vide : aucun tour n'existe dans la trace, donc la pause restait non
+mesurée et le 244 tombait ; le tour porte maintenant un texte d'accord. Le 246, écrit d'abord sans retirer
+le champ, a été corrigé pour éprouver le défaut : sans cela il aurait prouvé `requis: true`, pas l'absence.
+
+**Limites.** Le cas `spike-annees` ne déclare ni `tableau.requis: false` ni `pause.requis: true` : la copie
+du run mesure la pause (seq 25) mais `requise` reste faux, donc la morsure `pause_non_tenue` n'est pas
+atteignable sur ce cas. Le banc l'éprouve sur le cas fabriqué. La durée d'une pause reste non mesurée, et
+`README.md` annonçait 236 contrôles : les quatre pages qui portaient encore ce compte (README, DEVICE, EXPLICATION, DASHBOARD) sont alignées sur 248 dans la même séance, et les entrées datées du journal gardent le leur.
+
+**Prochaines étapes.** Phase 2 du [brainstorm](brainstorm/2026-10-22-100513-protocole-apres-le-run-spike.md) :
+scinder `shell_non_interpretable` (D4). Rien n'est commité : l'arbre porte aussi les pièces des Séances 112
+et 113.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 115 — 2026-10-22 (la phase 2 du protocole : deux fautes, deux noms)
+
+**Objectif.** Appliquer la
+[spec de la phase 2](tasks/2026_10/2026-10-22-122615-phase-2-le-shell/2026-10-22-122615-spec.md), écrite à
+12:26:15 : `shell_non_interpretable` confondait une commande que le shell refuserait et une commande
+valide que le lecteur ne suit pas.
+
+**Fait.** (1) `shell_invalide` reçoit les motifs dont le texte est mal formé (guillemets et substitution
+non fermés, `substitution vide`, `accolade non fermée`, `find -exec` sans terminateur ni commande, boucle
+non fermée) ; `shell_non_interpretable` garde les commandes valides que le lecteur ne suit pas. Le
+classement se fait par `motifInvalide`, sur le vocabulaire que le lecteur écrit déjà ; un motif neuf
+tombe du côté aveugle par défaut (ADR-070). (2) Les deux clés plafonnent et portent une **limite par
+entrée** qui nomme leur seq, leur motif et l'absence de preuve sur les effets ; la limite agrégée
+disparaît. (3) `rapport.mjs` gagne sa section 6.7 et sa piste, `resultat.mjs` sa phrase et son conseil, et
+le contrôle 234 nomme la seizième clé. (4) Le banc gagne 249 et 250, le 221 attend `shell_invalide`, et
+le détail d'échec est réparé : `controle` exporte `DETAIL`, quarante-deux contrôles écrivent dans
+`process.env.DETAIL`, donc les raisons s'impriment enfin sous `FAIL`.
+
+**Vérifié.**
+- Copie du run `2026-10-22-092354-0052c168-496fbe8` sous `/tmp/p2-sortie`, sans `receipt.json` :
+  `shell_invalide` = une entrée `{seq: 65, motif: "guillemet simple non fermé"}`,
+  `shell_non_interpretable` = `[]`, cinq clés non vides, verdict `non concluant`, une limite au seq 65 qui
+  dit que les effets ne sont pas mesurés.
+- `bash docs/device/harness/banc-harnais.sh` => **250/250 PASS**, `exit 0`.
+- `node --check` sur `run.mjs`, `orchestrer.mjs`, `rapport.mjs`, `resultat.mjs` => `0` ; `bash -n` sur le
+  banc => `0` ; `liens.mjs` => 0 mort ; `git diff --check` => `0`.
+
+**Ce que la mesure a corrigé.** Le premier passage du banc a rendu 249/250 avec un 197 en échec dont la
+raison était introuvable : le contrôle écrivait son détail dans un `$DETAIL` vide, parce que la variable
+était développée à l'appel, avant que `controle` ne la pose. Quarante-deux contrôles étaient dans ce cas ;
+le mécanisme du §5 du BANC ne marchait donc que pour `refus-nomme` et les contrôles qui posaient
+`DETAIL` à la main. Réparé, il a donné la raison du 197 en une ligne (« aucune limite nommée ») : le
+vocabulaire de la limite avait changé et l'assertion cherchait l'ancien. Le critère de sortie a ensuite
+demandé une limite pour la commande mal formée, absente de la première écriture.
+
+**Limites.** Le classement repose sur le texte des motifs : un motif neuf tombe du côté aveugle par
+défaut, et aucun contrôle ne le voit. `shell_invalide` plafonne comme l'autre, donc le verdict ne dit
+toujours pas qu'une faute de session n'est pas une limite d'instrument ; seule la page les distingue.
+`conduite: agent|humain`, l'autre moitié de la phase 2 du brainstorm, n'est pas faite.
+
+**Prochaines étapes.** `conduite: agent|humain`, puis rejouer le même cas sur le même modèle et sur un
+autre. Rien n'est commité : l'arbre porte aussi les pièces des Séances 112 à 114.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 116 — 2026-10-22 (la conduite déclarée, agent ou humain)
+
+**Objectif.** Appliquer l'autre moitié de la phase 2 du
+[brainstorm](brainstorm/2026-10-22-100513-protocole-apres-le-run-spike.md) §5, par la
+[spec de la conduite](tasks/2026_10/2026-10-22-124513-conduite-declaree/2026-10-22-124513-spec.md) écrite à
+12:45:13 : `faits.json` attestait une personne par un texte libre, que `suite` remplissait d'un défaut, et
+le run `spike-annees`, conduit par `ouvrir` sans personne, portait pourtant « le fil a été ouvert et suivi
+par la personne ».
+
+**Fait.** (1) `temoignage{qui, quand, texte}` disparaît de `faits.json` ; `conduite{mode: agent|humain,
+qui, quand}` le remplace, `faits` l'exige par `--conduite`, refuse toute autre valeur en `2`, garde `--par`
+comme identifiant et `--fin` comme instant. (2) `orchestrer suite` reçoit `--conduite` et le passe à
+`faits` : plus de `--temoignage`, plus de valeur par défaut, et le bloc `▸ OUVERTURE` de `ouvrir` dit que
+`suite` déclare la conduite. (3) Le reçu recopie le bloc et ajoute toujours une limite qui dit la conduite
+déclarée, jamais vérifiée, et qu'un run conduit par un agent n'est ni une faute ni un mérite (ADR-071).
+(4) Un `faits.json` antérieur, qui ne porte qu'un `temoignage`, reste lisible : `conduite: null` et la
+limite `conduite_non_declaree` ; un faits sans l'un ni l'autre est refusé, et le mode n'est jamais déduit
+du témoignage. (5) `rapport.mjs` nomme le mode au §3 et range la conduite au §5 de ce qui n'est pas
+établi ; `resultat.mjs` l'écrit dans la phrase d'en-tête et dans ce que la page ne dit pas. (6) Le banc
+gagne 251, 252 et 253 ; tous ses autres appels passent de `--temoignage <texte>` à `--conduite humain`.
+
+**Vérifié.**
+- Copie du run `2026-10-22-092354-0052c168-496fbe8` sous `/tmp/p3-sortie`, `faits.json` réécrit avec
+  `conduite {mode: "agent", qui: "ouvrir", quand: 2026-10-22T09:49:07+02:00}` : `receipt` sort en `0`,
+  `conduite` recopiée, verdict `non concluant`, dix-neuf limites dont la limite de déclaration, aucune
+  `conduite_non_declaree`, et les cinq morsures du reçu du jour (`tableau_absent`,
+  `ecriture_hors_dossier`, `shell_hors_dossier`, `shell_ecriture_hors_produit`, `shell_invalide`).
+- `rapport --remplacer` sur cette copie, `exit 0` : la ligne du §3 dit « la conduite est déclarée par un
+  agent (ouvrir), non vérifiée », le §7 en dérive une piste, la page écrit « conduite par un agent
+  (ouvrir) » et « La conduite est déclarée par un agent : ce run ne dit rien de ce qu'une personne aurait
+  fait. »
+- `bash docs/device/harness/banc-harnais.sh` => **253/253 PASS**, `exit 0`.
+- `node --check` sur les quatre modules => `0` ; `bash -n` sur le banc => `0` ; `liens.mjs` => 0 mort ;
+  `git diff --check` => `0`.
+
+**Ce que la mesure a corrigé.** Le critère de sortie promettait « les cinq morsures sont les mêmes » et
+comparait un reçu d'avant l'ADR-070 : l'une des cinq s'appelle désormais `shell_invalide`. Le reçu écrit
+`conduite` sans l'avoir ligné, alors que `rapport.mjs` et `resultat.mjs` portent la même information dans
+les pages que la personne lit : sans eux, le mode n'aurait été dit qu'à qui lit le JSON.
+
+**Limites.** Aucune machine ne vérifie le mode : c'est une parole de l'opérateur, qui porte une limite et
+non un champ de preuve. `session.ouverte_par` reste distinct de la conduite : un run peut être ouvert par
+une personne et conduit par `ouvrir`. Les reçus déjà écrits ne sont pas réécrits et portent encore `temoignage` :
+relus par `rapport`, ils disent « la conduite n'est pas déclarée par ce reçu » et la page écrit « conduite
+non déclarée ». Le chemin `conduite: null` et sa limite `conduite_non_declaree` ne valent que pour un reçu
+neuf calculé depuis un `faits.json` antérieur, ce que mesure le contrôle 253.
+
+**Prochaines étapes.** Le run de la phase 2 sous `--conduite agent`, puis la phase 3 du brainstorm.
+Rien n'est commité.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 117 — 2026-10-22 (le cas spike-annees rejoué sous la conduite déclarée)
+
+**Objectif.** Produire le premier run dont la pièce dit elle-même qui a tenu le volant : rejouer
+`2026-10-22-092005-spike-annees` sous `--conduite agent`, après l'ADR-071 et la Séance 116. Le run de la
+Séance 110 portait un `temoignage` de personne pour un run conduit par `ouvrir` ; il reste sur disque,
+avec `conduite: null` à la relecture.
+
+**Fait.** Le terrain a d'abord été remis à l'état gelé : son produit de la Séance 110
+(`aidd_docs/`, sha256 `578d6128…`) a été déplacé sous `/tmp/replay-092354/aidd_docs`, identique à la copie
+collectée du run, pour que `preflight` retrouve le `porcelain` vide du gel. Puis, dans l'ordre :
+
+```text
+node docs/device/harness/orchestrer.mjs porte --cas 2026-10-22-092005-spike-annees
+node docs/device/harness/orchestrer.mjs ouvrir --cas 2026-10-22-092005-spike-annees --run docs/device/runs/2026-10-22-143219-0052c168-876b08f --modele opencode/minimax-m3.1-flash-free --delai 30
+node docs/device/harness/orchestrer.mjs suite --cas 2026-10-22-092005-spike-annees --run docs/device/runs/2026-10-22-143219-0052c168-876b08f --fil ses_e9c66ce0affeOJ0l4T6KzM6X8Z --client opencode --par "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22" --conduite agent
+node docs/device/harness/orchestrer.mjs fin --cas 2026-10-22-092005-spike-annees --run docs/device/runs/2026-10-22-143219-0052c168-876b08f --difference "…" --phrase "…" --verdict "non concluant"
+```
+
+La porte est passée à `14:32:19` (gel `0052c168` re-haché, texte `ae54c1a3`, 748 o, `porcelain` 0 ligne) ;
+`ouvrir` a créé le fil `ses_e9c66ce0affeOJ0l4T6KzM6X8Z`, joué **1** question (réponse figée seq 19, option
+« Oui — écris et enquête (recommandé) ») et rendu la session inactive après **18 min 18 s** ; `suite` a
+écrit `faits.json` (`conduite {mode: "agent", qui: "Buffy, agent de l'opérateur giak, sur sa consigne du
+2026-10-22", quand: "2026-10-22T14:50:46+02:00"}`, aucun `temoignage`), la trace, `last-message.md` (seq
+57, 3 369 o) et la copie du produit : **1** fichier, `spikes/choix-revue-annees-survie-caches.md`,
+**10 759 o**, sha256 `866efb1b…`, `type: spike`, les six sections Question, Decision, Bounds,
+Investigation, Outcome, Follow-up. `fin` a demandé le verdict à blanc (`non concluant`, cinq morsures
+nommées), puis écrit [le reçu](device/runs/2026-10-22-143219-0052c168-876b08f/receipt.json), l'output, le
+rapport et [la page](device/runs/2026-10-22-143219-0052c168-876b08f/RESULTAT.md).
+
+**Vérifié.**
+- `receipt.conduite` porte `{mode: "agent", qui: "Buffy, …", quand: "2026-10-22T14:50:46+02:00"}` ; le
+  reçu ne porte **aucun** `temoignage`, et **aucune** limite `conduite_non_declaree` ; sa limite de
+  conduite dit « la conduite (agent) est déclarée par « Buffy, … » : le reçu ne prouve pas qui a répondu… »
+  (ADR-071). Les **quatorze** autres `receipt.json` du dépôt rendent `conduite: null` : celui-ci est le
+  premier dont la pièce porte le bloc.
+- Verdict **`non concluant`**, **18** limites, **cinq** falsificateurs non vides :
+  `ecriture_avant_tableau` (11 entrées, seq 20 puis les éditions du script), `produit_ne_avant_le_tableau`
+  (1), `ecriture_hors_dossier` (9 entrées, `/tmp/opencode/spike_review_survie.py`), `shell_hors_dossier`
+  (10 entrées, `cd /tmp/opencode`), `shell_non_interpretable` (2 entrées, seq 5 et 9). `pause.mesuree:
+  true` (seq 19 entre l'ouverture seq 1 et l'écriture seq 20), `tableau` 7 lignes × 3 colonnes au seq 57.
+- `orchestrer.mjs lire` sort en `0` et réimprime le même verdict ; `RESULTAT.md` écrit « conduite par un
+  agent (Buffy, …) » dans son en-tête et « La conduite est déclarée par un agent : ce run ne dit rien de ce
+  qu'une personne aurait fait. » ; `RAPPORT.md` la nomme au §3, au §5 et au §7.
+- `sha256sum` du produit sur le terrain et de sa copie collectée : même empreinte `866efb1b…` ; le
+  `porcelain` du terrain avant la porte était vide, les deux arbres du cas sont à leur `HEAD` gelé.
+
+**Dérives signalées, non corrigées.** Le cas a été gelé avant la phase 1 : il ne déclare ni `scratch`, ni
+`tableau.requis`, ni `pause.requis`, et sa demande ne réclame pas le tableau. Le run rejoue donc
+l'ancien cas, pas le protocole réparé : le script d'appui repart sous `/tmp/opencode/` (ce que
+`ecriture_hors_dossier` mesure désormais, mais que le cas ne permet toujours pas), et le tableau arrive au
+dernier message (seq 57), donc F1 et F2 mordent alors que la session a bien montré quelque chose, trop
+tard. Les deux phrases que `fin` exige (`--difference`, `--phrase`) restent des faits de la personne ;
+ici elles ont été écrites par l'agent, et c'est précisément ce que `conduite: agent` déclare. Enfin, le
+rejeu a demandé de déplacer le produit du run précédent hors de l'arbre : une porte neuve ne se rouvre
+pas sur un terrain qui porte déjà les traces d'un autre run.
+
+**Prochaines étapes.** Re-geler le cas avec le gabarit de la phase 1, ou fabriquer un cas neuf depuis la
+même demande, pour que le scratch et le tableau soient déclarés ; puis rejouer sur un autre modèle, comme
+le demande le §5 du brainstorm.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 118 — 2026-10-22 (le pilote #1079 : deux reçus, pas un run de plus)
+
+**Objectif.** Sortir du cercle par le haut : répondre à l'issue
+[#1079](https://github.com/ai-driven-dev/framework/issues/1079) avec un dossier pilote monté sur des
+reçus existants, sans nouveau run, sans nouveau contrôle et sans re-gel. La décision a été prise après le
+constat de la Séance 117 : quinze reçus, dix `non concluant`, et aucun cas pilote livré au framework.
+
+**Fait.** Le dossier est écrit à
+[`docs/tasks/2026_10/2026-10-22-150047-pilote-issue-1079/2026-10-22-150047-pilote.md`](tasks/2026_10/2026-10-22-150047-pilote-issue-1079/2026-10-22-150047-pilote.md),
+né à `15:00:47` (`stat -c %w`, dossier et pièce dans la même seconde). Il monte deux cas :
+
+- `plan-simple`, skill `aidd-dev/01-plan` à `fe48de12` sur `audio-sync-tool` à `416ec1f`, gel
+  `bee028f8` ; [reçu public](device/runs/2026-10-21-234646-bee028f8-d88d78c/receipt.json) `conforme`,
+  **10** limites, **aucun** falsificateur, tableau **37 × 2** au seq 25, question seq 25, réponse figée
+  seq 26, première écriture seq 35, produit de **4** fichiers sous
+  `terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/`.
+- `spike-annees`, skill `aidd-pm/05-spike` à `fe48de12`, gel `0052c168` ; reçu
+  [local](device/runs/2026-10-22-143219-0052c168-876b08f/receipt.json) `non concluant`, **18** limites,
+  **cinq** falsificateurs, produit **1** fichier de **10 759 o** aux six sections, tableau au seq 57
+  après l'écriture seq 20.
+
+Le dossier nomme pour chaque cas ce qu'il établit, ce qu'il n'établit pas, et il porte au §6 le
+commentaire anglais prêt à poster, qui ne promet pas que le reçu `spike-annees` soit public.
+
+**Vérifié.**
+- `python3` sur les quinze `receipt.json` : **10** `non concluant`, **3** `conforme`, **2** `ecart`.
+- `plan-simple` : `verdict == "conforme"`, **10** limites, aucun falsificateur non vide,
+  `tableau {present: true, lignes: 37, colonnes: 2, seq: 25}`, produit de **4** fichiers.
+- `spike-annees` : `verdict == "non concluant"`, **18** limites, cinq falsificateurs non vides, produit de
+  **1** fichier, `conduite.mode == "agent"`.
+- `git cat-file -e origin/main:docs/device/runs/2026-10-21-234646-bee028f8-d88d78c/receipt.json` => `0` ;
+  le même sur le reçu `spike-annees` => `128`, donc il n'est pas publié.
+- `liens.mjs` => **172** fichiers, **1 121** liens, **0** mort après l'ajout de cette section et du tableau de bord ; `git diff --check` => `0`.
+
+**Dérives signalées, non corrigées.** Le reçu `plan-simple` précède ADR-069 et ADR-071 : il ne porte ni
+`pause` ni `conduite`, et sa limite dit que la pause n'est mesurée que par l'outil de question. Son
+`temoignage` déclare « aucun geste humain », mais c'est une déclaration, pas une preuve. Le cas
+`spike-annees` a été gelé avant la phase 1, donc une partie de ses morsures vient du cas, et le dossier le
+dit. Rien n'est commité ni publié : le commentaire de l'issue est écrit, pas posté.
+
+**Ce que la mesure a corrigé.** Le dossier annonçait d'abord « aucun nouveau run, aucun nouveau
+contrôle » ; c'est exact, mais le premier jet du commentaire liait le reçu `spike-annees` comme s'il était
+public. Le `git cat-file` a rendu `128`, et le commentaire dit désormais « not yet published ». De même,
+le premier jet ne nommait pas la promesse testée ; chaque cas porte maintenant sa promesse en une phrase,
+comme le critère d'acceptation de l'issue le demande.
+
+**Prochaines étapes.** Si le reçu `spike-annees` doit être lié, le pousser avec le dossier ; puis poster
+le commentaire du §6 sur l'issue #1079. Sinon, le pilote s'arrête là : un `conforme` public, un refus
+local, leurs limites.
+
+**Mémoires.** Aucune écrite.

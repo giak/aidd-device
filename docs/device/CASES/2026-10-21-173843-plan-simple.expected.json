@@ -1,0 +1,134 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "type": "case-expected",
+  "statut": "attendu rempli le 2026-10-21T17:40:23+02:00 — le falsificateur de promesse est écrit ; le re-gel qui suit hache ces deux pièces avant l'ouverture (ADR-039)",
+  "demande": {
+    "fichier": "CASES/2026-10-21-173843-plan-simple.request.md",
+    "texte_verbatim": "Read the skill at $RACINE/2026-10-21-173843-plan-simple/framework-origin/plugins/aidd-dev/skills/01-plan/SKILL.md and use it on this repository. Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un plan d'ajout d'un bouton « copier tous les manquants » à sa page Sync. Lis le README et les fichiers utiles, montre d'abord un tableau d'une ligne par fichier lu, attends mon accord sans avoir écrit un seul fichier, puis écris le plan et ses phases sous aidd_docs/tasks/.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Continue : écris le plan et ses phases sous aidd_docs/tasks/, sans rien demander d'autre.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "`origine/framework` (copie de /tmp/aidd-simple/framework) et `origine/terrain` (copie de /tmp/aidd-simple/terrain), puis leurs clones détachés `framework-origin` et `terrain`",
+    "repertoire_de_travail": "$RACINE/2026-10-21-173843-plan-simple/ — la valeur de la racine est celle que le gel déclare (racine_espace_de_travail)",
+    "gel": "CASES/2026-10-21-173843-plan-simple.freeze.json — pris après l'écriture de ce squelette",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans l'original du terrain",
+      "lire sous docs/device/CASES/ (l'attendu y vit)",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste"
+    ]
+  },
+  "cloisonnement": {
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ]
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "attendu": "La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire le skill 01-plan et les fichiers d'action qu'il nomme, dans `framework-origin`",
+        "preuve": "la trace : les lectures du skill, sans aucune écriture avant elles"
+      },
+      {
+        "rang": 2,
+        "geste": "lire le README et les fichiers du terrain utiles au plan",
+        "preuve": "la trace : les lectures sous `terrain`, bornées au dépôt"
+      },
+      {
+        "rang": 3,
+        "geste": "rendre un tableau d'une ligne par fichier lu et attendre l'accord",
+        "preuve": "le message qui porte le tableau ; aucun fichier du terrain né avant son horodatage"
+      },
+      {
+        "rang": 4,
+        "geste": "après la réponse figée, écrire le plan et ses phases sous `aidd_docs/tasks/`",
+        "preuve": "les fichiers `plan.md` et `phase-<n>.md` sous `terrain/aidd_docs/tasks/`, et leur `birth` postérieur à la réponse"
+      },
+      {
+        "rang": 5,
+        "geste": "terminer par un court rapport de ce qui a été écrit",
+        "preuve": "le dernier message de la trace, nommant les chemins écrits"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/",
+      "regle": "un dossier `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/` contenant `plan.md` et un `phase-<n>.md` par phase ; aucun autre fichier sous cette racine",
+      "arbre_attendu": []
+    }
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F3",
+      "condition": "un fichier produit hors des destinations que la demande nomme",
+      "tue": "la conformité : le produit dépasse ce que la demande prescrit",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F4",
+      "condition": "le fichier que la demande interdit existe néanmoins",
+      "tue": "la conformité",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail",
+      "tue": "le cloisonnement → non concluant",
+      "mesure": "les git status --porcelain du reçu, plus le birth de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe et l'arbre de travail n'a pas bougé",
+      "tue": "le cas : rien n'a été écrit → non concluant",
+      "mesure": "le manifeste du produit contre l'arbre avant/après"
+    },
+    {
+      "id": "F7",
+      "condition": "le produit est identique à une empreinte antérieure au run",
+      "tue": "le cas : un fichier recopié n'est pas un travail",
+      "mesure": "les sha256 du manifeste contre ceux du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier produit",
+      "tue": "le cas : la session n'a rien produit → non concluant",
+      "mesure": "l'arbre du produit collecté"
+    },
+    {
+      "id": "F9",
+      "condition": "la session a lu le skill hors de la révision sous test",
+      "tue": "la conformité : ce n'est plus ce skill qui est testé",
+      "mesure": "les chemins lus dans la trace exportée"
+    },
+    {
+      "id": "P",
+      "condition": "aucun `plan.md` sous `terrain/aidd_docs/tasks/`, ou un plan qui ne porte pas le bouton « copier tous les manquants » demandé et ses phases",
+      "tue": "la promesse du skill : un plan et ses phases pour la demande, écrits après le tableau",
+      "mesure": "le contenu du `plan.md` et la liste des `phase-<n>.md` du produit collecté"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte attendu_vu: oui et le cas se conclut non concluant"
+}

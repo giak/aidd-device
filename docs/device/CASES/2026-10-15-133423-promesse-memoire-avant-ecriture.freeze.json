@@ -1,16 +1,16 @@
 {
   "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-15T22:11:24.782242943+0200",
-  "gele_le_epoch": 1792095084,
+  "gele_le": "2026-10-21T10:04:38.245995057+0200",
+  "gele_le_epoch": 1792569878,
   "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-15-133423-promesse-memoire-avant-ecriture --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/framework --arbre terrain=/home/giak/projects/audio-sync-tool --ref-root /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin --ref plugins/aidd-context/skills/02-project-memory/SKILL.md --ref plugins/aidd-context/skills/02-project-memory/actions/01-scan.md --ref plugins/aidd-context/skills/02-project-memory/actions/02-write.md --ref plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md --ref plugins/aidd-context/skills/02-project-memory/references/structure.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-rules.md --ref plugins/aidd-context/skills/02-project-memory/references/reading-sources.md",
-  "empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+  "empreinte": "ba1096aaf70502060cb63ae8d0d5b15d41c3e76e1cd267e5528b0d991b78b4e8",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.expected.json",
-      "sha256": "ae4914c5042f0d090fa758e5154a71423af979b6ae35218ea32a0cbbd6150021",
-      "taille": 15423,
+      "sha256": "c75e89ca2bbb9815f4bf4588bc1fad18135a9e3ef6dff049d9f5c727d8452663",
+      "taille": 15638,
       "birth": "2026-10-15 15:26:49.459553400 +0200",
       "birth_epoch": 1792070809
     },

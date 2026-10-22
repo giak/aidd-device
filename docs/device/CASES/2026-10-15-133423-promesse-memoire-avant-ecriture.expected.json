@@ -31,6 +31,12 @@
       "écrire dans les configurations d'outils IA du poste (le câblage est une autre action de la skill)"
     ]
   },
+  "cloisonnement": {
+    "lecture": { "autorisees": ["terrain", "framework-origin"] },
+    "ecriture": { "autorisees": ["terrain/aidd_docs"] },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
   "sources": {
     "note": "l'attendu se lit dans ces fichiers de la révision sous test, jamais ailleurs ; leurs empreintes sont au gel",
     "SKILL.md": "le flux `new --> scan --> write --> sync` et la règle transverse « End with a short report of what changed. »",

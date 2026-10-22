@@ -1,24 +1,24 @@
 {
   "cas": "2026-10-18-085308-cas-jouet",
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-18T08:57:47.079678812+0200",
-  "gele_le_epoch": 1792306667,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-18-085308-cas-jouet --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain",
-  "empreinte": "50664060c6f9f11b35b89acde6b4512d4fb5918fa53d8e81400bccf005c58a66",
+  "gele_le": "2026-10-22T00:44:03.002573734+0200",
+  "gele_le_epoch": 1792622643,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-18-085308-cas-jouet --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain --refreeze",
+  "empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.expected.json",
-      "sha256": "de37d504556435eeac5020f77e27d3c14b7f2cab21689c0f1d2a0fbadb7234e1",
-      "taille": 4393,
+      "sha256": "1e0bc3edc082051e3b7d63c8aedd6a925934267f80be0901bbf1c93cc1b231b8",
+      "taille": 4928,
       "birth": "2026-10-18 08:56:44.830664426 +0200",
       "birth_epoch": 1792306604
     },
     {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.request.md",
-      "sha256": "b799f8952300b3e140a68bae6d466a92207761493283dc141235217f93db1b8e",
-      "taille": 2475,
+      "sha256": "8defa94072611509ff32c1392f35082932a58f151e9a3dbb45da25dbefccfdff",
+      "taille": 2708,
       "birth": "2026-10-18 08:53:37.855949504 +0200",
       "birth_epoch": 1792306417
     }

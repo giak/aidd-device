@@ -4,7 +4,7 @@
   "statut": "écrit avant tout run — aucune session n'a reçu cette demande. Cas jouet : ses arbres sont deux dépôts de deux fichiers reconstruits par le script compagnon, publiés nulle part (le gel porte `refs_distants` vide sur les deux origines).",
   "demande": {
     "fichier": "CASES/2026-10-18-085308-cas-jouet.request.md",
-    "texte_verbatim": "Read the mini playbook at $RACINE/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet.",
+    "texte_verbatim": "Read the mini playbook at $RACINE/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet. Stay inside this repository: do not list or read its parent folder, its siblings, or anything above $RACINE/2026-10-18-085308-cas-jouet/.",
     "budget_echanges": 2,
     "reponses_figees": [
       "Yes, that matches. Write the notes file at aidd_docs/NOTES.md, one line per rule. Nothing else.",
@@ -14,7 +14,14 @@
   "contexte": {
     "arbres": "deux dépôts jouets de deux fichiers, reconstruits par `2026-10-18-085308-cas-jouet-arbres.sh` ; `framework-origin` et `terrain` sont des clones détachés des origines, `origin` pointant le chemin local",
     "repertoire_de_travail": "$RACINE/2026-10-18-085308-cas-jouet/ — la valeur de la racine est celle que le gel déclare (`racine_espace_de_travail`)",
-    "gel": "CASES/2026-10-18-085308-cas-jouet.freeze.json — aucune référence du framework : ce cas ne lit aucun fichier gelé hors de ses deux pièces"
+    "gel": "CASES/2026-10-18-085308-cas-jouet.freeze.json — aucune référence du framework : ce cas ne lit aucun fichier gelé hors de ses deux pièces",
+    "interdits": "les six du §7 de la demande, dont celui qui est né le 2026-10-22 : explorer le dossier parent du cas, ses voisins, ou tout chemin au-dessus de `$RACINE/<cas>/`"
+  },
+  "cloisonnement": {
+    "lecture": { "autorisees": ["terrain", "framework-origin"] },
+    "ecriture": { "autorisees": ["terrain/aidd_docs"] },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
   },
   "sources": {
     "note": "l'attendu se lit dans le playbook de la copie `framework-origin`, jamais ailleurs",

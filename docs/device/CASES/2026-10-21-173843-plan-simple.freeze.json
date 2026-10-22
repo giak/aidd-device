@@ -1,0 +1,167 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
+  "gele_le": "2026-10-21T17:40:41.005579252+0200",
+  "gele_le_epoch": 1792597241,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md",
+  "empreinte": "bee028f8714ff4c80d98a2119af2bdef5315ec778c3990683dd2ca3c28a15d76",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.expected.json",
+      "sha256": "81b7721354f041101fe2c7310520199a1257b5189b8ced6071a1c6a7bd275801",
+      "taille": 6403,
+      "birth": "2026-10-21 17:38:55.098143517 +0200",
+      "birth_epoch": 1792597135
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.request.md",
+      "sha256": "610421c5dd3f76e7675b9fe2bbe393d6353c95c7d092819396a3d0d793840d92",
+      "taille": 2596,
+      "birth": "2026-10-21 17:38:55.096143435 +0200",
+      "birth_epoch": 1792597135
+    }
+  ],
+  "references": [
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/SKILL.md",
+      "sha256": "c4fdeb50739a23e8296539007c6340aad0a564734e6e03e100a9ee436a6c57c5",
+      "taille": 2073,
+      "birth": "2026-10-21 17:38:54.948358196 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/actions/01-gather.md",
+      "sha256": "03e6ffb62a69af0b311c42738d705a1f8a675ec4c1992e06b8e1c60448cfd9d1",
+      "taille": 980,
+      "birth": "2026-10-21 17:38:54.948412209 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/actions/02-explore.md",
+      "sha256": "0fdc22ff4784e69f7c6ef17f6f0b3f413446dd1e2a758ccb9e7d60ccf03bc228",
+      "taille": 1011,
+      "birth": "2026-10-21 17:38:54.948412209 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md",
+      "sha256": "54dd5723b0319d6524f5d5741672da8765dc0560ca7fc5370785030f247fd31e",
+      "taille": 870,
+      "birth": "2026-10-21 17:38:54.948454130 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/actions/04-plan.md",
+      "sha256": "912ce23eef8d7011a30b8dba0066301f43bbc4954388d46536da8487443c50e9",
+      "taille": 2676,
+      "birth": "2026-10-21 17:38:54.948454130 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/assets/plan-template.md",
+      "sha256": "d0964cf1e59b4d360b8a6bbcd882bb9c06adfbab8894f3a3ef11ab98914c90c6",
+      "taille": 946,
+      "birth": "2026-10-21 17:38:54.948454130 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/assets/phase-template.md",
+      "sha256": "66cefc387eea9bf7178cb6c750ce892dc6b5926405ad83489895792716a053bb",
+      "taille": 1783,
+      "birth": "2026-10-21 17:38:54.948454130 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md",
+      "sha256": "9b937da7bdc009f990735458fd490a13af8d75290d81dbe3a92c7ee1e635e136",
+      "taille": 1308,
+      "birth": "2026-10-21 17:38:54.948589950 +0200",
+      "birth_epoch": 1792597134
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-dev/skills/01-plan/references/plan-status.md",
+      "sha256": "a0e75bba2c9adab70a4922c3d76e93c81a1af32914d469e357dd5d246a60d65d",
+      "taille": 2006,
+      "birth": "2026-10-21 17:38:54.948589950 +0200",
+      "birth_epoch": 1792597134
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/audio-sync-tool"
+        }
+      ],
+      "refs_distants": [
+        "origin/main",
+        "origin/test/aidd-installation"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/test/aidd-installation"
+      ]
+    }
+  ]
+}

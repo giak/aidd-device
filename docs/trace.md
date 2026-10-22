@@ -6159,3 +6159,66 @@ les treize reçus (181 fichiers, 6,2 M) ; puis cette séance.
 
 **Mémoires.** Aucune écrite : les deux `update_memory` vus aujourd'hui sont ceux de la session testée, et
 la mémoire `d2af9c4c` qu'elle a réécrite n'est pas corrigée par cette séance.
+
+## Séance 108 — 2026-10-22 (la page que la personne lit, et les lectures qui la soutiennent)
+
+**Objectif.** Le rapport technique ne répond pas à qui a demandé le test : six empreintes avant un seul
+geste, « morsure » et « falsificateur » sans définition, et jamais ce que la personne peut décider. Écrire
+à côté de lui une page lisible, dérivée du reçu, puis la rendre juste pour les trois cas gelés avant de la
+croire finie.
+
+**La page.** [`resultat.mjs`](device/harness/resultat.mjs), **436** lignes à sa naissance et **497** à la
+fin de la séance, écrit `RESULTAT.md` : huit sections, un tableau qui confronte chaque geste attendu à ce
+qui a été observé, et trois états par geste, tenu, violé, non observé. Aucune dépendance, aucun modèle,
+aucun réseau : deux appels sur les mêmes pièces rendent le même octet. L'appariement geste/mesure est
+déclaré dans `CASES/<cas>.lecture.json`, **hors du gel**, pour que les treize reçus existants restent
+re-jugeables ([ADR-061](DECISIONS.md)) ; `fin` l'écrit après le rapport, `rapport` le reconstruit. Trois
+pages écrites depuis les runs réels : jouet `2026-10-22-070952` (65 lignes), promesse
+`2026-10-21-081957` (68), `plan-simple` `2026-10-21-234646` (63).
+
+**Les trois lectures.** Cinq gestes déclarés par cas, le dernier, « terminer par un court rapport », écarté
+parce que sa preuve est le dernier message de la session, hors du vocabulaire fermé. Le contrôle 231 a
+trouvé un refus trop large : sur le run promesse, qui porte un produit hors du chemin attendu, la page
+citait `raw/…` dans son tableau et se refusait elle-même ; elle nomme désormais le fichier sans ce préfixe,
+et les contrôles 185, 186 et 194 à 197 repassent.
+
+**Deux défauts de la page.** (a) Un `ecart` qui portait une règle non tenue affichait « 2 violés » en
+section 4 puis « la procédure attendue est tenue » en section 1 : la phrase ne parle de procédure tenue que
+si aucune règle n'est non tenue. (b) Trois des quatorze clés que les reçus portent n'avaient aucun conseil,
+`birth_anterieur_au_gel`, `arbre_de_travail_inchange`, `produit_identique_a_une_empreinte_anterieure` : trois
+phrases de plus, et le contrôle **234** déclare les quatorze règles non tenues d'un coup, exige une phrase
+par règle sans identifiant à tiret bas et quinze lignes de conseil pour quatorze règles, le compte lu dans
+le fichier de clés de sa fixture et non dans une constante.
+
+**La validation.** Le §3 de la [spec du 07:33](tasks/2026_10/2026-10-22-073339-sortie-utilisateur/2026-10-22-073339-spec.md)
+promettait qu'un geste sans assertion est refusé à l'écriture de la lecture : le code rendait « non
+observé », et un type inconnu passait pour une mesure absente. `verifierLecture`, exportée par
+`resultat.mjs`, refuse un fichier sans geste, un geste sans nom ou sans assertion, une assertion sans type
+ou hors de `trace_outil | falsificateur_vide | produit`, et un `cas` qui ne correspond pas. Elle est appelée
+par `lectureDe` dès `fin`, **avant le reçu**, et dès `rapport`, **avant le rapport** : un refus ne laisse
+aucune pièce derrière lui. `rapport` accepte `--cases`, sans quoi aucune lecture de banc ne s'éprouvait sans
+toucher au dépôt. Contrôles **235** et **236**.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **236/236 PASS**, `EXIT=0`, rejoué après les
+dernières écritures ; `node docs/device/harness/liens.mjs` → **154 fichiers, 959 liens, 0 mort**, `exit 0` ;
+`git diff --check` → `0`. Les trois lectures existantes passent la validation sans changement, et les pages
+du dépôt restent identiques à ce que le code régénère.
+
+**Dérives signalées, non corrigées.** (a) Les deux commits de la page ont été faits à **08:06**, avant cette
+section : la séance se consigne après coup, entre 07:23 et 09:10 environ, et les horodatages des specs sont
+la seule trace de l'ordre réel. (b) Le `RAPPORT.md` du run `2026-10-21-081957` a été **régénéré** par
+`rapport --remplacer` : une pièce d'un run clos a changé, son `receipt.json` non, et la section 6 s'y
+découpe désormais en 6.1 à 6.6. (c) La page de la promesse porte la phrase du second run comme un item de
+liste détaché sous « À corriger » : cosmétique, laissé tel quel. (d) Le §8 de la page ne dit pas que la
+lecture est une pièce datée et hors du gel ; l'audit l'a nommé, la séance ne l'a pas corrigé.
+
+**Rectifications.** Le premier passage du 234 est tombé sur ma propre écriture : un `\n` recopié comme une
+vraie coupure de ligne dans le script, corrigé, puis vert. Et le compte annoncé par `BANC.md` et par le
+README, **230**, était faux dès le commit de la page : ils disent **236** depuis cette séance. `ARCHITECTURE.md`, lui, nommait encore `run.mjs` à **2 593** lignes, `rapport.mjs` à **525** et le banc à **227** contrôles : mesuré, corrigé à 2 869, 527 et 236, et la page utilisateur y gagne sa ligne d'acteur.
+
+**Ce qui reste ouvert.** Le §8 et la nature de la lecture ; les dix runs sans page, seuls les plus récents
+de chaque cas en ont une ; le plafond de 80 lignes face à un attendu long, que la page contourne en liant
+cinq produits et en renvoyant les autres au rapport.
+
+**Mémoires.** Aucune écrite : la page, ses lectures et ses contrôles sont dans le dépôt, et cette séance ne
+produit aucun fait qui ne s'y lise.

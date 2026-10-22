@@ -1,6 +1,6 @@
 ---
 name: Explication — le projet raconté simplement
-description: Le dispositif expliqué à qui n'en connaît rien — analogies, schémas, et l'état réel du projet au 2026-10-20, échecs compris
+description: Le dispositif expliqué à qui n'en connaît rien — analogies, schémas, et l'état réel du projet au 2026-10-22, échecs compris
 type: explication
 status: in-progress
 ---
@@ -11,7 +11,8 @@ status: in-progress
 > aident à comprendre, elles ne prouvent rien. Chaque fait sérieux a sa source dans un autre document
 > de `docs/`, et ce document-ci n'est pas une source : il raconte.
 >
-> État décrit : **2026-10-15**, complété le **2026-10-16**, puis le **2026-10-20**. Un chiffre ici a
+> État décrit : **2026-10-15**, complété le **2026-10-16**, le **2026-10-20**, puis le **2026-10-22** (la
+> page utilisateur, les 236 contrôles, le quatrième cas). Un chiffre ici a
 > toujours la même forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit
 > `SUPPOSÉ`. L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
 >

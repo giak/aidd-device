@@ -29,7 +29,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   pédagogique : lire un reçu, rejouer un gel, provoquer trois refus, lire un tableau, lire le cas
   jouet ; chaque sortie a été observée, et chaque chapitre se termine par un refus provoqué.
 - [docs/EXPLICATION.md](docs/EXPLICATION.md) — le projet raconté simplement, pour qui n'en
-  connaît rien : analogies, schémas, état réel au 2026-10-15, échecs compris.
+  connaît rien : analogies, schémas, état réel au 2026-10-22, échecs compris.
 - [docs/brainstorm/2026-10-15-201458-bilan-premier-run.md](docs/brainstorm/2026-10-15-201458-bilan-premier-run.md)
   — le bilan du premier run : ce qui a marché, les quatre causes du `non concluant`, les arbitrages à
   rendre et les brainstorm à conduire, avec schémas.
@@ -41,7 +41,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
 
 Un run a eu lieu le 2026-10-15 (`17:16:12`–`17:29:51`, session `opencode`) et s'est conclu
 **`non concluant`** : la session n'a rendu aucun tableau et n'a rien écrit. Le harnais est écrit
-([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 2 593 lignes, six commandes : `freeze`
+([docs/device/harness/run.mjs](docs/device/harness/run.mjs), 2 869 lignes, six commandes : `freeze`
 — qui déclare une seule fois la racine des espaces de travail, dont dérivent les deux copies du cas —,
 `preflight` — la porte qui refuse d'ouvrir une session ailleurs que dans l'espace de travail gelé, et
 vérifie le texte remis —, `faits` — les valeurs que le reçu exigera, dérivées du fil ou de la session opencode et du gel —,
@@ -114,3 +114,15 @@ interprétable, fichier nouveau hors du produit (ADR-051) ; `/dev/null` n'est ni
 dans la seconde de naissance ne le fait pas mordre (ADR-055). Le banc
 passe à **223/223** ; une commande dynamique refuse `conforme` et le dit, elle n'est jamais supposée sans
 effet, et une substitution de commande bornée est lue, sa valeur restant inconnue (ADR-056).
+
+**Au 2026-10-22.** Le dépôt compte **treize `receipt.json`** sur quatre cas gelés (le jouet, la promesse
+mémoire, `plan-simple`, et `spike-annees` depuis le matin) : **8 `non concluant`, 3 `conforme`, 2 `ecart`**.
+`plan-simple` a rendu un `conforme` avec une vraie pause (question, réponse figée, écriture), et le cas
+jouet un `ecart` dont la différence repose sur des appels que le reçu ne mesure pas. `fin` et `rapport`
+écrivent désormais un [`RESULTAT.md`](docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/RESULTAT.md) à
+côté du rapport technique : huit sections, un tableau geste par geste, trois états (tenu, violé, non
+observé), et une lecture déclarée par le cas ([ADR-061](docs/DECISIONS.md)) ; une lecture mal formée est
+refusée avant toute écriture. Le banc passe à **236/236**, et le contrôle de liens rend **973 liens sur 156
+fichiers, 0 mort**. Le quatrième cas, `spike-annees` (skill `aidd-pm/05-spike`, gel `0052c168`, 11
+références), a sa porte passée (`ae54c1a3`, 748 octets) et **aucune session ouverte** : le prochain geste
+est de le jouer.

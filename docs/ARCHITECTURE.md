@@ -28,6 +28,10 @@ status: in-progress
 > **2 023 lignes**, `clients.mjs` devient la frontière des deux clients, `opencode` entre aux outils hors
 > de Node, `tableau.index` entre dans le reçu, et le premier run réel du cas jouet est nommé au §5.
 >
+> **Complété le 2026-10-22 (Séance 108)** : la page utilisateur entre au tableau des acteurs
+> ([ADR-061](DECISIONS.md)), et les comptes du harnais (2 869 lignes), du rapport (527) et du banc (236)
+> sont remis sur leur mesure.
+>
 > **Ce que cette page possède** : les acteurs et leur séparation de contexte, le trajet des fichiers,
 > les six commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
 > **Ce que possèdent les autres pages** : [DEVICE](device/DEVICE.md) dit ce qu'il fait, ne fait pas, et

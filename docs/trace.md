@@ -6719,13 +6719,17 @@ commentaire anglais prêt à poster, qui ne promet pas que le reçu `spike-annee
 `pause` ni `conduite`, et sa limite dit que la pause n'est mesurée que par l'outil de question. Son
 `temoignage` déclare « aucun geste humain », mais c'est une déclaration, pas une preuve. Le cas
 `spike-annees` a été gelé avant la phase 1, donc une partie de ses morsures vient du cas, et le dossier le
-dit. Rien n'est commité ni publié : le commentaire de l'issue est écrit, pas posté.
+dit. Le commentaire de l'issue est écrit, pas posté, et rien n'est poussé : les commits sont locaux.
 
 **Ce que la mesure a corrigé.** Le dossier annonçait d'abord « aucun nouveau run, aucun nouveau
 contrôle » ; c'est exact, mais le premier jet du commentaire liait le reçu `spike-annees` comme s'il était
 public. Le `git cat-file` a rendu `128`, et le commentaire dit désormais « not yet published ». De même,
 le premier jet ne nommait pas la promesse testée ; chaque cas porte maintenant sa promesse en une phrase,
 comme le critère d'acceptation de l'issue le demande.
+
+**Commits.** Cinq commits de fond sont locaux : `1e399c6` le contrat de langue, `e15626d` l'instrument et
+ses pages, `b1b929e` les quatre specs, `e1b7720` le run `spike-annees`, `03ca24b` le pilote et cette
+consignation ; un sixième corrige cette ligne. Aucun n'est poussé.
 
 **Prochaines étapes.** Si le reçu `spike-annees` doit être lié, le pousser avec le dossier ; puis poster
 le commentaire du §6 sur l'issue #1079. Sinon, le pilote s'arrête là : un `conforme` public, un refus

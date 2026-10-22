@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e9d75806effeiDwOooZEFgpQO0",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22 (le run n'a pas de conducteur humain)",
+    "ouverte_le": "2026-10-22T09:36:46+02:00"
+  },
+  "horodatage_debut": "2026-10-22T09:36:47+02:00",
+  "horodatage_fin": "2026-10-22T09:49:07+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-092354-0052c168-496fbe8/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-092354-0052c168-496fbe8/trace/export-brut.json",
+    "commande": "opencode session export ses_e9d75806effeiDwOooZEFgpQO0"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22 (le run n'a pas de conducteur humain)",
+    "quand": "2026-10-22T09:49:07+02:00",
+    "texte": "ouvrir a ouvert la session opencode et joué la pause ; aucun geste humain n'a conduit ce run, l'agent a lancé les commandes et recopié leur sortie"
+  }
+}

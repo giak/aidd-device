@@ -93,7 +93,7 @@ STOP IF success criteria met & no unresolved issue that could change result &
 further work unlikely to materially change result — all three. NEVER continue only because more analysis possible.
 
 ## OUTPUT
-
+Answer in perfect and intelligible French.
 R1 answer first. R2 evidence on the line: command, output|commit hash; what agent writes=reconstruction,
 NEVER source.
 R3 DECLARE FORM; N2 without material block=disguised N1.

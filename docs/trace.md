@@ -6222,3 +6222,61 @@ cinq produits et en renvoyant les autres au rapport.
 
 **Mémoires.** Aucune écrite : la page, ses lectures et ses contrôles sont dans le dépôt, et cette séance ne
 produit aucun fait qui ne s'y lise.
+
+## Séance 109 — 2026-10-22 (le quatrième cas, une spike bornée sur un skill d'un autre plugin)
+
+**Objectif.** Choisir un autre skill du framework à mettre au banc, présenter la proposition, et fabriquer le
+cas jusqu'à la porte, sans ouvrir de session.
+
+**Le choix.** Huit candidats lus en tête de fichier : `03-assert`, `02-implement`, `10-todo`,
+`05-spike`, `09-defect`, `11-explore`, `05-improve`, `01-acceptance-qa`. Retenu, `05-spike` du plugin
+`aidd-pm` : **244 lignes** sur 11 fichiers, un produit dont le chemin est nommé par sa propre référence
+(`aidd_docs/backlog/spikes/<slug>.md`), et une promesse qui contient une **pause avant écriture**,
+« Require explicit approval or caller-provided bounded authority before any write ». Écartés : `assert` et
+`implement` écrivent du code et exigeraient `venv` ou `node_modules` dans la copie, donc installation ou
+réseau ; `acceptance-qa` demande un navigateur ; `commit` écrit dans git ; `explore` ne laisse aucun
+produit ; `defect` reste possible mais moins borné.
+
+**La fabrique.** Spec datée à `09:20:05`. Les deux dépôts portent un marqueur non commité (`?? .freebuff/`,
+plus `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md` côté framework) : `cas` refuse un dépôt sale sans
+`--tel-quel` (ADR-042), et `--tel-quel` copierait 1,4 Go avec `node_modules` et `venv`. Deux clones
+`--no-hardlinks` sous `/tmp/aidd-spike`, à `fe48de12` (65 M) et `416ec1f` (16 M), tous deux à `porcelain`
+0 ligne. `cas` écrit le squelette, puis la demande et l'attendu sont remplis : question sur la persistance
+des choix d'années, produit sous `terrain/aidd_docs/backlog/spikes/`, cinq gestes, budget 3, deux réponses
+figées dont la première vaut autorité bornée.
+
+**La porte.** `preflight ok`, ouverture autorisée dans `terrain` à `HEAD 416ec1f`, `porcelain` 0 ligne,
+texte **`ae54c1a3`** (748 octets), [`gate.json`](device/runs/2026-10-22-092354-0052c168-496fbe8/gate.json)
+écrit ; « aucune mesure pour ce cas » pour la durée, et **aucune session ouverte**. Gel **`0052c168`**,
+**11 références** du skill, 4 arbres. La lecture du cas déclare cinq gestes et passe `verifierLecture`.
+
+**Les pages alignées.** [DEVICE](device/DEVICE.md) disait « deux cas gelés » alors qu'il y en avait déjà
+trois : il dit quatre, en les nommant. [README](../README.md) s'arrêtait à l'ADR-056 et à 223 contrôles : il
+gagne un paragraphe « Au 2026-10-22 » avec les treize reçus, la page utilisateur et le quatrième cas, et son
+`run.mjs` passe de 2 593 à **2 869** lignes. [PFD](PFD.md) était resté au 2026-10-15 : gel `0d9a2180`,
+`output.json` annoncé pour le second run alors que treize existent, « un run concluant reste » alors que
+trois sont conformes. Il passe en v0.3, avec les quatre empreintes et les deux pages remesurées :
+`DEVICE.md` **1 169 mots** pour un plafond de 900, `BOUNDARY.md` **2 040**. [DASHBOARD](DASHBOARD.md) prend
+la Séance 109 et la ligne du cas. [ARCHITECTURE](ARCHITECTURE.md), [EXPLICATION](EXPLICATION.md),
+[DECISIONS](DECISIONS.md) et [VISION](VISION.md) sont vérifiés sans changement : aucune décision nouvelle,
+ADR-061 reste la dernière, et aucun chiffre n'y est faux depuis la Séance 108.
+
+**Vérifié.** Banc **236/236 PASS**, `exit 0`, la nouvelle lecture comprise (contrôle 233) ; `liens.mjs` →
+**156 fichiers, 973 liens, 0 mort**, `exit 0` ; les quatre arbres du cas à `porcelain` 0 ligne ;
+`verifierLecture` accepte la lecture ; `git diff --check` → 0.
+
+**Dérives signalées, non corrigées.** (a) Le PFD est resté faux une semaine sans que rien ne le signale :
+aucun contrôle ne confronte les pages de plan aux empreintes et aux comptes du dépôt. (b) Le README
+s'arrêtait à l'ADR-056 alors que la Séance 108 avait changé le dispositif et les comptes : la même absence
+de contrôle. (c) Rien n'est commité de cette séance, ni le cas, ni son dossier de porte, ni les pages.
+
+**Rectifications.** Le premier re-gel a été refusé : l'attendu nommait la racine en clair
+(`/home/giak/projects/aidd-device-work`) au lieu de `$RACINE` ; corrigé, puis gel valide. La spec annonçait
+**205** lignes mesurées pour le skill, alors que la mesure sur les 11 fichiers en donne **244** : corrigée
+avant le gel.
+
+**Prochaines étapes.** Jouer le run : `ouvrir` sur
+`2026-10-22-092354-0052c168-496fbe8`, ou ouvrir le fil et coller le texte, puis `suite` et `fin`. Puis
+commiter le cas, la spec et cette séance.
+
+**Mémoires.** Aucune écrite.

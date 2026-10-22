@@ -59,12 +59,14 @@ est vraiment requise, et c'est pour cette raison qu'il te le demande au lieu de 
 
 ## 3. Les trois gestes qui restent à toi
 
-Aucune commande n'ouvre de fil dans ton client, et la base du client est la seule source de la trace. Trois
-gestes, donc, et l'agent te donne à chaque fois la valeur exacte à utiliser :
+Aucune commande du dispositif n'ouvre de fil dans ton client, et la source du client est la seule source
+de la trace : la base Freebuff, ou l'export de la session opencode. Trois gestes, donc, et l'agent te donne
+à chaque fois la valeur exacte à utiliser :
 
-1. **ouvrir un fil neuf** dans ton client, au répertoire qu'il t'indique, en mode direct, sans worktree ;
+1. **ouvrir un fil neuf** dans Freebuff, ou **une session neuve** dans opencode, au répertoire qu'il
+   t'indique, en mode direct, sans worktree ;
 2. **coller le texte** qu'il te remet, d'un bloc, sans le retaper (il l'a écrit pour toi dans le dossier du
-   run et vérifie ensuite que le fil porte bien ces octets) ;
+   run et vérifie ensuite que le fil ou la session porte bien ces octets) ;
 3. **répondre** par la phrase figée qu'il te donne, quand la session la demande. Une autre réponse fait
    sortir le run du cadre, et le verdict le dira.
 
@@ -72,9 +74,9 @@ Rien d'autre. Le dispositif n'observe pas la session : il lira ce que ton client
 
 ## 4. Ce que tu lis à la fin
 
-L'agent te rend trois choses : les chemins des pièces, le verdict, et ce que le verdict n'atteste pas. Le
-bloc a cette forme (observée le 2026-10-18 sur un cas de démonstration, fil fabriqué : tes valeurs
-différeront, la forme non) :
+L'agent te rend quatre choses : les chemins des pièces, le verdict, ce que le verdict n'atteste pas, et
+le **rapport utilisateur**. Le bloc a cette forme (observée le 2026-10-18 sur un cas de démonstration,
+fil fabriqué : tes valeurs différeront, la forme non) :
 
 ```text
 ▸ VERDICT — non concluant
@@ -86,6 +88,15 @@ différeront, la forme non) :
 
 Ici le plafond vient de l'attendu : la promesse du skill n'était pas encore écrite. Avec une promesse
 confirmée au chapitre 2, la même ligne nomme les falsificateurs qui ont mordu, ou `aucun`.
+
+Le **rapport utilisateur** est un document écrit à côté du reçu, `RAPPORT.md` dans le dossier du run.
+Il ne remplace pas le reçu : il dit en langage clair ce qui a été testé, ce qui a été observé, ce que
+le verdict couvre, ce qu'il ne couvre pas, et des pistes concrètes pour le prochain test. Un verdict
+seul n'est pas une conclusion pour la personne qui a commandé le test : `fin` écrit ce rapport
+automatiquement, et la commande `rapport` le reconstruit si un run ancien n'en a pas. Le
+[rapport du second run du cas jouet](../device/runs/2026-10-20-222845-50664060-3d0db46/RAPPORT.md)
+est un exemple écrit à la main ; il nomme aussi une lecture hors dossier, écrite avant que le reçu ne la
+mesure : depuis l'ADR-049, cette lecture interdit `conforme`.
 
 ## 5. Lire son verdict
 
@@ -120,8 +131,13 @@ ce qu'il empêche, puis reprend là où le parcours s'est arrêté.
   instant, pas que personne ne l'a fabriquée après coup.
 - **Que ce guide ait été éprouvé par un lecteur.** Les sorties citées ont été observées, la compréhension
   qu'on en a n'a pas été mesurée.
+- **Que le premier reçu réel ait suivi ce parcours humain.** Le reçu du 2026-10-20
+  ([receipt.json](../device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json)) porte une session
+  opencode réelle et une trace exportable, mais ses trois gestes ont été faits par l'agent via l'API du
+  client, pas par une personne devant l'interface. Le guide décrit le parcours à tenir ; ce run ne le
+  prouve pas au sens littéral.
 
-## Annexe — les cinq étapes que l'agent conduit
+## Annexe — les sept étapes que l'agent conduit
 
 Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin de les taper.
 
@@ -130,10 +146,14 @@ Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin
 | `cas` | copie ton skill et ton dépôt sous une racine, écrit la demande et le squelette d'attendu, puis gèle l'ensemble ; `--tel-quel` porte tes modifications non commitées au lieu de les refuser (`ADR-042`) | trois pièces du cas, deux origines, leurs deux copies |
 | (confirmation) | rien à taper : l'agent écrit la promesse et le produit que tu as confirmés, puis re-gèle | une empreinte neuve |
 | `porte` | écrit le texte à coller et autorise l'ouverture dans la copie du dépôt | `gate.json`, `texte-a-remettre.txt` |
-| `suite` | dérive les faits du fil, exécute l'export de la trace, copie le produit | `faits.json`, `trace/`, `raw/<cas>/` |
-| `fin` | demande à blanc le verdict que la preuve impose, puis écrit le reçu et l'output | `receipt.json`, `output.json` |
+| `ouvrir` | ouvre la session opencode par l'API de son serveur, envoie le texte de la porte, attend la question et envoie la réponse figée du cas puis l'option marquée Recommandé (`ADR-059`) | rien : elle imprime le fil, que `suite` reçoit |
+| `suite` | dérive les faits du fil ou de la session opencode, exporte la trace par l'adaptateur du client, copie le produit | `faits.json`, `trace/`, `raw/<cas>/` |
+| `fin` | demande à blanc le verdict que la preuve impose, puis écrit le reçu, l'output et le rapport utilisateur | `receipt.json`, `output.json`, `RAPPORT.md` |
+| `rapport` | reconstruit le rapport d'un run déjà clos, sans toucher au reçu ni à l'output | `RAPPORT.md` seulement, avec `--remplacer` |
 | `lire` | relit le verdict, sans rien écrire | rien |
 
-Les commandes exactes, leurs options et leurs douze refus sont dans
+Le client se choisit à cette étape : `suite` sans `--client` reconnaît Freebuff ou opencode, et
+te demande `--client` si les deux connaissent le même fil. Les commandes exactes, leurs options et leurs
+refus sont dans
 [ORCHESTRATEUR.md](../device/ORCHESTRATEUR.md). Ce que chaque pièce atteste, et comment les vérifier à la
 main, est dans [le guide du test](guide-du-test-de-bout-en-bout.md).

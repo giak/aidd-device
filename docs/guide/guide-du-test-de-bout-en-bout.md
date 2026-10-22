@@ -17,11 +17,13 @@ status: in-progress
 > Toutes les sorties citées ici ont été **observées le 2026-10-18** : les chapitres 2 et 3 sur `a60f2e5`,
 > les chapitres 1 et 4 sur le harnais de H6 (`dbd85ba`), le chapitre 5 sur l'arbre de travail au-dessus de
 > `df59482`, où le cas jouet et les contrôles 119 à 130 ne sont pas encore commités. Les blocs sont
-> recopiés de la console, jamais retapés.
+> recopiés de la console, jamais retapés. La mise à jour du **2026-10-20** ajoute le premier reçu d'un run
+> réel et les 227 contrôles ; elle ne réécrit pas les sorties datées du 2026-10-18.
 >
-> Deux avertissements, avant le premier geste. **Aucun `receipt.json` n'existe dans ce dépôt** : la pièce
-> que lit le chapitre 1 vient du banc, et sa session est une **fixture** (`identifiant: "banc"`,
-> `modele: "aucun"`). Le premier reçu d'un run réel viendra du second run. Et **rien de ce guide ne
+> Deux avertissements, avant le premier geste. **Le chapitre 1 lit un reçu de banc**, et sa session est
+> une **fixture** (`identifiant: "banc"`, `modele: "aucun"`) : un premier reçu de run opencode réel
+> existe depuis le 2026-10-20 ([reçu](../device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json),
+> verdict `non concluant`), mais il ne remplace pas la fixture du chapitre. Et **rien de ce guide ne
 > s'exécute dans les quatre arbres**, à une exception près, écrite et retirée : le chapitre 1 écrit dans un
 > dossier jetable sous `/tmp`, le chapitre 2 dans un clone jetable, le chapitre 3 dans des dossiers jetables,
 > le chapitre 4 n'écrit rien : il relit le dossier du chapitre 1 et y demande un refus, qui n'écrit pas, et
@@ -61,8 +63,9 @@ révision sous test, le seul chemin que le gel te demande de fournir ailleurs.
 
 ## 1. Lire un reçu
 
-**Le geste.** Le banc écrit un reçu complet sans ouvrir de session : c'est la seule source de reçu
-aujourd'hui, et c'est dit. Lance-le, puis lis sept champs.
+**Le geste.** Le banc écrit un reçu complet sans ouvrir de session. Ce chapitre lit ce reçu de
+**fixture** ; le premier reçu d'un run réel, opencode, existe depuis le 2026-10-20 (chapitre 5), et il ne
+remplace pas la sortie du banc. Lance-le, puis lis sept champs.
 
 ```bash
 cd /home/giak/projects/aidd-device
@@ -78,9 +81,11 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `153/153 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
-au matin, puis `130/130` l'après-midi avant les contrôles 149 à 153) ; les sept champs, observés le 2026-10-18 sur
-`B=/tmp/banc-harnais.icCmQG` :
+**La sortie attendue.** Le banc finit par `227/227 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+au matin, puis `130/130` l'après-midi, `149/149` après l'orchestrateur, `153/153` avant les contrôles
+des deux clients, `171/171` avant l'ADR-047, puis `193/193` avant les effets hors cadre) ; les sept
+champs, observés le 2026-10-18 sur
+`B=/tmp/banc-harnais.icCmQG`, avant l'élargissement de H6 :
 
 ```text
 verdict                "non concluant"
@@ -97,7 +102,8 @@ limites mordent, donc `non concluant`, et c'est le dispositif qui fonctionne, pa
 `porte.passe_le` est l'instant où la porte du chapitre 3 a été passée, avant le premier message.
 `echanges` mesure le fil contre le budget du cas : un message utilisateur sur les trois autorisés.
 `tableau` porte la forme mécanique du tableau rendu par la session et son instant : ici `present` vaut
-`false`, donc F2 mord et la troisième limite le dit. `falsificateurs` est le plafond lu, pas une opinion :
+`false`, donc F2 mord et la troisième limite le dit. La chaîne `forme` affichée est celle d'avant
+l'ADR-047 ; depuis, elle dit `>=1 colonne`, sans changer les autres champs. `falsificateurs` est le plafond lu, pas une opinion :
 `arbre_de_travail_inchange` vaut `false` quand aucun produit n'existe ou quand l'arbre a bougé ;
 `trace_sans_echange_dans_la_fenetre` vaut `true`, et c'est lui qui produit la seconde limite ;
 `tableau_absent` vaut `true` ici, et `ecriture_avant_tableau` et `produit_ne_avant_le_tableau` restent vides
@@ -281,13 +287,21 @@ limites                    ["le produit existe et l'arbre de travail est inchang
 ```
 
 **Ce que `tableau` atteste.** Qu'une part `text` d'un message `assistant` porte un bloc d'au moins trois
-lignes, dont la deuxième est une séparatrice (`| --- |`) et dont les lignes ont au moins deux cellules :
+lignes, dont la deuxième est une séparatrice (`| --- |`) et dont la première ligne porte au moins une
+cellule :
 `lignes` et `colonnes` sont mesurées, `seq` et `ts` disent **quel message** l'a rendu. Ici quatre lignes sur
 trois colonnes, au message 3. Le champ ne dit pas que le tableau est juste, ni que ses lignes ont été
 écrites dans des fichiers : cette moitié de l'attendu (E4) reste une lecture humaine. Et deux formes ne
 comptent pas, mesuré par le banc : un tableau rendu en `reasoning` est écarté au profit de la part `text`
 (contrôle 113, la personne ne l'a jamais vu), et un tableau de deux lignes n'en est pas un (contrôle 115,
-pas de séparatrice).
+il lui manque une troisième ligne).
+
+**Le faux négatif corrigé le 2026-10-20.** La session opencode réelle a rendu un tableau Markdown d'**une
+seule colonne** (`| File Path |`, deux chemins). La forme H6 d'alors exigeait deux cellules, donc le
+`receipt.json` écrit à chaud porte `present: false` et `F2` mord. L'opérateur, lui, voyait un tableau.
+L'ADR-047 abaisse la condition à **une cellule** ; le contrôle **172** l'éprouve, et un rejeu du reçu sur
+une copie des pièces rend `present: true`, `colonnes: 1`, `tableau_absent: false`. Le reçu du dépôt reste
+celui écrit à chaud : il n'est pas réécrit.
 
 **Ce que les trois falsificateurs attestent.** Ils datent l'ordre, pas la qualité. `tableau_absent: false`
 dit qu'un tableau a été trouvé ; `ecriture_avant_tableau` vide, qu'aucun acte d'écriture ne le précède ;
@@ -339,10 +353,11 @@ il atteste **quand** il a été rendu, et c'est cet instant que F1 et F2 datent.
 
 Le cas jouet est le seul cas du dépôt dont les arbres se reconstruisent par une commande : deux dépôts de
 deux fichiers, un commit chacun, dates et signatures figées, donc les mêmes têtes sur toute machine
-([ADR-036](../DECISIONS.md)). Sa demande tient en 49 lignes, son attendu en 48, son gel ne référence aucun
-fichier du framework, et il n'a **jamais été ouvert** : le gel est daté du 2026-10-18 à 08:57:47, le budget
-de deux échanges est intact. Ce chapitre le traverse : la phrase remise à la session, le playbook qu'elle
-nomme, puis les deux refus qui tuent l'ordre promis, F2 et F1.
+([ADR-036](../DECISIONS.md)). Sa demande tient en 50 lignes et son attendu en 55 depuis le 2026-10-22, son
+gel ne référence aucun fichier du framework. Il a été ouvert **une fois**, le 2026-10-20, par le premier run opencode réel : le
+gel est daté du 2026-10-18 à 08:57:47, le budget de deux échanges a été consommé en entier, et le run a
+laissé un `receipt.json` (`non concluant`). Ce chapitre le traverse : la phrase remise à la session, le
+playbook qu'elle nomme, le run réel, puis les deux refus qui tuent l'ordre promis, F2 et F1.
 
 **Le texte remis.** Le §5 de la demande est ce que la session lira, une fois `$RACINE` substitué par la
 racine que le gel déclare — la dérivation est celle du harnais (`texteDuCas`, `run.mjs`), recopiée ici pour
@@ -363,6 +378,12 @@ Read the mini playbook at /home/giak/projects/aidd-device-work/2026-10-18-085308
 
 La porte sait confronter exactement cette chaîne (`preflight --texte`, `run.mjs`) et le reçu la redérive : une
 porte qui aurait remis un autre texte est refusée. Un mot de plus dans la phrase, et ce n'est plus le cas.
+
+> **2026-10-22.** La phrase a gagné une seconde ligne, « Stay inside this repository: do not list or read its
+> parent folder, its siblings, or anything above `$RACINE/2026-10-18-085308-cas-jouet/.` », après le run où la
+> session est montée jusqu'à `~/projects/aidd-device` ([ADR-060](../DECISIONS.md)). Le cas a été re-gelé
+> (`27fb38ab`), et la sortie citée ci-dessus reste celle **observée le 2026-10-18** : la redériver aujourd'hui
+> en rend deux lignes.
 
 **Ce que la phrase demande.** Les deux arbres se reconstruisent dans un bac neuf, en une commande :
 
@@ -443,12 +464,27 @@ ne l'est pas : la fixture dit « le contrôle voit un produit né avant le table
 promesse ». Même honnêteté qu'au contrôle 113 du chapitre 4, et même raison : un contrôle qui dépendrait du
 chronomètre ne serait pas un contrôle.
 
-**Ce que ce cas n'est pas.** Aucune session n'a reçu la phrase ci-dessus : le banc fabrique ses fils
-(`--par banc`, témoignage « banc : aucune session ouverte »), et un reçu du jouet dirait `banc` et `aucun`,
-comme celui du chapitre 1. Il ne juge pas le contenu des notes : l'attendu écarte explicitement « le contenu
-des notes est juste ». Et il n'est publié nulle part : le gel porte `refs_distants` vide sur ses deux
-origines, donc un inconnu ne le clone pas, il le reconstruit par son script — et c'est cela que le cas
-achète, la chaîne entière traversable sans projet réel.
+**Le run réel du 2026-10-20.** La phrase ci-dessus a été remise une fois, à la session opencode
+`ses_ea564a976ffevcpzB4aY03ELBF`, modèle `ollama/qwen3:8b`, ouverte dans `<W>/terrain`. Le reçu est
+[receipt.json](../device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json) : `session_verifiee.outil`
+vaut `opencode`, `echanges` vaut `{budget: 2, utilises: 2}`, le produit collecté est `NOTES.md` mais sa
+source est `terrain/aidldocs/NOTES.md`, pas `terrain/aidd_docs/NOTES.md`. Le verdict est `non concluant`,
+avec une seule limite, `tableau_absent` (le tableau d'une colonne du chapitre 4, avant l'ADR-047) ; depuis
+l'ADR-047, un rejeu sur une copie des pièces rend `tableau.present: true` et `colonnes: 1`. L'output du
+juge est [output.json](../device/runs/2026-10-20-202333-50664060-1028c8b/output.json).
+
+Deux limites de ce run, nommées et non corrigées : le produit n'est pas au chemin attendu, et les trois
+gestes ont été faits par l'agent via l'API HTTP d'opencode, pas par une personne devant l'interface. Le
+reçu atteste donc une session réelle et une trace exportable ; il n'atteste pas le parcours humain du
+guide utilisateur au sens littéral.
+
+**Ce que ce cas n'est pas.** Avant ce run, aucune session n'avait reçu la phrase ci-dessus : le banc
+fabrique ses fils (`--par banc`, témoignage « banc : aucune session ouverte »), et un reçu du jouet du banc
+dirait `banc` et `aucun`, comme celui du chapitre 1. Le run réel, lui, porte `opencode` et son modèle. Le cas
+ne juge pas le contenu des notes : l'attendu écarte explicitement « le contenu des notes est juste ». Et il
+n'est publié nulle part : le gel porte `refs_distants` vide sur ses deux origines, donc un inconnu ne le
+clone pas, il le reconstruit par son script ; et c'est cela que le cas achète, la chaîne entière
+traversable sans projet réel.
 
 **Le mot que ce chapitre installe : cas jouet.** Un cas dont les deux arbres se reconstruisent à l'identique
 et dont les pièces tiennent sur une page ; il atteste que la chaîne tourne de bout en bout, jamais qu'une
@@ -456,8 +492,9 @@ session a travaillé.
 
 ## 6. Ce que cette version ne fait pas
 
-- **Elle ne mène aucun run.** Le chapitre 1 lit un reçu de banc, pas un reçu de run ; le premier reçu réel
-  sera écrit par le second run, et il sera le seul à porter un `porte` venu d'une session.
+- **Elle ne mène pas de run elle-même.** Le chapitre 1 lit un reçu de banc, pas un reçu de run ; le
+  chapitre 5 cite le premier reçu réel, écrit le 2026-10-20 par le run opencode du cas jouet, et il est le
+  seul à porter un `porte` venu d'une session.
 - **Elle ne couvre que quatre pièces sur sept.** Le parcours du plan en compte sept ; écrire les trois
   autres demande une session ou une décision (les quatre arbres, la session et sa trace, mener un run
   entier). Le cinquième chapitre ferme un autre manque du plan — un cas montrable — sans couvrir une pièce
@@ -477,7 +514,7 @@ session a travaillé.
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
 | lire un reçu | [ARCHITECTURE.md](../ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](../device/BANC.md) | les 153 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| provoquer un refus | [BANC.md](../device/BANC.md) | les 227 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
 | lire un tableau | [ADR-035](../DECISIONS.md), [spec H6](../tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
 | rejouer un gel | [REPLAY.md](../device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
 | mener un run | [la conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |

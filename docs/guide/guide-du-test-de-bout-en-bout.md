@@ -18,7 +18,7 @@ status: in-progress
 > les chapitres 1 et 4 sur le harnais de H6 (`dbd85ba`), le chapitre 5 sur l'arbre de travail au-dessus de
 > `df59482`, où le cas jouet et les contrôles 119 à 130 ne sont pas encore commités. Les blocs sont
 > recopiés de la console, jamais retapés. La mise à jour du **2026-10-20** ajoute le premier reçu d'un run
-> réel et les 230 contrôles ; elle ne réécrit pas les sorties datées du 2026-10-18.
+> réel et les 236 contrôles ; elle ne réécrit pas les sorties datées du 2026-10-18.
 >
 > Deux avertissements, avant le premier geste. **Le chapitre 1 lit un reçu de banc**, et sa session est
 > une **fixture** (`identifiant: "banc"`, `modele: "aucun"`) : un premier reçu de run opencode réel
@@ -81,7 +81,7 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `230/230 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+**La sortie attendue.** Le banc finit par `236/236 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
 au matin, puis `130/130` l'après-midi, `149/149` après l'orchestrateur, `153/153` avant les contrôles
 des deux clients, `171/171` avant l'ADR-047, puis `193/193` avant les effets hors cadre) ; les sept
 champs, observés le 2026-10-18 sur
@@ -514,7 +514,7 @@ session a travaillé.
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
 | lire un reçu | [ARCHITECTURE.md](../ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](../device/BANC.md) | les 230 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| provoquer un refus | [BANC.md](../device/BANC.md) | les 236 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
 | lire un tableau | [ADR-035](../DECISIONS.md), [spec H6](../tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
 | rejouer un gel | [REPLAY.md](../device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
 | mener un run | [la conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |

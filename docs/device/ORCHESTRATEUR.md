@@ -47,7 +47,7 @@ node docs/device/harness/orchestrer.mjs porte --cas <id> --run <dossier>
 node docs/device/harness/orchestrer.mjs ouvrir --cas <id> --run <dossier> [--cases <dir>] [--api <url>] [--modele <fournisseur/modèle>] [--delai <minutes>]
 node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] --produit <chemin> | --sans-produit
 node docs/device/harness/orchestrer.mjs fin --cas <id> --run <dossier> --difference <texte> --phrase <texte> [--verdict <v>]
-node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer]
+node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer] [--cases <dir>]
 node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 ```
 
@@ -58,7 +58,7 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
 | `suite` | les faits, l'export de trace par l'adaptateur du client, la copie du produit | `faits.json`, `trace/`, `raw/<cas>/` |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
-| `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
+| `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
 
 `ouvrir` est la seule commande qui parle à un client au lieu de lire ses pièces ([ADR-059](../DECISIONS.md)).

@@ -58,8 +58,9 @@ Cinq positions, jamais fusionnées, parce qu'aucune ne doit voir l'objet qui la 
 | auteur de l'attendu | le relecteur | écrit `CASES/<cas>.request.md` et `.expected.json`, fait geler l'empreinte | le produit |
 | opérateur | le relecteur | déclare la racine, gèle, passe la porte, ouvre la session, remet le texte, collecte, écrit le reçu, exporte la trace | rien : il tient le cas. Ce qu'il en dit reste un **témoignage** (`faits.json`), jamais une preuve |
 | session sous test | la session IA ouverte par l'opérateur | lit la révision sous test, écrit dans `terrain/` | `CASES/*.expected.json`, cette page, le journal |
-| harnais | `docs/device/harness/run.mjs`, 2 593 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff et `opencode` pour l'autre client) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
-| rapport | `docs/device/harness/rapport.mjs`, 525 lignes, aucune dépendance | lit le reçu, l'output et la trace, écrit `RAPPORT.md` | aucun verdict : il recopie celui du reçu et ne relit pas les falsificateurs ([ADR-050](DECISIONS.md)) |
+| harnais | `docs/device/harness/run.mjs`, 2 869 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff et `opencode` pour l'autre client) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
+| rapport | `docs/device/harness/rapport.mjs`, 527 lignes, aucune dépendance | lit le reçu, l'output et la trace, écrit `RAPPORT.md` | aucun verdict : il recopie celui du reçu et ne relit pas les falsificateurs ([ADR-050](DECISIONS.md)) |
+| page utilisateur | `docs/device/harness/resultat.mjs`, 497 lignes, aucune dépendance | lit le reçu, l'output, la trace, l'attendu et la lecture déclarée du cas, écrit `RESULTAT.md` | aucun verdict : il range chaque geste sous l'un des trois états déclarés, et une mesure absente reste « non observé » ([ADR-061](DECISIONS.md)) |
 | juge | l'agent | lit le **reçu seul**, écrit `output.json` | la session ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §8) |
 
 La séparation est **de contexte, pas de personne** : relecteur, opérateur et juge peuvent être la même
@@ -116,7 +117,7 @@ graph TD
 
 `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 227 contrôles, sans ouvrir de session ni écrire dans le dépôt
+le dépôt, `docs/device/harness/banc-harnais.sh` : 236 contrôles, sans ouvrir de session ni écrire dans le dépôt
 ([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
 compte strict hors code, compte naïf imprimé à côté, refus d'un lien mort en prose ([ADR-027](DECISIONS.md)). Ses outils hors de Node — `git`, `date` GNU,
 `sqlite3` pour la base Freebuff, `opencode` pour l'export de l'autre client — sont déclarés au `--help` et
@@ -308,7 +309,7 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 227 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| le banc qui éprouve le harnais, ses 236 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |

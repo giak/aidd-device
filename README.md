@@ -19,7 +19,7 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
-- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 230 contrôles qui éprouvent ses
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 236 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/guide/guide-utilisateur.md](docs/guide/guide-utilisateur.md) — **le guide utilisateur** : tu
   arrives avec un skill à tester, tu dis « test ça » dans une session d'agent, l'agent conduit, tu confirmes

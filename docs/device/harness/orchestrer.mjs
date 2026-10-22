@@ -15,7 +15,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
 import { exportTrace as exporterTraceClient, session as sessionClient } from "./clients.mjs";
 import { ecrireRapport } from "./rapport.mjs";
-import { ecrireResultat } from "./resultat.mjs";
+import { ecrireResultat, verifierLecture } from "./resultat.mjs";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const DEPOT = resolve(ICI, "../../..");
@@ -65,10 +65,11 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
   lire   --cas <id> [--run <dir>]
          relit receipt.json et output.json et réimprime le bloc de verdict, sans rien
          écrire. Un reçu absent est refusé, son chemin nommé
-  rapport --cas <id> [--run <dir>] [--remplacer]
+  rapport --cas <id> [--run <dir>] [--remplacer] [--cases <dir>]
          écrit RAPPORT.md à la racine du run, dérivé du reçu, de l'output et de la trace,
          sans modèle ni réseau. Un rapport déjà présent est refusé sans --remplacer ;
-         fin l'écrit automatiquement quand le reçu et l'output viennent d'être écrits
+         fin l'écrit automatiquement quand le reçu et l'output viennent d'être écrits.
+         La lecture du cas, quand elle existe, est vérifiée avant toute écriture
 
 codes : 0 tout est allé au bout ; 1 refus motivé, le texte du harnais recopié tel quel ;
         2 commande mal formée (option absente, valeur hors domaine).
@@ -325,10 +326,16 @@ function expectedDe(cas, cases) {
 function lectureDe(cas, cases) {
   const chemin = join(cases, `${cas}.lecture.json`);
   if (!existsSync(chemin)) return null;
+  let lecture;
   try {
-    return JSON.parse(readFileSync(chemin, "utf8"));
+    lecture = JSON.parse(readFileSync(chemin, "utf8"));
   } catch {
     refuse(`orchestrer : la lecture ${chemin} est illisible — une page utilisateur ne s'invente pas`);
+  }
+  try {
+    return verifierLecture(lecture, cas);
+  } catch (e) {
+    refuse(`${e.message} — ${chemin}`);
   }
 }
 function runParDefaut(cas, gel) {
@@ -1132,6 +1139,8 @@ function commandeFin(argv) {
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
   const run = runExiste(cas, valeurs);
+  // La lecture est vérifiée avant le reçu : une pièce mal formée ne doit pas coûter un run.
+  const lecture = lectureDe(cas, cases);
   const dernier = join(run, "raw", cas, "last-message.md");
   if (!existsSync(dernier)) {
     refuse(`fin : ${dernier} est absent — la trace ne dit pas ce que la session a répondu en dernier, et le reçu ne l'invente pas (refus 9)`);
@@ -1213,7 +1222,6 @@ function commandeFin(argv) {
   } catch (e) {
     refuse(`${e.message} — le reçu et l'output sont écrits, la commande rapport peut les relire`);
   }
-  const lecture = lectureDe(cas, cases);
   let resultat = null;
   if (lecture) {
     try {
@@ -1249,14 +1257,15 @@ function commandeLire(argv) {
 }
 
 function commandeRapport(argv) {
-  const valeurs = litOptions(argv, { cas: "valeur", run: "valeur", remplacer: "drapeau" });
+  const valeurs = litOptions(argv, { cas: "valeur", run: "valeur", remplacer: "drapeau", cases: "valeur" });
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
   const run = runExiste(cas, valeurs);
   try {
     const remplacer = valeurs.remplacer === true;
+    // La lecture est vérifiée avant le rapport : un refus ne doit laisser aucune pièce derrière lui.
+    const lecture = lectureDe(cas, casesDir(valeurs));
     const rapport = ecrireRapport({ runDir: run, cas, remplacer });
     ecrit([`▸ RAPPORT — ${rapport.chemin}`, `  verdict             : ${rapport.verdict}`, ""]);
-    const lecture = lectureDe(cas, casesDir(valeurs));
     if (lecture) {
       const resultat = ecrireResultat({ runDir: run, cas, attendu: expectedDe(cas, casesDir(valeurs)), lecture, remplacer });
       ecrit([`▸ RESULTAT — ${resultat.chemin}`, `  pour la personne     : ce que le run a montré, et ce qu'elle peut décider`, ""]);

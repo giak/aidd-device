@@ -7,6 +7,14 @@ import { join } from "node:path";
 
 const VERDICTS = ["conforme", "ecart", "non concluant"];
 
+// Le vocabulaire fermé des lectures (spec du 2026-10-22 07:33, §3). Une assertion hors de ces trois
+// types n'est pas une mesure : elle se refuse, elle ne devient pas « non observé ».
+export const TYPES_ASSERTION = ["trace_outil", "falsificateur_vide", "produit"];
+
+// Le plafond de la page est de 80 lignes (spec §2) : au-delà de cinq produits, la table des preuves
+// renverrait au rapport technique plutôt que de le recopier.
+const MAX_PRODUITS = 5;
+
 // Les mots du dedans, interdits dans le corps du RESULTAT (F2). Le rapport technique garde son
 // vocabulaire : c'est un document d'audit, celui-ci est une page de lecture.
 const MOTS_INTERDITS = /\b(morsures?|mord(?:ent)?|falsificateurs?|porcelain|plafonn(?:é|ée|és|ées)|seq)\b|\braw\/|`(?:porte|gel|empreinte)`/i;
@@ -39,6 +47,9 @@ const CORRECTIONS = {
   shell_non_interpretable: "une commande n'a pas pu être lue : le cas doit l'écrire en clair, sinon la mesure restera aveugle",
   reseau: "le cas interdit le réseau : si un outil doit être permis, c'est l'attendu qu'il faut changer, pas le rapport",
   hors_produit: "un fichier a été écrit en dehors du produit attendu : le cas doit dire s'il est permis",
+  birth_anterieur_au_gel: "un fichier est né avant le cas : l'horloge de la machine ou le dossier de travail est à vérifier avant de rejouer",
+  arbre_de_travail_inchange: "le fichier existe mais le dépôt n'a pas bougé : il vient d'ailleurs, et le run est à refaire dans un dossier propre",
+  produit_identique_a_une_empreinte_anterieure: "le fichier recopie un fichier déjà présent : la session n'a rien écrit de neuf, et le cas doit distinguer les deux",
   trace_sans_echange_dans_la_fenetre: "la trace ne porte aucun échange : le run n'a pas eu lieu, ou l'export est à refaire",
 };
 
@@ -54,6 +65,46 @@ const lu = (outil, chemin) => {
 };
 const cellule = (valeur) => texte(valeur).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 const liste = (valeur) => (Array.isArray(valeur) ? valeur : []);
+// Un chemin de produit porte le préfixe interne `raw/<cas>/` : la page montre le nom tel que la personne
+// le lit, et n'emploie jamais ce préfixe (F2). Un chemin d'un autre cas garde son préfixe tronqué au cas.
+const nomProduit = (chemin, cas) => String(chemin).split(`${texte(cas)}/`).pop();
+
+/**
+ * Vérifie une lecture avant qu'elle ne serve : chaque geste porte un nom et au moins une assertion, chaque
+ * assertion son type et ses champs. Refuse au lieu de rendre « non observé » une lecture mal formée.
+ */
+export function verifierLecture(lecture, cas = null) {
+  const refus = (message) => {
+    throw new Error(`lecture : ${message}`);
+  };
+  const nomme = (valeur) => typeof valeur === "string" && valeur.trim();
+  if (!lecture || typeof lecture !== "object" || Array.isArray(lecture)) refus("le fichier ne porte aucun objet lisible");
+  if (cas && lecture.cas && lecture.cas !== cas) refus(`le fichier nomme le cas ${lecture.cas}, pas ${cas}`);
+  if (!Array.isArray(lecture.gestes) || !lecture.gestes.length) {
+    refus("aucun geste déclaré — une page sans geste n'a rien à confronter");
+  }
+  lecture.gestes.forEach((geste, i) => {
+    const nom = geste && nomme(geste.geste) ? geste.geste.trim() : `geste ${i + 1}`;
+    if (!geste || !nomme(geste.geste)) refus(`le ${nom} n'a pas de nom — un geste sans nom ne se lit pas`);
+    const assertions = Array.isArray(geste.assertions) ? geste.assertions : [];
+    if (!assertions.length) refus(`le geste « ${nom} » ne déclare aucune assertion — une page s'inventerait une mesure`);
+    assertions.forEach((a) => {
+      if (!a || !TYPES_ASSERTION.includes(a.type)) {
+        const vu = a && a.type ? `« ${a.type} »` : "absente";
+        refus(`le geste « ${nom} » porte une assertion de type ${vu}, hors de ${TYPES_ASSERTION.join(" | ")}`);
+      }
+      if (a.type === "trace_outil" && !nomme(a.outil)) refus(`le geste « ${nom} » : une assertion trace_outil sans outil`);
+      if (a.type === "trace_outil" && a.chemin_contient !== undefined && !nomme(a.chemin_contient)) {
+        refus(`le geste « ${nom} » : un chemin de trace vide`);
+      }
+      if (a.type === "falsificateur_vide" && !nomme(a.nom)) refus(`le geste « ${nom} » : une assertion falsificateur_vide sans nom`);
+      if (a.type === "produit" && a.chemin_exact !== undefined && !nomme(a.chemin_exact)) {
+        refus(`le geste « ${nom} » : un chemin de produit vide`);
+      }
+    });
+  });
+  return lecture;
+}
 
 function lireJson(chemin) {
   try {
@@ -145,7 +196,7 @@ function etatDeGeste(geste, pieces) {
         details.push(`« ${a.chemin_exact} » produit`);
       } else {
         faux = true;
-        details.push(`chemin absent : ${chemins.join(", ")}`);
+        details.push(`chemin absent : ${chemins.map((c) => nomProduit(c, pieces.recu.cas)).join(", ")}`);
       }
       continue;
     }
@@ -190,9 +241,12 @@ function phraseVerdict(recu, etats, violations, difference) {
     return `${compte} Aucune règle mesurée n'a été violée.`;
   }
   if (recu.verdict === "ecart") {
-    return difference
-      ? `${compte} La procédure attendue est tenue ; le juge a lu un comportement que le reçu ne mesure pas : voir la section 5.`
-      : `${compte} Quelque chose est sorti du cadre que le cas déclare : voir la section 5.`;
+    // Une règle non tenue interdit de dire la procédure tenue, même quand le juge a lu autre chose : la
+    // section 4 affiche « violé », la section 1 ne peut pas le contredire.
+    if (violations.length || !difference) {
+      return `${compte} Quelque chose est sorti du cadre que le cas déclare : voir la section 5.`;
+    }
+    return `${compte} La procédure attendue est tenue ; le juge a lu un comportement que le reçu ne mesure pas : voir la section 5.`;
   }
   if (recu.verdict === "non concluant") {
     return `${compte} Le run ne permet pas de conclure.`;
@@ -292,11 +346,17 @@ function sectionPreuves(runDir, recu) {
   for (const [nom, chemin] of pieces) {
     if (existsSync(join(runDir, chemin))) lignes.push(`| ${nom} | [${chemin}](${chemin}) |`);
   }
-  const fichiers = liste(recu.produit && recu.produit.fichiers);
-  for (const f of fichiers) {
-    if (!f || !f.chemin) continue;
+  // La page reste sous son plafond (spec §2) : la liste complète des produits vit dans le rapport
+  // technique, ici on en montre quelques-uns et on dit combien il y en a.
+  const fichiers = liste(recu.produit && recu.produit.fichiers).filter(
+    (f) => f && f.chemin && existsSync(join(runDir, join("raw", texte(recu.cas), f.chemin))),
+  );
+  for (const f of fichiers.slice(0, MAX_PRODUITS)) {
     const relatif = join("raw", texte(recu.cas), f.chemin);
-    if (existsSync(join(runDir, relatif))) lignes.push(`| Fichier produit | [${f.chemin}](${relatif}) |`);
+    lignes.push(`| Fichier produit | [${f.chemin}](${relatif}) |`);
+  }
+  if (fichiers.length > MAX_PRODUITS) {
+    lignes.push("", `${fichiers.length} fichiers produits au total ; la liste complète est dans le rapport technique.`);
   }
   return lignes;
 }
@@ -402,8 +462,10 @@ export function ecrireResultat({ runDir, cas = null, attendu = null, lecture = n
   if (!VERDICTS.includes(recu.verdict)) {
     throw new Error(`resultat : le reçu porte un verdict « ${texte(recu.verdict, "absent")} », hors de ${VERDICTS.join(" | ")}`);
   }
-  if (!lecture || !Array.isArray(lecture.gestes) || !lecture.gestes.length) {
-    throw new Error(`resultat : le cas ${recu.cas} ne déclare aucune lecture (CASES/<cas>.lecture.json) — un tableau sans geste déclaré ne s'écrit pas`);
+  try {
+    verifierLecture(lecture, recu.cas);
+  } catch (e) {
+    throw new Error(`resultat : ${e.message} (CASES/<cas>.lecture.json)`);
   }
   const cheminSortie = join(dossier, "RESULTAT.md");
   if (existsSync(cheminSortie) && !remplacer) {

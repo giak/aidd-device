@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 178 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 236 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -1339,8 +1339,8 @@ process.exit(r.verdict==='non concluant' && (r.falsificateurs.lecture_hors_dossi
 # une différence non vide : la différence et sa piste doivent rester tues. Rien n'écrit dans le dépôt.
 RB="$B/rapport"
 mkdir -p "$RB"
-rapport-copie() { # source, dest — copie un run et retire le rapport manuel
-  rm -rf "$2"; mkdir -p "$2"; cp -a "$1/." "$2/"; rm -f "$2/RAPPORT.md"
+rapport-copie() { # source, dest — copie un run et retire les pages dérivées
+  rm -rf "$2"; mkdir -p "$2"; cp -a "$1/." "$2/"; rm -f "$2/RAPPORT.md" "$2/RESULTAT.md"
 }
 rapport-copie "$REPO/docs/device/runs/2026-10-20-222845-50664060-3d0db46" "$RB/r179"
 controle "179 rapport, conforme, liens et déterminisme" 0 node -e "
@@ -2337,7 +2337,7 @@ controle "229 page utilisateur, trois états d'un geste" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r229','--remplacer'],{stdio:'ignore'});
 const t=fs.readFileSync('$U/r229/RESULTAT.md','utf8');
-process.exit(t.includes('**violé**') && t.includes('non observé') && !/\| attendre l'accord de l'opérateur \|[^\n]*\| tenu \|/.test(t) ?0:1)"
+process.exit(t.includes('**violé**') && t.includes('non observé') && t.includes('Quelque chose est sorti du cadre') && !t.includes('La procédure attendue est tenue') && !/\| attendre l'accord de l'opérateur \|[^\n]*\| tenu \|/.test(t) ?0:1)"
 controle "230 page utilisateur, déterminisme et refus d'écrasement" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs'),crypto=require('crypto');
 const sha=(p)=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -2349,6 +2349,126 @@ fs.unlinkSync('$U/r228/RAPPORT.md');
 let refuse=false,texte='';
 try{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run','$U/r228'],{stdio:'pipe'})}catch(e){refuse=true;texte=String(e.stderr)}
 process.exit(a===b && refuse && texte.includes('RESULTAT.md') ?0:1)"
+
+# 231-233 : les lectures des deux autres cas (spec du 2026-10-22 08:17). 231 et 232 partent de runs
+# réels du dépôt, en copie ; 233 tient le vocabulaire fermé de toutes les lectures déclarées.
+rapport-copie "$REPO/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20" "$RB/r231"
+controle "231 page utilisateur, cas promesse, trois états" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const cas='2026-10-15-133423-promesse-memoire-avant-ecriture', run='$RB/r231';
+execFileSync('node',['$ORCH','rapport','--cas',cas,'--run',run,'--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync(run+'/RESULTAT.md','utf8');
+const gestes=(JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/'+cas+'.lecture.json','utf8')).gestes||[]).length;
+const tableau=t.split('## 4.')[1].split('## 5.')[0];
+const lignes=(tableau.match(/^\| (?!Attendu|---)/gm)||[]).length;
+const cadre=/^\| rester dans le dossier du cas, sans réseau \|.*\| \*\*violé\*\* \|$/m.test(tableau);
+const attente=/^\| attendre la réponse de l'opérateur \|.*\| non observé \|$/m.test(tableau);
+const raisons=[];
+if(![1,2,3,4,5,6,7,8].every((i)=>t.includes('## '+i+'.')))raisons.push('section manquante');
+if(lignes!==gestes)raisons.push(lignes+' ligne(s) pour '+gestes+' geste(s)');
+if(t.split('\n').length>80)raisons.push(t.split('\n').length+' ligne(s), plafond 80');
+if(!cadre)raisons.push('le geste de cadre ne porte pas violé');
+if(!attente)raisons.push('la question non mesurée ne porte pas non observé');
+if(raisons.length){fs.writeFileSync('$B/detail.231',raisons.join('\n')+'\n');process.exit(1)}"
+rapport-copie "$REPO/docs/device/runs/2026-10-21-234646-bee028f8-d88d78c" "$RB/r232"
+controle "232 page utilisateur, cas plan-simple, cinq gestes tenus" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const cas='2026-10-21-173843-plan-simple', run='$RB/r232';
+execFileSync('node',['$ORCH','rapport','--cas',cas,'--run',run,'--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync(run+'/RESULTAT.md','utf8');
+const gestes=(JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/'+cas+'.lecture.json','utf8')).gestes||[]).length;
+const tableau=t.split('## 4.')[1].split('## 5.')[0];
+const lignes=(tableau.match(/^\| (?!Attendu|---)/gm)||[]).length;
+const tenus=(tableau.match(/\| tenu \|$/gm)||[]).length;
+const raisons=[];
+if(![1,2,3,4,5,6,7,8].every((i)=>t.includes('## '+i+'.')))raisons.push('section manquante');
+if(lignes!==gestes)raisons.push(lignes+' ligne(s) pour '+gestes+' geste(s)');
+if(tenus!==gestes)raisons.push(tenus+' geste(s) tenu(s) sur '+gestes);
+if(/\*\*violé\*\*|non observé/.test(tableau))raisons.push('un geste du run conforme n\'est pas tenu');
+if(raisons.length){fs.writeFileSync('$B/detail.232',raisons.join('\n')+'\n');process.exit(1)}"
+controle "233 lectures, vocabulaire fermé et attendu présent" 0 node -e "
+const fs=require('fs');
+const dossier='$REPO/docs/device/CASES';
+const types=new Set(['trace_outil','falsificateur_vide','produit']);
+const fichiers=fs.readdirSync(dossier).filter((f)=>f.endsWith('.lecture.json'));
+const raisons=[];
+if(!fichiers.length)raisons.push('aucune lecture déclarée');
+for(const f of fichiers){
+  const l=JSON.parse(fs.readFileSync(dossier+'/'+f,'utf8'));
+  const cas=f.replace(/\.lecture\.json$/,'');
+  if(l.cas!==cas)raisons.push(f+' nomme '+l.cas);
+  if(!fs.existsSync(dossier+'/'+cas+'.expected.json'))raisons.push(f+' sans attendu');
+  if(!Array.isArray(l.gestes)||!l.gestes.length){raisons.push(f+' sans geste');continue;}
+  for(const g of l.gestes){
+    const as=Array.isArray(g.assertions)?g.assertions:[];
+    if(!as.length)raisons.push(f+' : geste sans assertion — '+(g.geste||'?'));
+    for(const a of as)if(!types.has(a.type))raisons.push(f+' : type inconnu — '+a.type);
+  }
+}
+if(raisons.length){fs.writeFileSync('$B/detail.233',raisons.join('\n')+'\n');process.exit(1)}"
+
+# 234 : toute règle que les reçus portent doit avoir une phrase et un conseil. La fixture les déclare
+# toutes non tenues, et le compte des conseils vient de son fichier de clés, pas d'une constante du banc.
+V="$B/violations"
+mkdir -p "$V"
+node -e "
+const fs=require('fs');
+const cles=['birth_anterieur_au_gel','arbre_de_travail_inchange','produit_identique_a_une_empreinte_anterieure','trace_sans_echange_dans_la_fenetre','tableau_absent','ecriture_avant_tableau','produit_ne_avant_le_tableau','question_sans_reponse','lecture_hors_dossier','shell_hors_dossier','shell_ecriture_hors_produit','shell_non_interpretable','reseau','hors_produit'];
+fs.writeFileSync('$V/cles.json',JSON.stringify(cles)+'\n');
+const f={}; for(const k of cles) f[k]=[{seq:1,motif:'banc'}];
+const r={cas:'$JOUET',verdict:'non concluant',session:{outil:'opencode',modele:'opencode/banc-modele'},horodatage_debut:'2026-10-22T10:00:00+02:00',horodatage_fin:'2026-10-22T10:01:00+02:00',echanges:{utilises:1,budget:1},produit:{chemins:[],fichiers:[]},falsificateurs:f};
+fs.writeFileSync('$V/receipt.json',JSON.stringify(r,null,2)+'\n');
+"
+controle "234 page utilisateur, une phrase et un conseil par règle" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const run='$V', cles=JSON.parse(fs.readFileSync(run+'/cles.json','utf8'));
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--run',run,'--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync(run+'/RESULTAT.md','utf8');
+const regles=(t.match(/^Règles non tenues : (.*)$/m)||[])[1]||'';
+const conseils=t.split('**À corriger.**')[1].split('##')[0].split('\n').filter((l)=>l.startsWith('- ')).length;
+const raisons=[];
+if(!regles)raisons.push('aucune ligne de règles non tenues');
+if(regles.includes('_'))raisons.push('une règle reste sous son identifiant : '+regles.slice(0,180));
+if(conseils<cles.length+1)raisons.push(conseils+' conseil(s) pour '+cles.length+' règles');
+if(raisons.length){fs.writeFileSync('$B/detail.234',raisons.join('\n')+'\n');process.exit(1)}"
+
+# 235-236 : la lecture est vérifiée avant d'être servie (spec du 2026-10-22 08:46). Deux copies du run
+# jouet du 2026-10-22 et deux dossiers `--cases` de banc : un geste sans assertion, un type inconnu.
+L="$B/lectures"
+mkdir -p "$L/cases235" "$L/cases236"
+cp "$REPO/docs/device/CASES/$JOUET.expected.json" "$L/cases235/"
+cp "$REPO/docs/device/CASES/$JOUET.expected.json" "$L/cases236/"
+rapport-copie "$REPO/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d" "$L/r235"
+rapport-copie "$REPO/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d" "$L/r236"
+node -e "
+const fs=require('fs');
+const base=JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/$JOUET.lecture.json','utf8'));
+const sans=JSON.parse(JSON.stringify(base)); delete sans.gestes[0].assertions;
+fs.writeFileSync('$L/cases235/$JOUET.lecture.json',JSON.stringify(sans,null,2)+'\n');
+const type=JSON.parse(JSON.stringify(base)); type.gestes[1].assertions[0].type='trace_plate';
+fs.writeFileSync('$L/cases236/$JOUET.lecture.json',JSON.stringify(type,null,2)+'\n');
+"
+controle "235 refus, lecture sans assertion" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+let e=null;
+try{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--cases','$L/cases235','--run','$L/r235'],{stdio:'pipe'})}catch(x){e=x}
+const r=[];
+if(!e||e.status!==1)r.push('sortie '+(e?e.status:'aucune')+' au lieu de 1');
+else if(!String(e.stderr).includes('ne déclare aucune assertion'))r.push('le refus ne nomme pas le geste : '+String(e.stderr).split('\n')[0]);
+if(fs.existsSync('$L/r235/RAPPORT.md'))r.push('un RAPPORT.md a été écrit');
+if(fs.existsSync('$L/r235/RESULTAT.md'))r.push('un RESULTAT.md a été écrit');
+if(r.length){fs.writeFileSync('$B/detail.235',r.join('\n')+'\n');process.exit(1)}"
+controle "236 refus, type d assertion inconnu" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+let e=null;
+try{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--cases','$L/cases236','--run','$L/r236'],{stdio:'pipe'})}catch(x){e=x}
+const r=[];
+const sortie=String(e&&e.stderr);
+if(!e||e.status!==1)r.push('sortie '+(e?e.status:'aucune')+' au lieu de 1');
+else if(!sortie.includes('trace_plate')||!sortie.includes('hors de trace_outil'))r.push('le refus ne nomme pas le type et son vocabulaire : '+sortie.split('\n')[0]);
+if(fs.existsSync('$L/r236/RAPPORT.md'))r.push('un RAPPORT.md a été écrit');
+if(fs.existsSync('$L/r236/RESULTAT.md'))r.push('un RESULTAT.md a été écrit');
+if(r.length){fs.writeFileSync('$B/detail.236',r.join('\n')+'\n');process.exit(1)}"
 
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 

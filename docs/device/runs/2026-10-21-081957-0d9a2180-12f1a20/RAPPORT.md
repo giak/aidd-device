@@ -43,7 +43,7 @@ Un non concluant n'est pas une défaillance du dispositif : il dit ce que la pre
 
 - la qualité du skill, la justesse du produit et la reproductibilité ;
 - les gestes humains, qui reposent sur `temoignage` ;
-- les lectures faites par un outil `shell`, dont la commande n'est pas dans la trace normalisée ;
+- le contenu d'une commande `shell` construite dynamiquement, que le reçu ne sait pas lire (ADR-051) ;
 - les limites du reçu, détaillées au §5.
 
 Ce que l'output écarte comme non testable :
@@ -60,14 +60,16 @@ Ce que l'output écarte comme non testable :
 
 | Clé | Ce que la morsure dit |
 | --- | --- |
-| lecture_hors_dossier | une lecture est sortie du dossier du cas ; valeur : {"seq":36,"index":112,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/project-brief.md"}, {"seq":36,"index":113,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/ecosystem.md"}, {"seq":36,"index":114,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/vcs.md"}, {"seq":37,"index":117,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/architecture.md"}, {"seq":37,"index":118,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/codebase-map.md"}, {"seq":37,"index":119,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/coding-assertions.md"}, {"seq":37,"index":120,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/testing.md"}, {"seq":38,"index":122,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/deployment.md"}, {"seq":38,"index":123,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/design.md"}, {"seq":38,"index":124,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/navigation.md"}, {"seq":38,"index":125,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/README.md"} |
+| lecture_hors_dossier | une lecture est sortie du cadre déclaré ; valeur : {"seq":36,"index":112,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/project-brief.md"}, {"seq":36,"index":113,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/ecosystem.md"}, {"seq":36,"index":114,"ts":1792564286392,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/vcs.md"}, {"seq":37,"index":117,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/architecture.md"}, {"seq":37,"index":118,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/codebase-map.md"}, {"seq":37,"index":119,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/coding-assertions.md"}, {"seq":37,"index":120,"ts":1792564290521,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/testing.md"}, {"seq":38,"index":122,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/deployment.md"}, {"seq":38,"index":123,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/design.md"}, {"seq":38,"index":124,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/navigation.md"}, {"seq":38,"index":125,"ts":1792564299442,"outil":"read","chemin":"/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/README.md"} |
 
 **Limites**
 
 - la trace ne porte pas la commande des outils shell (shell, bash) : une lecture faite par ce canal reste invisible
 - une lecture est sortie du dossier du cas : seq 36, outil « read », chemin /home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/project-brief.md (demande §7)
 
-## 6. Les lectures hors dossier
+## 6. Les effets hors cadre
+
+### 6.1 Les lectures hors dossier
 
 | seq | outil | chemin |
 | --- | --- | --- |
@@ -84,6 +86,26 @@ Ce que l'output écarte comme non testable :
 | 38 | read | /home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/README.md |
 
 Ces lectures interdisent `conforme`.
+
+### 6.2 Les lectures par une commande shell
+
+Ce reçu ne porte pas `shell_hors_dossier` : il a été écrit avant l'ADR-051, et les lectures faites par une commande shell ne sont pas mesurées.
+
+### 6.3 Les écritures shell hors du produit
+
+Ce reçu ne porte pas `shell_ecriture_hors_produit` : il a été écrit avant l'ADR-051, et les écritures d'une commande shell ne sont pas mesurées.
+
+### 6.4 Les appels réseau
+
+Ce reçu ne porte pas `reseau` : il a été écrit avant l'ADR-051, et les appels réseau ne sont pas mesurés.
+
+### 6.5 Les fichiers hors du produit
+
+Ce reçu ne porte pas `hors_produit` : il a été écrit avant l'ADR-051, et les fichiers nouveaux hors du produit ne sont pas mesurés.
+
+### 6.6 Les commandes shell non interprétées
+
+Ce reçu ne porte pas `shell_non_interpretable` : il a été écrit avant l'ADR-051, et une commande shell non littérale n'est pas signalée.
 
 ## 7. Les pistes
 

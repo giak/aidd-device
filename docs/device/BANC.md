@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 230 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 236 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -86,6 +86,25 @@ status: in-progress
 > née du reçu `conforme` du cas `plan-simple` de la Séance 102 : une question posée par l'outil déclaré et
 > suivie d'une écriture sans ligne `user` entre les deux mord et nomme les deux seq, la réponse entre les
 > deux laisse le reçu muet, et `conforme` passe.
+> V0.33 — 2026-10-22 : **236** contrôles ; 235 et 236 font refuser une lecture mal formée avant toute
+> écriture, et `rapport` accepte `--cases` pour qu'une lecture de banc s'éprouve hors du dossier du dépôt.
+> Ce passage rend effective la phrase du §3 de la spec du 2026-10-22 07:33, qui promettait un refus là où le
+> code rendait « non observé » ; la validation vit dans `verifierLecture`, appelée par `lectureDe` et par
+> `ecrireResultat`.
+> V0.32 — 2026-10-22 : **234** contrôles ; le 229 exige que la section 1 ne dise jamais « la procédure
+> attendue est tenue » quand une règle mord, et le 234 déclare d'un coup les quatorze règles que les reçus
+> portent : chacune doit avoir sa phrase (aucun identifiant à tiret bas dans la section 5) et son conseil
+> (une ligne par règle en section 6, plus la phrase du second run). Ce passage répare les deux défauts
+> relevés par l'audit : un `ecart` qui portait une morsure affichait « 2 violés » puis « la procédure
+> attendue est tenue », et trois règles n'avaient aucun conseil.
+> V0.31 — 2026-10-22 : **233** contrôles ; 231 et 232 écrivent la page des deux autres cas gelés depuis une
+> copie de leur run réel, et 233 tient le vocabulaire fermé de toutes les lectures déclarées. Le premier
+> exige les trois états sur un même reçu (« violé » pour la lecture hors dossier, « non observé » pour la
+> question que ce reçu ne mesure pas) et la page sous son plafond de 80 lignes, ce run portant 22 fichiers
+> produits dont cinq sont liés ; le second, tous les gestes tenus sur un run `conforme`. Ce passage a
+> révélé un refus trop large : sur un produit qui ne correspond pas au chemin attendu, la page citait
+> `raw/…` dans son tableau et se refusait elle-même ; `resultat.mjs` nomme désormais le fichier sans ce
+> préfixe, et les contrôles 185, 186 et 194 à 197 repassent.
 > V0.30 — 2026-10-22 : **230** contrôles ; 228 à 230 éprouvent la **page utilisateur** (`RESULTAT.md`,
 > ADR-061) : huit sections, aucune ligne du dedans dans le corps, une ligne par geste déclaré, les trois
 > états d'un geste (« tenu », « violé », « non observé »), deux appels sur les mêmes pièces rendant le même
@@ -102,7 +121,7 @@ status: in-progress
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 230 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 236 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -116,18 +135,21 @@ confondait, la plage d'un `awk` et la variable d'une boucle littérale (contrôl
 substitution de commande bornée, lue sans que sa valeur devienne un chemin (contrôles 214 à 217), puis
 la commande interne d'`xargs` et de `find -exec` (contrôles 218 à 221), la question que la première
 écriture suit sans réponse (contrôles 222 et 223), la session qu'`ouvrir` ouvre et conduit par l'API
-(contrôles 224 à 227), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230).
+(contrôles 224 à 227), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
+lectures des deux autres cas gelés (contrôles 231 à 233), et une phrase et un conseil pour chaque règle
+que les reçus portent (contrôle 234), et le refus d'une lecture mal formée, sans qu'aucune pièce ne
+s'écrive (contrôles 235 et 236).
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 230/230 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 236/236 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `230/230 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `236/236 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -209,6 +231,9 @@ une panne d'outil se voir dans un `FAIL`.
 | 218 à 221 | **`xargs` et `find -exec` littéraux** (ADR-057) : `echo x | xargs grep -n plan README.md` laisse `conforme` passer — les options d'`xargs` sont sautées et sa commande interne est lue (218) ; `find . -exec cat ../hors-cadre.md ;` fait mordre `shell_hors_dossier`, qui nomme la lecture interne (219) ; `find . -exec cat {} ;` est refusé avec le motif « valeur inconnue » — `{}` n'est pas un chemin (220) ; `find . -exec cat` est refusé avec le motif « non terminée » — le bloc doit se fermer (221). Rétablir le refus d'un bloc fait tomber les quatre ; ignorer les effets internes fait tomber le 219 et le 220 | [ADR-057](../DECISIONS.md) |
 | 224 à 227 | **`ouvrir`**, la session ouverte par l'API et la pause jouée par le cas (ADR-059) : sans `gate.json`, `ouvrir` refuse en nommant la porte (224) ; avec un `PATH` vide et aucun `--api`, elle refuse en nommant `opencode` (225) ; contre un serveur factice, elle envoie le texte de `texte-a-remettre.txt` **verbatim** — comparé octet pour octet —, puis la réponse figée du cas comme message **avant** de répondre au formulaire, dont la réponse est l'option `(Recommended)` ; `exit 0`, le fil est imprimé avec « inactive », et le dossier du run est **inchangé** (226) ; un serveur qui pose trois questions pour deux réponses figées fait refuser la troisième (« n'en fige que 2 »), après deux réponses envoyées (227). Le serveur est en `node:http` : aucune session réelle, aucun réseau | [ADR-059](../DECISIONS.md) |
 | 228 à 230 | la **page utilisateur** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les huit sections, une ligne par geste (5), et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](../DECISIONS.md) |
+| 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les trois types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](../DECISIONS.md) |
+| 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les quatorze clés que les reçus du dépôt portent, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend quinze lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
+| 235 à 236 | **la lecture est vérifiée avant d'être servie** (spec du 2026-10-22 08:46) : sur une copie du run jouet du 2026-10-22 et un dossier `--cases` de banc, un geste privé de ses assertions fait refuser `rapport` en le nommant, et ni `RAPPORT.md` ni `RESULTAT.md` n'est écrit (235) ; une assertion de type `trace_plate` fait refuser en nommant le type et les trois types permis, sans rien écrire non plus (236). Retirer l'appel à `verifierLecture` dans `lectureDe` fait tomber les deux ; le déplacer après l'écriture du rapport fait tomber la vérification des pièces absentes | spec du 2026-10-22 08:46 |
 | 222 à 223 | la **question sans réponse** (ADR-058) : un fil où l'outil `question` (seq 3) précède une écriture nommée (seq 4) sans aucune ligne `user` entre les deux fait refuser `conforme` en nommant la question et l'écriture, `non concluant` s'écrit, et `question_sans_reponse` porte `{seq_question: 3, seq_ecriture: 4}` (222) ; le même fil avec la réponse figée en seq 4 et l'écriture en seq 5 laisse `question_sans_reponse` vide et `conforme` passer (223). Ignorer la réponse dans la comparaison fait tomber le 223 seul ; retirer la famille de question fait tomber le 222 seul | [ADR-058](../DECISIONS.md) |
 | 214 à 217 | la **substitution de commande bornée** (ADR-056) : `n=$(grep -c plan README.md); echo "$n"` laisse `conforme` passer et `shell_non_interpretable` vide — la substitution est lue, ses effets mesurés, et `$n` n'est qu'affiché (214) ; `n=$(cat ../hors-cadre.md); echo "$n"` fait mordre `shell_hors_dossier`, qui nomme `../hors-cadre.md` — la lecture faite **dans** la substitution est mesurée, pas ignorée (215) ; `cat $(ls aidd_docs)` est refusé avec le motif « valeur inconnue » — le résultat d'une substitution n'est jamais un chemin (216) ; `x=$(cat $(ls))` est refusé avec le motif « substitution imbriquée » — le lecteur ne borne pas une substitution dans une substitution (217). Retirer la lecture fait tomber les quatre ; ignorer les effets internes fait tomber le 215 seul ; retirer la marque fait tomber le 216 seul | [ADR-056](../DECISIONS.md) |
 | 212 à 213 | les deux formes que le lecteur `shell` confondait, mesurées sur le run `plan-simple` de la Séance 98 : `awk '/^```mermaid$/,/^```$/' README.md` laisse `conforme` passer et `shell_hors_dossier` vide — le programme d'`awk`, qui commence par `/`, n'est pas un chemin (212) ; `for f in README.md aidd_docs/memory/api.md; do echo "=== $f ==="; grep -n plan "$f"; done` laisse `conforme` passer et `shell_non_interpretable` vide — la boucle littérale est déroulée, une copie du corps par mot, `$f` substitué hors guillemets simples (213). Retirer le saut du programme fait tomber le 212 seul ; retirer le déroulage fait tomber le 213 seul. Ce que le lecteur refuse encore est dit au §3 du correctif : boucle non littérale, imbriquée, non fermée, ou qui réaffecte sa variable | — |

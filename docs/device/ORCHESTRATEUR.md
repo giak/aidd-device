@@ -57,8 +57,8 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
 | `suite` | les faits, l'export de trace par l'adaptateur du client, la copie du produit | `faits.json`, `trace/`, `raw/<cas>/` |
-| `fin` | le verdict que la preuve autorise, l'output du juge, le rapport utilisateur | `receipt.json`, `output.json`, `RAPPORT.md` |
-| `rapport` | le rapport depuis le reçu, l'output et la trace | `RAPPORT.md` seulement, avec `--remplacer` |
+| `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
+| `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
 
 `ouvrir` est la seule commande qui parle à un client au lieu de lire ses pièces ([ADR-059](../DECISIONS.md)).

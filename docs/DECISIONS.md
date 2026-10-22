@@ -1902,3 +1902,41 @@ mesuré, et un outil MCP n'apparaît pas dans la famille `shell`.
 
 **Falsificateur** : une session qui sort encore du dossier du cas alors que le texte le lui interdit ; un
 re-gel qui garderait l'ancienne empreinte comme référence ; un banc qui attendrait encore 49 + 48 lignes.
+
+## ADR-061 — La sortie utilisateur est un fichier à part, dérivé du reçu (2026-10-22)
+
+**Contexte.** Le `RAPPORT.md` d'ADR-050 est exact et illisible pour qui n'a pas écrit le dispositif : il
+conclut `ecart` quand le produit est celui de l'attendu, il aligne six empreintes avant de nommer un seul
+geste, il emploie « morsure » et « falsificateur » sans les définir, et il ne dit jamais ce que la
+personne peut décider. Trois retours de l'opérateur sur le rapport du run
+`2026-10-22-070952` ont nommé le défaut : le résultat est obscur, le mot « morsure » ne veut rien dire,
+et il manque la confrontation attendu/résultat.
+
+**Décision.** `fin` et `rapport` écrivent, à côté du rapport technique, un **`RESULTAT.md`** destiné à la
+personne : huit sections (en une phrase, le contexte, ce qui était attendu, attendu contre observé, ce
+que ça veut dire, ce que tu peux décider, ce que ce run ne dit pas, les preuves), un tableau qui
+confronte chaque geste attendu à ce qui a été observé, et deux réponses explicites : « utilisable en
+l'état ? » et « quoi corriger ? ». Le corps n'emploie aucun mot du dedans ; ceux-là restent dans le
+rapport technique, qui n'est pas réécrit.
+
+**L'appariement est déclaré dans le cas**, dans `CASES/<cas>.lecture.json` : pour chaque geste, une ou
+plusieurs assertions d'un vocabulaire fermé (`trace_outil`, `falsificateur_vide`, `produit`). Un geste a
+trois états, jamais deux : **tenu**, **violé**, **non observé**. Le troisième est le seul qui protège :
+une mesure absente ne devient jamais « tenu ». Ce fichier n'entre pas dans le gel, parce qu'y toucher
+aurait imposé un re-gel des trois cas et rendu les treize reçus existants non re-jugeables (ADR-032) ; il
+est donc daté, révisable, et son absence est dite au lieu d'être comblée.
+
+**Conséquences.** `resultat.mjs` (nouveau module) rend le fichier sans modèle ni réseau, et deux appels
+sur les mêmes pièces rendent le même octet. `fin` refuse un `RESULTAT.md` déjà là, comme il refuse un
+`RAPPORT.md` déjà là. Un cas sans lecture garde son rapport technique et n'obtient pas de page
+utilisateur : l'absence s'imprime, elle ne s'invente pas. Le banc gagne **228** (huit sections, une ligne
+par geste, aucun mot du dedans), **229** (les trois états, dont « non observé » qui n'est pas « tenu ») et
+**230** (déterminisme, refus d'écrasement), et passe à **230/230 PASS**.
+
+**Ce que ce n'est pas** : une preuve que le skill est bon. La page dit elle-même ce que le run ne couvre
+pas, et le tableau peut afficher « tenu » là où le juge a lu autre chose : c'est écrit à la section 5,
+parce que le reçu ne mesure pas cet outil.
+
+**Falsificateur** : un `RESULTAT.md` qui dit « tenu » sans la mesure qui le soutient ; un mot du dedans
+dans son corps ; deux appels qui rendent deux fichiers ; une section qui manque ; un geste déclaré par le
+cas et absent du tableau.

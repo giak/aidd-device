@@ -188,7 +188,7 @@ après le run, le gel rejoué `exit 0`).
 | La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, **896 mots** pour une limite de 900 (v6 §10), mesuré le 2026-10-16 |
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
-| Le harnais — [run.mjs](device/harness/run.mjs) | écrit, **2 869 lignes**, 6 commandes, banc **227/227 PASS** ; `freeze --racine` déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; `collect --sans-produit` permet à un run sans produit de laisser quand même un reçu et un verdict ; une lecture hors du cadre que l'attendu du cas déclare interdit `conforme`, et un attendu sans bloc `cloisonnement` est refusé ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ; `clients.mjs` sépare Freebuff et opencode ([ADR-043](DECISIONS.md)) ; `rapport.mjs`, **525 lignes**, écrit le rapport utilisateur depuis le reçu, l'output et la trace, appelé par `fin` et reconstructible par `rapport` ([ADR-050](DECISIONS.md)) |
+| Le harnais — [run.mjs](device/harness/run.mjs) | écrit, **2 869 lignes**, 6 commandes, banc **230/230 PASS** ; `freeze --racine` déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; `collect --sans-produit` permet à un run sans produit de laisser quand même un reçu et un verdict ; une lecture hors du cadre que l'attendu du cas déclare interdit `conforme`, et un attendu sans bloc `cloisonnement` est refusé ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ; `clients.mjs` sépare Freebuff et opencode ([ADR-043](DECISIONS.md)) ; `rapport.mjs`, **527 lignes**, écrit le rapport technique depuis le reçu, l'output et la trace, appelé par `fin` et reconstructible par `rapport` ([ADR-050](DECISIONS.md)), et `resultat.mjs`, **435 lignes**, écrit la page utilisateur quand le cas déclare sa lecture ([ADR-061](DECISIONS.md)) |
 | Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, après le passage à la racine déclarée, puis le 2026-10-21 pour le bloc `cloisonnement` (empreinte `ba1096aa` ; les anciennes `0d9a2180`, `bc126fe6`, `38fa91f4` et `07246039` détruites) : le cas nomme `$RACINE` — la racine que le gel déclare une fois —, le texte remis garde son chemin absolu, et le bloc déclare `terrain` et `framework-origin` en lecture, `terrain/aidd_docs` en écriture ([ADR-052](DECISIONS.md)) |
 | Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
 | Le dépôt public | `https://github.com/giak/aidd-device` : l'historique publié suit `origin/main` ; le travail du 2026-10-20 n'est pas encore commité |
@@ -295,7 +295,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **227 contrôles**, `227/227 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **230 contrôles**, `230/230 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit
@@ -318,7 +318,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 
 ## 12. Ce qui pourrait encore casser
 
-- **Rien n'est prouvé par ce run.** Les 227 contrôles et les refus testent l'outil, pas la promesse de
+- **Rien n'est prouvé par ce run.** Les 230 contrôles et les refus testent l'outil, pas la promesse de
   la fiche. Le run du 2026-10-20 a produit un fichier hors du chemin attendu ; l'ADR-047 a corrigé la
   lecture de son tableau, pas le produit. Il a montré que la chaîne écrit un reçu, pas que le skill tient
   sa promesse.

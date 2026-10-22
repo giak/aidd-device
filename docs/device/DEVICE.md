@@ -50,7 +50,7 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 227 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
+  (`harness/banc-harnais.sh`, 230 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
   ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, sept commandes, ADR-038 à 042 et
   ADR-059, et
   `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et deux cas gelés (`CASES/` : le cas réel
@@ -77,8 +77,9 @@ travail) ; le budget d'échanges. L'attendu reste ici : relayé, il se lit dans 
 Sous `runs/<horodatage>-<révision du framework>-<révision du dispositif>/` (des tirets, [ADR-023](../DECISIONS.md)) :
 `raw/<cas>/` et son manifeste,
 `gate.json` (la porte, ADR-034), `last-message.md`, `trace/`, `receipt.json`, `output.json`, l'écart écrit par `compare` (le juge),
-jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`), et `RAPPORT.md`, la vue
-déterministe du reçu, de l'output et de la trace ([ADR-050](../DECISIONS.md)). Le reçu porte
+jamais par l'opérateur (`run.mjs` : `join(runDir, "output.json")`), `RAPPORT.md`, la vue
+déterministe du reçu, de l'output et de la trace ([ADR-050](../DECISIONS.md)), et `RESULTAT.md`, la page
+lue par la personne : ce qui était attendu, ce qui a été observé, ce qu'elle peut décider ([ADR-061](../DECISIONS.md)). Le reçu porte
 `cloisonnement` : les racines de lecture et d'écriture que l'attendu du cas déclare, résolues, plus
 `reseau` et `fichiers_de_contexte` ; `falsificateurs.lecture_hors_dossier` nomme toute lecture hors des
 racines de lecture ([ADR-052](../DECISIONS.md)), et un attendu sans bloc est refusé (ADR-049 pour la
@@ -100,7 +101,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `227/227 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `230/230 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces

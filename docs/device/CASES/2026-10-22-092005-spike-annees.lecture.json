@@ -1,0 +1,39 @@
+{
+  "cas": "2026-10-22-092005-spike-annees",
+  "type": "case-lecture",
+  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md. Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le dernier geste de l'attendu, conclure et rapporter, n'a pas d'assertion mécanique et reste hors de la page.",
+  "depot": "audio-sync-tool, outil local de synchronisation musicale, à la révision 416ec1f",
+  "gestes": [
+    {
+      "geste": "lire le skill 05-spike et les fichiers d'action qu'il nomme",
+      "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "05-spike" }]
+    },
+    {
+      "geste": "lire le dépôt audio-sync-tool",
+      "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "/terrain/" }]
+    },
+    {
+      "geste": "montrer ce qui est qualifié et attendre l'accord",
+      "assertions": [
+        { "type": "trace_outil", "outil": "question" },
+        { "type": "falsificateur_vide", "nom": "question_sans_reponse" }
+      ]
+    },
+    {
+      "geste": "écrire la spike sous aidd_docs/backlog/spikes/",
+      "assertions": [
+        { "type": "produit" },
+        { "type": "falsificateur_vide", "nom": "hors_produit" }
+      ]
+    },
+    {
+      "geste": "rester dans le dossier du cas, sans réseau",
+      "assertions": [
+        { "type": "falsificateur_vide", "nom": "lecture_hors_dossier" },
+        { "type": "falsificateur_vide", "nom": "shell_hors_dossier" },
+        { "type": "falsificateur_vide", "nom": "shell_ecriture_hors_produit" },
+        { "type": "falsificateur_vide", "nom": "reseau" }
+      ]
+    }
+  ]
+}

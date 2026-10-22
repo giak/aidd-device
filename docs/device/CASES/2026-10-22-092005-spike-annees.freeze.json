@@ -1,0 +1,183 @@
+{
+  "cas": "2026-10-22-092005-spike-annees",
+  "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
+  "gele_le": "2026-10-22T09:23:34.434047516+0200",
+  "gele_le_epoch": 1792653814,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-092005-spike-annees --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/framework-origin --ref plugins/aidd-pm/skills/05-spike/SKILL.md --ref plugins/aidd-pm/skills/05-spike/actions/01-create.md --ref plugins/aidd-pm/skills/05-spike/actions/02-investigate.md --ref plugins/aidd-pm/skills/05-spike/actions/03-conclude.md --ref plugins/aidd-pm/skills/05-spike/assets/spike-template.md --ref plugins/aidd-pm/skills/05-spike/references/capabilities.md --ref plugins/aidd-pm/skills/05-spike/references/investigation.md --ref plugins/aidd-pm/skills/05-spike/references/lifecycle.md --ref plugins/aidd-pm/skills/05-spike/references/persistence.md --ref plugins/aidd-pm/skills/05-spike/references/qualification.md --ref plugins/aidd-pm/skills/05-spike/references/relations.md",
+  "empreinte": "0052c168abdbdb8be1ffbcf0135698cdd9586d7e3717c966a403f4d519facd66",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.expected.json",
+      "sha256": "aac9c7f779ce02ba7c7d418ae222449b8dccebb63fb8e310388262280e2d8ece",
+      "taille": 6890,
+      "birth": "2026-10-22 09:21:07.193751241 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.request.md",
+      "sha256": "4bf58e7b41fcc3802b1c174ff9fd558b50814c001a2164d13811688d1009f248",
+      "taille": 2961,
+      "birth": "2026-10-22 09:21:07.191751154 +0200",
+      "birth_epoch": 1792653667
+    }
+  ],
+  "references": [
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/SKILL.md",
+      "sha256": "e5e71e5870b86afefa04c4b5f67cd5dd261d35f1ee086fd19a4d5eb93b84cd81",
+      "taille": 1316,
+      "birth": "2026-10-22 09:21:07.068451271 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/actions/01-create.md",
+      "sha256": "00b0411fecab37b894f3aad9d7e0c3671587949d5f7ef0a43e48893612af6fb7",
+      "taille": 1792,
+      "birth": "2026-10-22 09:21:07.068589255 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/actions/02-investigate.md",
+      "sha256": "a4a550d4dde62742291f886d6388654805bf5db25aa12e7f407bb0fd9fbbf089",
+      "taille": 852,
+      "birth": "2026-10-22 09:21:07.068589255 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/actions/03-conclude.md",
+      "sha256": "1480792ac1fdfae1b056a2556d2eb52b2ef40b6c5153a877c2df85af688dc367",
+      "taille": 1390,
+      "birth": "2026-10-22 09:21:07.068629763 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/assets/spike-template.md",
+      "sha256": "a31b0f78fe8ff68713f51ea7efda1f2449595c020177f1fd7e4000f8b7550ca6",
+      "taille": 599,
+      "birth": "2026-10-22 09:21:07.068629763 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/capabilities.md",
+      "sha256": "d6bdae31ff75d310cbae642102118e9c85b264849a5ec2f3664e7871a2340b66",
+      "taille": 690,
+      "birth": "2026-10-22 09:21:07.068629763 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/investigation.md",
+      "sha256": "d7976f46b42de6da45f81810fbc878abc1a2787f7331c2f7d7fcf092f8856759",
+      "taille": 653,
+      "birth": "2026-10-22 09:21:07.068629763 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/lifecycle.md",
+      "sha256": "69617febec10b7551e1490ba2226094a0398f9419ea1bee93e1bbe741c22a0e5",
+      "taille": 593,
+      "birth": "2026-10-22 09:21:07.068795060 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/persistence.md",
+      "sha256": "4d15c54c0ae71fb9d226e6df1bc4bcf6a8776f08e5a81d66db93cc00650bd811",
+      "taille": 816,
+      "birth": "2026-10-22 09:21:07.068795060 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/qualification.md",
+      "sha256": "6a23875617f6de32b8bf81daa274d9ac900543388b71cde25c006c4c2d4618ff",
+      "taille": 604,
+      "birth": "2026-10-22 09:21:07.068795060 +0200",
+      "birth_epoch": 1792653667
+    },
+    {
+      "arbre": "revision-sous-test",
+      "chemin": "plugins/aidd-pm/skills/05-spike/references/relations.md",
+      "sha256": "b26895a11fe64497f19a7a66e1bb7b219ddf372db08020e9ad1074b30d6dae1b",
+      "taille": 701,
+      "birth": "2026-10-22 09:21:07.068795060 +0200",
+      "birth_epoch": 1792653667
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/audio-sync-tool"
+        }
+      ],
+      "refs_distants": [
+        "origin/main",
+        "origin/test/aidd-installation"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/test/aidd-installation"
+      ]
+    }
+  ]
+}

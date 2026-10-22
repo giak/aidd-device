@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-22-092005-spike-annees",
+  "passe_le": "2026-10-22T09:23:54.864986144+0200",
+  "passe_le_epoch": 1792653834,
+  "repertoire": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.freeze.json",
+    "empreinte": "0052c168abdbdb8be1ffbcf0135698cdd9586d7e3717c966a403f4d519facd66",
+    "gele_le_epoch": 1792653814
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain",
+    "head": "416ec1f",
+    "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/test/aidd-installation"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-22-092354-0052c168-496fbe8/texte-a-remettre.txt",
+    "sha256": "ae54c1a3141094e06c14cccf2057c2d7143de29cc3f0f2f4f16d121fa4321a63",
+    "octets": 748
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e9b91b86bffe8RSyL3L1C9CtEY",
+    "modele": "ollama/qwen3:8b",
+    "ouverte_par": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22",
+    "ouverte_le": "2026-10-22T18:25:11+02:00"
+  },
+  "horodatage_debut": "2026-10-22T18:25:12+02:00",
+  "horodatage_fin": "2026-10-22T18:46:32+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-182505-bee028f8-e42a821/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-182505-bee028f8-e42a821/trace/export-brut.json",
+    "commande": "opencode session export ses_e9b91b86bffe8RSyL3L1C9CtEY"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22",
+    "quand": "2026-10-22T18:46:32+02:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-182505-bee028f8-e42a821/raw/2026-10-21-173843-plan-simple/last-message.md",
+    "sha256": "e553a6bd3361f45fea79aaf74b5b2a7f6dfc2f4d6dbf9760650368e816a0de17",
+    "seq": 18,
+    "ts": 1792687457809
+  }
+}

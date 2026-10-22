@@ -1,0 +1,21 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-182505-bee028f8-e42a821",
+  "role": "produit",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain"
+  },
+  "collecte_le": "2026-10-22T18:46:33+02:00",
+  "fichiers": [
+    {
+      "chemin": "tasks/audio-sync-tool-plan.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/audio-sync-tool-plan.md",
+      "sha256": "c51d388a9c17e2f55a8768795a9d5bfaefec270a486dc41621d869c6a926507c",
+      "taille": 3460,
+      "birth": "2026-10-22 18:42:10.821070778 +0200",
+      "birth_epoch": 1792687330
+    }
+  ]
+}

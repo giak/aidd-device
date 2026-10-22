@@ -6809,3 +6809,64 @@ dite, pas un `conforme` obtenu.
 dont la sortie est une question ; le contrôle 256 dit déjà ce qui doit arriver à la troisième.
 
 **Mémoires.** Aucune écrite.
+
+## Séance 121 — 2026-10-22 (la question en texte jouée par `ouvrir`, et le délai qui la coupe)
+
+**Objectif.** Rejouer `2026-10-21-173843-plan-simple` sur un modèle qui pose une question en texte,
+pour exercer le chemin réel d'`ouvrir` que les contrôles 254 à 258 n'éprouvaient que contre un serveur
+factice.
+
+**Fait.** Quatre portes ont été passées, toutes sur le même gel `bee028f8` et le même texte `302b9da5`.
+Deux tentatives `ollama/qwen3:8b` n'ont rendu aucun texte d'assistant : `2026-10-22-173221` (7 min 25 s,
+aucun produit, `suite` refuse sans dernier message) et `2026-10-22-175341` (refus au délai de 30 min,
+aucune trace). `opencode/glm-5.3-flash-free` (`2026-10-22-174021`) a posé **deux formulaires**, écrit
+un `plan.md` et trois phases, et rend un reçu `non concluant` à 12 limites pour une lecture hors cadre au
+seq 13.
+
+Le run qui répond à la question est [2026-10-22-182505](device/runs/2026-10-22-182505-bee028f8-e42a821/RESULTAT.md) :
+porte `90e09336` passée à `18:25:05`, session `ses_e9b91b86bffe8RSyL3L1C9CtEY`, `ollama/qwen3:8b`,
+**21 min 20 s**, budget `3/3`. La trace porte le tableau 4 lignes × 2 colonnes au seq 10, un texte
+assistant qui finit par « Would you like me to proceed with creating the "Copy All Missing" plan and
+phases …? » au même seq, puis un `user` au seq 12 : `ouvrir` a envoyé la première réponse figée. Au
+seq 15, le modèle demande « Would you like me to help with any specific task from the plan now? » ; le
+seq 17 est la seconde réponse figée. La première écriture est au seq 13, donc la pause est mesurée
+(`seq_reponse: 12`, `seq_ecriture: 13`). Le produit est `aidd_docs/tasks/audio-sync-tool-plan.md`,
+**3 460 o**, un seul fichier, sans dossier ni `phase-<n>.md`.
+
+**Vérifié.**
+- `ouvrir` a joué les deux questions en texte, mais il a **refusé** au délai de 20 min :
+  `REFUS — la session n'est pas devenue inactive en 20 min …`. Le refus est tombé au bout de vingt
+  minutes ; la session s'est tue à `18:46:32`, environ une minute et demie plus tard. `ouvrir` n'a donc
+  pas imprimé son bloc de fin ; les deux réponses sont pourtant dans la trace, aux seq 12 et 17.
+- `suite` puis `fin` ont mesuré la session après le refus : `suite` `exit 0`, `fin` `exit 0`, reçu
+  **`non concluant`** à **12** limites, `lecture_hors_dossier` au seq 4
+  (`…/aidd-device-work/2026-10-21-173843-plan-simple/audio-sync-tool/README.md`), produit **1** fichier.
+- Le `difference` de l'output a été confronté à la trace avant le commit : deux textes assistant aux
+  seq 10 et 15 finissent par `?`, les seq 12 et 17 portent les réponses figées, le manifeste porte
+  **1** fichier `tasks/audio-sync-tool-plan.md`, et le reçu nomme la lecture hors cadre au seq 4 ;
+  **8** assertions, **0** échec.
+- `question_sans_reponse` est vide, `pause.mesuree: true`, `tableau.present: true` ; la preuve du chemin
+  en texte est la trace, pas le bloc d'`ouvrir`.
+- Les quatre arbres : `framework-origin` et `terrain` sont propres après nettoyage ; `framework` porte
+  toujours le même `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, `audio-sync-tool` le même `?? .freebuff/`,
+  avant et après.
+
+**Dérives signalées.** `ouvrir` peut jouer une question en texte et refuser ensuite au délai, sans bloc
+de fin : le run se mesure, mais la commande ne l'atteste pas. La mesure est **postérieure** à ce refus,
+alors que le runbook dit qu'une étape qui refuse arrête l'orchestrateur : ce run est une pièce mesurée
+hors de la séquence prescrite, pas un run conduit de bout en bout par `ouvrir`. Le délai de 20 min était
+trop court d'environ une minute et demie pour cette session. `qwen3:8b` est instable : deux tentatives sans texte, une troisième
+avec deux questions en texte. `glm-5.3-flash-free` choisit le formulaire, pas le texte. La page
+`RESULTAT.md` du run `182505` dit `non observé` pour « montrer un tableau et attendre l'accord » : la
+[lecture déclarée du cas](device/CASES/2026-10-21-173843-plan-simple.lecture.json) n'apparie ce geste
+qu'à l'outil `question`, donc elle ne voit pas une question en texte. Le reçu porte pourtant
+`tableau.present: true` et la trace les seq 10 et 15 ; la page sous-déclare le geste. Le run
+`182505` a lu `…/audio-sync-tool/README.md`, hors des racines autorisées, et n'a pas produit la forme
+attendue ; le reçu le dit, le texte joué ne le corrige pas.
+
+**Prochaines étapes.** Rejouer le même cas avec `--delai 30` ou plus sur `qwen3:8b`, pour obtenir un
+bloc de fin d'`ouvrir` qui atteste la question en texte, ou réduire la durée du tour. Ne pas conclure
+du seul run `182505` que la promesse du skill tient : le produit est incomplet et une lecture sort du
+cadre.
+
+**Mémoires.** Aucune écrite.

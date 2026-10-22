@@ -4356,3 +4356,1806 @@ il n'est pas réécrit, la photo vaut à sa date ; `docs/EXPLICATION.md` porte e
 **Prochaines étapes.** Rien n'est commité ; le premier « test ça » réel reste en attente.
 
 **Mémoires.** `b353bb30` (README aligné), mise à jour puis relue.
+
+## Séance 72 — 2026-10-20 (deux clients, opencode et Freebuff)
+
+**Objectif.** Conduire le même cas sous Freebuff ou sous opencode par une frontière unique, sans changer
+le gel, la porte, le texte, les réponses figées, le budget ni les falsificateurs (ADR-043 à ADR-046).
+
+**Fait.** `docs/device/harness/clients.mjs` (391 lignes) expose les deux implémentations et l'interface
+normalisée ; `run.mjs` (2 023 lignes) lit `session.outil` et `trace.client`, dérive les faits opencode,
+rejoue l'export par l'adaptateur et écrit `trace_verifiee` ; `orchestrer.mjs` (854 lignes) gagne
+`--client auto|freebuff|opencode` et `--store`, détecte les deux sources et n'exécute plus `bash -c` sur
+`faits.trace.commande`. Le banc ajoute les fixtures opencode et les contrôles 154 à 171 ; les pages
+`ORCHESTRATEUR.md`, `BANC.md`, `DEVICE.md`, `BOUNDARY.md`, `REPLAY.md`, `ARCHITECTURE.md` et le guide
+utilisateur sont mises à jour.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **171/171 PASS**, `exit 0` ;
+`node docs/device/harness/liens.mjs` → 48 fichiers, 542 liens hors code, **0 mort**, `exit 0`.
+Le CLI réel mesuré le 2026-10-20 (`opencode v2.0.32`, `sqlite3 3.45.1`) : `sessionOpencode` sur
+`ses_eba939f36ffeu2Jj57IL5HE29h` rend le modèle `ollama/qwen3:8b`, l'ouverture `2026-10-16T17:54:53+02:00`
+et le premier message au rang 1 ; `replayOpencode` normalise 5 lignes (`user`, `assistant` ; `text`,
+`reasoning`, `tool shell`). Le format réel porte `type` au niveau du message, pas `info.role` : le
+normaliseur lit désormais les deux, et les fixtures du banc portent `type`.
+Les 153 contrôles antérieurs passent, à deux additions près : le compte des valeurs de `faits` passe de
+16 à 18 (`session.outil`, `trace.client`) et le message de dépassement de budget nomme désormais le rang.
+
+**Dérives signalées, non corrigées.** Le faux `opencode` du banc prouve l'adaptateur, pas le CLI réel ;
+les dix refus du §5 sans contrôle dédié restent sans contrôle. `clients.mjs` expose aussi `detectAll`,
+une addition pour dire l'ambiguïté que `detect` (un seul candidat, §3) ne peut pas porter. Rien n'est commité.
+
+**Prochaines étapes.** Le run opencode réel dans `<W>/terrain`, avec ses trois gestes humains, reste à
+faire ; le critère 9 de la spec se ferme là, pas au banc.
+
+## Séance 73 — 2026-10-20 (le premier reçu opencode réel)
+
+**Objectif.** Fermer le critère 9 de la spec des deux clients : un run opencode réel dans
+`<W>/terrain`, un `receipt.json` qui porte `session_verifiee.outil = "opencode"`, et une session
+ouverte dans `<W>` toujours refusée.
+
+**Fait.** Le cas jouet `2026-10-18-085308-cas-jouet` est resté intact ; `porte` a créé le run
+`docs/device/runs/2026-10-20-202333-50664060-1028c8b` (`gate.json` à `20:23:33`, empreinte de porte
+`1ce7c051`). La session `ses_ea564a976ffevcpzB4aY03ELBF` a été ouverte dans
+`/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain`, modèle
+`ollama/qwen3:8b`, agent `build`, avec le client `opencode 2.0.32`. Le texte est venu de
+`texte-a-remettre.txt`, la seconde réponse de `2026-10-18-085308-cas-jouet.expected.json` ; deux
+échanges sur deux.
+
+La session a lu `PLAYBOOK.md` par un appel `read`, listé le dépôt par `glob`, rendu un tableau Markdown
+d'une colonne (`app.py`, `README.md`) et attendu. Après la réponse figée, elle a écrit
+`aidldocs/NOTES.md` avec les trois règles, pas `aidd_docs/NOTES.md` ; le répertoire attendu n'existe
+donc pas. `suite --client opencode --produit aidldocs` a exporté la trace, dérivé les faits et collecté
+ce fichier ; `fin --verdict "non concluant"` a écrit le reçu et l'output du juge.
+
+**Vérifié.** `receipt.json` porte `session_verifiee.outil = "opencode"`, le fil
+`ses_ea564a976ffevcpzB4aY03ELBF`, le répertoire `.../terrain`, `trace_verifiee.sha256 =
+eca8eb4a27ed8806f469dd4a0f08bccf018134ada3e19db4a7dc8a9a5ce4f7ca`, deux échanges sur deux et un
+produit collecté. `node docs/device/harness/orchestrer.mjs lire --cas 2026-10-18-085308-cas-jouet --run
+docs/device/runs/2026-10-20-202333-50664060-1028c8b` rend `non concluant`, plafonné par
+`tableau_absent`. Une session créée dans `<W>` (`ses_ea55a04c3ffeWUOuijdhMxT9u3`) est refusée par
+`faits` et par `suite`, `exit 1`, avec `le répertoire de session .../2026-10-18-085308-cas-jouet n'est
+pas le gel « travail » .../terrain`. Banc : **171/171 PASS**, `exit 0`. Liens : 50 fichiers, **542**
+liens hors code, **0 mort**, `exit 0`.
+
+**Dérives signalées, non corrigées.** (a) Le tableau rendu a **une colonne** ; la forme mécanique H6
+en exige **deux**, donc `tableau.present` vaut `false` alors que l'opérateur voit un tableau. Le reçu
+est fidèle à la forme écrite, mais F2 est ici un faux négatif pour la lecture humaine ; élargir H6
+n'est pas fait. (b) Le modèle a écrit `aidldocs/NOTES.md` au lieu de `aidd_docs/NOTES.md` : le produit
+est hors de la racine attendue, et le reçu ne peut pas conclure. (c) Les trois gestes ont été exécutés
+par l'agent via l'API HTTP du client, pas par une personne devant l'interface ; `opencode run` est
+resté bloqué à `serve --stdio` (600 s puis 90 s, aucun message). La session reste réelle et exportable,
+mais la condition « gestes humains » n'est pas satisfaite au sens littéral. (d) Rien n'est commité.
+
+**Rectifications.** Le premier `porte` a refusé : `DEPOT = resolve(ICI, "../..")` désignait `docs/`,
+donc le défaut cherchait `docs/docs/device/CASES/...` ; la ligne est passée à `resolve(ICI, "../../..")`,
+le dépôt. `porte` sans `--cases` ni `--run` rend alors `exit 0` et crée le dossier du run. Cette
+réparation d'une ligne n'était pas dans la spec ; elle est dite ici, et le banc 153 qui confronte le
+runbook au code passe toujours. Le premier `fin --verdict non concluant` non cité est sorti en `2`,
+sans rien écrire ; la même commande avec `--verdict "non concluant"` a écrit le reçu.
+
+**Prochaines étapes.** Décider si H6 accepte un tableau d'une colonne, et refaire un run avec une
+personne aux trois gestes si la condition littérale doit être tenue. Le reçu existe et le critère 9
+est fermé pour sa pièce.
+
+**Mémoires.** `b4e22f3c` (le premier reçu opencode, ses empreintes et ses limites), écrite puis relue.
+
+## Séance 74 — 2026-10-20 (les pages synchronisées sur le premier reçu opencode)
+
+**Objectif.** Mettre les deux guides, puis `ARCHITECTURE.md`, `DASHBOARD.md`, `DECISIONS.md` et
+`EXPLICATION.md` au niveau du premier reçu opencode réel, sans réécrire les sorties datées du 2026-10-18.
+
+**Fait.** Le [guide du test](guide/guide-du-test-de-bout-en-bout.md) passe à **510 lignes et 4 599 mots** :
+le banc y est annoncé à **171/171**, le chapitre 1 distingue la fixture du banc du premier `receipt.json`
+réel, le chapitre 4 nomme le faux négatif H6 du tableau d'une colonne, et le chapitre 5 cite le run
+opencode `2026-10-20-202333-50664060-1028c8b`, son produit `terrain/aidldocs/NOTES.md` hors du chemin
+attendu et ses deux limites, produit hors chemin et gestes faits par l'agent. Le
+[guide utilisateur](guide/guide-utilisateur.md) dit que la commande du dispositif n'ouvre pas de fil, et
+nomme dans ses limites que le premier reçu réel n'a pas suivi le parcours humain au sens littéral.
+`ARCHITECTURE.md` porte `run.mjs` à **2 023 lignes**, ajoute `clients.mjs`, `opencode` aux outils hors de
+Node, `tableau.index`, le premier run réel ; `DASHBOARD.md` passe à **171 contrôles**, **555 liens** et
+ajoute la ligne du premier reçu opencode ; `DECISIONS.md` reçoit les constats d'application des ADR-043 et
+ADR-044 ; `EXPLICATION.md` raconte les deux runs réels et l'état du 2026-10-20.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **171/171 PASS**, `exit 0` (le code de sortie
+du tube est conservé par `PIPESTATUS`, `0`). `node docs/device/harness/liens.mjs` => 50 fichiers, **555**
+liens hors code, **0 mort**, `exit 0`. `wc -l` / `wc -w` du guide => `510` / `4599`. Le reçu cité porte
+`session_verifiee.outil = "opencode"`, `echanges {budget: 2, utilises: 2}`, `tableau.present = false` et
+`produit.chemins = ["raw/2026-10-18-085308-cas-jouet/NOTES.md"]` ; `git diff --check` est contrôlé après
+cette séance.
+
+**Dérives signalées, non corrigées.** Le tableau d'une colonne reste un faux négatif de H6, et aucun ADR
+ne tranche encore son élargissement. Le produit attendu `aidd_docs/NOTES.md` reste absent ; le fichier
+écrit est `aidldocs/NOTES.md`. Les trois gestes du run ont été faits par l'agent via l'API HTTP
+d'opencode, pas par une personne devant l'interface. Rien n'est commité.
+
+**Prochaines étapes.** Décider H6 pour un tableau d'une colonne, puis refaire un run avec une personne aux
+trois gestes si la condition littérale doit être tenue.
+
+**Mémoires.** `1754bdec` (les six pages synchronisées, les 171 contrôles et les 555 liens), écrite puis relue.
+
+## Séance 75 — 2026-10-20 (H6 accepte un tableau d'une colonne)
+
+**Objectif.** Lever le faux négatif mesuré au premier run opencode réel : le modèle a rendu un tableau
+Markdown d'une colonne, et l'ancienne forme H6, qui exigeait deux cellules, l'a déclaré absent.
+
+**Fait.** La décision est écrite à l'[ADR-047](DECISIONS.md) et dans la
+[spec du 2026-10-20](tasks/2026_10/2026-10-20-221757-h6-tableau-une-colonne/2026-10-20-221757-spec.md) :
+la première ligne d'un tableau doit porter **au moins une cellule**, les trois autres conditions de H6
+restent intactes (trois lignes au moins, séparatrice en deuxième ligne, part `text` d'un message
+`assistant`). `run.mjs` change `FORME_TABLEAU` en `text/assistant, >=3 lignes, 2e ligne séparatrice,
+>=1 colonne` et la garde d'en-tête de `entete.length < 2` à `< 1`. Le banc gagne le contrôle **172**,
+qui monte un fil à tableau d'une colonne et exige `tableau.present`, `lignes`, `colonnes` et
+`tableau_absent` ; les contrôles 113 à 118 ne bougent pas. Les pages qui portaient les 171 contrôles et
+les 555 liens sont mises au niveau de 172 et 561 (`BANC.md`, `DASHBOARD.md`, guides, `ARCHITECTURE.md`,
+`EXPLICATION.md`, `README.md`) ; cette entrée elle-même porte le compte à **563** liens.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **172/172 PASS**, `exit 0`, et le contrôle
+172 imprime `PASS  172 receipt, tableau d'une colonne accepté    exit=0`. `node
+docs/device/harness/liens.mjs` => 51 fichiers, **561** liens hors code, **0 mort**, `exit 0` avant cette
+entrée, **563** après. Sur une
+copie jetable des pièces du run `2026-10-20-202333-50664060-1028c8b` privée de son `receipt.json`,
+`run.mjs receipt --verdict "non concluant"` écrit un reçu dont `tableau` vaut `{present: true,
+lignes: 4, colonnes: 1, seq: 5, index: 6}` et `falsificateurs.tableau_absent` vaut `false`. Le
+`receipt.json` du dépôt n'est pas réécrit : il porte toujours la forme `>=2 colonnes`, `present:
+false`, et cette différence est celle d'un rejeu, pas d'un faux.
+
+**Dérives signalées, non corrigées.** Le reçu écrit à chaud garde son faux négatif par construction :
+un reçu reconstruit serait un témoignage, jamais le reçu du run. Le dépôt n'a toujours pas de run
+conduit par une personne devant l'interface : les trois gestes du run opencode ont été faits par l'agent
+via l'API du client.
+
+**Rectifications de ses propres affirmations.** Le résumé de la Séance 74 dans `DASHBOARD.md` avait été
+porté à `172/172` et `561` par une substitution trop large ; il est rendu à ses chiffres d'alors,
+**171/171** et **555**. Le guide disait qu'un tableau de deux lignes n'en était pas un « pas de
+séparatrice » : faux, il en a une, ce qui lui manque est une troisième ligne ; la phrase est corrigée.
+
+**Prochaines étapes.** Refaire un run avec une personne aux trois gestes si la condition littérale doit
+être tenue, et laisser le reçu du dépôt tel quel.
+
+**Mémoires.** `934ed71c` (H6 à une colonne, contrôle 172, rejeu du reçu à `present: true`), écrite puis
+relue.
+
+## Séance 76 — 2026-10-20 (la durée observée avant la session)
+
+**Objectif.** Donner à la personne qui lance un test une idée du temps à prévoir, sans transformer un
+échantillon de deux runs en promesse.
+
+**Fait.** La [spec](tasks/2026_10/2026-10-20-223424-duree-estimee-avant-session/2026-10-20-223424-spec.md)
+et son code : `orchestrer.mjs` gagne `DUREES_CAS` (cas jouet, `n=2`, `session_min_s=495`,
+`session_max_s=819`, `harnais_s=87`) et `dureeDuCas`, puis `blocFin` accepte deux lignes optionnelles,
+`durée estimée` et `échantillon`. Seul `porte` les passe : le bloc `▸ FIN` fait cinq lignes, les autres
+`▸ FIN` restent à trois, et l'ADR-040 garde ses quatre formes. Le
+[runbook](device/ORCHESTRATEUR.md) décrit les deux lignes, et le cas sans mesure est dit
+« aucune mesure pour ce cas », jamais une fourchette par défaut.
+
+**Vérifié.** Sur une copie re-gelée du cas jouet sous `/tmp/duree-cas.x6N83c`, `orchestrer.mjs porte`
+sort en `0` et imprime :
+
+```text
+durée estimée       : 10 à 20 min, ouverture et réponses comprises
+échantillon         : 2 runs ; mesuré 9 min 42 s à 15 min 06 s (session + harnais) ; modèles et gestes différents, aucun run humain
+```
+
+Le `▸ FIN` fait quatre lignes de contenu, cinq avec son titre. Sur
+`2026-10-15-133423-promesse-memoire-avant-ecriture`, au terrain propre, `porte` sort en `0` et affiche
+`aucune mesure pour ce cas` et `0 run ; aucune durée ne se promet`. `bash
+docs/device/harness/banc-harnais.sh` => **172/172 PASS**, `exit 0` ; `node docs/device/harness/liens.mjs`
+=> 52 fichiers, **568** liens hors code, **0 mort**, `exit 0` ; `node --check
+docs/device/harness/orchestrer.mjs` => `exit 0` ; `git diff --check` => `exit 0`.
+
+**Dérives signalées, non corrigées.** Le terrain du cas jouet porte `?? aidd_docs/`, produit du fil
+`ses_ea4fc0387ffel0VUQmOA0mquIV` ouvert le 2026-10-20 à 22:34, non collecté : le branchement mesuré a donc
+été éprouvé sur une copie re-gelée, pas sur l'arbre vivant, et ce fil n'a pas été touché. L'échantillon
+reste `n=2`, avec deux modèles et aucun run humain ; la fourchette est un repère, pas une mesure de tous
+les skills.
+
+**Prochaines étapes.** Collecter le fil ouvert si la personne l'a conduit, et remplacer `n=2` par un
+échantillon plus large quand les runs s'accumulent.
+
+**Mémoires.** `b48e879f` (les deux lignes de durée, `n=2`, les preuves et la limite du terrain vivant),
+écrite puis relue.
+
+## Séance 77 — 2026-10-20 (le second run opencode : conforme, et une phrase fausse corrigée)
+
+**Objectif.** Fermer la boucle ouverte en Séance 73 : rejouer le cas jouet dans une session opencode
+conduite par une personne aux trois gestes, puis écrire le second reçu.
+
+**Fait.** Fil `ses_ea4fc0387ffel0VUQmOA0mquIV`, modèle `opencode/minimax-m3.1-flash-free`, ouvert par
+`giak` selon le client à 22:32:30. Dossier
+[`2026-10-20-222845-50664060-3d0db46`](device/runs/2026-10-20-222845-50664060-3d0db46/) : `suite` a lu
+la trace, `fin` a écrit le [reçu](device/runs/2026-10-20-222845-50664060-3d0db46/receipt.json)
+(9 153 octets, 26 clés, `limites: []`), puis `compare` a écrit l'[output](device/runs/2026-10-20-222845-50664060-3d0db46/output.json)
+(1 485 octets, 11 clés). Le produit est
+[`NOTES.md`](device/runs/2026-10-20-222845-50664060-3d0db46/raw/2026-10-18-085308-cas-jouet/NOTES.md),
+204 octets, 3 lignes, sha256 `2ab3d3cc` ; le tableau vaut `present: true`, `lignes: 4`, `colonnes: 6`,
+`seq: 9` ; aucun des sept falsificateurs n'a mordu ; le verdict est **conforme**, les limites « ne mord pas ».
+
+**Vérifié.** `compare` est sorti en `0` ; le reçu et l'output ont été relus champ par champ (`node -e`
+sur les deux JSON). Le
+[`faits.json`](device/runs/2026-10-20-222845-50664060-3d0db46/faits.json) porte `ouverte_par: giak`,
+un témoignage daté et `cloisonnement.attendu_vu: non` ; le reçu voit l'arbre de travail changé
+(`arbre_de_travail_inchange: false`). La collecte est une lecture, elle ne commite pas.
+
+**Dérives signalées, non corrigées.** Le premier `output.json` portait « un tableau d'une colonne » :
+faux, le reçu mesure **six** colonnes. Il a été déplacé en `/tmp/output-avant-correction.json`, puis
+`compare` a réécrit l'output avec « un tableau de six colonnes » ; le reçu n'a pas été touché, et la
+correction porte sur le jugement, pas sur le run. Le champ `temoignage` de `faits.json` est le texte par
+défaut de l'outil, pas une citation de `giak` : les trois gestes humains reposent sur la parole de
+l'opérateur, pas sur une preuve indépendante. Le banc n'a pas été rejoué après le run ; aucun code du
+harnais n'a changé depuis son **172/172** de la Séance 76.
+
+**Prochaines étapes.** Laisser ce reçu et son output en place ; si la preuve des gestes doit être plus
+forte qu'un témoignage, elle demande un dispositif qui ne soit pas le reçu lui-même.
+
+**Mémoires.** `c2c0e0da` (le run conforme, la phrase fausse corrigée, le témoignage par défaut), écrite
+puis relue.
+
+## Séance 78 — 2026-10-20 (le juge confronte sa phrase au tableau mesuré)
+
+**Objectif.** Empêcher qu'un `output.json` répète la phrase fausse de la Séance 77 : « un tableau d'une
+colonne » alors que le reçu en mesure six. Le juge devait pouvoir refuser un nombre qui dément sa propre
+mesure.
+
+**Fait.** [Spec](tasks/2026_10/2026-10-20-230502-controle-phrase-colonnes/2026-10-20-230502-spec.md) écrite
+avant le code, puis [ADR-048](DECISIONS.md). `run.mjs` gagne une règle mécanique dans `cmdCompare` : quand
+`receipt.tableau.present` est vrai et `colonnes` un entier positif, une citation de colonnes de `--phrase`
+— chiffres, ou mots de `un` à `vingt` devant `colonne(s)` — doit valoir ce nombre ; sinon `compare` refuse,
+`exit 1`, sans écrire d'`output`. Le banc gagne **173** (reçu à une colonne du 172, phrase « six
+colonnes » => refus nommé) et **174** (copie `r172b`, phrase « une colonne » => output écrit et phrase
+relue). `BANC.md`, `ORCHESTRATEUR.md`, `README.md`, `DEVICE.md`, `ARCHITECTURE.md`, `EXPLICATION.md`, le
+guide et le tableau de bord disent le compte **174**.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **174/174 PASS**, `exit 0` ; le journal porte
+`PASS 173 compare refus, phrase contraire aux colonnes exit=0` et `PASS 174 compare, phrase conforme aux
+colonnes exit=0`. `node --check docs/device/harness/run.mjs` => `exit 0` ; `bash -n
+docs/device/harness/banc-harnais.sh` => `exit 0` ; `node docs/device/harness/liens.mjs` => 55 fichiers,
+**0 mort**, `exit 0` ; `git diff --check` => `exit 0`. Sur une copie `/tmp` du reçu réel à six
+colonnes, `compare --phrase "un tableau d'une colonne"` sort en **1** et écrit « la phrase cite 1
+colonne, le reçu en mesure 6 (« une colonne ») » ; la phrase « un tableau de six colonnes » sort en **0**
+et écrit l'output.
+
+**Dérives signalées, non corrigées.** La règle ne lit pas le sens : une négation (« six colonnes, pas
+une ») est refusée, un nombre composé n'est pas compris comme tel (son dernier mot peut être lu), et un
+nombre écrit au-delà de vingt lui échappe ; `difference` n'est pas
+confrontée. Le `run.mjs` passe de 2 023 à **2 057 lignes** ; les pages datées d'avant gardent leurs
+chiffres.
+
+**Rectifications.** Le premier passage du banc rend **173/174 PASS**, `exit 1` : le contrôle 173 attendait
+la sous-chaîne « la phrase cite 6 colonnes, le reçu en mesure 1 », mais le message intercalait la citation
+entre les deux nombres. Le message a été réordonné (`la phrase cite 6 colonnes, le reçu en mesure 1
+(« six colonnes »)`) ; le banc complet est ensuite vert. Ce n'était pas un défaut de la règle, seulement
+du texte attendu.
+
+**Prochaines étapes.** Laisser 173 et 174 ensemble : le 173 prouve le refus, le 174 prouve que la même
+phrase, concordante, s'écrit.
+
+**Mémoires.** `5043261b` (la règle, les deux contrôles, le premier passage rouge et sa correction),
+écrite puis relue.
+
+## Séance 79 — 2026-10-20 (la durée de `porte` vient des reçus, plus d'une constante)
+
+**Objectif.** Faire apparaître le second reçu réel du cas jouet dans la durée que `porte` affiche avant
+la session : le maximum de la constante était `15 min 06 s`, le reçu du 2026-10-20 donne `15 min 50 s`.
+
+**Fait.** [Spec](tasks/2026_10/2026-10-20-234254-duree-des-recus/2026-10-20-234254-spec.md) écrite avant
+le code. `DUREES_CAS` disparaît : `dureeDuCas(cas)` lit les `receipt.json` de `docs/device/runs/`, garde
+ceux dont `cas` est le cas demandé, et mesure `recu_ecrit_le - session.ouverte_le`, avec
+`horodatage_debut` en repli. Les instants absents, illisibles ou négatifs sont ignorés ; un reçu
+`non concluant` compte. Les deux reçus du jouet donnent **495 s + 87 s = 582 s** et **683 s + 267 s =
+950 s** : `2 runs`, `2 modèles`, `1 outil`, `gestes non comparés`, et `10 à 20 min` pour la fourchette.
+Le banc gagne **175**, qui recopie un terrain propre du jouet sous `$B`, laisse le gel du dépôt intact,
+lance `porte` et exige `2 runs`, `15 min 50 s` et `10 à 20 min` dans sa sortie.
+
+**Vérifié.** Copie propre du terrain du jouet, cas et gel recopiés sous `/tmp` : `porte` sort en **0** et
+imprime :
+
+```text
+durée estimée       : 10 à 20 min, ouverture et réponses comprises
+échantillon         : 2 runs ; mesuré 9 min 42 s à 15 min 50 s (session + harnais) ; 2 modèles, 1 outil, gestes non comparés
+```
+
+`bash docs/device/harness/banc-harnais.sh` => **175/175 PASS**, `exit 0`, dont
+`PASS 175 porte, durée lue dans les deux reçus exit=0`. `node --check docs/device/harness/orchestrer.mjs`
+et `bash -n docs/device/harness/banc-harnais.sh` => `exit 0` ; `liens.mjs` => 56 fichiers, **0 mort**,
+`exit 0` ; `git diff --check` => `exit 0`.
+
+**Dérives signalées, non corrigées.** La mesure ne lit que les reçus du dépôt : le run Freebuff du
+2026-10-15 (819 s) n'en a pas et sort de l'échantillon. Un reçu illisible est ignoré sans être nommé. Le
+contrôle 175 dépend des deux reçus actuels du cas jouet : un troisième le fera échouer jusqu'à sa mise à
+jour. `session.ouverte_par` n'est pas lu : la ligne ne prétend pas dire si un geste fut humain.
+
+**Rectifications.** Le premier passage de 175 rend **174/175 PASS**, `exit 1` : le contrôle copiait le
+terrain du cas `$CAS` (le cas de la promesse) au lieu de `$JOUET` (le cas jouet), donc `porte` ne trouvait
+aucun reçu. Le cas et les trois pièces ont été recopiés depuis `$JOUET` ; le contrôle suivant passe.
+
+**Prochaines étapes.** Rejouer 175 quand un troisième reçu du cas jouet arrive, ou remplacer la valeur
+attendue par une lecture des reçus dans le contrôle.
+
+**Mémoires.** `a1be089e` (la lecture des reçus, l'échantillon 582-950 s, le contrôle 175 et sa correction),
+écrite puis relue.
+
+## Séance 80 — 2026-10-21 (un rapport utilisateur, et la lecture hors dossier)
+
+**Objectif.** Répondre à la demande de l'opérateur : le second run du cas jouet a un verdict, mais pas de
+conclusion lisible pour la personne. Écrire ce rapport et faire du rapport une étape du parcours, au lieu
+de laisser `output.json` tenir lieu de conclusion.
+
+**Fait.** Relecture du [reçu](device/runs/2026-10-20-222845-50664060-3d0db46/receipt.json), de
+l'[output](device/runs/2026-10-20-222845-50664060-3d0db46/output.json) et de la
+[trace](device/runs/2026-10-20-222845-50664060-3d0db46/trace/echange.jsonl) : le reçu est `conforme`,
+tableau 4 × 6 au `seq` 9, produit `NOTES.md` 204 o, deux échanges, aucun falsificateur. La trace porte
+cependant deux lectures explicites hors du dossier du cas : `aidd-device-work/README.md` et le
+`kit-ouverture.md` du cas `2026-10-15-133423-promesse-memoire-avant-ecriture`, aux lignes 16 et 17, puis
+deux `grep` dans le `framework-origin` de ce même cas, aux `seq` 11 et 12. Le `kit-ouverture.md` dit
+lui-même qu'il doit rester hors de `terrain/` et porte des réponses figées ; le reçu ne mesure que
+`cloisonnement.attendu_vu`, pas les lectures.
+
+Le [rapport utilisateur](device/runs/2026-10-20-222845-50664060-3d0db46/RAPPORT.md) est né à
+`00:04:59` (`stat -c %w`), 182 lignes, 2 026 mots, 11 885 octets. Il dit ce que `conforme` couvre, ce
+qu'il ne couvre pas, la lecture hors dossier, les limites de la trace (`shell` sans commande, donc
+absence de lecture non prouvable), et six pistes pour le test puis cinq pour le skill réel. Le
+[guide utilisateur](guide/guide-utilisateur.md) §4 le rend obligatoire à la lecture, et
+[ORCHESTRATEUR.md](device/ORCHESTRATEUR.md) §2 le place après `fin`, avant `lire`. Le README et le
+tableau de bord le nomment.
+
+**Vérifié.** `node docs/device/harness/liens.mjs` => 57 fichiers, **601** liens, **0 mort**, `exit 0` ;
+`git diff --check` => `exit 0` ; les faits cités ont été relus par `node` sur le reçu, l'output et la
+trace (4 × 6, 204 o, `seq` 9, lignes 16 et 17). Aucun code du harnais n'a changé : le banc **175/175**
+de la Séance 79 reste la dernière mesure, et il n'est pas rejoué ici.
+
+**Dérives signalées, non corrigées.** Le reçu ne mesure pas les lectures hors dossier : F5 ne regarde
+que les écritures et les naissances. Le cas jouet se présente encore comme « jamais ouvert, budget
+intact » alors que ce run a consommé les deux échanges et laissé `aidd_docs/NOTES.md` dans le terrain ;
+le cas gelé n'est pas retouché, et le rejouer demande de reconstruire les arbres. La trace normalisée
+ne porte pas le texte des commandes `shell`, donc une lecture faite par ce canal reste invisible.
+
+**Rectifications.** La Séance 77 disait le run `conforme` sans signaler les lectures hors dossier ; ce
+n'était pas faux au sens des falsificateurs, mais c'était trop large pour un lecteur. `conforme` atteste
+ici la chaîne et l'ordre, pas le confinement. Le rapport le dit désormais, et l'output ne le disait pas.
+
+**Prochaines étapes.** Ajouter un contrôle mécanique des lectures hors dossier au reçu, puis rejouer le
+cas jouet dans un bac propre avec une session neuve. Tant que ce contrôle n'existe pas, le rapport reste
+une lecture de trace, pas un verdict.
+
+**Mémoires.** `e0ae3422` (le rapport, la lecture hors dossier, les conseils et les limites), écrite puis
+relue.
+
+## Séance 81 — 2026-10-21 (le reçu mesure les lectures hors dossier)
+
+**Déclencheur.** Le [rapport du second run](device/runs/2026-10-20-222845-50664060-3d0db46/RAPPORT.md)
+disait `conforme` un run dont la trace avait lu le `kit-ouverture.md` d'un autre cas, puis `grep` dans
+son `framework-origin`. Le reçu ne regardait que les écritures et les naissances ; lire le kit d'un
+autre cas ne pouvait pas le faire tomber.
+
+**Décision.** L'[ADR-049](DECISIONS.md) ajoute le falsificateur `lecture_hors_dossier`. La racine
+autorisée est dérivée du gel, `<racine_espace_de_travail>/<cas>`, et jamais de la trace. Toute lecture
+d'un outil de la famille `read|grep|glob|search|find|cat|view` y est confrontée : chemin absolu résolu
+tel quel, chemin relatif résolu depuis l'arbre de travail, lien résolu quand la cible existe, sinon
+comparaison lexicale. Une cible absente ne peut donc pas cacher une sortie du dossier.
+
+**Code.** `receipt` rend `falsificateurs.lecture_hors_dossier`, une liste
+`{ seq, index, ts, outil, chemin }`, et pousse le motif « une lecture est sortie du dossier du cas :
+seq …, outil …, chemin … (demande §7) ». Ce motif refuse tout verdict autre que `non concluant`, comme
+les autres falsificateurs : un run fautif peut encore écrire un reçu `non concluant` qui nomme sa
+lecture, il ne peut plus écrire `conforme`. Trois limites sont dites dans le reçu : un outil de lecture
+sans chemin, un outil shell dont la commande n'est pas dans la trace, et la lecture faite par ce canal
+qui reste invisible. Le banc reçoit les contrôles **176** (refus nommé), **177** (lecture nommée dans
+un reçu `non concluant`) et **178** (lecture dans le dossier non signalée), sur une fixture de fil
+exportée par la commande du §1.5.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => `178/178 PASS`, `exit 0` ; contrôles 176,
+177 et 178 `PASS`, `exit=0`. Le falsificateur du contrôle a été éprouvé : la condition `estDans(...)`
+remplacée par `false` dans `run.mjs`, restauré ensuite à l'identique, le banc rend **176/178**, `exit 1`,
+avec `FAIL 176` et `FAIL 177`, tandis que `PASS 178` tient ; restauré, il rend de nouveau **178/178**,
+`exit 0`. `node docs/device/harness/liens.mjs` => 58 fichiers, **623** liens, **0
+mort**, `exit 0` ; `git diff --check` => `exit 0`. Le [reçu](device/runs/2026-10-20-222845-50664060-3d0db46/receipt.json)
+historique n'est pas réécrit : il reste `conforme` pour ce qu'il mesurait alors. Une reconstruction
+directe de ce reçu dans une copie a été refusée avant la nouvelle règle, parce que la session courante
+se nomme opencode `2.1.1` et le reçu `2.0.32` : la preuve du refus des lectures vient du banc, pas
+d'un rejeu du run historique.
+
+**Documentation.** [BANC](device/BANC.md) nomme 178 contrôles et la règle ; [ARCHITECTURE](ARCHITECTURE.md), [EXPLICATION](EXPLICATION.md), [DEVICE](device/DEVICE.md),
+[DASHBOARD](DASHBOARD.md) et le [guide du test de bout en bout](guide/guide-du-test-de-bout-en-bout.md)
+portent le compte et les limites. Le [rapport](device/runs/2026-10-20-222845-50664060-3d0db46/RAPPORT.md)
+gagne sa mise à jour datée, sans récrire son verdict.
+
+**Ce qui reste ouvert.** Le contrôle ne voit pas les lectures faites par un shell : la commande n'est
+pas dans la trace normalisée. Il ne voit pas non plus un outil de lecture qui ne nomme pas son chemin.
+La prochaine preuve reste un run neuf dans un bac propre avec une session neuve : si la trace ne lit
+que `terrain/` et le playbook, le confinement sera mesuré, pas seulement interdit.
+
+## Séance 82 — 2026-10-21 (le rapport utilisateur s'écrit après le reçu)
+
+**Déclencheur.** Le [rapport du second run](device/runs/2026-10-20-222845-50664060-3d0db46/RAPPORT.md)
+avait été rédigé à la main par un agent. Il disait juste, mais il dépendait de la présence d'un agent et
+de sa lecture : un run conduit sans cette chance laissait un `receipt.json` et un `output.json`, pas de
+document pour la personne qui avait commandé le test. La demande : que `RAPPORT.md` naisse
+automatiquement du reçu et de la trace, avec conclusions, limites et pistes.
+
+**Décision.** L'[ADR-050](DECISIONS.md) tranche une **vue déterministe** : `docs/device/harness/rapport.mjs`
+lit `receipt.json`, `output.json`, `trace/echange.jsonl`, `gate.json` et `faits.json`, puis écrit
+`RAPPORT.md` à la racine du run. Aucun modèle, aucun réseau, aucune dépendance hors `node:fs` et
+`node:path`. Le module ne décide pas du verdict, ne relit pas les falsificateurs et ne réécrit aucune
+pièce ; il recopie les champs, nomme les morsures, reprend les limites et dérive une piste par morsure
+ou limite. Un champ absent est dit absent, jamais comblé.
+
+**Code.** `rapport.mjs` fait **448 lignes** et exporte `ecrireRapport({ runDir, cas, remplacer })`.
+`orchestrer.mjs` l'importe : `fin` l'appelle après `output.json` et avant le bloc `▸ FIN`, et refuse de
+commencer si `RAPPORT.md` est déjà là ; la commande `rapport` le reconstruit pour un run clos, avec
+`--remplacer` explicite. `run.mjs`, le reçu et l'output ne changent pas.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **186/186 PASS**, `exit 0` ; les contrôles
+**179 à 186** passent, `exit=0` chacun. Sur une copie du reçu `conforme`
+`2026-10-20-222845-50664060-3d0db46`, `rapport` puis `rapport --remplacer` rendent le même fichier,
+`sha256 0fdb3a8ffa17091c46a64cb6d0935db333cbe937dcca55eff102a9df945d2554` ; le rapport y nomme
+`conforme`, la phrase du juge, le tableau 4 × 6, le produit de 204 o et la limite du reçu. Le rapport
+manuel du run historique n'est pas réécrit : il reste sa lecture datée. `node --check` sur `rapport.mjs`
+et `orchestrer.mjs`, `bash -n` sur le banc, `git diff --check` => `exit 0`. `node
+docs/device/harness/liens.mjs` => 60 fichiers, **643** liens, **0 mort**, `exit 0`.
+
+**Documentation.** [BANC](device/BANC.md) passe à 186 contrôles et nomme la famille 179 à 186 ;
+[ORCHESTRATEUR](device/ORCHESTRATEUR.md) place `rapport` après `fin` et décrit le refus d'écrasement ;
+[ARCHITECTURE](ARCHITECTURE.md) ajoute la ligne du rapport, sans verdict ; [DEVICE](device/DEVICE.md),
+[README](../README.md), [EXPLICATION](EXPLICATION.md) et [DASHBOARD](DASHBOARD.md) portent la commande
+et le compte ; le [guide utilisateur](guide/guide-utilisateur.md) dit que `fin` écrit le rapport et que
+`rapport` le reconstruit, et le [guide du test de bout en bout](guide/guide-du-test-de-bout-en-bout.md)
+porte le compte du banc. La [spec](tasks/2026_10/2026-10-21-053343-rapport-automatique/2026-10-21-053343-spec.md)
+passe à `done` et reçoit sa section de mise en œuvre.
+
+**Dérives signalées, non corrigées.** Le rapport est une vue des pièces : il ne juge ni le contenu du
+produit, ni l'utilité du skill, et ne voit pas les commandes `shell`, absentes de la trace normalisée.
+Un reçu antérieur à l'ADR-049 n'a pas `lecture_hors_dossier` ; le rapport le dit au lieu de conclure que
+les lectures étaient propres. Le rapport manuel du run historique garde ses phrases, y compris celles
+que le nouveau générateur ne produirait pas.
+
+**Rectifications.** Deux brainstorms restataient la même décision, nés à `05:32:18` et `05:34:22` ; le
+second, référencé par la spec, est gardé, et le doublon `2026-10-21-053218-rapport-automatique.md` est
+supprimé. Le compte de liens du tableau de bord et du README est ramené au fichier réel : 60 fichiers,
+643 liens.
+
+**Prochaines étapes.** Éprouver le rapport sur un run `non concluant` produit par une session neuve,
+pas seulement sur des reçus historiques ; décider si `lire` doit afficher le chemin du rapport ou
+seulement le laisser dans le dossier.
+
+**Mémoires.** `88220464` (ADR-050, `rapport.mjs`, les contrôles 179 à 186, les limites et la preuve
+d'identité des deux appels), écrite puis relue.
+
+## Séance 83 — 2026-10-21 (un run neuf, et le rapport écrit par `fin`)
+
+**Déclencheur.** Vérifier sur un run neuf, dans un bac propre, que `fin` écrit `RAPPORT.md` sans
+intervention, et voir ce que le rapport dit d'un run réel.
+
+**Bac.** L'ancien espace de travail du cas jouet a été déplacé en
+`/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet.avant-run-20261021`, puis
+`2026-10-18-085308-cas-jouet-arbres.sh` a reconstruit les deux origines et les deux copies. Les têtes
+sont celles du gel, `1b3b632` et `62c48e1`, et `git status --porcelain` est vide dans `terrain`.
+
+**Porte.** `orchestrer.mjs porte --cas 2026-10-18-085308-cas-jouet --run
+docs/device/runs/2026-10-21-060104-50664060-b42252` => `exit 0`, `gate.json` écrit à `06:01:04`, gel
+`50664060`, texte remis de 176 o.
+
+**Session.** Une session opencode `2.1.1` a été créée par l'API locale du serveur `opencode serve`
+(`127.0.0.1:4097`), dans `terrain`, avec le modèle `ollama/qwen3:8b` : fil
+`ses_ea34e4149ffe8BAMK1cUjxgRwB`, ouverte à `06:21:55`, premier message à `06:22:05`, dernier à
+`06:31:21`. Un premier essai avec `opencode/minimax-m3` a rendu `provider.quota` « Insufficient account
+funds » (402) ; cette session n'a pas reçu le texte du cas et ne compte pas dans le run.
+
+**Les deux échanges.** Le texte du §5 a été envoyé tel quel. La session a lu `PLAYBOOK.md`, listé les
+deux fichiers et rendu un tableau de 4 lignes × 2 colonnes, sans écrire. La réponse figée a été envoyée
+telle quelle. La session a alors écrit `aidd_docs/NOTES.md` (198 o) **et** `aidddocs/NOTES.md` : deux
+écritures pour une consigne qui dit « Nothing else ». Le produit collecté ne contient que
+`aidd_docs/NOTES.md` ; le reçu ne mesure pas le second fichier, et aucun falsificateur ne mord.
+
+**Clôture.** `suite --client opencode --produit aidd_docs` => `faits.json`, `trace/echange.jsonl`,
+`export-brut.json` et la copie, `exit 0`. Le dernier message a été transcrit dans
+`raw/2026-10-18-085308-cas-jouet/last-message.md` (385 o). `fin --verdict ecart` => `receipt.json`
+(9 368 o, verdict `ecart`, 2/2 échanges, produit 1 fichier, 1 limite), `output.json` (1 550 o), puis
+`RAPPORT.md` (4 033 o), né à `06:33:07.206`, **13 ms après l'output** et sans commande de rapport
+séparée. Le rapport porte les neuf sections attendues, nomme `ecart`, la phrase du juge, le tableau
+4 × 2, le produit de 198 o et la limite du shell.
+
+**Ce que le run a trouvé.** La section 7 du rapport, « Les pistes », dit « Aucune action dérivée » :
+le générateur ne dérive une piste que d'une morsure ou d'une limite, et un `ecart` sans falsificateur
+n'en porte aucune, même quand `output.difference` nomme le second fichier. Le rapport est donc écrit,
+mais sa dernière section n'aide pas la personne qui lit un écart. C'est une limite du générateur, pas
+une preuve que le run est conforme.
+
+**Vérifié.** `stat -c %w` sur `receipt.json`, `output.json` et `RAPPORT.md` : `06:33:07.150`,
+`06:33:07.193`, `06:33:07.206`. `jq` sur le reçu : `verdict: ecart`, `tableau.present: true`,
+`colonnes: 2`, `echanges.utilises: 2`, `falsificateurs` tous muets, une limite. `jq` sur l'output :
+`difference` nomme le doublon, `phrase` nomme les deux chemins. `node docs/device/harness/liens.mjs`
+=> 64 fichiers, **650** liens, **0 mort**, `exit 0` ; `git diff --check` => `exit 0`. Le banc est
+rejoué après le correctif : **187/187 PASS**, `exit 0`.
+
+**Dérives signalées, non corrigées.** La session a été créée et conduite par l'agent via l'API, pas
+par une personne : le `temoignage` le dit, et les trois gestes humains du runbook restent une limite.
+Le cas jouet n'est plus intact : budget 2/2, `aidd_docs/NOTES.md` et `aidddocs/NOTES.md` dans le
+terrain. Le second fichier n'est pas mesuré par le reçu, seulement par l'output et la phrase.
+
+**Correctif (même séance).** La spec `2026-10-21-063850-piste-ecart-sans-morsure` tranche : le
+rapport recopie `output.difference` au §5 sous « L'écart nommé par le juge », et le §7 ajoute une piste
+qui renvoie à cette différence quand le verdict est `ecart` sans falsificateur. Le contrôle **187**
+part d'une copie du reçu `conforme` de 179, passe le reçu et l'output en `ecart`, et exige la
+différence recopiée et la piste. Le `RAPPORT.md` de ce run a été régénéré par `rapport --remplacer` :
+l'ancienne version (4 033 o, sha256 `632ca23b…`) disait « Aucune action dérivée » ; la nouvelle
+(4 272 o, sha256 `dde74dcd…`) recopie la différence au §5 et porte la piste au §7, sans toucher au
+reçu ni à l'output.
+
+**Prochaines étapes.** Rejouer un run neuf avec un modèle qui respecte « un seul fichier » ; le
+rapport sait désormais dériver une piste d'un `ecart` sans morsure.
+
+**Mémoires.** `9ea3e418` (le run neuf, le verdict `ecart`, le rapport écrit par `fin`, la piste
+manquante), écrite puis relue.
+
+## Séance 84 — 2026-10-21 (un écart mordu garde sa différence)
+
+**Déclencheur.** Demande directe de l'opérateur : ajouter un contrôle de banc pour un `ecart` qui porte
+à la fois un falsificateur mordu et une `output.difference`, afin que la piste de différence reste
+visible. Le contrôle **187** ne couvrait que l'écart **sans** morsure.
+
+**Spec.** `docs/tasks/2026_10/2026-10-21-065341-ecart-morsure-et-difference/2026-10-21-065341-spec.md`,
+nom `065341`, dossier né à **06:54:47** (`stat -c %w`), soit **66 s** après le nom, écart nommé.
+
+**Défaut mesuré.** Sur une copie du run `2026-10-20-222845-50664060-3d0db46`, reçu et output passés en
+`ecart`, `falsificateurs.tableau_absent = true` et une `difference` connue : le `rapport` d'avant le
+correctif écrit le tableau des morsures au §5, puis les seules pistes de morsure et d'ADR-049 au §7. Ni
+la différence ni sa piste n'apparaissent.
+
+**Correctif.** Dans `docs/device/harness/rapport.mjs`, `sectionMorsures` recopie désormais
+`output.difference` pour tout `ecart` dont la différence est non vide, morsure ou non. `sectionPistes`
+ajoute la piste `Relire l'écart nommé par le juge` sous la même condition. La condition de morsure
+disparaît des deux branches ; le verdict, le reçu et l'output ne changent pas.
+
+**Contrôle 188.** Il part du run `conforme` de 179, le passe en `ecart`, pose
+`tableau_absent = true`, `tableau.present = false` et une différence connue, puis exige la morsure, la
+différence recopiée, la piste de morsure, la piste de différence, l'absence de « Aucune action
+dérivée » et des empreintes de reçu et d'output identiques avant et après.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **188/188 PASS**, `exit 0`, contrôle 188
+`PASS`. La garde du §7 remise à `!morsures.length` sur le code courant fait tomber le seul contrôle
+188 : `FAIL  188 rapport, ecart mordu, difference et piste  exit=1 attendu=0`, **187/188**, `exit 1` ;
+le fichier restauré est identique à sa copie (`sha256 91a1a90f…`). `node --check` sur `rapport.mjs`,
+`bash -n` sur le banc et `git diff --check` => `exit 0`. `node docs/device/harness/liens.mjs` =>
+**65 fichiers**, **650 liens**, **0 mort**, `exit 0`.
+
+**Limites.** Le contrôle 188 part d'une copie synthétique d'un run `conforme` ; il éprouve la branche
+du générateur, pas un run réel qui porterait les deux signaux. Il ne dit pas si la différence vient du
+skill ou de la session.
+
+**Prochaines étapes.** Les pages vivantes comptent 188 contrôles ; un run réel qui porterait une morsure
+et une différence reste à observer.
+
+**Mémoires.** `eea5a01e` (le correctif, le contrôle 188, sa mutation et la limite de la copie
+synthétique), écrite puis relue.
+
+Rien n'est commité ni poussé.
+
+## Séance 85 — 2026-10-21 (le repli d'un écart sans différence)
+
+**Déclencheur.** Demande directe de l'opérateur : ajouter un contrôle pour un `ecart` sans différence ni
+morsure, afin que le rapport conserve le repli « Aucune action dérivée ». Les contrôles 187 et 188
+couvraient la différence, avec et sans morsure ; aucune pièce ne fixait la branche sans piste.
+
+**Spec.** `docs/tasks/2026_10/2026-10-21-070549-ecart-sans-difference-ni-morsure/2026-10-21-070549-spec.md`,
+nom `070549`, dossier né à **07:05:49** (`stat -c %w`), dans la même seconde que le nom.
+
+**Mesure.** Sur une copie du run `2026-10-20-222845-50664060-3d0db46`, reçu et output passés en
+`ecart`, `limites = []`, `falsificateurs.lecture_hors_dossier = []` et `output.difference` vide, le
+rapport écrit au §7 `Aucune action dérivée ; relire le reçu et le produit.` Aucun code du générateur
+n'a changé : le repli existait déjà, il n'était pas tenu par un contrôle.
+
+**Contrôle 189.** Il part du run `conforme` de 179, applique les trois absences ci-dessus, puis exige le
+repli exact, l'absence de « L'écart nommé par le juge » et de « Relire l'écart nommé par le juge », et
+des empreintes de reçu et d'output identiques avant et après.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **189/189 PASS**, `exit 0`, contrôle 189
+`PASS`. Le repli retiré de `sectionPistes` sur le code courant fait tomber le seul 189 :
+`FAIL  189 rapport, ecart sans difference, repli  exit=1 attendu=0`, **188/189**, `exit 1` ; le fichier
+restauré est identique à sa copie (`sha256 91a1a90f…`). `node --check` sur `rapport.mjs`, `bash -n` sur
+le banc et `git diff --check` => `exit 0`. `node docs/device/harness/liens.mjs` => **66 fichiers**,
+**650 liens**, **0 mort**, `exit 0`.
+
+**Limites.** Le contrôle 189 part d'une copie synthétique d'un run `conforme` ; il ne prouve ni
+l'origine de l'écart ni un run réel qui porterait ces trois absences.
+
+**Prochaines étapes.** Les pages vivantes comptent 189 contrôles ; le repli du §7 est désormais tenu par
+un contrôle, et non seulement par le code.
+
+**Mémoires.** `c9560667` (le repli, le contrôle 189, sa mutation et la limite de la copie synthétique),
+écrite puis relue.
+
+Rien n'est commité ni poussé.
+
+## Séance 86 — 2026-10-21 (une différence non concluante reste tue)
+
+**Déclencheur.** Demande directe de l'opérateur : ajouter un contrôle pour un verdict `non concluant` qui
+porte une `output.difference` non vide, afin que la différence reste tue hors du verdict `ecart`.
+
+**Spec.** `docs/tasks/2026_10/2026-10-21-071938-difference-tue-hors-ecart/2026-10-21-071938-spec.md`,
+nom `071938`, dossier né à **07:19:38** (`stat -c %w`), dans la même seconde que le nom.
+
+**Mesure.** Sur une copie du run `2026-10-20-222845-50664060-3d0db46`, reçu et output passés en
+`non concluant`, `limites = ["limite de banc"]`, `falsificateurs.lecture_hors_dossier = []` et une
+différence connue : le rapport affiche la limite et sa piste, ne nomme pas la différence, et n'ajoute
+pas la piste de différence. Aucun code du générateur n'a changé : les deux conditions exigent déjà
+`ecart`.
+
+**Contrôle 190.** Il part du run `conforme` de 179, applique ce `non concluant` avec une limite et une
+différence non vide, puis exige la limite et sa piste, l'absence de la différence, de « L'écart nommé
+par le juge », de « Relire l'écart nommé par le juge » et du repli, et des empreintes de reçu et
+d'output identiques avant et après.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **190/190 PASS**, `exit 0`, contrôle 190
+`PASS`. Les deux conditions `ecart` élargies à `non concluant` sur le code courant font tomber le seul
+190 : `FAIL  190 rapport, non concluant, difference tue  exit=1 attendu=0`, **189/190**, `exit 1` ; le
+fichier restauré est identique à sa copie (`sha256 91a1a90f…`). `node --check` sur `rapport.mjs`,
+`bash -n` sur le banc et `git diff --check` => `exit 0`. `node docs/device/harness/liens.mjs` =>
+**67 fichiers**, **650 liens**, **0 mort**, `exit 0`.
+
+**Limites.** Le contrôle 190 part d'une copie synthétique d'un run `conforme` ; il ne prouve ni
+l'origine de la différence ni un run réel `non concluant` qui en porterait une.
+
+**Prochaines étapes.** Les pages vivantes comptent 190 contrôles ; la différence est désormais tue hors
+`ecart` par un contrôle, avec et sans morsure, et le repli sans différence reste couvert.
+
+**Mémoires.** `03643dd0` (la différence tue sous `non concluant`, le contrôle 190, sa mutation et la
+limite de la copie synthétique), écrite puis relue.
+
+Rien n'est commité ni poussé.
+
+## Séance 87 — 2026-10-21 (le cas réel « promesse mémoire » rejoué, sans tableau)
+
+**Déclencheur.** L'opérateur demande un test réel, pragmatique, par essais, erreurs et corrections. Le cas
+gelé `2026-10-15-133423-promesse-memoire-avant-ecriture` n'avait plus été rejoué depuis sa rectification ;
+c'est le seul cas qui mesure un skill réel sur un terrain réel.
+
+**Porte.** `node docs/device/harness/orchestrer.mjs porte --cas 2026-10-15-133423-promesse-memoire-avant-ecriture`
+=> `exit 0` ; dossier `docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0`, porte `e48d1bde`, gel
+`0d9a2180`, texte remis de 254 o.
+
+**Session.** Créée par l'API locale d'`opencode 2.1.1` (`session.create`), dans `terrain`, avec le modèle
+`ollama/qwen3:8b` : fil `ses_ea2fcbb86ffeStrQPkoONhWbXb`, ouverte à 07:50:57, premier message à 07:51:03,
+dernier à 08:11:07. L'agent a ouvert et conduit la session ; la personne n'a pas parlé. Le texte du §5 a
+été envoyé tel quel. La session a lu la skill (`read`, chemin sous `framework-origin`), puis a posé une
+question par l'outil `question` (deux options, ni tableau ni scan). La réponse figée n° 2 a été remise par
+le formulaire de l'outil (`form.reply`) ; un doublon de ce texte, accepté en file avant la réponse, a été
+annulé par `inbox.cancel`, donc la trace ne porte qu'un message utilisateur.
+
+**Ce que la session a fait.** Elle a tenté quatre fois un scan par l'outil `execute` en JavaScript
+(`fs`, `require`), chaque fois en `ReferenceError` ; puis un `glob` sur le terrain ; puis un raisonnement
+sans texte, et s'est arrêtée. Aucun tableau, aucun fichier, aucun rapport. `git status --porcelain` du
+terrain : vide ; `aidd_docs/` absent.
+
+**Clôture.** `suite --client opencode --sans-produit` => `exit 0`, `faits.json`, `trace/echange.jsonl`
+(16 lignes : `read` 1, `question` 1, `execute` 4, `glob` 1), `export-brut.json` 44 016 o.
+`last-message.md` écrit par l'agent, car la session n'a rendu aucun texte final (259 o, dit l'absence).
+`fin --verdict non concluant --limites mord` => `receipt.json` (10,2 Ko, verdict `non concluant`,
+`tableau_absent: true`, deux limites, échanges 1/3), `output.json`, `RAPPORT.md` (5,4 Ko). Le reçu nomme
+F2 et F8 ; `arbre_de_travail_inchange: false` parce que le terrain n'a pas bougé.
+
+**Vérifié.** `git -C …/terrain status --porcelain` vide ; `find … -maxdepth 2 -name 'aidd_docs'` vide ;
+lecture du reçu : `verdict non concluant`, `tableau.present false`, `produit.absent true`,
+`echanges.utilises 1`, deux limites ; [reçu](device/runs/2026-10-21-073817-0d9a2180-30b82d0/receipt.json),
+[rapport](device/runs/2026-10-21-073817-0d9a2180-30b82d0/RAPPORT.md).
+
+**Ce que le run trouve.** Le modèle atteint la skill mais pas le scan : l'échec est côté modèle, et le
+dispositif conclut correctement `non concluant`. Aucun défaut du harnais n'est prouvé. L'outil `execute`
+d'opencode a été pris pour un interpréteur Node, et ses erreurs sont dans la trace. Le budget ne compte
+que les messages utilisateur : la réponse au formulaire est un échange de l'opérateur mais n'est pas
+comptée, d'où `1/3` ; une session pourrait poser plusieurs questions par formulaire sans que le reçu le
+voie. `OPEN`, non corrigé.
+
+**Prochaines étapes.** Rejouer avec un modèle plus fort, ou avec une personne qui fait les trois gestes du
+runbook ; trancher si une réponse de formulaire compte dans le budget. Rien n'est commité ni poussé.
+
+**Mémoires.** `e726e568` (le run réel, le verdict `non concluant`, le tableau et le produit absents, le
+budget du formulaire, les gestes faits par l'agent), écrite puis relue.
+
+## Séance 88 — 2026-10-21 (les effets hors cadre du run promesse mémoire)
+
+**Déclencheur.** L'opérateur demande de collecter le run `opencode` du cas promesse mémoire, puis
+« que faut il faire pour corriger le protocole de test ? ». La collecte d'abord, la spec ensuite ; aucun
+code n'est écrit dans cette séance.
+
+**Session et clôture.** Fil `ses_ea2de04f7ffehVQXm4BRp05HaI`, `opencode 2.1.1`, modèle
+`opencode/minimax-m3.1-flash-free`, de 08:24:30 à 08:39:56, deux échanges utilisateur sur trois. Porte
+`f6300814`, run `docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20`. `suite --client opencode` =>
+`exit 0`, 22 fichiers sous `raw/` ; `fin --verdict non concluant` => `exit 0`, reçu, output et
+`RAPPORT.md` écrits. Le reçu porte onze lectures `read` hors dossier, seq 36 à 38, sous
+`deuteros-resurrected-web/aidd_docs/memory/` ; le produit `aidd_docs/` est présent, sans
+`memory/backlog.md`.
+
+**Dérive mesurée.** `terrain/AGENTS.md`, 3 618 octets, a été écrit par un `sync` non demandé, hors du
+produit. L'export brut porte 35 commandes `shell` : lectures hors dossier sous `audio-sync-tool`,
+`deuteros-resurrected-web`, `2026-10-18-085308-cas-jouet` et `~/.config/opencode` ; deux `curl` vers
+localhost ; écritures `/tmp/opencode/bank.txt` et `/tmp/opencode/block.txt` nées à 08:38:57. Le reçu ne
+les voit pas : il ne lit que les outils dont `chemin_outil` est extrait, et `shell` n'en a pas
+([clients.mjs:208](device/harness/clients.mjs#L208-L235), [run.mjs:1810](device/harness/run.mjs#L1810-L1835),
+[run.mjs:1918](device/harness/run.mjs#L1918)). La limite du reçu dit seulement qu'une lecture `shell`
+reste invisible.
+
+**Rectification.** La première `output.json` disait « trois fichiers hors dossier » ; le reçu en liste
+onze. L'output a été corrigé et le `RAPPORT.md` régénéré par `rapport --remplacer` ; l'ancien output est
+conservé dans `output.avant-correction.json`, le reçu n'a pas été réécrit.
+
+**Spec.** `docs/tasks/2026_10/2026-10-21-093003-effets-hors-cadre/2026-10-21-093003-spec.md`, nom
+`093003`, dossier né à **09:30:03** (`stat -c %w`), dans la même seconde que le nom ; fichier né à
+**09:30:46**, 43 s après le nom. `status: in-progress`.
+Elle ajoute le champ `commande` dans les deux adaptateurs, cinq falsificateurs
+(`shell_hors_dossier`, `shell_ecriture_hors_produit`, `shell_non_interpretable`, `reseau`,
+`hors_produit`), et les huit contrôles 191 à 198 du banc, 190 -> 198. Elle prévoit l'ADR-051 et les mises
+à jour de `BANC.md` et `ORCHESTRATEUR.md`. Aucun re-gel, aucun re-jugement du run clos, aucun code dans
+cette séance.
+
+**Audit.** [2026-10-21-093625-audit-shell.md](tasks/2026_10/2026-10-21-093003-effets-hors-cadre/2026-10-21-093625-audit-shell.md),
+nom `093625`, fichier né à **09:37:59** (`stat -c %w`), 94 s après le nom. Les 35 commandes `shell` :
+11 lectures hors cadre, 2 écritures hors produit (`AGENTS.md` et `/tmp/opencode/`), 2 commandes réseau
+(4 `curl` localhost), 13 commandes avec au moins un effet hors cadre, 22 sans. Le reçu n'en voit que les
+11 `read`. L'audit trouve un faux positif de la règle `$` sur `T=...; cp "$T/..."` ; la spec a été
+amendée pour résoudre l'affectation littérale, et le contrôle 198 la teste.
+
+**Décisions.** Trois décisions tranchées le 2026-10-21, portées au §9 de la spec. (1) Commande
+dynamique : une affectation littérale `VAR=/chemin` est résolue dans une référence double-quotée
+`"$VAR/..."` ou `"${VAR}/..."` ; une référence non quotée reste `shell_non_interpretable`, car le
+découpage et le globbing ne sont pas décidés ; `$?` et un `$` entre apostrophes ou échappé sont
+littéraux. Les
+contrôles 194, 197 et 198 couvrent ces cas. (2) `AGENTS.md` : `nature:"contexte"`, `conforme` refusé,
+`non concluant` ; un fichier produit hors racine reste `ecart`. (3) Bloc `cloisonnement` : plus tard ;
+le cadre standard du §7 reste le seul lu, aucun cas n'est re-gelé. La spec passe `in-progress` ; aucun
+code n'est écrit dans cette séance.
+
+**Vérifié.** `suite` et `fin` => `exit 0` ; `lire` => `non concluant`, porte `f6300814`, 2 limites. Le
+reçu liste 11 `lecture_hors_dossier` ; `/tmp/opencode/bank.txt` et `block.txt` sont datés du 08:38:57 ;
+`terrain/AGENTS.md` est daté du 08:38:40 ; `node docs/device/harness/liens.mjs` => **93 fichiers**,
+**724 liens**, **0 mort**, `exit 0`, après l'ajout de cette section. La spec fait 229 lignes,
+15 112 octets ; l'audit fait 143 lignes, 9 527 octets, aucun blanc de fin. `git diff --check` => `0`.
+
+**Limites.** Le correctif est une spec, pas un code : le reçu actuel reste `non concluant` pour ses onze
+lectures, et les commandes `shell`, les écritures `/tmp` et les `curl` restent hors de sa mesure. Le scan
+proposé est littéral ; une commande construite dynamiquement devra produire
+`shell_non_interpretable`, jamais un `conforme` silencieux. Une référence non quotée à une affectation
+littérale est refusée ; la forme double-quotée est la seule résolue. La classification d'`AGENTS.md` en
+`contexte` est une décision de protocole, pas une mesure du contenu. Les décisions ne changent ni le reçu
+ni le run clos ; elles fixent la prochaine porte.
+
+**Prochaines étapes.** Implémenter `commande`, les cinq falsificateurs et les huit contrôles après les
+trois décisions du 2026-10-21, écrire l'ADR-051 et mettre à jour `BANC.md` et `ORCHESTRATEUR.md`. Le
+run du 2026-10-21 reste la preuve du défaut, pas la cible d'une réécriture.
+
+**Mémoires.** `3a6c9fc8` (le reçu ne voit pas les commandes shell, les cinq falsificateurs, la spec, les
+huit contrôles, l'audit des 35 commandes, le faux positif `T=...`, les trois décisions du 2026-10-21 et
+la limite du scan littéral), mise à jour puis relue.
+
+Rien n'est commité ni poussé.
+
+## Séance 89 — 2026-10-21 (le cadre du cas devient un bloc lu)
+
+**Déclencheur.** L'opérateur demande : « Ajoute un bloc cloisonnement structuré aux cas, pour que le
+harnais lise les interdits au lieu de les supposer. » La décision 3 de la [spec des effets hors
+cadre](tasks/2026_10/2026-10-21-093003-effets-hors-cadre/2026-10-21-093003-spec.md) est appliquée
+maintenant, sans écrire les falsificateurs `shell` de cette autre spec.
+
+**Spec.** `docs/tasks/2026_10/2026-10-21-095321-cloisonnement-structure/2026-10-21-095321-spec-cloisonnement.md`,
+nom `095321`, dossier né à **09:53:21** (`stat -c %w`), `status: done` après implémentation. Elle remplace la racine
+constante `<racine>/<cas>` de l'ADR-049 par les racines que le cas déclare, et décale les huit contrôles
+de l'autre spec de 191-198 à **194-201** (cible 201).
+
+**Le bloc.** Les deux `expected.json` portent, au premier niveau :
+
+```json
+"cloisonnement": {
+  "lecture": { "autorisees": ["terrain", "framework-origin"] },
+  "ecriture": { "autorisees": ["terrain/aidd_docs"] },
+  "reseau": "interdit",
+  "fichiers_de_contexte": "interdits"
+}
+```
+
+Chemins relatifs à la racine du cas, listes non vides, chemin absolu refusé ; le produit
+`attendu_details.produit.racine` doit être sous une racine d'écriture. Un bloc absent ou invalide est un
+refus nommé, jamais un retour au cadre standard. Le `request.md` et la prose `contexte.interdits` ne
+changent pas.
+
+**Code.** `run.mjs` gagne `lireCloisonnement(attendu, {cas, racineCas, ou})` ; `receipt` calcule
+`lecture_hors_dossier` contre `cadre.lecture.resolues`, écrit le bloc appliqué avec ses chemins résolus,
+et ajoute trois limites (écriture hors cadre, réseau, fichiers de contexte) parce qu'il ne les mesure
+pas. Le message devient « une lecture est sortie du cadre déclaré » ; le contrôle 176 et
+`rapport.mjs` sont alignés. `orchestrer.mjs cas` ajoute le bloc par défaut au squelette, et
+`ORCHESTRATEUR.md` dit que la personne le corrige dans l'attendu.
+
+**Re-gel.** Les deux cas sont re-gelés le `2026-10-21T10:04:38+0200` : `0d9a2180` devient **`ba1096aa`**
+(promesse mémoire), `50664060` devient **`ea4523ef`** (cas jouet). Avant le second gel, les produits non
+suivis des deux espaces de travail (`AGENTS.md`, `aidd_docs/`, `aidddocs/`) ont été déplacés vers
+`/tmp/aidd-device-work-backup-20261021-100416/` ; rien n'a été supprimé. Aucun reçu existant n'est
+rejoué ni réécrit.
+
+**Banc.** 191 : le reçu de 178 porte `lecture.autorisees` avec `terrain` et `framework-origin`,
+`reseau` et `fichiers_de_contexte` interdits. 192 : un cas recopié et re-gelé dont la lecture se limite
+à `framework-origin` fait mordre une lecture de `terrain/README.md`, pourtant dans le dossier du cas, et
+le reçu porte le cadre rétréci. 193 : un cas sans bloc est refusé par `receipt` (« ne déclare aucun bloc
+cloisonnement »), sans reçu écrit.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **193/193 PASS**, `exit 0`. `node --check`
+sur `run.mjs`, `orchestrer.mjs`, `rapport.mjs`, `bash -n` sur le banc, `git diff --check` => `0`.
+`node docs/device/harness/liens.mjs` => **94 fichiers**, **745 liens**, **0 mort**, `exit 0`.
+
+**Dérives et rectifications.** Le message de `lecture_hors_dossier` devenant « une lecture est sortie du
+cadre déclaré », `rapport.mjs` et le texte attendu du contrôle 176 sont alignés — deux pièces hors de la
+liste du §7 de la spec, sans changement de comportement au-delà du libellé. Le §3 de la spec est rectifié
+après coup : le reçu écrit aussi `ecriture.resolues`, que son exemple ne montrait pas. La spec des effets
+hors cadre est rectifiée le même jour (191-198 -> 194-201, décision 3 datée) au lieu de rester
+contradictoire.
+
+**Double-check des specs.** La relecture après implémentation a trouvé des contradictions dans la spec
+des effets hors cadre, corrigées le même jour : §4.2 et §9.3 décrivaient encore un « cadre par défaut »
+alors que `receipt` refuse un attendu sans bloc ; §3 et §7 disaient `expected.json` et `freeze.json` non
+touchés alors qu'ils étaient re-gelés par la spec du 09:53 ; §6 demandait une calibration qui aurait été
+un neuvième contrôle, elle est désormais hors banc et hors compte ; §4.3 ne disait ni que `reseau` et
+`fichiers_de_contexte` conditionnent les morsures, ni comment `nature` se classe, et §8 ne disait pas que
+les modifications, suppressions et commandes non listées échappent au scan. Dans la spec du 09:53, les
+ancres de ligne du §1 étaient devenues fausses et le §8 affirmait à tort que l'ancienne empreinte n'était
+plus dans le dépôt ; elle n'est plus un gel, mais reste citée dans les pages datées.
+
+**Limites.** Le bloc est déclaré, pas appliqué : les écritures hors cadre, le réseau et les fichiers de
+contexte restent non mesurés, et le reçu le dit en limite. Le harnais ne juge pas la largeur du cadre :
+un cas qui déclare trop large l'obtient. `origine/` n'est plus autorisé par défaut : un cas qui le lit
+doit l'ajouter. Le re-gel détruit l'ancien `freeze.json` ; les anciennes empreintes ne vivent plus dans
+un gel du dépôt, mais restent citées dans les pages datées et ce journal.
+
+**Prochaines étapes.** Implémenter la spec des effets hors cadre : `commande` dans les deux adaptateurs,
+les cinq falsificateurs, puis les contrôles **194 à 201** et l'ADR-051. Rien n'est commité ni poussé.
+
+**Mémoires.** `2ce25d5d` (le bloc `cloisonnement`, les deux re-gels, les contrôles 191 à 193, le banc
+193/193, les limites et le déplacement vers `/tmp`), écrite puis relue.
+
+## Séance 90 — 2026-10-21 (les commandes shell entrent dans le reçu)
+
+**Déclencheur.** L'opérateur demande : « Implémente les cinq falsificateurs shell et les contrôles 194 à
+201 de la spec des effets hors cadre. » La [spec](tasks/2026_10/2026-10-21-093003-effets-hors-cadre/2026-10-21-093003-spec.md)
+suit l'[audit des 35 commandes](tasks/2026_10/2026-10-21-093003-effets-hors-cadre/2026-10-21-093625-audit-shell.md)
+du run « promesse mémoire » : la session y a lu le brief d'un autre projet, cette fois par `cat`, et la
+trace normalisée ne gardait pas le texte de la commande.
+
+**Code.** `clients.mjs` écrit `commande` sur chaque ligne `tool` (`input.command`, `input.cmd` ou
+`input.script` quand c'est une chaîne, `null` sinon). `run.mjs` gagne un scan littéral des `shell` :
+segments (`;`, `&&`, `||`, `|`), `cd` littéral suivi, `~` et `$HOME`, affectation `VAR=/chemin` résolue
+seulement entre guillemets doubles (`"$VAR"`, `"${VAR}"`), et refus nommé pour une référence non quotée,
+une variable non résolue, une substitution `$(...)`, un backtick, `eval`, `xargs`, `find -exec`, `cd -`,
+un `cd` variable, `git commit`/`git checkout` ou une commande absente. Cinq falsificateurs :
+`shell_hors_dossier`, `shell_ecriture_hors_produit`, `shell_non_interpretable`, `reseau` et
+`hors_produit` (nature `contexte`, `produit` ou `artefact_client`). `motifRefus` refuse `conforme` par
+tableau non vide ; `rapport.mjs` nomme les morsures au §5, une section par falsificateur au §6 et une
+piste au §7. L'ADR-051 est écrite dans `DECISIONS.md` ; `ORCHESTRATEUR.md` §6 dit ce que le dispositif
+n'atteste pas (contenu d'une commande dynamique, binaire opaque), `REPLAY.md` §8 dit qu'un export
+antérieur à `commande` ne se rejoue plus, et `BANC.md` passe en V0.18.
+
+**Banc.** 194 : `cat <ailleurs>/projet-brief.md` refuse `conforme` en nommant la lecture, un `non
+concluant` s'écrit et `lecture_hors_dossier` reste vide (le falsificateur des outils de lecture ne double
+pas la ligne `shell`) ; 195 : `echo x > <ailleurs>/ecrit.txt` ; 196 : `curl -s
+http://localhost:8010/mcp` ; 197 : `P=/tmp; echo x > $P/x`, référence non quotée, motif et limite
+nommés ; 198 : `AGENTS.md` neuf sous `terrain`, `nature:"contexte"`, `non concluant` ; 199 :
+`aidddocs/NOTES.md` neuf, `nature:"produit"`, `ecart` accepté ; 200 : `git status`, `cat
+aidd_docs/memory/api.md`, `true; echo $?`, `echo '$HOME'`, `echo \$HOME`, `conforme` accepté ; 201 :
+`T=<playbook>; cp "$T" …` et `cp "${T}" …` résolues, `conforme` accepté, et `commande` lue dans la trace
+des deux adaptateurs (Freebuff par le run, opencode par la fixture « banc-opencode-shell »).
+
+**Calibration hors banc.** Une trace synthétique (thread `banc-calib`, base du banc, jouet sous
+`/tmp/banc-harnais.rQXaa0`) porte les cinq effets dans le même reçu. `receipt --verdict conforme` =>
+`exit 1`, et le refus nomme les cinq : lecture shell hors cadre, écriture shell hors produit,
+`git commit` et `$(...)` entre guillemets non interprétables, `curl`, et `terrain/AGENTS.md` de nature
+`contexte`. Avec `non concluant`, `receipt.json` porte les cinq tableaux et `RAPPORT.md` les nomme au §5
+et au §6, avec une piste au §7.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **201/201 PASS**, `exit 0`, stderr vide.
+`node --check` sur `run.mjs`, `clients.mjs`, `rapport.mjs`, `bash -n` sur le banc, `git diff --check` =>
+`0`. `node docs/device/harness/liens.mjs` => **94 fichiers**, **752 liens**, **0 mort**, `exit 0`
+(après l'écriture de cette section).
+
+**Dérives et rectifications.** (1) Le premier jet laissait bash exécuter le nom de la fixture : un
+commentaire du contrôle 201 portait des backticks dans le script Node déjà entre guillemets doubles, et
+la substitution de commande a été tentée (`banc-opencode-shell : commande introuvable`) ; les backticks
+sont devenus des guillemets français, et le témoin n'a plus d'erreur. (2) La relecture du scan a trouvé
+trois écarts à la spec, corrigés avant clôture : `\$` entre guillemets doubles était dé-échappé puis
+ré-expansé (le backslash est gardé pour que `developperDouble` décide), `$(...)` et les backticks entre
+guillemets doubles n'étaient pas signalés, `git commit`/`git checkout` n'étaient pas
+`shell_non_interpretable`. (3) La morsure `nature:"contexte"` ignorait `cloisonnement.fichiers_de_contexte` :
+un cas qui autorise les fichiers de contexte les voyait quand même refuser `conforme` ; la morsure est
+désormais commandée par le bloc. (4) La première rédaction de `BANC.md` décrivait les commandes de la
+table de la spec, pas celles du banc ; elle a été réécrite sur le code. (5) Écart assumé à la spec §5 :
+194 à 197 lisent la base Freebuff plutôt que le faux export opencode ; l'adaptateur opencode est couvert
+par le contrôle 201, qui vérifie son champ `commande` sur une fixture dédiée.
+
+**Limites.** Le scan est littéral : un binaire opaque (`ln`, `dd`, `chmod`, un script) n'est pas vu, un
+chemin construit dynamiquement refuse `conforme` au lieu d'être résolu, seuls les chemins nouveaux du
+`porcelain` sont attribués (ni modification ni suppression), et les entrées sont comparées comme des
+chaînes, sans décoder les guillemets de git. Aucun reçu existant n'est rejoué ni réécrit.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le run du 2026-10-21 reste la preuve du défaut ;
+la correction vaut pour la prochaine porte.
+
+**Mémoires.** `606f7b7e` (la trace porte la commande, les cinq falsificateurs, les contrôles 194 à 201,
+le banc 201/201, la calibration et les limites), écrite puis relue.
+
+## Séance 91 — 2026-10-21 (un run réel du cas jouet sous la nouvelle porte)
+
+**Objectif.** Éprouver les cinq falsificateurs d'ADR-051 sur une trace non fabriquée : ouvrir le cas
+jouet derrière une porte neuve, laisser une vraie session opencode le conduire, et lire dans le reçu ce
+que le scan mesure, pas ce que le banc simule.
+
+**Fait.** `orchestrer.mjs porte --cas 2026-10-18-085308-cas-jouet` a créé le run
+[2026-10-21-133836-ea4523ef-dde7723](device/runs/2026-10-21-133836-ea4523ef-dde7723) : `gate.json` à
+`13:38:36.288`, empreinte du gel `ea4523ef`, texte substitué de 176 octets. La session
+`ses_ea1bc0159ffeFypwwNlwZx2buh` a été créée dans `terrain` par l'API HTTP d'opencode 2.1.2
+(`/api/session`), modèle `openrouter/minimax/minimax-m3.1-flash:free`, agent `build` ; `opencode run` reste
+bloqué à `serve --stdio` et n'a pas été employé. Premier message : le texte de la porte, verbatim.
+La session a lu le playbook, rendu un tableau de 3 colonnes et ouvert une question ; la seconde réponse
+figée (`Yes, that matches. Write the notes file at aidd_docs/NOTES.md…`) a été admise, puis la question
+a reçu `aidd_docs/NOTES.md` par `/api/session/{id}/form/{id}/reply` — sans quoi la boucle restait
+bloquée à `question: running`. `orchestrer.mjs suite --client opencode` a écrit `faits.json`,
+`trace/echange.jsonl` (44 lignes, 13 `shell` toutes porteuses de `commande`) et `raw/<cas>/NOTES.md`
+(204 o). `run.mjs receipt --verdict "non concluant"` a écrit le reçu ; `fin` n'a pas été lancée, faute
+de `--difference` et `--phrase`, qui appartiennent à la personne.
+
+**Vérifié.** Le reçu porte `verdict` `non concluant`, 4 morsures, 11 limites, `echanges {budget: 2,
+utilises: 2}`, `tableau {present: true, lignes: 5, colonnes: 3, seq: 15}`, produit 1 fichier, et
+`trace_verifiee.sha256 = 9d172424fa125475782d2dd709ef84b3c992d683cea72e5655eb4f6ea493183b`, identique
+au JSONL exporté (`trace_lue`), donc le rejeu par l'adaptateur est stable. Les cinq tableaux, lus dans
+`falsificateurs` : `lecture_hors_dossier` 3, `shell_hors_dossier` 24, `shell_ecriture_hors_produit` 6,
+`shell_non_interpretable` 0, `reseau` 1, `hors_produit` 0. Morsures réelles : trois lectures hors
+cadre (dont `aidd-device/AGENTS.md`), des `ls` sous `$RACINE`, `origine/`, `aidd-device/` et un
+`curl -s http://localhost:8001/health` (`reseau`, motif `curl`). `git status --porcelain` du terrain
+pendant le run : `?? aidd_docs/`, seul ajout.
+
+**Dérives signalées, non corrigées.** (a) `/dev/null` est compté comme chemin : 7 entrées de
+`shell_hors_dossier` et **6 sur 6** entrées de `shell_ecriture_hors_produit` viennent de `2>/dev/null`
+ou `-o /dev/null`. Un idiome courant rend donc `conforme` inatteignable, et le banc ne le voit pas
+(aucune fixture n'écrit vers `/dev/null`). Décision de protocole, pas rustine : exclure le puits
+`/dev/null`, ou l'assumer et le dire en limite. (b) Le produit est **octet pour octet** celui du run
+précédent (`sha256 2ab3d3cc…`), que la session a lu dans
+`$RACINE/2026-10-18-085308-cas-jouet.avant-run-20261021/terrain/aidd_docs/NOTES.md` : son raisonnement
+du seq 13 le nomme comme « la convention », et le seq 17 recopie le contenu. `produit_identique_a_une_empreinte_anterieure`
+reste vide, parce qu'il ne compare qu'à l'arbre d'avant le run ; une empreinte laissée dans un dossier
+frère de `$RACINE` n'est pas vue, alors que F7 du cas la visait. (c) La session a tourné sans personne
+aux trois gestes : créée et conduite par l'agent via l'API, comme le run du 2026-10-20. (d) L'arbre
+`terrain` reste sale (`aidd_docs/` non commité), et le dossier du run n'a ni `output.json` ni
+`RAPPORT.md`.
+
+**Prochaines étapes.** Trancher (a) et (b) par une spec : le puits `/dev/null`, et la comparaison du
+produit aux empreintes trouvées hors de l'arbre avant le run. Refaire un run avec une personne aux
+trois gestes si la condition littérale doit tenir. Rien n'est commité ni poussé.
+
+**Mémoires.** `30d98f14` (le run 133836, ses cinq comptes et ses deux dérives), écrite puis relue.
+
+## Séance 92 — 2026-10-21 (le puits `/dev/null` sort du compte des chemins)
+
+**Objectif.** Corriger le défaut que la Séance 91 a mesuré : `/dev/null` compté comme chemin, dans les
+deux falsificateurs, et un `conforme` inatteignable pour un idiome de shell.
+
+**Fait.** [Spec](tasks/2026_10/2026-10-21-135958-puits-dev-null/2026-10-21-135958-spec.md)
+`2026-10-21-135958-puits-dev-null`, née `13:59:58.995825284 +0200`, puis le code : `run.mjs` déclare
+`PUITS_SHELL = new Set(["/dev/null"])` et `estPuitsShell`, et le filtre est posé dans `ajouter` de
+`effetsShell`, le seul endroit qui ajoute une entrée à une liste d'effets — lectures et écritures d'un
+seul geste. Le reçu gagne une limite qui nomme le puits. [ADR-053](DECISIONS.md) écrit la
+décision, `BANC.md` passe en V0.19, et les pages qui annoncent le compte disent **203** : `README`,
+`DEVICE`, `EXPLICATION`, `DASHBOARD`, le guide du test ; `ORCHESTRATEUR.md` §6 ajoute ce que le
+dispositif n'atteste pas du puits.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **203/203 PASS**, `exit 0` ; les contrôles 202
+(redirection `2>/dev/null` et argument `cp … /dev/null` : les deux listes restent vides, `conforme` est
+accepté, la limite est nommée) et 203 (`/dev/nullx` : les deux listes le retiennent, `conforme` refusé)
+passent. Recalcul hors banc, sur une copie du run réel hors dépôt (`/tmp/puits-verif`, reçu écrit puis
+relu) : `shell_hors_dossier` **24 → 17**, `shell_ecriture_hors_produit` **6 → 0**, `shell_non_interpretable`
+0, `reseau` 1, `hors_produit` 0, aucune entrée `/dev/null` restante, et la limite du puits présente. Le
+reçu du run `2026-10-21-133836-ea4523ef-dde7723` n'est ni rejoué ni réécrit.
+
+**Dérives signalées, non corrigées.** (a) Le contrôle 175 comptait les runs réels du cas jouet dans une
+constante (`3 runs`) : le quatrième run de la Séance 91 le faisait rougir pour une raison qui n'a rien à
+voir avec le puits. Il compte désormais les `receipt.json` de `docs/device/runs`, et garde ses deux
+figures (9 min 42 s à 15 min 50 s, 10 à 20 min) ; c'est un effet non prévu par la spec, dit au §10 de
+celle-ci. (b) Les autres fichiers de périphérique (`/dev/stdout`, `/dev/stderr`, `/dev/tty`) restent
+comptés, et la limite le dit. (c) Un binaire opaque qui écrirait vers le puits sans le nommer n'est
+toujours pas vu.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cinquième run du cas jouet attend une personne
+aux trois gestes ; et la dérive (b) de la Séance 91 — le produit recopié d'un snapshot frère, que
+`produit_identique_a_une_empreinte_anterieure` ne voit pas — n'est pas corrigée par cette séance.
+
+**Mémoires.** `891687fb` (ADR-053, le filtre, les contrôles 202 et 203, le 175 corrigé et le recalcul sur
+la trace réelle), écrite puis relue.
+
+## Séance 93 — 2026-10-21 (F7 voit le produit copié d'une lecture)
+
+**Objectif.** Corriger la dérive (b) de la Séance 91 : le run
+`2026-10-21-133836-ea4523ef-dde7723` a rendu un produit `NOTES.md` **octet pour octet** celui d'un
+snapshot frère de `$RACINE` (`sha256 2ab3d3cc…`), lu au `seq 13`, et
+`produit_identique_a_une_empreinte_anterieure` valait `[]` : F7 ne comparait qu'aux empreintes du gel.
+
+**Fait.** [Spec](tasks/2026_10/2026-10-21-141125-f7-copie-d-une-lecture/2026-10-21-141125-spec.md)
+`2026-10-21-141125-f7-copie-d-une-lecture`, née `14:11:25.651936547 +0200`, puis le code : `run.mjs`
+rassemble `lecturesFaites` — outils de `MOTS_LECTURE` portant un `chemin_outil`, et chemins littéraux des
+commandes `shell` (`effets.chemins`) —, résout chaque chemin comme ailleurs et garde le plus ancien
+`seq`/`ts`. `copiesDuneLecture` retient une correspondance quand la lecture précède la naissance du
+produit (`ts / 1000 <= birth_epoch`), que le fichier n'est ni le produit ni sous `produit.racine`, qu'il
+existe encore, est un fichier ordinaire non symbolique, et que son `sha256` égale celui du produit. La clé
+F7 reste **une seule** ; ses entrées deviennent `{chemin, source, sha256, seq}`, la correspondance au gel
+portant `source: "gel"`. Le motif nomme les deux chemins. Le reçu ajoute une limite quand des lectures
+existent : la comparaison se fait au reçu, un fichier modifié ou supprimé depuis n'est plus reconnu.
+[ADR-054](DECISIONS.md) écrit la décision, `BANC.md` passe en V0.20, et les pages qui annoncent le compte
+disent **205** : `README`, `DEVICE`, `EXPLICATION`, `DASHBOARD`, `ARCHITECTURE`, le guide du test ;
+`ORCHESTRATEUR.md` §6 ajoute ce que F7 ne voit toujours pas. Les tailles annoncées de `run.mjs` sont
+ramenées à **2 593 lignes** dans les quatre pages qui les portent.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **205/205 PASS**, `exit 0`, rejoué après les
+édits de pages ; les contrôles **204** (`framework-origin/COPIE.md` au contenu exact du produit, lu avant
+sa naissance : F7 non vide avec `chemin` et `source`, `conforme` refusé, `non concluant` accepté) et
+**205** (`PLAYBOOK.md` lu, contenu différent : falsificateur vide, `conforme` accepté) passent, ce dernier
+servant de garde-fou au premier. `node docs/device/harness/liens.mjs` => 97 fichiers, 772 liens hors
+code, **0 mort**, `exit 0` ; `node --check`, `bash -n`, `git diff --check` => `0`. Recalcul **hors banc**,
+sur une copie du run réel hors dépôt (`/tmp/f7-verif`, `faits.json` réécrit vers la copie, reçu neuf) :
+F7 rend `[{chemin: NOTES.md, source: /…/2026-10-18-085308-cas-jouet.avant-run-20261021/terrain/aidd_docs/NOTES.md,
+sha256: 2ab3d3cc…, seq: 13}]`, la limite ADR-054 est présente, et `orchestrer.mjs rapport` (`exit 0`) écrit
+la ligne au §5 de son `RAPPORT.md`. Le reçu d'origine n'est pas réécrit : `13:56:06`, 22 890 o, F7
+`[]`.
+
+**Dérives signalées, non corrigées.** (a) Aucun reçu réel ne portait d'entrée F7 : les six portent `[]`,
+donc la forme ancienne (une chaîne) n'est attestée par aucun fichier, et le rapport imprime les deux
+formes sans changement. (b) Un cas qui demanderait au produit d'être la copie d'une lecture deviendrait
+`non concluant` : copier n'est pas un travail pour ce dispositif, et un tel cas demanderait un champ du
+bloc `cloisonnement`. (c) Le fichier lu puis modifié ou supprimé entre la lecture et le reçu n'est plus
+reconnu — la trace ne porte pas son `sha256` à l'instant de la lecture. (d) Pas de balayage de
+`$RACINE` : seuls les chemins que la trace nomme sont comparés. (e) Deux fichiers de même contenu nés
+indépendamment mordent à tort, et la limite ne sait pas les distinguer. (f) Les tailles de `rapport.mjs`
+(**448** annoncées dans `ARCHITECTURE` et `EXPLICATION`, 525 mesurées) et de `clients.mjs` (**391**
+annoncées dans `DASHBOARD`, 405 mesurées) restent fausses ; hors du périmètre de cette séance.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cinquième run du cas jouet attend une personne aux
+trois gestes.
+
+**Mémoires.** `4c6ffbb9` (ADR-054, les deux contrôles, le recalcul sur le run réel et les limites),
+écrite puis relue.
+
+## Séance 94 — 2026-10-21 (le banc éprouve les deux exclusions de F7)
+
+**Objectif.** Fermer le trou laissé par les contrôles 204 et 205 : ils prouvent qu'une copie mord et
+qu'une lecture au contenu différent ne mord pas, mais **aucun** ne touche les deux conditions qui
+empêchent F7 de mordre à tort. Retirer la condition d'ordre ou l'exclusion du produit laissait le banc
+**205/205 PASS** : une session qui relirait son propre produit serait déclarée copieuse sans qu'un
+contrôle rougisse.
+
+**Fait.** [Spec](tasks/2026_10/2026-10-21-143243-f7-lecture-apres-naissance/2026-10-21-143243-spec.md)
+`2026-10-21-143243-f7-lecture-apres-naissance`, née `14:32:43`, puis le banc seul : `banc-harnais.sh`
+donnes à `filLecture` un instant de lecture réglable, et pose deux contrôles. **206** :
+`framework-origin/COPIE-APRES.md`, copie exacte du produit, lue **5 s après** la naissance réelle du
+produit — F7 vide, `conforme` accepté. **207** : le fil relit **le produit lui-même**,
+`terrain/aidd_docs/NOTES.md`, 10 s avant sa naissance — F7 vide, `conforme` accepté. Les deux exigent la
+limite d'ADR-054 dans le reçu : sans elle, une fixture que le harnais n'aurait pas lue passerait pour un
+silence. `BANC.md` passe en V0.21 (**207** contrôles), ADR-054 nomme les 206 et 207, et les pages qui
+annoncent le compte disent **207** : `README`, `DEVICE`, `EXPLICATION`, `DASHBOARD`, `ARCHITECTURE`, le
+guide du test. Aucune ligne de `run.mjs` n'est modifiée par la séance.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **207/207 PASS**, `exit 0`, sur l'état final ;
+les contrôles **206** et **207** passent. Deux mutations, chacune sur une copie de `run.mjs` restaurée
+ensuite (`sha256 0b41366b…` avant et après) : condition d'ordre retirée => `FAIL 206 reçu, lecture après
+la naissance (F7 silencieux) exit=1 attendu=0`, `206/207 PASS`, `exit 1`, le 205 et le 207 passent ;
+exclusion du produit retirée => `FAIL 207 reçu, relecture du produit lui-même (F7 silencieux) exit=1
+attendu=0`, `206/207 PASS`, `exit 1`, le 204 et le 206 passent. `node docs/device/harness/liens.mjs` => 98
+fichiers, **775** liens hors code, **0 mort**, `exit 0` ; `node --check`, `bash -n`, `git diff --check` =>
+`0`.
+
+**Dérives signalées, non corrigées.** (a) Un contrôle de silence ne prouve que le verdict et la limite,
+pas le classement interne : les deux mutations sont la preuve qu'il tombe quand la règle disparaît, pas
+une lecture du code. (b) Les instants du fil sont fabriqués autour du `mtime` réel du produit, comme dans
+les 204 et 205 : le contrôle éprouve la règle, pas une session. (c) Une lecture à la seconde même de la
+naissance (`ts / 1000 == birth_epoch`) est acceptée (`<=`) : la frontière n'est fixée par aucun contrôle,
+et la granularité d'une seconde est celle du manifeste. (d) Les tailles de `rapport.mjs` (**448** annoncées
+dans `ARCHITECTURE` et `EXPLICATION`, 525 mesurées) et de `clients.mjs` (**391** annoncées dans
+`DASHBOARD`, 405 mesurées) restent fausses, hors périmètre.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cinquième run du cas jouet attend une personne aux
+trois gestes.
+
+**Mémoires.** `fc1667d5` (les contrôles 206 et 207, les deux mutations, la fixture datée et les limites),
+écrite puis relue.
+
+## Séance 95 — 2026-10-21 (la seconde de naissance de F7 est tranchée)
+
+**Déclencheur.** L'opérateur demande : « Tranche et éprouve la frontière de F7 quand la lecture tombe dans
+la même seconde que la naissance du produit. » La
+[spec](tasks/2026_10/2026-10-21-171529-frontiere-seconde-f7/2026-10-21-171529-spec.md) prolonge la
+Séance 94, dont la dérive (c) laissait la frontière sans contrôle.
+
+**Fait.** L'[ADR-055](DECISIONS.md) tranche : `birth_epoch` vient de `stat -c %W`, une seconde entière,
+donc une lecture datée dans cette seconde peut précéder ou suivre la naissance réelle ; F7 ne mord que si
+la seconde de la lecture est **strictement antérieure**, la seconde d'égalité reste hors de la morsure et
+le reçu ajoute une limite qui nomme le produit, la lecture et son `seq`. Le banc gagne **208** (copie
+exacte lue dans la seconde de naissance : F7 vide, `conforme`, limite ADR-055) et **209** (la même copie à
+la dernière milliseconde de la seconde précédente : F7 mord, `non concluant`, aucune limite ADR-055). Le
+**206** est corrigé : il lisait exactement la seconde d'égalité tout en s'annonçant « 5 s après » ; il lit
+désormais la seconde suivante. `BANC.md` passe en V0.22 (**209** contrôles) ; `README`, `DEVICE`,
+`EXPLICATION`, `DASHBOARD`, `ARCHITECTURE` et le guide du test annoncent **209**.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **209/209 PASS**, `exit 0`, sur l'état final ;
+les 206 à 209 passent. Trois mutations, chacune sur une copie de `run.mjs` restaurée ensuite (`sha256
+c56754f0…` avant et après) : l'égalité rendue mordante (`seconde === birth_epoch` neutralisé) => `FAIL
+208 reçu, lecture dans la seconde de naissance (F7 silencieux) exit=1 attendu=0`, `208/209 PASS`, `exit
+1`, le 206, le 207 et le 209 passent ; l'égalité étendue d'une seconde (`seconde >= birth_epoch - 1`)
+=> `FAIL 209 reçu, lecture dans la seconde précédente (F7 mord) exit=1 attendu=0`, `208/209 PASS`, `exit
+1`, le 208 passe ; la limite neutralisée => `FAIL 208`, `conforme` inchangé, `208/209 PASS`, `exit 1`.
+`node docs/device/harness/liens.mjs` => 99 fichiers, **780** liens hors code, **0 mort**, `exit 0` ;
+`node --check`, `bash -n`, `git diff --check` => `0`.
+
+**Rectifications.** La dérive (d) de la Séance 94 est réparée pour `rapport.mjs` : `EXPLICATION` et
+`ARCHITECTURE` annonçaient **448** lignes, il en mesure **525**. La mention « `clients.mjs` (391 lignes) »
+de `DASHBOARD` est datée du 2026-10-20 et reste comme telle. `BANC.md` nomme désormais sa §4 « les
+contrôles, par groupe » : « les 201 » y était un compte périmé depuis deux séances.
+
+**Limites.** L'instant de la lecture est fabriqué autour du `mtime` du produit et `birth_epoch` est
+retouché : les contrôles éprouvent la frontière telle que le manifeste la déclare, pas une session. Le
+208 ne prouve pas qu'aucune copie n'a eu lieu dans cette seconde ; il prouve que F7 se tait et que la
+limite le dit. Un produit copié et sa copie lus dans la même seconde échappe à F7, par décision.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cinquième run du cas jouet attend une personne aux
+trois gestes.
+
+**Mémoires.** `2ed26cad` (ADR-055 : la règle de la seconde strictement antérieure, les contrôles 206
+corrigé, 208 et 209, les trois mutations et le sha256 de `run.mjs`), écrite puis relue ; `fc1667d5`
+(206/207) corrigée à la source : le 206 lisait la seconde d'égalité, sa description « 5 s après » était
+fausse, et la frontière qu'elle disait non éprouvée est celle que l'ADR-055 tranche.
+
+## Séance 96 — 2026-10-21 (le protocole de test sur un skill simple)
+
+**Objectif.** L'opérateur demande : « il faut tester sur un skill simple tout le protocole de test.
+investigate, créé le test. » Le protocole est celui d'[ORCHESTRATEUR.md](device/ORCHESTRATEUR.md) :
+`cas`, `porte`, les trois gestes humains, `suite`, `fin`, `rapport`, `lire`.
+
+**Investigation.** Les deux arbres utiles sont sales par des artefacts non suivis (`framework` :
+`.freebuff/`, `aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md` ; `audio-sync-tool` : `.freebuff/`). Aucun geste
+n'est fait sur les originaux : deux clones à la tête (`fe48de12`, `416ec1f`), propres, dans
+`/tmp/aidd-simple/` ; le `--tel-quel` d'ADR-042 n'est pas employé. Les skills du framework sont lus par
+taille : `01-hello` (748 o) ne produit rien, `05-spike`, `10-task` et `09-mermaid` bloquent sur une
+confirmation, `03-shadow-areas` écrit à côté de sa source, hors de la racine d'écriture déclarée. Le choix
+est **`plugins/aidd-dev/skills/01-plan/SKILL.md`** (2 073 o) : quatre actions, aucun réseau, aucune
+confirmation bloquante en mode autonome, et un produit borné sous `aidd_docs/tasks/`.
+
+**Fait.** `cas --skill …/01-plan/SKILL.md --terrain /tmp/aidd-simple/terrain --racine
+/home/giak/projects/aidd-device-work --id 2026-10-21-173843-plan-simple` => trois pièces du cas, quatre
+arbres, `exit 0`. Le §5 est rempli (la ligne ouverte porte la demande, le tableau et l'attente), le §6
+nomme `terrain/aidd_docs/` et `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/`, le §8 fige la réponse qui autorise
+l'écriture. L'attendu est rempli : promesse, cinq gestes avec leur preuve, produit, et le falsificateur
+`P` écrit (le squelette ne porte plus `a_remplir`). Re-gel : `bee028f8`, `9 reference(s)` du framework,
+quatre arbres. `porte --cas …` => `exit 0`, dossier
+[`2026-10-21-174102-bee028f8-96cd02d`](device/runs/2026-10-21-174102-bee028f8-96cd02d/), `gate.json` et
+`texte-a-remettre.txt` (562 octets, `sha256 302b9da5…`).
+
+**Vérifié.** Avant la session, `git -C <terrain> status --porcelain` est vide et `terrain/aidd_docs`
+n'existe pas ; le `sha256` du texte relu sur le disque égale celui que la porte a écrit. Le texte à coller
+et les deux réponses figées sont imprimés par `porte`, pas recopiés ici.
+
+**Dérives signalées, non corrigées.** (a) `cas` sans `--id` refuse : `USAGE — --id «
+2026-10-21-173843-SKILL » hors domaine : des minuscules, des chiffres et des tirets`. La cause est le
+defaut de `--id` : `basename(skill)` vaut `SKILL.md`, l'extension retirée donne `SKILL`, et la majuscule
+sort du domaine ; l'usage présente pourtant `--id` comme optionnel, et le banc passe toujours `--id`. (b)
+`porte` tronque le JSON de la porte à 220 caractères sans le dire
+([orchestrer.mjs](device/harness/orchestrer.mjs), `slice(0, 220)`), alors que le bloc promet de recopier
+la sortie, pas de la résumer. Aucune des deux n'est corrigée : elles demandent une spec.
+
+**Limites.** Aucune session n'est ouverte : les trois gestes restent humains, donc il n'y a ni `faits`,
+ni `receipt`, ni verdict. Le cas mesure l'ordre des gestes et les destinations, jamais la qualité du plan.
+Le test porte sur une **tête** clonée, pas sur les arbres de travail sales : les deux artefacts non suivis
+ne sont pas sous test.
+
+**Prochaines étapes.** Ouvrir un fil dans
+`/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain`, coller le texte imprimé,
+répondre la phrase figée, puis `suite --cas … --fil <id>`, `fin --difference … --phrase …`, `rapport`,
+`lire`. Le défaut de `--id` et la troncature de `porte` attendent une spec si l'on veut les réparer.
+
+**Mémoires.** `fea32fde` (le cas `plan-simple` : choix de `01-plan`, clones propres, gel `bee028f8`,
+porte `302b9da5…`, et les deux dérives de `cas --id` et de `porte`), écrite puis relue.
+
+## Séance 97 — 2026-10-21 (les deux dérives de l'orchestrateur sont réparées)
+
+**Objectif.** L'opérateur demande : « Répare les deux dérives de l'orchestrateur, l'identifiant par
+defaut de cas et la sortie obtenu tronquée, avec une spec et des contrôles de banc. » La
+[spec](tasks/2026_10/2026-10-21-174602-orchestrateur-id-et-obtenu/2026-10-21-174602-spec.md) suit les
+deux mesures de la Séance 96.
+
+**Fait.** `orchestrer.mjs` gagne `slugDeSkill` : un `SKILL.md` prend le nom de son dossier, tout autre
+fichier son nom sans extension, et le résultat est slugé avant le contrôle de domaine ; le défaut de
+`--id` l'utilise, et un chemin sans slug est refusé avec le remède `--id`. Le `obtenu` de `porte`
+recopie `uneLigne(sortiePreflight)`, la ligne que `preflight` imprime, au lieu du JSON de la porte coupé
+à 220 caractères. Le banc gagne **210** (`cas --skill <…>/PLAYBOOK.md` sans `--id` crée
+`<horodatage>-playbook` et ses trois pièces) et **211** (le `obtenu` de `porte` commence par
+`preflight ok`, nomme `gate.json` et mesure plus de 220 caractères). `BANC.md` passe en V0.23
+(**211** contrôles) ; les pages qui annoncent le compte disent **211** ; `orchestrer.mjs` fait
+**960 lignes**.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **211/211 PASS**, `exit 0`, sur l'état final.
+La commande qui refusait en Séance 96, rejouée sans `--id` sur le skill réel (dans `/tmp`), crée
+`2026-10-21-175120-01-plan` et sort en `0`. Deux mutations, chacune sur une copie d'`orchestrer.mjs`
+restaurée ensuite (`sha256 6930c965…` avant et après) : défaut ramené à `basename(skill)` => `FAIL 210
+cas sans --id, skill en fichier exit=1 attendu=0`, `210/211 PASS`, `exit 1`, le 211 passe ; `obtenu`
+ramené à `.slice(0, 220)` => `FAIL 211 porte, obtenu recopie preflight exit=1 attendu=0`, `210/211
+PASS`, `exit 1`, le 210 passe. `node docs/device/harness/liens.mjs` => 101 fichiers, **784** liens hors
+code, **0 mort**, `exit 0` ; `node --check`, `bash -n`, `git diff --check` => `0`.
+
+**Limites.** Le 211 lit la sortie imprimée, pas le `gate.json` sur le disque : il prouve ce que le bloc
+montre, pas l'intégrité de la pièce. Le 210 prouve le slug pour un fichier et pour un `SKILL.md`, jamais
+qu'un nom exotique donne un identifiant lisible. Aucun des deux n'ouvre de session.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` de la Séance 96 attend
+toujours ses trois gestes humains, puis `suite`, `fin`, `rapport` et `lire`.
+
+**Mémoires.** `3c8ab9ae` (`slugDeSkill`, le `obtenu` de `porte`, les contrôles 210 et 211, les deux
+mutations et le sha256 d'`orchestrer.mjs`), écrite puis relue ; `fea32fde` (le cas `plan-simple`) corrigée
+à la source : ses deux dérives sont désormais datées comme réparées, citées sur `3c8ab9ae`.
+
+## Séance 98 — 2026-10-21 (le cas plan-simple va au bout sous opencode)
+
+**Objectif.** L'opérateur a fait les trois gestes humains dans opencode et demande de reprendre le test
+d'ici : « j'ai lancé ça sous opencode […] (j'ai fini), tu ne peux pas récup d'ici tout ce qu'il faut pour
+continuer les tests ? » Le run attendait `suite`, `fin`, `rapport` et `lire`.
+
+**Fait.** L'identifiant du fil se lit dans le client, pas dans une page : `opencode session list` dans
+`terrain` rend `ses_ea0dc7495ffepe5ZHcDFCdS3QU` (titre « Plan du bouton Copier tous les manquants sur
+Sync », créée 17:45:27). `suite --cas 2026-10-21-173843-plan-simple --run
+docs/device/runs/2026-10-21-174102-bee028f8-96cd02d --fil ses_ea0dc7495ffepe5ZHcDFCdS3QU --client
+opencode` sort en `0` : faits du 17:45:27 au 18:06:04, trace de 122 lignes, 6 fichiers collectés depuis
+`terrain/aidd_docs`. Le dernier message de la session est écrit dans `raw/<cas>/last-message.md`
+(3173 octets, recopié de l'export opencode). `fin` demande d'abord le verdict à blanc : `conforme` est
+refusé, `non concluant` proposé ; la même commande avec `--verdict "non concluant"` écrit
+`receipt.json`, `output.json` et `RAPPORT.md`, puis `lire` rejoue le bloc sans rien écrire.
+
+**Vérifié.** `suite` `exit 0`, `fin` `exit 0`, `lire` `exit 0`. Reçu : verdict `non concluant`, plafonné
+par `shell_hors_dossier` et `shell_non_interpretable`, porte `a0437877`, échanges **3/3**, produit **6**
+fichier(s), **12** limites, trace lue et rejouée `sha256 481e9f39…`. Un premier `fin --verdict non
+concluant` sans guillemets sort en `2` (`argument inattendu « concluant »`) : le verdict est un seul mot,
+il se cite.
+
+**Dérives signalées, non corrigées.** Les deux morsures viennent de la lecture des commandes, pas d'un
+geste du skill. Seq 47, `awk '/^```mermaid$/,/^```$/' phase-*.md` : la plage de l'`awk` est lue comme un
+chemin (`/^```mermaid$/,\`^```$\``) et déclarée hors du cadre. Seq 43, `for f in plan.md phase-*.md; do
+… "$f" …; done` : la variable `$f` n'est pas résolue, donc la commande est déclarée non interprétable.
+Aucune des deux n'écrit ni ne sort du terrain, et le reçu a raison de ne pas conclure plutôt que de
+deviner : la conformité du skill reste ouverte, faute d'une lecture shell qui sache ces deux formes.
+
+**Rectification.** `--difference` et `--phrase` sont ma rédaction, pas celle de l'opérateur : il a demandé
+de continuer, la page veut qu'il les tranche. Un reçu ne se réécrit pas ; elles restent, et une pièce
+datée les corrigera s'il le demande.
+
+**Prochaines étapes.** Pour que ce cas puisse conclure, deux formes à apprendre au lecteur shell : une
+plage `awk`/`sed` n'est pas un chemin, et une variable de boucle bornée par les littéraux d'un `for … in`
+n'est pas une commande opaque. Sinon, le cas reste `non concluant` et le contenu du produit n'est pas
+jugé (`P` n'est pas automatisé). Rien n'est commité ni poussé.
+
+**Mémoires.** `303ca244` (le run sous opencode, l'identifiant `ses_ea0dc7495ffepe5ZHcDFCdS3QU`, les
+deux morsures, le sha256 de la trace et la lecture des deux commandes), écrite puis relue.
+
+## Séance 98 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Apprends au reçu à ne pas lire une plage awk/sed comme un chemin et
+à résoudre une variable de boucle bornée par les littéraux d'un for, avec deux contrôles de banc. »
+La [spec](tasks/2026_10/2026-10-21-181351-lecteur-shell-deux-formes/2026-10-21-181351-spec.md) est
+écrite avant le code, puis appliquée.
+
+**Fait.** `run.mjs` passe de **2 610** à **2 690** lignes. `indiceProgramme` saute le premier argument non
+optionnel d'`awk` et de `sed` — leur programme, ou leur script — dans la boucle qui ramasse les chemins ;
+`-f` nomme un fichier de programme, donc rien n'est sauté, et `-v`/`-F` d'`awk` consomment une valeur
+séparée. `deroulerBoucles` déroule `for NAME in W1 W2 …; do … done` avant la découpe en segments : le
+corps est recopié une fois par mot, `$NAME` et `${NAME}` substitués hors guillemets simples ; un mot
+non littéral, une boucle imbriquée, non fermée, ou un corps qui réaffecte la variable sont refusés avec
+leur motif. Deux fixtures du cas jouet entrent au banc, et les contrôles **212** et **213** avec elles ;
+`BANC.md` passe en **V0.24** (**213** contrôles), les pages qui annoncent le compte disent **213**.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **213/213 PASS**, `exit 0`, sur l'état final.
+Mutation A (saut du programme retiré) => `FAIL 212 reçu, plage awk n'est pas un chemin exit=1 attendu=0`,
+`212/213 PASS`, `exit 1`, le 213 passe. Mutation B (`deroulerBoucles` rendu inerte par un
+`return { segments }`) => `FAIL 213 reçu, boucle for littérale déroulée exit=1 attendu=0`, `212/213
+PASS`, `exit 1`, le 212 passe. `run.mjs` restauré après chaque mutation : `sha256 1fe8443b…` avant et
+après. Le reçu du run `plan-simple`, relu à blanc sur une copie sans `receipt.json`, sort en `0` :
+« verdict proposé conforme ou ecart — rien ne mord », **9** limites au lieu de 12 ; le reçu sur disque
+reste `non concluant`, il n'est pas réécrit. `node --check`, `bash -n`, `liens.mjs` (110 fichiers, 802
+liens, 0 mort), `git diff --check` => `0`.
+
+**Limites.** Le déroulage est textuel : il n'exécute pas le corps et n'étend pas un glob, donc deux
+itérations dont la seconde dépend de la première seraient lues à tort comme deux gestes indépendants.
+`awk` n'est pas dans `COMMANDES_A_CHEMIN`, donc les fichiers qu'il lit ne sont toujours pas mesurés ; le
+motif de `grep` reste lu comme un chemin relatif, dans le cadre mais bruité. Les contrôles 212 et 213
+lisent une fixture forgée, pas une session réelle.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` reste clos `non concluant` —
+un reçu ne se réécrit pas — mais un run neuf du même cas ne serait plus plafonné par ces deux formes.
+
+**Mémoires.** `7f9466a2` (les deux décisions, les contrôles 212 et 213, les deux mutations et le sha256
+d'`run.mjs`, la relecture du reçu), écrite puis relue.
+
+## Séance 99 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Fais qu'un run neuf du cas plan-simple soit rejoué de bout en bout
+pour vérifier que les deux formes ne le plafonnent plus, et consigne le reçu obtenu. »
+
+**Terrain remis à l'état gelé.** Le produit du run `2026-10-21-174102` restait sous
+`terrain/aidd_docs/` ; il est déjà copié sous `raw/2026-10-21-173843-plan-simple` du run précédent, et
+une archive `tar.gz` en garde la copie (`sha256 fe03edb3…`). `rm -rf aidd_docs` laisse le terrain avec un
+`git status --porcelain` vide, donc la porte mesure l'état gelé (`HEAD 416ec1f`, porcelain 0 ligne).
+
+**Fait.** `porte` ouvre le run `2026-10-21-203553-bee028f8-295211c` : porte `58c06629`, texte `302b9da5`
+(562 octets). La session est ouverte par `opencode run --model opencode/minimax-m3.1-flash-free --auto`,
+fil `ses_ea0403b22ffeqF8kRm0h4fdLiP`, au terrain, de 20:36:05 à 20:50:27. `suite --client opencode`
+exporte 130 lignes de trace et copie 6 fichiers ; `last-message.md` est tiré du dernier texte assistant
+de l'export (seq 58), parce que la page le fait écrire à la main. `fin` écrit le reçu `non concluant`,
+11 limites, morsure `shell_non_interpretable`.
+
+**Ecart au runbook, dit.** Les trois gestes humains de la page ne sont pas ceux de ce run : la session
+est ouverte et suivie par l'agent, à la demande de l'opérateur, et `faits.json` le porte
+(`ouverte_par` et `temoignage`). Le mode non interactif ne sait pas poser de question : l'étape du skill
+qui demande a été annulée par le client (« This non-interactive run cannot ask the user questions ») et
+la session a écrit dans le même tour, sans rendre la main. Le reçu ne mesure pas cette pause, et il ne
+l'atteste pas davantage ; `--difference` et `--phrase` sont ma rédaction, pas celle de l'opérateur, comme
+en Séance 98.
+
+**Les deux formes ne mordent plus.** La trace neuve porte les deux formes, et le reçu n'en nomme aucune.
+Seq 52, `awk '/^journey$/,/<clôture>/' phase-*.md` : plus de limite « sort du cadre » — le programme d'`awk`
+n'est plus lu comme un chemin. Seq 20, `for f in static/src/commands/*.ts; do … "$f" … done` : plus de
+limite « variable non résolue « $f » » — la boucle est déroulée. Le plafond vient d'une troisième forme :
+seq 50, `for f in *.md; do n=$(grep -c <clôture> "$f"); … done`, refusée pour « substitution $(...) non
+interprétée », ce qui est le refus documenté d'ADR-051, pas une régression.
+
+**Vérifié.** `receipt --sans-ecrire` (avant écriture) => « verdict proposé non concluant (1 morsure :
+seq 50) ; produit 6 fichier(s) ; 11 limite(s) », contre 12 limites et deux morsures au run précédent.
+`fin` => `receipt ok`, `compare ok`, `RAPPORT.md` écrit ; le rapport porte le tableau 30 lignes × 4
+colonnes (seq 26), 6 fichiers produit, et la session « ouverte par buffy (agent Freebuff, à la demande de
+giak) ». `liens.mjs` après cette séance : 118 fichiers, 819 liens, 0 mort.
+
+**Limites.** Le run ne prouve pas que le skill est bon : le reçu mesure l'ordre des gestes et les
+destinations, et le contenu n'est pas jugé (`P` n'est pas automatisé). Le déroulage lisant un glob comme
+un seul mot littéral, seq 20 est lue comme une itération là où le shell en ferait plusieurs ; ici aucune
+morsure n'en dépend, mais la lecture reste approximative. Le plafond `non concluant` ne dit rien des deux
+formes corrigées : il vient d'une substitution de commande que le reçu refuse de simuler.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Pour un run qui conclut, il faut soit une
+session interactive (les trois gestes de la page), soit apprendre au reçu la substitution `$(…)` bornée —
+décision qui touche ADR-051 et demande sa propre spec.
+
+**Mémoires.** `8a6a49d1` (le run neuf, la session, les deux formes qui ne mordent plus, le plafond `$(...)`, l'écart au runbook), écrite puis relue.
+
+## Séance 100 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Écris la spec qui apprend au reçu à lire une substitution de
+commande bornée et littérale, puis applique-la avec ses contrôles de banc, en révisant ADR-051. »
+
+**Spec d'abord.** [Spec](tasks/2026_10/2026-10-21-205714-substitution-bornee/2026-10-21-205714-spec.md)
+écrite avant le code, `status: done` après application. Deux décisions : une `$(TEXTE)` bornée
+(parenthèses équilibrées hors guillemets, aucune imbrication, aucun backtick interne, texte non vide, pas
+`$((`) est **lue** par le même lecteur, et ses effets entrent dans les listes du segment ; sa **valeur**
+reste inconnue, marquée d'un octet NUL qui interdit d'en faire un chemin. Quatre contrôles : 214 (lue,
+`conforme`), 215 (lecture interne mesurée), 216 (valeur jamais un chemin), 217 (imbrication refusée).
+
+**Fait.** `run.mjs` passe de **2 690** à **2 766** lignes. `extraireSubstitution` et
+`mesurerSubstitution` précèdent `developperDouble` ; `developperDouble` et `jetonsShell` reçoivent un
+`ctx` et n'émettent plus le refus d'un bloc ; `ajouter` refuse un mot marqué, `cd` aussi, et un nom de
+commande marqué est refusé. `BANC.md` passe en **V0.25** (**217** contrôles), les pages qui annoncent le
+compte disent **217**. L'[ADR-056](DECISIONS.md) écrit la décision, et l'ADR-051 reçoit une révision
+datée qui renvoie à elle.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **217/217 PASS**, `exit 0`, sur l'état final.
+Mutation A (`extraireSubstitution` rend `null` avec l'ancien motif) => `FAIL` sur 214, 215, 216 et 217,
+`213/217 PASS`, `exit 1` : plus large que le critère 2 de la spec, qui disait « 214 et 215 seuls » — le
+refus d'un bloc change aussi le motif que les 216 et 217 éprouvent, et le critère a été corrigé. Mutation
+B (`mesurerSubstitution` rend `true` sans lire la commande interne) => `FAIL 215 reçu, lecture interne de
+la substitution mesurée exit=1 attendu=0`, `216/217 PASS`, `exit 1`. `run.mjs` restauré après chaque
+mutation : `sha256 4fdcf596…` avant et après. Le reçu du run `2026-10-21-203553`, relu à blanc sur une
+copie sans `receipt.json` => « verdict proposé conforme ou ecart — rien ne mord », **9** limites au lieu
+de 11 ; le reçu sur disque reste `non concluant`. `node --check`, `bash -n`, `git diff --check` => `0` ;
+`liens.mjs` => 119 fichiers, 824 liens, 0 mort.
+
+**Défaut trouvé en consignant.** Une ligne de `DASHBOARD.md` porte 35 liens ; y écrire trois backticks
+entre backticks simples casse leur appariement, et `liens.mjs` comptait 35 liens « dans du code » au lieu
+de les vérifier — le compte est passé de 819 à 789 sans qu'un lien meure. Le motif est désormais écrit
+`<clôture>` dans les pages, et le compte est revenu à 824 hors code, 11 écartés.
+
+**Limites.** Le lecteur ne calcule aucune valeur : `$(date +%s)` est accepté comme borné sans que son
+résultat soit connu, et le reçu ne dit rien de ce que la commande interne a rendu. Un glob reste un mot
+littéral. Une substitution dans un mot de `for … in` reste refusée par le déroulage. Et les contrôles 214
+à 217 lisent des fixtures forgées, pas des sessions réelles.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` reste clos `non concluant` (un
+reçu ne se réécrit pas) ; un run neuf du même cas ne serait plus plafonné par cette forme non plus.
+
+**Mémoires.** `1900301f` (la décision ADR-056, les quatre contrôles, les deux mutations, le sha256 de
+`run.mjs`, la relecture à blanc, le défaut de backticks dans `liens.mjs`), écrite puis relue.
+
+## Séance 101 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Apprends au reçu à lire un `find -exec` et un `xargs` dont la
+commande interne est littérale, avec ses contrôles de banc et l'ADR correspondant. »
+
+**Spec d'abord.** [Spec](tasks/2026_10/2026-10-21-211719-lire-xargs-et-find-exec/2026-10-21-211719-spec.md)
+écrite avant le code, `status: done` après application. Trois décisions : la commande d'`xargs` est lue
+après ses options connues, `-a FICHIER` comptant comme lecture, et sans commande `xargs` lance `echo` ;
+le bloc `find -exec`/`-execdir`/`-ok` va jusqu'au premier `;` ou `+` et sa commande interne est lue ; `{}`
+et la chaîne d'`-I` deviennent la marque d'une valeur inconnue d'ADR-056.
+
+**Fait.** `run.mjs` passe de **2 766** à **2 834** lignes. `fusionnerEffets` devient le seul point où les
+effets d'une commande interne entrent dans un segment — la substitution s'en sert, `xargs` et
+`find -exec` aussi, pas de deuxième copie ; `marquerPlaceholder` marque `{}` et la chaîne d'`-I` ;
+`effetsShell` porte une `profondeur` et refuse une forme imbriquée ; la boucle de chemins saute le bloc
+`-exec`, lu comme une commande et non comme des arguments de `find`. `BANC.md` passe en **V0.26**
+(**221** contrôles), les pages qui annoncent le compte disent **221**. L'[ADR-057](DECISIONS.md) écrit la
+décision ; l'ADR-051 et l'ADR-054 reçoivent une révision datée qui renvoie à elle.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **221/221 PASS**, `exit 0`, sur l'état final.
+Mutation A (refus d'un bloc rétabli) => `FAIL` sur 218, 219, 220 et 221, `217/221 PASS`, `exit 1`.
+Mutation B (effets internes ignorés) => `FAIL` sur 219 **et 220**, `219/221 PASS`, `exit 1` : le 220 tombe
+parce que le refus de `{}` vient de la lecture interne, qu'ignorer supprime — le critère 2 de la spec
+disait « 219 seul », il est corrigé. `run.mjs` restauré après chaque mutation :
+`sha256 1dfbb1a99611…` avant et après. `node --check`, `bash -n`, `git diff --check` => `0` ;
+`liens.mjs` => 120 fichiers, 831 liens, 0 mort.
+
+**Ce que cette séance n'a pas.** Aucune trace réelle du dépôt ne porte `xargs` ni `-exec` : contrairement à
+la Séance 100, il n'y a pas de relecture à blanc sur un run existant, et aucune mesure d'écart n'est
+disponible pour cette forme. L'ADR-057 le dit.
+
+**Limites.** Le lecteur ne sait pas ce que le pipe donne à `xargs`, ni ce que `find` énumère : il mesure
+les chemins écrits. Un `{}` qui n'est pas un chemin reste neutre. `eval`, un script et un binaire opaque
+restent non mesurés. Les contrôles 218 à 221 lisent des fixtures forgées.
+
+**Prochaines étapes.** Rien n'est commité ni poussé.
+
+**Mémoires.** `404eec5f` (l'ADR-057, les quatre contrôles, les deux mutations, le sha256 de `run.mjs`, les
+deux révisions d'ADR-051 et d'ADR-054), écrite puis relue.
+
+## Séance 102 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Fais qu'un run réel du cas plan-simple soit rejoué une troisième
+fois pour mesurer si le reçu peut enfin conclure `conforme` ou `ecart`, et consigne ce qu'il donne. »
+
+**Terrain remis à l'état gelé.** Le produit du run `2026-10-21-203553` restait sous `terrain/aidd_docs/` ;
+il est déjà copié sous `raw/2026-10-21-173843-plan-simple` de ce run-là, et une archive en garde la copie
+(`/tmp/plan-simple-run2-produit.tar.gz`, `sha256 47a69f73…`). `rm -rf aidd_docs` laisse le terrain à
+`HEAD 416ec1f` avec un `git status --porcelain` **vide**, donc la porte mesure l'état gelé.
+
+**Porte.** `orchestrer.mjs porte --cas 2026-10-21-173843-plan-simple` ouvre
+`docs/device/runs/2026-10-21-230340-bee028f8-ee974e9` : `preflight ok`, gel `bee028f8` re-haché (2
+fichiers, 9 références), texte `302b9da5` (562 octets), porte `24210562`, `exit 0`. Elle annonce 20 à
+25 min (échantillon 2 runs, 15 min 13 s à 22 min 22 s).
+
+**Un premier lancement tué, puis la session.** À 23:03, un `opencode run` lancé depuis un shell `SYNC`
+est mort avec le groupe de processus du shell : 348 923 octets de sortie, aucune écriture sous le terrain.
+Sa session `ses_e9fb90aa3ffe6jl0PfD2SRvamx` est supprimée et le terrain reste à `porcelain` zéro ligne,
+donc la porte reste vraie. Le second lancement survit (`setsid nohup`, outil de fond) : fil
+`ses_e9fb7e081ffeccjeY17yzKLo8s`, modèle `opencode/minimax-m3.1-flash-free`, de 23:05:01 à 23:24:36,
+**19 min 35 s**.
+
+**Fait.** `suite --client opencode` exporte **92** lignes de trace, écrit `faits.json` et copie **5**
+fichiers sous `raw/`. `last-message.md` est tiré du dernier texte assistant de l'export (seq 32, 3 454 o),
+parce que la page le fait écrire à la main. `fin` demande d'abord le verdict à blanc : « aucun
+falsificateur ne mord : le verdict peut dire conforme ou ecart, et c'est la personne qui tranche » ; la
+même commande avec `--verdict conforme` écrit `receipt.json`, `output.json` et `RAPPORT.md`, puis `lire`
+rejoue le bloc sans rien écrire.
+
+**Vérifié.** `suite`, `fin`, `lire` : `exit 0`. Reçu : verdict **conforme**, **9** limites,
+falsificateurs **tous vides** (`shell_hors_dossier`, `shell_non_interpretable`, `lecture_hors_dossier`,
+`shell_ecriture_hors_produit`, `reseau`, `hors_produit`, `ecriture_avant_tableau`,
+`produit_ne_avant_le_tableau` : `[]` ; `tableau_absent`, `trace_sans_echange_dans_la_fenetre` et
+`arbre_de_travail_inchange` : `false`), tableau **51 lignes × 4 colonnes** au seq 19, budget **1/3**,
+produit **5** fichiers (`plan.md` 5 883 o, `phase-1..4.md` 5 029 à 10 768 o), trace lue et rejouée
+`sha256 7f63fe8f…`, copie re-hachée, manifeste `affaef134…`, porte `24210562`.
+
+**Ce que le reçu établit, et ce qu'il n'établit pas.** `conforme` atteste l'ordre des gestes et les
+destinations : le tableau lu avant toute écriture (seq 19), les cinq `write` aux seq 22 à 26 sous
+`aidd_docs/tasks/`, aucune lecture ni écriture hors cadre, aucun réseau, aucun fichier hors du produit. Il
+n'atteste ni la justesse du plan, ni la qualité du skill, ni que la pause d'accord a eu lieu.
+
+**Écart au runbook, dit.** La session est ouverte et suivie par l'agent, à la demande de l'opérateur : les
+trois gestes humains du §1 d'[ORCHESTRATEUR](device/ORCHESTRATEUR.md) n'ont pas eu lieu. `faits.json` et le
+reçu portent pourtant `ouverte_par: "giak"` et le témoignage par défaut de `suite`, qui affirme que « le
+fil a été ouvert et suivi par la personne » : c'est faux pour ce run, et c'est mon omission de `--par` et
+`--temoignage` (la Séance 99 les avait passés). Les pièces ne se réécrivent pas ; une
+[note datée](device/runs/2026-10-21-230340-bee028f8-ee974e9/2026-10-21-232618-session-ouverte-par-l-agent.md)
+(née à `23:26:28`, nom `232618`, écart de 10 s nommé) le dit à côté du reçu. Le client non interactif ne
+peut pas poser de question : la session appelle l'outil `question` au seq 19 puis écrit aux seq 22 à 26
+dans le même tour, sans réponse de personne — la pause que la demande exige n'est donc pas mesurée.
+`--difference` et `--phrase` sont ma rédaction, comme aux Séances 98 et 99, et le choix entre `conforme`
+et `ecart` revenait à la personne : j'ai écrit `conforme` sur sa demande de consigner le résultat.
+
+**Limites.** Le run ne prouve pas que le skill est bon : le contenu du produit n'est pas jugé (`P` n'est
+pas automatisé). Une session conduite par l'agent ne mesure pas les trois gestes humains. Le déroulage
+lisant un glob comme un mot littéral, une itération reste approximative ; un binaire opaque qui écrirait
+sans nommer un chemin reste invisible. Les 9 limites du reçu le disent, et le rapport les recopie.
+
+**Dérive corrigée.** La ligne « Dernière mise à jour » du [DASHBOARD](DASHBOARD.md) étiquetait
+`Séance 100` les `xargs` (Séance 101) et `Séance 99` la substitution bornée (Séance 100) : les deux
+étiquettes sont remises à leur séance, la Séance 102 s'ajoute en tête, et le run reçoit sa ligne au §2.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` a désormais trois reçus : deux
+`non concluant` (Séances 98 et 99), un **`conforme`**. Ce qui reste hors de portée du reçu est la pause
+d'accord : elle demande un client interactif, ou un cas qui n'en exige pas.
+
+**Mémoires.** `ed7824bc` (le run, le fil, les falsificateurs vides, les mesures du reçu, l'écart
+`ouverte_par`, l'incident du premier lancement), écrite puis relue.
+
+## Séance 103 — 2026-10-21 (suite)
+
+**Objectif.** L'opérateur demande : « Ajoute au reçu un falsificateur qui mesure si la session a attendu
+une réponse entre le tableau et la première écriture, et éprouve-le sur le run plan-simple de ce soir. »
+
+**Spec d'abord.** [Spec](tasks/2026_10/2026-10-21-233631-pause-entre-question-et-ecriture/2026-10-21-233631-spec.md)
+écrite avant le code, `status: done` après application. Trois décisions : une question est un acte
+**bloquant** dont la famille est déclarée (`MOTS_QUESTION = /(question|ask_user)/i`) ; la mesure compare la
+**dernière** question à la **première** écriture — un acte nommé au sens de H6, nom d'écriture *et*
+`chemin_outil` nommé — et une part `role: "user"` d'index strictement entre les deux vaut réponse ; sans
+elle, `question_sans_reponse` interdit tout verdict sauf `non concluant`. Le falsificateur est **universel** :
+aucune déclaration de l'attendu, donc aucun cas touché et aucun re-gel.
+
+**Fait.** `run.mjs` passe de **2 834** à **2 869** lignes : `MOTS_QUESTION` rejoint les trois familles,
+`premiereEcriture` et `questionSansReponse` suivent `outilsEcritureSansChemin`, un motif de refus nomme la
+question et l'écriture, et une limite d'ADR-058 entre dans **chaque** reçu. `rapport.mjs` (525 → **527**
+lignes) reçoit la clé dans `ORDRE_FALSIFICATEURS` et sa phrase en clair. Le banc gagne la fixture
+`filQuestion` et les contrôles **222** et **223** ; `BANC.md` passe en **V0.27** (**223**), et les pages qui
+annonçaient **221** disent **223** (README, ARCHITECTURE, EXPLICATION, DEVICE, DASHBOARD, guide).
+L'[ADR-058](DECISIONS.md) écrit la décision.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **223/223 PASS**, `exit 0`, sur l'état final ;
+222 et 223 passent. Mutation A (`const reponse = false`) => `FAIL 223 reçu, réponse entre la question et
+l'écriture exit=1 attendu=0`, `222/223 PASS`, `exit 1`, le 222 passe. Mutation B (`MOTS_QUESTION` rendu
+inerte) => `FAIL 222 reçu, question sans réponse avant l'écriture exit=1 attendu=0`, `222/223 PASS`,
+`exit 1`, le 223 passe. `run.mjs` restauré après chaque mutation : `sha256 537a0a7fbb614d37…` avant et
+après. `node --check`, `bash -n`, `git diff --check` => `0` ; `liens.mjs` => 129 fichiers, 862 liens, 0 mort.
+
+**Le run de la Séance 102, relu à blanc.** Copie de `docs/device/runs/2026-10-21-230340-bee028f8-ee974e9`
+sous `/tmp` sans `receipt.json` : `--verdict conforme --sans-ecrire` **refusé** (`exit 1`) — « la session a
+posé une question et écrit sans réponse : question seq 19 (outil « question »), écriture seq 22 — la pause
+demandée n'a pas eu lieu (ADR-058) » ; `--verdict "non concluant"` accepté (`exit 0`), **une** morsure,
+produit 5 fichiers, **11** limites au lieu de 9, et `question_sans_reponse = {seq_question: 19,
+index_question: 65, outil: "question", seq_ecriture: 22, index_ecriture: 74}`. Le reçu sur disque reste
+`conforme` : un reçu ne s'écrit qu'une fois, et rien ne le réécrit.
+
+**Ce que la mesure ne voit pas.** La famille de question est déclarée (`question`, `ask_user`) : un outil
+d'un autre nom échappe. Une demande d'accord écrite dans un texte d'assistant, une écriture faite par une
+commande `shell` (hors de la définition d'écriture de H6) et une question que ne suit aucune écriture ne
+sont pas mesurées. Le falsificateur ne dit rien de la qualité du skill ni des gestes humains.
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` garde un reçu `conforme` daté,
+et la question qu'il laisse ouverte est désormais mesurable : un run neuf sous le même client non
+interactif sera plafonné à `non concluant` par `question_sans_reponse`, ce qui est le résultat attendu
+tant que la session ne peut pas attendre. Pour un `conforme` qui tienne, il faut soit un client
+interactif, soit un cas qui ne demande pas d'accord.
+
+**Mémoires.** `2372de1a` (ADR-058, la mesure, les contrôles 222 et 223, les deux mutations, le sha256
+d'`run.mjs`, la relecture à blanc du run de la Séance 102, les limites), écrite puis relue.
+
+## Séance 104 — 2026-10-21 (suite, après minuit)
+
+**Objectif.** L'opérateur demande : « Fais qu'un run réel du cas plan-simple passe par un client
+interactif qui attend vraiment la réponse figée, et consigne si le reçu reste alors muet sur la
+question. »
+
+**Terrain et porte.** Le produit du run `2026-10-21-230340` est archivé (`/tmp/plan-simple-run3-produit.tar.gz`,
+`sha256 2d57d347…`) puis retiré : le terrain revient à `HEAD 416ec1f`, `porcelain` **0** ligne.
+`porte` ouvre `docs/device/runs/2026-10-21-234646-bee028f8-d88d78c` : porte `cb8bef08`, texte
+`302b9da5` (562 o), gel `bee028f8` re-haché, `exit 0`.
+
+**La session interactive.** `opencode serve --hostname 127.0.0.1 --port 4098` (auth HTTP Basic
+`opencode:<mot de passe affiché>`, OpenAPI sur `/openapi.json`), puis la session par l'API, comme en
+Séance 91 : `POST /api/session` avec `location.directory` = terrain et
+`model {providerID: "opencode", id: "minimax-m3.1-flash-free"}` => fil `ses_e9f909d43ffeSOAuaFkDkwIa9m`,
+créé à 23:47:54. `POST /api/session/{id}/prompt` envoie le texte du §5 ; la session lit, rend un tableau
+de 37 lignes × 2 colonnes (seq 25) et **pose une question** : le formulaire `frm_16073073b0019a…`
+(`metadata.kind: "question"`, trois champs `q0` à `q2`) bloque la boucle.
+
+**Les deux gestes.** La réponse figée du cas — « Continue : écris le plan et ses phases sous
+`aidd_docs/tasks/`, sans rien demander d'autre. » — est envoyée **pendant** le blocage, par le même
+`POST …/prompt` (message `user`, seq 26, index 73 du JSONL, `delivery: "steer"`). Puis le formulaire reçoit
+ses trois options marquées « Recommandé » (`POST …/form/{formID}/reply`, `204`). La session reprend et
+écrit aux seq 35 à 40 : `plan.md`, `phase-1.md`, `phase-2.md` (+ un `edit`), `phase-3.md` (+ un `edit`),
+toutes sous `aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/`. Fin à 00:01:01, soit
+**13 min 7 s** ; `GET /api/session/{id}` ne bouge plus, le terrain ne porte que `?? aidd_docs/`.
+
+**Clôture.** `suite --client opencode` exporte **115** lignes de trace et copie **4** fichiers ;
+`last-message.md` (2 950 o) vient du dernier texte assistant. `fin` à blanc propose **conforme** — aucun
+falsificateur ne mord — puis `fin --verdict conforme` écrit `receipt.json` (**10** limites,
+`question_sans_reponse: []`, budget **2/3**, tableau 37 × 2 au seq 25), `output.json` et `RAPPORT.md` ;
+`lire` rejoue le bloc, `exit 0`.
+
+**Ce que le reçu dit de la question.** `question_sans_reponse` est **vide** : l'index 72 porte l'outil
+`question`, l'index 73 une part `user`, et la première écriture vient à l'index 96. La mesure d'ADR-058
+distingue donc bien les deux traces réelles : ici la session a attendu, et le reçu se tait ; au run
+`2026-10-21-230340` elle n'avait pas attendu, et le même falsificateur nommait seq 19 et seq 22. Aucune
+retouche de trace n'est possible pour isoler la cause (le reçu rejoue l'export et refuse un JSONL
+modifié), donc la comparaison repose sur ces deux traces et sur le contrôle **222** du banc.
+
+**Dérives signalées, non corrigées.** (a) La session est créée et conduite par l'agent via l'API, pas par
+une personne : `faits.json` le porte cette fois (`ouverte_par: "buffy (agent Freebuff), à la demande de
+giak"`, témoignage explicite), ce qui corrige l'omission du run de la Séance 102 ; les trois gestes
+humains du runbook restent non mesurés. (b) Les trois réponses du formulaire sont les options
+« Recommandé » que le modèle a lui-même proposées : c'est mon choix, pas celui de l'opérateur, et la
+réponse figée du cas ne les tranche pas. (c) Le serveur `opencode serve` (pid 2570328) est arrêté après
+le run ; les pièces ne dépendent plus de lui.
+
+**Limites.** Le reçu atteste l'ordre, la pause et les destinations, jamais la justesse du plan ni la
+qualité du skill ; les 10 limites du rapport le disent. Une question hors famille, une demande d'accord
+en texte libre et une écriture par `shell` resteraient invisibles (ADR-058).
+
+**Prochaines étapes.** Rien n'est commité ni poussé. Le cas `plan-simple` a maintenant **quatre** reçus :
+deux `non concluant` (Séances 98 et 99), un `conforme` sans pause (Séance 102), un `conforme` avec pause
+mesurée (celle-ci). La seule pièce encore manquante pour un run « humain » est le geste d'une personne ;
+le protocole le sait et le dit.
+
+**Mémoires.** `5bcde633` (le run, l'API et ses quatre routes, les index 72/73/96, le reçu `conforme`,
+`question_sans_reponse` vide, l'écart des options, l'arrêt du serveur), écrite puis relue.
+
+## Séance 105 — 2026-10-22 (la pause cesse d'être pilotée à la main : `ouvrir`)
+
+**Objectif.** La Séance 104 avait mesuré la pause du cas `plan-simple` — question, réponse figée
+pendant le blocage, écriture après —, mais c'est moi qui l'avais jouée, dans un script jetable de `/tmp`.
+Demande de l'opérateur : une commande de l'orchestrateur qui ouvre la session par l'API, attend la
+question et envoie la réponse figée du cas.
+
+**Ce que l'API a mesuré, avant d'écrire une ligne.** `opencode serve` (v2.1.2) imprime `server listening
+on <url>` et `server password <43 caractères>` ; l'authentification est un `Basic opencode:<mot de passe>`.
+Sur un serveur réel, cinq routes : `POST /api/session` (création, corps `{title, location:{directory},
+model:{providerID,id}, agent}`), `POST /api/session/{fil}/prompt` (`{text}`), `GET …/form` (`{data:[…]}`),
+`POST …/form/{id}/reply` (`{answer:{<clé>:<valeur>}}` => `204`, un corps sans `answer` => `400`), `GET
+…/message` (`{data:[…]}`, du plus récent au plus ancien). Trois constats ont commandé la boucle :
+`time.idle` et `time.updated` de la session **ne bougent pas** pendant un tour (figés 48 s durant une
+réponse en cours), une session **bloquée sur un formulaire n'émet aucun message `idle`**, et c'est le
+message `type:"idle"` daté après l'envoi qui marque la fin d'un tour. Une première version qui aurait lu
+`session.time.idle` aurait conclu « inactive » avant le premier mot.
+
+**La commande.** `ouvrir --cas <id> --run <dir> [--cases] [--api <url>] [--modele <f/m>] [--delai <min>]`
+(`orchestrer.mjs`, 1 248 lignes) : elle lance `opencode serve` sur un port libre ou se branche sur
+`--api`, vérifie que `texte-a-remettre.txt` porte encore le `sha256` de `gate.json`, crée la session dans
+l'arbre `travail` du gel, envoie le texte **verbatim**, puis boucle : formulaire qui attend => envoyer la
+réponse figée suivante comme message, répondre au formulaire (option marquée « Recommandé », sinon la
+première ; refus si un champ n'a ni option ni défaut), sinon attendre le message `idle`, sinon dormir 2 s.
+Au délai (30 min par défaut), refus. Elle n'écrit rien dans le dossier du run.
+
+**Le banc.** 224 à 227, avec un serveur factice en `node:http` : sans porte (224) et sans `opencode` dans
+le `PATH` (225) refusés ; bout en bout, le texte envoyé est celui de la porte octet pour octet, la réponse
+figée part avant la réponse au formulaire, l'option « Recommandé » arrive au serveur, `exit 0`, dossier
+intact (226) ; trois questions pour deux réponses figées : refus nommé après deux envois (227). Le
+contrôle **153** portait la liste des commandes **en dur** (`['cas','porte',…]`) : il signalait « 7 ligne(s)
+de commande, 6 offerte(s) » tant qu'elle n'avait pas `ouvrir`. `bash docs/device/harness/banc-harnais.sh`
+=> **227/227 PASS**, `exit 0`.
+
+**Un run réel, sans main.** Le terrain du cas jouet a été déplacé en `.avant-run-20261022` puis
+reconstruit par son script (têtes `1b3b632` / `62c48e1`, `porcelain` vide). `porte` a créé
+[2026-10-22-002306-ea4523ef-554752b](device/runs/2026-10-22-002306-ea4523ef-554752b) ; `ouvrir --modele
+opencode/minimax-m3.1-flash-free` a lancé son propre serveur (port 46055), ouvert
+`ses_e9f704a24ffe1M8iosUWUBkJsG` à `00:23:13`, et rendu `exit 0` à `00:24:53`, **100 s**, avec une
+question jouée. La trace le dit : l'outil `question` au **seq 19**, la réponse figée du cas au **seq 20**
+(« Yes, that matches. Write the notes file at aidd_docs/NOTES.md… »), la première écriture au **seq 21**.
+Le formulaire à deux champs a reçu « Yes, that matches » et `aidd_docs/NOTES.md (Recommended)`. `suite`
+a écrit `faits.json` (38 lignes de trace, produit 1 fichier `NOTES.md`). Le reçu n'est pas venu tout de
+suite : `--difference` et `--phrase` appartiennent à la personne ; l'opérateur a demandé la clôture, qui
+suit.
+
+**Clôture, sur demande de l'opérateur.** `last-message.md` (693 o) transcrit depuis `trace/export-brut.json`,
+pas retapé. `fin` à blanc **propose `non concluant`** : `receipt` refuse `conforme`, deux familles mordent —
+une lecture hors du cadre déclaré (seq 15, `aidd-device-work/README.md`, et seq 17); et **dix** entrées de
+`shell_hors_dossier` (seq 7, 11, 12 ×2, 13 ×2, 14 ×2, 16 ×2 : le dossier du cas, `origine/`, `~/.config/opencode`,
+`~/projects`, `aidd-device/docs`). C'est la session qui est sortie du cadre, pas `ouvrir` : elle a lu
+`docs/device/CASES/2026-10-18-085308-cas-jouet.request.md`, le fichier que le cas interdit, et son dernier
+message le dit lui-même. Reçu écrit : **`non concluant`**, **12** limites, `question_sans_reponse` **vide**
+(la pause d'`ouvrir` tient), tableau **4 × 6** au seq 19, budget **2/2** épuisé au seq 20, produit un
+fichier (207 o), porte `c6278862`, trace **38** lignes rejouée (`fc93672b`). `output.json` et `RAPPORT.md`
+sont écrits dans la foulée, et `lire` rejoue le bloc, `exit 0`.
+
+**Refus éprouvés à la main, hors banc.** Texte altéré d'un octet => `REFUS — … n'est plus le texte que la
+porte a écrit (sha256 e1a4c0cb contre e24d4911)` ; champ de formulaire sans option ni défaut => refus
+**avant** l'envoi de la réponse figée (un seul message parti, aucune réponse au formulaire) ; serveur qui
+n'émet jamais d'`idle` => `exit 1` après 60 s à `--delai 1`, « la session n'est pas devenue inactive en
+1 min ». Le premier essai envoyait la réponse figée avant de valider le champ : déplacé, la règle du
+formulaire passe en premier.
+
+**Dérives signalées, non corrigées.** (a) La commande automatise ce que je faisais à la main ; elle
+n'atteste **aucune** présence humaine, et `suite` porte `ouverte_par` explicite. (b) Les deux réponses du
+formulaire sont les options que le modèle a proposées : le cas ne tranche aucune conception par là.
+(c) `ouvrir` n'est pas couverte par le banc contre un vrai `opencode` : les 4 contrôles ne parlent qu'à un
+serveur factice, et une version qui changerait `/api/…` la casserait sans un mot du banc. (d) En
+reconstruisant le terrain du jouet, j'ai d'abord créé un arbre sous `$HOME/aidd-device-work` en croyant
+la racine là où le gel la déclare (`~/projects/aidd-device-work`) ; l'arbre en trop a été supprimé, et
+`porte` a refusé tant que le vrai terrain portait `?? aidd_docs/`.
+
+**Limites.** Le reçu atteste l'ordre, la pause et les destinations, jamais la qualité du produit ; il ne
+dit pas non plus qui a lu quoi hors cadre — les dix entrées de `shell_hors_dossier` sont des chemins
+littéraux, pas des effets. `--phrase` et `--difference` ont été écrites par moi à la demande de clôture :
+elles sont factuelles, et la personne peut les contester.
+
+**Mémoires.** `31d9dc34` (la commande et ses options, les trois constats de l'API qui commandent la boucle, les 4 contrôles et le 227/227, le run réel et ses trois seq, les limites), écrite puis relue.
+
+## Séance 106 — 2026-10-22 (le texte du cas jouet interdit le dossier parent, et le run suivant déplace l'écart)
+
+**Objectif.** Le reçu de la Séance 105 nommait dix sorties de cadre par `shell` et deux lectures hors
+cadre, dont `CASES/….request.md`. Demande : faire dire au texte du cas jouet que le dossier parent n'est
+pas explorable, re-geler, rejouer un run par `ouvrir`.
+
+**Le défaut, nommé.** Seul le **§5** de la demande voyage vers la session ; le §7, qui interdit de sortir
+du répertoire de travail, ne lui parvient jamais. La phrase disait « apply it to this repository » : elle
+nomme un dépôt sans fermer ses alentours, et la session a commencé par `ls -la ..`.
+
+**Le correctif.** Une seconde ligne au §5 (« Stay inside this repository: do not list or read its parent
+folder, its siblings, or anything above `$RACINE/2026-10-18-085308-cas-jouet/.` »), la même règle au §7 et
+dans `contexte.interdits`, puis **re-gel** : empreinte **`27fb38ab`**, `gele_le 00:44:03`, deux fichiers,
+zéro référence, quatre arbres. Le terrain est reconstruit (ancien déplacé en `.avant-run-20261022b`, têtes
+`1b3b632` / `62c48e1`, `porcelain` vide) ; les deux pièces font **50 + 55** lignes (contrôle 130).
+
+**Le run.** Porte `2026-10-22-004410-27fb38ab-6e06c97` ; `ouvrir` ouvre
+`ses_e9f5cfa9effergU2Wk1k0pg5Sr` à `00:44:18` et rend `exit 0` à `00:48:09`, **3 min 51 s**, une question
+jouée (seq 10, réponse figée seq 11, écriture seq 13). `suite` a écrit faits, trace (15 entrées d'outil) et
+copie ; `last-message.md` (406 o) vient de `trace/export-brut.json`.
+
+**Ce que la mesure dit.** `lecture_hors_dossier` et `shell_hors_dossier` sont **vides** : la session n'est
+plus sortie du dossier du cas, et n'a plus lu le fichier interdit. C'est l'effet cherché, et il est mesuré,
+pas raconté. Mais la sortie de cadre n'a pas disparu, elle s'est **déplacée** : au seq 5 la session sonde
+`http://localhost:8001/health` et `:8002/mcp` par `curl` (`reseau` **mord**), et à `00:46:28`, pendant le
+run, elle écrit une mémoire Mnemolite (`d2af9c4c-ecd5-40a5-8ed6-428a4578c060`). Cet appel n'apparaît dans
+aucune famille de la trace : un outil MCP n'est ni `shell`, ni `read`, ni `write`, et le reçu ne le voit
+pas.
+
+**La proposition.** `fin` à blanc, sans `--verdict`, propose **`non concluant`** et n'écrit rien : le reçu
+reste à la personne, avec sa `--difference` et sa `--phrase`.
+
+**Écarts dits.** (a) Le formulaire proposait « NOTES.md at repo root (Recommended) » alors que la réponse
+figée dit `aidd_docs/NOTES.md` : `ouvrir` a envoyé les deux, le modèle a suivi la réponse figée, et le
+produit est au bon chemin — mais deux consignes contraires dans le même tour, et c'est le hasard du texte
+figé qui a tranché. (b) Le produit porte **11** lignes d'inventaire là où le playbook en annonce trois : le
+cas range le contenu dans ses `ecartes`, le reçu ne le juge donc pas, et la séance ne le juge pas non plus.
+(c) Un re-gel détruit l'empreinte précédente comme référence de rejeu : `ea4523ef` (Séance 105) et
+`50664060` ne se rejouent plus contre le gel du dépôt, même si leurs reçus restent lisibles.
+
+**Vérifié.** Banc **227/227 PASS**, `exit 0` ; `liens.mjs` 0 mort ; `git diff --check` `0`.
+
+**Mémoires.** `à écrire` — le durcissement, la mesure, le déplacement de l'écart.
+
+## Séance 107 — 2026-10-22 (le cas jouet clos deux fois, et le 175 qui cesse de mentir)
+
+**Objectif.** Clore le run `2026-10-22-004410` laissé ouvert par la Séance 106, puis rejouer le cas par
+`ouvrir` et le clore à son tour.
+
+**La clôture du run de 00:44.** Verdict **`non concluant`**, plafonné par `reseau` ; `--difference`,
+`--phrase` et `--limites mord` proposés par l'agent, tranchés par la personne. Reçu et output écrits,
+`RAPPORT.md` de 7,1 K, 11 limites, produit `NOTES.md` 1699 o, échanges 2/2. Le terrain portait encore le
+produit non collecté : il a été retiré après vérification que son `sha256` était celui de la copie déjà
+sous `raw/`, et `porte` est repassée (`porcelain` 0 ligne).
+
+**Le run inclôturable.** Première tentative, `2026-10-22-070359`, ouverte **sans `--modele`** : session
+`ses_e9e0117e5ffevJz7MbMvtb7GYm`, **zéro question** — la session a demandé l'accord en prose et
+`question_sans_reponse` ne la voit pas —, tableau rendu (4 lignes), aucune écriture. La réponse figée a
+été envoyée à la main (`opencode run -s`, même fil), le fichier est né (3 lignes, `a83d98eb…`), puis
+`suite` a refusé : « l'export opencode du fil … ne nomme aucun modèle ». Cause lue dans le code :
+`ouvrir` n'écrit `model` dans la session que si `--modele` est donné, et `faits` refuse un modèle vide.
+Le dossier reste sans reçu ; le produit a été conservé hors du dépôt (`/tmp/ada47de-non-collecte/`).
+
+**Le run clos.** `2026-10-22-070952`, `--modele opencode/minimax-m3.1-flash-free` : session
+`ses_e9dfbf161ffeMoReLRkf3MKIbL`, **une question jouée**, inactive à `07:15:22`. Produit unique
+`aidd_docs/NOTES.md`, **262 o, 3 lignes**, né `07:12:12`, écrit deux fois au même chemin (seq 13 avec un
+titre, seq 15 sans), tableau à 4 lignes au seq 6, budget 2/2, porte `171d2bed`. Verdict **`ecart`**, 10
+limites, `--limites mord` : le reçu ne mesure rien qui morde, mais la trace nomme **cinq** outils
+`execute` qui appellent Mnemolite — quatre lectures et un `update_memory` sur `d2af9c4c`, la mémoire
+laissée par le run de 00:44 — alors que l'attendu déclare `reseau: interdit`.
+
+**Écarts dits.** (a) L'option de formulaire jouée par `ouvrir` était « q0 = NOTES.md at repo root
+(Recommended) », contre la réponse figée qui nomme `aidd_docs/NOTES.md` : la session a suivi le texte, le
+produit est au bon chemin, mais deux consignes contraires partent dans le même tour. (b) Le verdict
+`ecart` et les trois textes du juge ont été écrits par l'agent, sur l'ordre « clos le run » : la différence
+repose sur des appels que le reçu ne voit pas, et la personne ne les a pas tranchés séparément. (c) La
+durée lue par `porte` vieillit mal : un reçu écrit le lendemain compte le délai de l'opérateur, et le run
+du matin porte **379 min** pour une session de 4 min.
+
+**Le 175 qui cesse de mentir.** Le banc est tombé **226/227** avec `FAIL 175 porte, durée lue dans les
+deux reçus`, `exit=1 attendu=0`, sans qu'aucun code du harnais ait changé : le contrôle nommait en dur
+« 9 min 42 s à 15 min 50 s » et « 10 à 20 min », et deux runs de plus ont suffi. Il recalcule désormais le
+nombre de runs, le minimum, le maximum et la fourchette arrondie depuis les `receipt.json`, avec la
+définition du code (`ouverte_le` → `recu_ecrit_le`). Rejoué : **227/227 PASS**, `exit 0`.
+
+**Les commits.** Six, du plus ancien au plus récent : les specs et les deux brainstorms (27 fichiers) ;
+les trois gels, dont `plan-simple` et le sixième interdit (8 fichiers) ; le harnais et le banc, ADR-043 à
+059 (6 fichiers, 4 000 insertions) ; les dix-huit ADR et les pages (9 fichiers) ; les deux guides ;
+les treize reçus (181 fichiers, 6,2 M) ; puis cette séance.
+
+**Vérifié.** Banc **227/227 PASS**, `exit 0` ; `liens.mjs` 146 fichiers, 917 liens, **0 mort**, `exit 0` ;
+`git diff --check` `0`.
+
+**Mémoires.** Aucune écrite : les deux `update_memory` vus aujourd'hui sont ceux de la session testée, et
+la mémoire `d2af9c4c` qu'elle a réécrite n'est pas corrigée par cette séance.

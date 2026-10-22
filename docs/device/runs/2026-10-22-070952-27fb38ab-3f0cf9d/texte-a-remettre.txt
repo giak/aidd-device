@@ -1,0 +1,2 @@
+Read the mini playbook at /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet.
+Stay inside this repository: do not list or read its parent folder, its siblings, or anything above /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/.

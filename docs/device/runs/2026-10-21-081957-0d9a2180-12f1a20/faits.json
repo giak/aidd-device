@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.1 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_ea2de04f7ffehVQXm4BRp05HaI",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "giak",
+    "ouverte_le": "2026-10-21T08:24:30+02:00"
+  },
+  "horodatage_debut": "2026-10-21T08:24:30+02:00",
+  "horodatage_fin": "2026-10-21T08:39:56+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+  "trace": {
+    "source": "opencode 2.1.1 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/trace/export-brut.json",
+    "commande": "opencode session export ses_ea2de04f7ffehVQXm4BRp05HaI"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "giak",
+    "quand": "2026-10-21T08:39:56+02:00",
+    "texte": "orchestrateur : le fil a été ouvert et suivi par la personne, aucune session n'est simulée"
+  }
+}

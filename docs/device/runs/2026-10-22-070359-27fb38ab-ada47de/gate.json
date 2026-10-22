@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-18-085308-cas-jouet",
+  "passe_le": "2026-10-22T07:03:59.437192474+0200",
+  "passe_le_epoch": 1792645439,
+  "repertoire": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.freeze.json",
+    "empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+    "gele_le_epoch": 1792622643
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "head": "62c48e1",
+    "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/main"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-22-070359-27fb38ab-ada47de/texte-a-remettre.txt",
+    "sha256": "2e224aa0b90605d5f5d36f6a7879e306faab119c6b796b2b5941d578c9c98d7a",
+    "octets": 343
+  }
+}

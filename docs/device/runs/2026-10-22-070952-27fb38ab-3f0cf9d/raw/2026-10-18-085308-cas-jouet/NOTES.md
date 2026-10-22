@@ -1,0 +1,3 @@
+- Lire le dépôt avant d'écrire quoi que ce soit.
+- Montrer ce qui a été lu sous forme de tableau, une ligne par fichier, puis attendre l'opérateur.
+- N'écrire qu'un seul fichier, à l'emplacement demandé par l'opérateur, après confirmation du tableau.

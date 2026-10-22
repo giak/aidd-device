@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.1 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_ea2fcbb86ffeStrQPkoONhWbXb",
+    "modele": "ollama/qwen3:8b",
+    "ouverte_par": "agent",
+    "ouverte_le": "2026-10-21T07:50:57+02:00"
+  },
+  "horodatage_debut": "2026-10-21T07:51:03+02:00",
+  "horodatage_fin": "2026-10-21T08:11:07+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+  "trace": {
+    "source": "opencode 2.1.1 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0/trace/export-brut.json",
+    "commande": "opencode session export ses_ea2fcbb86ffeStrQPkoONhWbXb"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "agent",
+    "quand": "2026-10-21T08:11:07+02:00",
+    "texte": "session créée et conduite par l'agent via l'API opencode 2.1.1 ; la personne n'a pas parlé ; la question de l'outil a reçu la réponse figée dans le formulaire de l'outil"
+  }
+}

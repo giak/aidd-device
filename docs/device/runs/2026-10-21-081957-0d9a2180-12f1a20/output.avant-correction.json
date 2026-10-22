@@ -1,0 +1,47 @@
+{
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "attendu": "Au vu de la demande, la session lit la skill de la révision sous test, rend d'abord un tableau lu depuis le dépôt et attend la réponse de l'opérateur sans avoir modifié un seul fichier du projet, puis écrit sous `terrain/aidd_docs/` les seuls fichiers dont la colonne `Write to` de `references/memory-destinations.md` nomme la destination — `memory/backlog.md` en moins, écarté par l'opérateur — et termine par un court rapport de ce qui a changé.",
+  "produit_brut": "docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/raw/2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "difference": "le produit sous aidd_docs est présent (22 fichiers, pas de memory/backlog.md) ; la trace porte trois lectures sous deuteros-resurrected-web/aidd_docs/memory/ (seq 36), hors du dossier du cas, et terrain/AGENTS.md a été écrit hors produit par un câblage sync non demandé",
+  "verdict": "non concluant",
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "la mémoire décrit correctement l'architecture, les conventions et les décisions du terrain",
+      "critere": "le contenu ne se juge pas ici : aucune vérité de référence n'existe dans ce dispositif, et le cas mesure l'ordre des gestes, jamais la justesse du texte (v6 §8 : comparer, ne pas attribuer)"
+    },
+    {
+      "attendu": "les gabarits sont remplis plutôt que laissés vides",
+      "critere": "la complétude d'une section dépend du dépôt lu ; `memory-rules.md` interdit au contraire la section inutilisée, et rien dans la révision sous test ne fixe un taux de remplissage"
+    },
+    {
+      "attendu": "l'action `sync` a câblé les outils IA du poste et la mémoire est « wired »",
+      "critere": "hors du cas par la demande §7 : le câblage écrit hors du répertoire de travail ; le flux de la skill va jusqu'à `sync`, la demande s'arrête avant"
+    },
+    {
+      "attendu": "une ligne écrite à la main dans un banc survit à `refresh`",
+      "critere": "le défaut est connu de l'auteur du commit et chiffré dans son message (« survives a refresh 1 run in 2 ») ; le cas prend un dépôt **sans** banc, donc `refresh` n'est pas exercé — l'attendu serait non mesurable ici"
+    },
+    {
+      "attendu": "le nombre de lignes du tableau, et le nombre de fichiers écrits",
+      "critere": "le scan décide ce que le dépôt prouve ; ni la révision sous test ni la demande ne fixent un chiffre, et un chiffre écrit ici serait une invention"
+    },
+    {
+      "attendu": "le rapport final prend la forme de `assets/report.md`",
+      "critere": "cet asset est la sortie de l'action `check`, absente du flux `setup` ; exiger sa forme jugerait une action que le cas ne déclenche pas"
+    },
+    {
+      "attendu": "la session n'a posé aucune question hors du tableau",
+      "critere": "la skill demande d'« ask for what the repo cannot prove » : une question de ce type est prévue, et la troisième réponse figée la couvre ; l'interdire contredirait la révision sous test"
+    }
+  ],
+  "phrase": "la session a rendu le tableau, attendu la réponse, écrit la banque sous aidd_docs sans backlog, mais a lu trois fichiers hors dossier et câblé AGENTS.md, donc le run ne conclut pas",
+  "gel_verifie": {
+    "le": "2026-10-21T09:16:49+02:00",
+    "empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "fichiers": 2,
+    "references": 8
+  },
+  "juge_le": "2026-10-21T09:16:49+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/receipt.json"
+}

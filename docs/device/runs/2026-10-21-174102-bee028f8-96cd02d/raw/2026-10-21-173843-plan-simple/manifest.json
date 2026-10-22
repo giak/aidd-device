@@ -1,0 +1,60 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-174102-bee028f8-96cd02d",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain"
+  },
+  "collecte_le": "2026-10-21T18:06:05+02:00",
+  "fichiers": [
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-1.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-1.md",
+      "sha256": "ac3ac36ace276be3b4ae4b22aadd4be023860bf3fe9b9ea2eaa5a1638ae465c7",
+      "taille": 6561,
+      "birth": "2026-10-21 17:51:36.924459896 +0200",
+      "birth_epoch": 1792597896
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-2.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-2.md",
+      "sha256": "7d1383202d809f1fe8c214df15750a4fad7434567b761394e9034897986ab620",
+      "taille": 8623,
+      "birth": "2026-10-21 17:51:55.629213126 +0200",
+      "birth_epoch": 1792597915
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-3.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-3.md",
+      "sha256": "7e6d97db5dc23f1267c45cdbe258c3e43f222210798e42a5d3e58dcd62bbc1de",
+      "taille": 11080,
+      "birth": "2026-10-21 17:52:11.059834884 +0200",
+      "birth_epoch": 1792597931
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-4.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-4.md",
+      "sha256": "93a3ad6fe763406931340bf675fe6afa9c85707ad1b5392a3e1f7b68a25daa2f",
+      "taille": 7163,
+      "birth": "2026-10-21 17:52:27.975516860 +0200",
+      "birth_epoch": 1792597947
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-5.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/phase-5.md",
+      "sha256": "9c422a111d18ae2ff354bb76c4d96fc30f3cc67d6e2e03f578aca136692a115c",
+      "taille": 6884,
+      "birth": "2026-10-21 17:52:39.789993402 +0200",
+      "birth_epoch": 1792597959
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copie-tous-les-manquants/plan.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copie-tous-les-manquants/plan.md",
+      "sha256": "08bf9606f3b99429a6d99039197e4ac8c0b055be9d3e3d5a2bdca5b6fc939142",
+      "taille": 14390,
+      "birth": "2026-10-21 17:51:24.075942793 +0200",
+      "birth_epoch": 1792597884
+    }
+  ]
+}

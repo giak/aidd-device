@@ -1,0 +1,294 @@
+{
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "recu_ecrit_le": "2026-10-21T08:12:55+02:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.1 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_ea2fcbb86ffeStrQPkoONhWbXb",
+    "modele": "ollama/qwen3:8b",
+    "ouverte_par": "agent",
+    "ouverte_le": "2026-10-21T07:50:57+02:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_ea2fcbb86ffeStrQPkoONhWbXb",
+    "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "modele": "ollama/qwen3:8b",
+    "ouverte_le": "2026-10-21T07:50:57+02:00",
+    "premier_message": "2026-10-21T07:51:03+02:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
+    "sha256": "5aac04fb06b8ba74234a59521048f80499f4b4079062e501ade07e9b55f36d76",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json",
+    "empreinte_gel": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "gele_le": "2026-10-15T22:11:24.782242943+0200"
+  },
+  "gel_verifie": {
+    "le": "2026-10-21T08:12:55+02:00",
+    "empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "fichiers": 2,
+    "references": 8
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/projects/framework",
+  "terrain_rev": "416ec1f",
+  "terrain_rev_arbre": "/home/giak/projects/audio-sync-tool",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+  "horodatage_debut": "2026-10-21T07:51:03+02:00",
+  "horodatage_fin": "2026-10-21T08:11:07+02:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.1 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0/trace/echange.jsonl",
+    "commande": "opencode session export ses_ea2fcbb86ffeStrQPkoONhWbXb",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 16,
+    "echanges_dans_la_fenetre": 16,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "3846a03a7a90859edb290bb4108339adc72091614e8d251de5a672e8d9fe2eb1",
+    "rejoue_le": "2026-10-21T08:12:55+02:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_ea2fcbb86ffeStrQPkoONhWbXb",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "sha256": "3846a03a7a90859edb290bb4108339adc72091614e8d251de5a672e8d9fe2eb1",
+    "brut_sha256": "9961b704c8dc997d5482029be77932e2813a688bd05dc6c985a401b59e6caa9b",
+    "rejoue_le": "2026-10-21T08:12:55+02:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": false,
+    "index": null,
+    "seq": null,
+    "ts": null,
+    "lignes": 0,
+    "colonnes": 0
+  },
+  "echanges": {
+    "budget": 3,
+    "utilises": 1,
+    "epuise_par": null
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-073817-0d9a2180-30b82d0/gate.json",
+    "sha256": "e48d1bdea324c801cd4d434897e514a1980b70d42fa72c25a6c13836736a1a75",
+    "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+    "passe_le": "2026-10-21T07:38:17.962249352+0200",
+    "passe_le_epoch": 1792561097,
+    "repertoire": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "gel_empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "gele_le_epoch": 1792095084,
+    "arbre": {
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": []
+    },
+    "texte_sha256": "832036f776dcd93724d3db40e0da53c67ba4a138439c8b824f548ed50f384d40"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "?? .freebuff/",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/audio-sync-tool",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? .freebuff/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/audio-sync-tool.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin",
+        "head": "4c39e5c5",
+        "head_complet": "4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd",
+          "origin/feat/freebuff-host-profile",
+          "origin/harnais/aidd-sous-freebuff",
+          "origin/fix/detect-kilo-and-freebuff",
+          "origin/feat/aidd-test-protocol",
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "?? .freebuff/",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/audio-sync-tool",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? .freebuff/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/audio-sync-tool.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin",
+        "head": "4c39e5c5",
+        "head_complet": "4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd",
+          "origin/feat/freebuff-host-profile",
+          "origin/harnais/aidd-sous-freebuff",
+          "origin/fix/detect-kilo-and-freebuff",
+          "origin/feat/aidd-test-protocol",
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": true,
+    "chemins": [],
+    "fichiers": [],
+    "verifie": {
+      "fichiers": 0,
+      "manifeste_sha256": "ec4814399baf5f4b89bdfbc68e525e2399d5ec64351aa9e8756573de2b653bc4",
+      "last_message_sha256": "225401baf97224195429ebb9e41644125c6f88ac925112f9a71dc3ca53c931d2"
+    }
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "agent",
+    "quand": "2026-10-21T08:11:07+02:00",
+    "texte": "session créée et conduite par l'agent via l'API opencode 2.1.1 ; la personne n'a pas parlé ; la question de l'outil a reçu la réponse figée dans le formulaire de l'outil"
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": true,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "lecture_hors_dossier": []
+  },
+  "verdict": "non concluant",
+  "limites": [
+    "la session n'a rien produit : le produit est sa sortie brute (§9)",
+    "la trace ne porte aucun tableau rendu par la session (§5, F2)"
+  ]
+}

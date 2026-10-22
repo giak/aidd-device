@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e9dfbf161ffeMoReLRkf3MKIbL",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "buffy (agent Freebuff), à la demande de giak",
+    "ouverte_le": "2026-10-22T07:09:55+02:00"
+  },
+  "horodatage_debut": "2026-10-22T07:09:56+02:00",
+  "horodatage_fin": "2026-10-22T07:15:22+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/trace/export-brut.json",
+    "commande": "opencode session export ses_e9dfbf161ffeMoReLRkf3MKIbL"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "buffy (agent Freebuff), à la demande de giak",
+    "quand": "2026-10-22T07:15:22+02:00",
+    "texte": "ouvrir a joué la question et son option « Recommandé » (q0 = NOTES.md at repo root), alors que la réponse figée nomme aidd_docs/NOTES.md : le fichier est bien allé sous aidd_docs/"
+  }
+}

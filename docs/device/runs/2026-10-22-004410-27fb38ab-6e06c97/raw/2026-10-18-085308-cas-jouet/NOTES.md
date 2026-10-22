@@ -1,0 +1,11 @@
+- Le dépôt `terrain` ne contient que deux fichiers suivis par git : `README.md` et `app.py` ; `git ls-files` renvoie exactement 2 lignes et `README.md` l'annonce lui-même (« Deux fichiers, et rien de plus. »).
+- `README.md` (56 o, 3 lignes) est un simple énoncé de composition : titre « terrain du cas jouet » puis « Deux fichiers, et rien de plus. » ; il ne contient aucune section d'installation, d'usage ou de test.
+- `app.py` (19 o, 1 ligne) se réduit à `print("cas jouet")` : aucun import, aucune fonction, aucun garde `if __name__ == "__main__"`, aucune CLI, aucune gestion d'erreur.
+- `python3 app.py` écrit `cas jouet` sur stdout et se termine avec le code de sortie 0 (Python 3.12.3).
+- L'arbre de travail était propre avant l'ajout de ces notes ; `git status --short` n'affiche désormais que `?? aidd_docs/`.
+- HEAD est détaché sur le commit `62c48e1` (« cas jouet : deux fichiers », 2026-10-18 07:00:00 +0200) ; la branche `main` existe en parallèle.
+- Le remote `origin` pointe vers un chemin local `.../cas-jouet/origine/terrain` (jamais lu) et aucun tag n'est défini.
+- Le dépôt ne contient ni `.gitignore`, ni fichier de dépendances, ni tests, ni CI, ni configuration : rien à installer ni à lancer au-delà de `python3 app.py`.
+- La liste exhaustive des fichiers s'obtient par `git ls-files` et `find . -path ./.git -prune -o -print`, qui ne renvoie que `README.md` et `app.py`.
+- L'état git se vérifie par `git status --short`, `git log -1 --format='%h %ad %s' --date=iso`, `git branch -a` et `git remote -v`.
+- Le contenu des deux fichiers se relit par `cat README.md` et `cat app.py`, et le comportement de `app.py` se contrôle par `python3 app.py`.

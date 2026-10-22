@@ -1,0 +1,575 @@
+{
+  "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "recu_ecrit_le": "2026-10-21T09:16:49+02:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.1 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_ea2de04f7ffehVQXm4BRp05HaI",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "giak",
+    "ouverte_le": "2026-10-21T08:24:30+02:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_ea2de04f7ffehVQXm4BRp05HaI",
+    "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_le": "2026-10-21T08:24:30+02:00",
+    "premier_message": "2026-10-21T08:24:30+02:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
+    "sha256": "5aac04fb06b8ba74234a59521048f80499f4b4079062e501ade07e9b55f36d76",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.freeze.json",
+    "empreinte_gel": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "gele_le": "2026-10-15T22:11:24.782242943+0200"
+  },
+  "gel_verifie": {
+    "le": "2026-10-21T09:16:49+02:00",
+    "empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "fichiers": 2,
+    "references": 8
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/projects/framework",
+  "terrain_rev": "416ec1f",
+  "terrain_rev_arbre": "/home/giak/projects/audio-sync-tool",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+  "horodatage_debut": "2026-10-21T08:24:30+02:00",
+  "horodatage_fin": "2026-10-21T08:39:56+02:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.1 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/trace/echange.jsonl",
+    "commande": "opencode session export ses_ea2de04f7ffehVQXm4BRp05HaI",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 180,
+    "echanges_dans_la_fenetre": 180,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "52956c1de454bce7ab4c91ce5009a68b2b087fdac0953af407d99dfadbaf804b",
+    "rejoue_le": "2026-10-21T09:16:49+02:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_ea2de04f7ffehVQXm4BRp05HaI",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "sha256": "52956c1de454bce7ab4c91ce5009a68b2b087fdac0953af407d99dfadbaf804b",
+    "brut_sha256": "a30085a1fc2b8620fae2c0c654666580703ba4a1bc3cde585530f135c9719df6",
+    "rejoue_le": "2026-10-21T09:16:49+02:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": true,
+    "index": 65,
+    "seq": 22,
+    "ts": 1792564081099,
+    "lignes": 11,
+    "colonnes": 2
+  },
+  "echanges": {
+    "budget": 3,
+    "utilises": 2,
+    "epuise_par": null
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-081957-0d9a2180-12f1a20/gate.json",
+    "sha256": "f63008146ca327d85948a8cd364b4cd3622c868260b6959d8304d1195f114340",
+    "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+    "passe_le": "2026-10-21T08:19:57.280252574+0200",
+    "passe_le_epoch": 1792563597,
+    "repertoire": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+    "gel_empreinte": "0d9a2180c0f1251f785727d726d446d4fa9387331143c35cca5a701b678204e8",
+    "gele_le_epoch": 1792095084,
+    "arbre": {
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": []
+    },
+    "texte_sha256": "832036f776dcd93724d3db40e0da53c67ba4a138439c8b824f548ed50f384d40"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "?? .freebuff/",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/audio-sync-tool",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? .freebuff/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/audio-sync-tool.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin",
+        "head": "4c39e5c5",
+        "head_complet": "4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd",
+          "origin/feat/freebuff-host-profile",
+          "origin/harnais/aidd-sous-freebuff",
+          "origin/fix/detect-kilo-and-freebuff",
+          "origin/feat/aidd-test-protocol",
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "?? .freebuff/",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/audio-sync-tool",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? .freebuff/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/audio-sync-tool.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin",
+        "head": "4c39e5c5",
+        "head_complet": "4c39e5c59f54b9b34b51af3ee552dbfb8dfb6651",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd",
+          "origin/feat/freebuff-host-profile",
+          "origin/harnais/aidd-sous-freebuff",
+          "origin/fix/detect-kilo-and-freebuff",
+          "origin/feat/aidd-test-protocol",
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? AGENTS.md",
+          "?? aidd_docs/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": false,
+    "chemins": [
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/CONTRIBUTING.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/GUIDELINES.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/README.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/README.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/api.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/architecture.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/cli.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/codebase-map.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/coding-assertions.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/data.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/database.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/deployment.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/design.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/ecosystem.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/external/.gitkeep",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/forms.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/integration.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/internal/.gitkeep",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/navigation.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/project-brief.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/testing.md",
+      "raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/vcs.md"
+    ],
+    "fichiers": [
+      {
+        "chemin": "CONTRIBUTING.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/CONTRIBUTING.md",
+        "sha256": "47be4d90ca8eef35adb577c28b26f851d24ef40b84aa4ad5c94e00e1d4f708d3",
+        "taille": 1205,
+        "birth": "2026-10-21 08:35:42.892607471 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "GUIDELINES.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/GUIDELINES.md",
+        "sha256": "b0a438fefc57748455b9554aac923d8e3d862b26f0c07ecdeccd22658a965ad2",
+        "taille": 872,
+        "birth": "2026-10-21 08:35:42.891571809 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "README.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/README.md",
+        "sha256": "060093998e3e734820d160f4b65bc411595f90b39e36b0482578ff4b8eb29452",
+        "taille": 1135,
+        "birth": "2026-10-21 08:35:42.889571725 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "memory/README.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/README.md",
+        "sha256": "ba6fbd67da852baf5e2cd7262b46e5fc8bd9b747ac92f7c45c9ff85e3be8515e",
+        "taille": 1539,
+        "birth": "2026-10-21 08:35:42.894290366 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "memory/api.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/api.md",
+        "sha256": "843513108ba9a9e22cd9a7a025f047ff604d1cfb8b8d7a567657a6e687e79db2",
+        "taille": 1876,
+        "birth": "2026-10-21 08:36:50.536410006 +0200",
+        "birth_epoch": 1792564610
+      },
+      {
+        "chemin": "memory/architecture.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/architecture.md",
+        "sha256": "7b946ea5e13d0a69474ceb69c017aac51b438ccd57dd878293f6fb5cf95620d6",
+        "taille": 4731,
+        "birth": "2026-10-21 08:36:05.933538895 +0200",
+        "birth_epoch": 1792564565
+      },
+      {
+        "chemin": "memory/cli.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/cli.md",
+        "sha256": "ff3d3fa975ad628f88d15bd69060987cb3aa4d432e08a34657c930eb89f79dca",
+        "taille": 1517,
+        "birth": "2026-10-21 08:37:02.912929011 +0200",
+        "birth_epoch": 1792564622
+      },
+      {
+        "chemin": "memory/codebase-map.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/codebase-map.md",
+        "sha256": "c1f7668a53378f842bf08d8b850ce6bcdf74cebfcf5c49197105adc21eedaf1f",
+        "taille": 2192,
+        "birth": "2026-10-21 08:36:18.070048143 +0200",
+        "birth_epoch": 1792564578
+      },
+      {
+        "chemin": "memory/coding-assertions.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/coding-assertions.md",
+        "sha256": "ac7d2ccdbd82789c29d0f1cd71ab84304cc749ea548288ed03ca4215325c33d4",
+        "taille": 1665,
+        "birth": "2026-10-21 08:36:18.070048143 +0200",
+        "birth_epoch": 1792564578
+      },
+      {
+        "chemin": "memory/data.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/data.md",
+        "sha256": "b7d396fd9fac2474e3f916fe0c3eb6fc983945a9086f0f1ee1f54bb3d356787e",
+        "taille": 1710,
+        "birth": "2026-10-21 08:37:15.026436903 +0200",
+        "birth_epoch": 1792564635
+      },
+      {
+        "chemin": "memory/database.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/database.md",
+        "sha256": "9786f3afea856f98a170f4995b8bee8ef5d7918019ea2c6afd6093d8d302cd7d",
+        "taille": 1825,
+        "birth": "2026-10-21 08:37:15.026436903 +0200",
+        "birth_epoch": 1792564635
+      },
+      {
+        "chemin": "memory/deployment.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/deployment.md",
+        "sha256": "ab76a4bd8dff7bf00101f24a099180b6163c1d75757aca285341fb697a2ad25f",
+        "taille": 1056,
+        "birth": "2026-10-21 08:37:25.121860123 +0200",
+        "birth_epoch": 1792564645
+      },
+      {
+        "chemin": "memory/design.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/design.md",
+        "sha256": "0a95711954e536c101b68417945475c5401b243020692c5d6aa704babd3a9295",
+        "taille": 2321,
+        "birth": "2026-10-21 08:37:25.121860123 +0200",
+        "birth_epoch": 1792564645
+      },
+      {
+        "chemin": "memory/ecosystem.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/ecosystem.md",
+        "sha256": "1f14a804bf6d133f7245103fbe574fd05c23f5331d3fd11928715693dc827bdd",
+        "taille": 698,
+        "birth": "2026-10-21 08:36:50.536410006 +0200",
+        "birth_epoch": 1792564610
+      },
+      {
+        "chemin": "memory/external/.gitkeep",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/external/.gitkeep",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "taille": 0,
+        "birth": "2026-10-21 08:35:42.895571978 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "memory/forms.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/forms.md",
+        "sha256": "c8f05f9e02f08345a4ebbc42db12e278117b44778b034013fe1870f20d2d9a74",
+        "taille": 1188,
+        "birth": "2026-10-21 08:37:34.817266523 +0200",
+        "birth_epoch": 1792564654
+      },
+      {
+        "chemin": "memory/integration.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/integration.md",
+        "sha256": "b8da0fd22dd4ccc175c0205182428a88e1ad0e17e1aebd149086b7adeac39589",
+        "taille": 2398,
+        "birth": "2026-10-21 08:37:02.912929011 +0200",
+        "birth_epoch": 1792564622
+      },
+      {
+        "chemin": "memory/internal/.gitkeep",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/internal/.gitkeep",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "taille": 0,
+        "birth": "2026-10-21 08:35:42.895571978 +0200",
+        "birth_epoch": 1792564542
+      },
+      {
+        "chemin": "memory/navigation.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/navigation.md",
+        "sha256": "1d9635e2f53b972e0bcbfe950c6d677b437ac6e5076a847a228978574634e710",
+        "taille": 1146,
+        "birth": "2026-10-21 08:37:34.817266523 +0200",
+        "birth_epoch": 1792564654
+      },
+      {
+        "chemin": "memory/project-brief.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/project-brief.md",
+        "sha256": "da4dab7ce579cbc3ecf81db2d946e3dd0ae491e68183a5d8322e177c6aca00be",
+        "taille": 3342,
+        "birth": "2026-10-21 08:36:05.933538895 +0200",
+        "birth_epoch": 1792564565
+      },
+      {
+        "chemin": "memory/testing.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/testing.md",
+        "sha256": "51238172fda7f79a3da4fe5a95cfaa1d2d1cb59545fdc34addd574e889c7cf3b",
+        "taille": 2672,
+        "birth": "2026-10-21 08:36:32.611658193 +0200",
+        "birth_epoch": 1792564592
+      },
+      {
+        "chemin": "memory/vcs.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain/aidd_docs/memory/vcs.md",
+        "sha256": "e851622ba10be808a258ae36c763f8ec774c83b32bfd68b7ca2afb17d254a959",
+        "taille": 1440,
+        "birth": "2026-10-21 08:36:32.611658193 +0200",
+        "birth_epoch": 1792564592
+      }
+    ],
+    "verifie": {
+      "fichiers": 22,
+      "manifeste_sha256": "5e7b36d65d82b38fedc40fb9b38db8780cf96a594ae8adbffef228438748d824",
+      "last_message_sha256": "45a7c84f4ae6d868674a812d8f2cb1ba95a220ea047b4d6aa2eefba2946249f3"
+    }
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "giak",
+    "quand": "2026-10-21T08:39:56+02:00",
+    "texte": "orchestrateur : le fil a été ouvert et suivi par la personne, aucune session n'est simulée"
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": false,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "lecture_hors_dossier": [
+      {
+        "seq": 36,
+        "index": 112,
+        "ts": 1792564286392,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/project-brief.md"
+      },
+      {
+        "seq": 36,
+        "index": 113,
+        "ts": 1792564286392,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/ecosystem.md"
+      },
+      {
+        "seq": 36,
+        "index": 114,
+        "ts": 1792564286392,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/vcs.md"
+      },
+      {
+        "seq": 37,
+        "index": 117,
+        "ts": 1792564290521,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/architecture.md"
+      },
+      {
+        "seq": 37,
+        "index": 118,
+        "ts": 1792564290521,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/codebase-map.md"
+      },
+      {
+        "seq": 37,
+        "index": 119,
+        "ts": 1792564290521,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/coding-assertions.md"
+      },
+      {
+        "seq": 37,
+        "index": 120,
+        "ts": 1792564290521,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/testing.md"
+      },
+      {
+        "seq": 38,
+        "index": 122,
+        "ts": 1792564299442,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/deployment.md"
+      },
+      {
+        "seq": 38,
+        "index": 123,
+        "ts": 1792564299442,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/design.md"
+      },
+      {
+        "seq": 38,
+        "index": 124,
+        "ts": 1792564299442,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/navigation.md"
+      },
+      {
+        "seq": 38,
+        "index": 125,
+        "ts": 1792564299442,
+        "outil": "read",
+        "chemin": "/home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/README.md"
+      }
+    ]
+  },
+  "verdict": "non concluant",
+  "limites": [
+    "la trace ne porte pas la commande des outils shell (shell, bash) : une lecture faite par ce canal reste invisible",
+    "une lecture est sortie du dossier du cas : seq 36, outil « read », chemin /home/giak/projects/deuteros-resurrected-web/aidd_docs/memory/project-brief.md (demande §7)"
+  ]
+}

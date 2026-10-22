@@ -1,0 +1,286 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "recu_ecrit_le": "2026-10-22T07:16:47+02:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e9dfbf161ffeMoReLRkf3MKIbL",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "buffy (agent Freebuff), à la demande de giak",
+    "ouverte_le": "2026-10-22T07:09:55+02:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_e9dfbf161ffeMoReLRkf3MKIbL",
+    "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_le": "2026-10-22T07:09:55+02:00",
+    "premier_message": "2026-10-22T07:09:56+02:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.request.md",
+    "sha256": "8defa94072611509ff32c1392f35082932a58f151e9a3dbb45da25dbefccfdff",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-18-085308-cas-jouet.freeze.json",
+    "empreinte_gel": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+    "gele_le": "2026-10-22T00:44:03.002573734+0200"
+  },
+  "gel_verifie": {
+    "le": "2026-10-22T07:16:47+02:00",
+    "empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+    "fichiers": 2,
+    "references": 0
+  },
+  "framework_rev": "1b3b632",
+  "framework_rev_arbre": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework",
+  "terrain_rev": "62c48e1",
+  "terrain_rev_arbre": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+  "horodatage_debut": "2026-10-22T07:09:56+02:00",
+  "horodatage_fin": "2026-10-22T07:15:22+02:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/trace/echange.jsonl",
+    "commande": "opencode session export ses_e9dfbf161ffeMoReLRkf3MKIbL",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 40,
+    "echanges_dans_la_fenetre": 40,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "74196f2b6e54e46ddc720dd9acddcc60c2a42f6143aac5e8a539be1a7fa5a30a",
+    "rejoue_le": "2026-10-22T07:16:47+02:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_e9dfbf161ffeMoReLRkf3MKIbL",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "sha256": "74196f2b6e54e46ddc720dd9acddcc60c2a42f6143aac5e8a539be1a7fa5a30a",
+    "brut_sha256": "d8856290c99d5f664a0fc5803b00079c4e229361d4de7f3c2b9191839a678306",
+    "rejoue_le": "2026-10-22T07:16:47+02:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": true,
+    "index": 11,
+    "seq": 6,
+    "ts": 1792645806638,
+    "lignes": 4,
+    "colonnes": 5
+  },
+  "echanges": {
+    "budget": 2,
+    "utilises": 2,
+    "epuise_par": {
+      "seq": 7,
+      "ts": 1792645820920
+    }
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/gate.json",
+    "sha256": "171d2beda3bbd72ae8197b12dbfea3aa2290f78392f322c32ed8eda770c57923",
+    "cas": "2026-10-18-085308-cas-jouet",
+    "passe_le": "2026-10-22T07:09:52.518634310+0200",
+    "passe_le_epoch": 1792645792,
+    "repertoire": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "gel_empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+    "gele_le_epoch": 1792622643,
+    "arbre": {
+      "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+      "head": "62c48e1",
+      "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+      "porcelain": []
+    },
+    "texte_sha256": "2e224aa0b90605d5f5d36f6a7879e306faab119c6b796b2b5941d578c9c98d7a"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework",
+        "head": "1b3b632",
+        "head_complet": "1b3b632aa740e9f0882dc59959d8f6bdfa094b44",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain",
+        "head": "62c48e1",
+        "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin",
+        "head": "1b3b632",
+        "head_complet": "1b3b632aa740e9f0882dc59959d8f6bdfa094b44",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+        "head": "62c48e1",
+        "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework",
+        "head": "1b3b632",
+        "head_complet": "1b3b632aa740e9f0882dc59959d8f6bdfa094b44",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain",
+        "head": "62c48e1",
+        "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin",
+        "head": "1b3b632",
+        "head_complet": "1b3b632aa740e9f0882dc59959d8f6bdfa094b44",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+        "head": "62c48e1",
+        "head_complet": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+        "porcelain": [
+          "?? aidd_docs/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": false,
+    "chemins": [
+      "raw/2026-10-18-085308-cas-jouet/NOTES.md"
+    ],
+    "fichiers": [
+      {
+        "chemin": "NOTES.md",
+        "source": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain/aidd_docs/NOTES.md",
+        "sha256": "ddf7dda4be8f19673f64ed5737e27b0edd985def36277a713e88b9d943bc218e",
+        "taille": 262,
+        "birth": "2026-10-22 07:12:12.929173039 +0200",
+        "birth_epoch": 1792645932
+      }
+    ],
+    "verifie": {
+      "fichiers": 1,
+      "manifeste_sha256": "f0acef1435f911af8e8768abb0e8e0e04b6ea6e9dc2e239160b491159d6082da",
+      "last_message_sha256": "e1d20aabf0eab26784abce43fa08ddbbb6adaa8ccbf87cb5b7e1da4d225b32ad"
+    }
+  },
+  "cloisonnement": {
+    "attendu_vu": "non",
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "resolues": [
+        "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+        "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "resolues": [
+        "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain/aidd_docs"
+      ]
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "temoignage": {
+    "qui": "buffy (agent Freebuff), à la demande de giak",
+    "quand": "2026-10-22T07:15:22+02:00",
+    "texte": "ouvrir a joué la question et son option « Recommandé » (q0 = NOTES.md at repo root), alors que la réponse figée nomme aidd_docs/NOTES.md : le fichier est bien allé sous aidd_docs/"
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": false,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "question_sans_reponse": [],
+    "lecture_hors_dossier": [],
+    "shell_hors_dossier": [],
+    "shell_ecriture_hors_produit": [],
+    "shell_non_interpretable": [],
+    "reseau": [],
+    "hors_produit": []
+  },
+  "verdict": "ecart",
+  "limites": [
+    "le cas limite l'écriture à terrain/aidd_docs ; ce reçu compare les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture)",
+    "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    "la pause n'est mesurée que par l'outil de question déclaré (nom portant `question` ou `ask_user`) et contre le premier acte d'écriture nommé : une demande d'accord écrite dans un texte, une écriture faite par une commande shell, et un outil de question d'un autre nom ne sont pas vus (ADR-058)",
+    "les commandes shell sont lues quand leur texte est littéral (shell) ; une commande construite dynamiquement n'est pas interprétée, et le reçu le dit",
+    "le répertoire initial d'une commande shell est le `travail` du gel ; le reçu suit le texte, donc un `cd` qui aurait échoué ne déplace pas la lecture (ADR-051)",
+    "`/dev/null` est un puits : il n'est ni une lecture ni une écriture, les autres fichiers de périphérique restent comptés (ADR-053)",
+    "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
+    "hors_produit ne retient que les chemins nouveaux du porcelain : une modification ou une suppression d'un fichier déjà présent hors du produit n'est pas attribuée au run (ADR-051)",
+    "un dossier non suivi est une seule entrée du porcelain : le reçu nomme le dossier, pas chacun de ses fichiers ; les entrées sont comparées comme des chaînes, sans décoder les guillemets de git"
+  ]
+}

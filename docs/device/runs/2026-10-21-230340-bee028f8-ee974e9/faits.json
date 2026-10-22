@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent ?)",
+    "identifiant": "ses_e9fb7e081ffeccjeY17yzKLo8s",
+    "modele": "opencode/minimax-m3.1-flash-free",
+    "ouverte_par": "giak",
+    "ouverte_le": "2026-10-21T23:05:01+02:00"
+  },
+  "horodatage_debut": "2026-10-21T23:05:01+02:00",
+  "horodatage_fin": "2026-10-21T23:24:36+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-230340-bee028f8-ee974e9/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-230340-bee028f8-ee974e9/trace/export-brut.json",
+    "commande": "opencode session export ses_e9fb7e081ffeccjeY17yzKLo8s"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "giak",
+    "quand": "2026-10-21T23:24:36+02:00",
+    "texte": "orchestrateur : le fil a été ouvert et suivi par la personne, aucune session n'est simulée"
+  }
+}

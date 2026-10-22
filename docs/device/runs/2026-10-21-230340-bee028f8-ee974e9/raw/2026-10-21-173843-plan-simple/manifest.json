@@ -1,0 +1,52 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-21-230340-bee028f8-ee974e9",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain"
+  },
+  "collecte_le": "2026-10-21T23:24:37+02:00",
+  "fichiers": [
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-1.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-1.md",
+      "sha256": "b04eacf60cd23c4e3ab600acff3d44581332b3433e0cba825e0cae854febf50c",
+      "taille": 5029,
+      "birth": "2026-10-21 23:15:19.108998627 +0200",
+      "birth_epoch": 1792617319
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-2.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-2.md",
+      "sha256": "7d9eb1a0488d0df2521bba9c963a3055a7c4b45685bf0c8c998cc359e5131511",
+      "taille": 6702,
+      "birth": "2026-10-21 23:15:32.742552349 +0200",
+      "birth_epoch": 1792617332
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-3.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-3.md",
+      "sha256": "8cea20b44a487646dde76c06801555936a024f27dd4a75164efbd49cad601162",
+      "taille": 10768,
+      "birth": "2026-10-21 23:15:53.008375729 +0200",
+      "birth_epoch": 1792617353
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-4.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-4.md",
+      "sha256": "59fa7b810b6ffbaa89168e58f530e59bda1daff2c1c8d9c77b0e8ad8c66311d4",
+      "taille": 4305,
+      "birth": "2026-10-21 23:16:10.330079760 +0200",
+      "birth_epoch": 1792617370
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_21_copier-tous-les-manquants/plan.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_21_copier-tous-les-manquants/plan.md",
+      "sha256": "820829636fd12c0a0d9f1a0138e9f1cfef96b91cf996034016086700ac2ec3e4",
+      "taille": 5883,
+      "birth": "2026-10-21 23:15:07.389522770 +0200",
+      "birth_epoch": 1792617307
+    }
+  ]
+}

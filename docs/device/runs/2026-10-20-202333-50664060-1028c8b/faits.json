@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.0.32 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_ea564a976ffevcpzB4aY03ELBF",
+    "modele": "ollama/qwen3:8b",
+    "ouverte_par": "buffy",
+    "ouverte_le": "2026-10-20T20:38:12+02:00"
+  },
+  "horodatage_debut": "2026-10-20T20:38:17+02:00",
+  "horodatage_fin": "2026-10-20T20:46:27+02:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+  "trace": {
+    "source": "opencode 2.0.32 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-20-202333-50664060-1028c8b/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-20-202333-50664060-1028c8b/trace/export-brut.json",
+    "commande": "opencode session export ses_ea564a976ffevcpzB4aY03ELBF"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "temoignage": {
+    "qui": "buffy",
+    "quand": "2026-10-20T20:46:27+02:00",
+    "texte": "session opencode ouverte le 2026-10-20 par l'agent à la demande de l'opérateur ; les trois gestes ont été exécutés par l'agent dans l'API du client, pas par une personne ; texte lu dans texte-a-remettre.txt, seconde réponse figée du cas"
+  }
+}

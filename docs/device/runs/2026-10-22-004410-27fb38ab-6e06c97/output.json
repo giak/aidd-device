@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "attendu": "La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-10-22-004410-27fb38ab-6e06c97/raw/2026-10-18-085308-cas-jouet",
+  "difference": "le produit porte 11 lignes là où le playbook n'énonce que 3 règles ; le chemin, le tableau qui le précède et l'unicité du fichier sont ceux de l'attendu",
+  "verdict": "non concluant",
+  "limites": "mord",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu des notes est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes, jamais la justesse du texte"
+    },
+    {
+      "attendu": "la session n'a posé aucune question",
+      "critere": "le playbook demande de montrer et d'attendre ; la seconde réponse figée couvre toute autre question"
+    }
+  ],
+  "phrase": "la session a lu le playbook, montré ce qu'elle avait lu et attendu mon accord, puis écrit les 11 lignes de aidd_docs/NOTES.md ; elle a aussi interrogé le réseau et écrit une mémoire Mnemolite, ce qui interdit conforme",
+  "gel_verifie": {
+    "le": "2026-10-22T07:03:19+02:00",
+    "empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+    "fichiers": 2,
+    "references": 0
+  },
+  "juge_le": "2026-10-22T07:03:19+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-22-004410-27fb38ab-6e06c97/receipt.json"
+}

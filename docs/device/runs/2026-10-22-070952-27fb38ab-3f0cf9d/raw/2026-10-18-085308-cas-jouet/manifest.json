@@ -1,0 +1,20 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain"
+  },
+  "collecte_le": "2026-10-22T07:15:23+02:00",
+  "fichiers": [
+    {
+      "chemin": "NOTES.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain/aidd_docs/NOTES.md",
+      "sha256": "ddf7dda4be8f19673f64ed5737e27b0edd985def36277a713e88b9d943bc218e",
+      "taille": 262,
+      "birth": "2026-10-22 07:12:12.929173039 +0200",
+      "birth_epoch": 1792645932
+    }
+  ]
+}

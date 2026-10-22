@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "attendu": "La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-10-20-202333-50664060-1028c8b/raw/2026-10-18-085308-cas-jouet",
+  "difference": "le modèle a écrit le fichier dans aidldocs/NOTES.md au lieu de aidd_docs/NOTES.md ; aucun fichier n'existe sous terrain/aidd_docs, et le produit attendu est absent",
+  "verdict": "non concluant",
+  "limites": "mord",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu des notes est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes, jamais la justesse du texte"
+    },
+    {
+      "attendu": "la session n'a posé aucune question",
+      "critere": "le playbook demande de montrer et d'attendre ; la seconde réponse figée couvre toute autre question"
+    }
+  ],
+  "phrase": "la session a lu le playbook, montré un tableau de deux fichiers et attendu la réponse, puis a écrit les trois règles dans aidldocs/NOTES.md au lieu de aidd_docs/NOTES.md",
+  "gel_verifie": {
+    "le": "2026-10-20T20:47:54+02:00",
+    "empreinte": "50664060c6f9f11b35b89acde6b4512d4fb5918fa53d8e81400bccf005c58a66",
+    "fichiers": 2,
+    "references": 0
+  },
+  "juge_le": "2026-10-20T20:47:54+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json"
+}

@@ -12,7 +12,7 @@ status: in-progress
 > de `docs/`, et ce document-ci n'est pas une source : il raconte.
 >
 > État décrit : **2026-10-15**, complété le **2026-10-16**, le **2026-10-20**, puis le **2026-10-22** (la
-> page utilisateur, les 236 contrôles, le quatrième cas). Un chiffre ici a
+> page utilisateur, les 253 contrôles, le quatrième cas, la phase 2 du protocole). Un chiffre ici a
 > toujours la même forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit
 > `SUPPOSÉ`. L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
 >
@@ -296,7 +296,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **236 contrôles**, `236/236 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **253 contrôles**, `253/253 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit
@@ -319,7 +319,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 
 ## 12. Ce qui pourrait encore casser
 
-- **Rien n'est prouvé par ce run.** Les 236 contrôles et les refus testent l'outil, pas la promesse de
+- **Rien n'est prouvé par ce run.** Les 253 contrôles et les refus testent l'outil, pas la promesse de
   la fiche. Le run du 2026-10-20 a produit un fichier hors du chemin attendu ; l'ADR-047 a corrigé la
   lecture de son tableau, pas le produit. Il a montré que la chaîne écrit un reçu, pas que le skill tient
   sa promesse.

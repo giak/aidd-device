@@ -9,7 +9,7 @@ const VERDICTS = ["conforme", "ecart", "non concluant"];
 
 // Le vocabulaire fermé des lectures (spec du 2026-10-22 07:33, §3). Une assertion hors de ces trois
 // types n'est pas une mesure : elle se refuse, elle ne devient pas « non observé ».
-export const TYPES_ASSERTION = ["trace_outil", "falsificateur_vide", "produit"];
+export const TYPES_ASSERTION = ["trace_outil", "falsificateur_vide", "produit", "pause"];
 
 // Le plafond de la page est de 80 lignes (spec §2) : au-delà de cinq produits, la table des preuves
 // renverrait au rapport technique plutôt que de le recopier.
@@ -24,9 +24,12 @@ const PHRASES_RECU = {
   ecriture_avant_tableau: "une écriture a précédé le tableau",
   produit_ne_avant_le_tableau: "le fichier a été écrit avant le tableau",
   question_sans_reponse: "la session a posé une question et écrit sans attendre la réponse",
+  pause_non_tenue: "la session a écrit sans laisser la personne répondre",
   lecture_hors_dossier: "une lecture est sortie du dossier autorisé",
+  ecriture_hors_dossier: "une écriture est sortie du dossier autorisé",
   shell_hors_dossier: "une commande a lu hors du dossier autorisé",
   shell_ecriture_hors_produit: "une commande a écrit hors du fichier attendu",
+  shell_invalide: "une commande était mal formée et le shell l'aurait refusée",
   shell_non_interpretable: "une commande n'a pas pu être lue",
   reseau: "un appel réseau interdit a eu lieu",
   hors_produit: "un fichier a été écrit hors du produit attendu",
@@ -41,9 +44,12 @@ const CORRECTIONS = {
   ecriture_avant_tableau: "la session a écrit avant de montrer : c'est l'ordre du skill qui n'a pas été suivi, et le skill peut le rendre plus explicite",
   produit_ne_avant_le_tableau: "le fichier est né avant le tableau : même cause, même correction",
   question_sans_reponse: "la question a été posée sans attendre : si le skill demande un accord, il doit dire qu'il bloque",
+  pause_non_tenue: "la session n'a pas attendu la personne avant d'écrire : le skill doit rendre la pause explicite, ou le cas doit la retirer",
   lecture_hors_dossier: "une lecture est sortie du dossier : le cas doit nommer les racines permises, ou le skill doit dire où lire",
+  ecriture_hors_dossier: "une écriture est sortie du dossier autorisé : le cas doit nommer le dossier d'écriture, ou le skill doit écrire au chemin demandé",
   shell_hors_dossier: "une commande a lu hors du dossier : pareil, la racine est à déclarer ou l'ordre à corriger",
   shell_ecriture_hors_produit: "une commande a écrit hors du fichier attendu : vérifier si le skill autorise cette écriture",
+  shell_invalide: "une commande était mal formée : la session doit l'écrire en une ligne que le shell accepte, et le skill doit donner l'exemple",
   shell_non_interpretable: "une commande n'a pas pu être lue : le cas doit l'écrire en clair, sinon la mesure restera aveugle",
   reseau: "le cas interdit le réseau : si un outil doit être permis, c'est l'attendu qu'il faut changer, pas le rapport",
   hors_produit: "un fichier a été écrit en dehors du produit attendu : le cas doit dire s'il est permis",
@@ -177,6 +183,19 @@ function etatDeGeste(geste, pieces) {
       } else {
         faux = true;
         details.push(PHRASES_RECU[a.nom] || "mesure non tenue");
+      }
+      continue;
+    }
+    if (a.type === "pause") {
+      const p = pieces.recu.pause;
+      if (!p || typeof p.mesuree !== "boolean") {
+        manque = true;
+        details.push("mesure absente du reçu");
+      } else if (p.mesuree) {
+        details.push("un tour de la personne précède la première écriture");
+      } else {
+        faux = true;
+        details.push("aucun tour de la personne avant la première écriture");
       }
       continue;
     }
@@ -324,13 +343,21 @@ function sectionDecider(recu, violations, sortie) {
   return lignes;
 }
 
-function sectionNeDitPas() {
+// ADR-071 : the page says what the declaration covers, and never turns it into a proof.
+function phraseConduite(recu) {
+  const c = recu.conduite;
+  if (c && c.mode === "agent") return "- La conduite est déclarée par un agent : ce run ne dit rien de ce qu'une personne aurait fait.";
+  if (c && c.mode === "humain") return "- La conduite est déclarée par une personne : les gestes qui en dépendent reposent sur sa parole.";
+  return "- La conduite n'est pas déclarée : la page ne peut pas dire si un agent ou une personne a conduit le run.";
+}
+
+function sectionNeDitPas(recu) {
   return [
     "## 7. Ce que ce run ne dit pas",
     "",
     "- La justesse de ce que la session a écrit n'est pas jugée ici.",
     "- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.",
-    "- Les gestes humains reposent sur le témoignage de la personne.",
+    phraseConduite(recu),
     "- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.",
   ];
 }
@@ -400,6 +427,14 @@ function resultatTexte({ runDir, recu, sortie, attendu, lecture, trace, produit 
   if (Number.isFinite(echanges.utilises) && Number.isFinite(echanges.budget)) {
     morceaux.push(`${pluriel(echanges.utilises, "échange", "échanges")} sur ${echanges.budget}`);
   }
+  // ADR-071 : who conducted the run is a declared fact, and a page that hides it would let a reader
+  // believe a person answered when an agent did.
+  const conduite = recu.conduite;
+  if (conduite && (conduite.mode === "agent" || conduite.mode === "humain")) {
+    morceaux.push(`conduite ${conduite.mode === "agent" ? "par un agent" : "par une personne"}${conduite.qui ? ` (${conduite.qui})` : ""}`);
+  } else if (recu.conduite === null || recu.conduite === undefined) {
+    morceaux.push("conduite non déclarée");
+  }
   lignes.push(`${morceaux.join(", ")}.`.replace(/, (\d+ min|\d+ s)/, ". Durée : $1"));
   lignes.push("", "## 3. Ce qui était attendu", "");
   if (attendu && typeof attendu.attendu === "string" && attendu.attendu.trim()) {
@@ -418,7 +453,7 @@ function resultatTexte({ runDir, recu, sortie, attendu, lecture, trace, produit 
   lignes.push("");
   lignes.push(...sectionDecider(recu, violations, sortie));
   lignes.push("");
-  lignes.push(...sectionNeDitPas());
+  lignes.push(...sectionNeDitPas(recu));
   lignes.push("");
   lignes.push(...sectionPreuves(runDir, recu));
   lignes.push("");

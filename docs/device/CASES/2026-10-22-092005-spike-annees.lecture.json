@@ -14,10 +14,7 @@
     },
     {
       "geste": "montrer ce qui est qualifié et attendre l'accord",
-      "assertions": [
-        { "type": "trace_outil", "outil": "question" },
-        { "type": "falsificateur_vide", "nom": "question_sans_reponse" }
-      ]
+      "assertions": [{ "type": "pause" }]
     },
     {
       "geste": "écrire la spike sous aidd_docs/backlog/spikes/",

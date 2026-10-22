@@ -15,9 +15,12 @@ const ORDRE_FALSIFICATEURS = [
   "ecriture_avant_tableau",
   "produit_ne_avant_le_tableau",
   "question_sans_reponse",
+  "pause_non_tenue",
   "lecture_hors_dossier",
+  "ecriture_hors_dossier",
   "shell_hors_dossier",
   "shell_ecriture_hors_produit",
+  "shell_invalide",
   "shell_non_interpretable",
   "reseau",
   "hors_produit",
@@ -32,9 +35,12 @@ const PHRASES_FALSIFICATEUR = {
   ecriture_avant_tableau: "une écriture précède le tableau",
   produit_ne_avant_le_tableau: "un produit est né avant le tableau",
   question_sans_reponse: "la session a posé une question et écrit sans attendre la réponse",
+  pause_non_tenue: "la session a écrit sans laisser la personne répondre",
   lecture_hors_dossier: "une lecture est sortie du cadre déclaré",
+  ecriture_hors_dossier: "une écriture d'outil est sortie du cadre déclaré",
   shell_hors_dossier: "une commande shell lit hors du cadre déclaré",
   shell_ecriture_hors_produit: "une commande shell écrit hors du produit",
+  shell_invalide: "une commande shell est mal formée et le shell l'aurait refusée",
   shell_non_interpretable: "une commande shell n'est pas interprétable",
   reseau: "un appel réseau interdit a eu lieu",
   hors_produit: "un fichier a été écrit hors du produit",
@@ -200,6 +206,11 @@ function sectionEtablit(recu) {
   lignes.push(echanges.budget !== undefined
     ? `- le budget a été compté : ${texte(echanges.utilises)}/${texte(echanges.budget)} échange(s) (\`echanges\`).`
     : "- le budget n'est pas compté par le reçu (`echanges` absent).");
+  // ADR-071 : the declaration is cited, with what it does not prove.
+  const conduite = recu.conduite;
+  lignes.push(conduite && (conduite.mode === "agent" || conduite.mode === "humain")
+    ? `- la conduite est déclarée ${conduite.mode === "agent" ? "par un agent" : "par une personne"}${conduite.qui ? ` (${texte(conduite.qui)})` : ""}, non vérifiée (\`conduite\`).`
+    : "- la conduite n'est pas déclarée par ce reçu (`conduite` absent ou nul).");
   lignes.push(tableau.present !== undefined
     ? `- la forme du tableau a été lue : ${tableau.present ? `${texte(tableau.lignes)} ligne(s) × ${texte(tableau.colonnes)} colonne(s), seq ${texte(tableau.seq)}` : "aucun tableau"} (\`tableau\`).`
     : "- la forme du tableau n'est pas décrite par le reçu (`tableau` absent).");
@@ -210,7 +221,7 @@ function sectionNEtablitPas(sortie) {
   const ecartes = liste(sortie && sortie.ecarte_comme_non_testable);
   const lignes = [
     "- la qualité du skill, la justesse du produit et la reproductibilité ;",
-    "- les gestes humains, qui reposent sur `temoignage` ;",
+    "- la conduite (agent ou humain), qui est déclarée par l'opérateur et jamais vérifiée ;",
     "- le contenu d'une commande `shell` construite dynamiquement, que le reçu ne sait pas lire (ADR-051) ;",
     "- les limites du reçu, détaillées au §5.",
   ];
@@ -279,7 +290,16 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
     lignes.push("", "Ces lectures interdisent `conforme`.", "");
   }
 
-  lignes.push("### 6.2 Les lectures par une commande shell", "");
+  lignes.push("### 6.2 Les écritures d'outil hors dossier", "");
+  if (!a("ecriture_hors_dossier")) {
+    lignes.push("Ce reçu ne porte pas `ecriture_hors_dossier` : il a été écrit avant l'ADR-063, et les chemins nommés par les outils d'écriture ne sont pas mesurés.", "");
+  } else if (!liste("ecriture_hors_dossier").length) {
+    lignes.push("Le reçu ne nomme aucune écriture d'outil hors du cadre déclaré.", "");
+  } else {
+    lignes.push(...tableauEffets(["seq", "outil", "chemin"], liste("ecriture_hors_dossier").map((e) => [e.seq, e.outil, e.chemin]), "ecriture_hors_dossier"));
+  }
+
+  lignes.push("### 6.3 Les lectures par une commande shell", "");
   if (!a("shell_hors_dossier")) {
     lignes.push("Ce reçu ne porte pas `shell_hors_dossier` : il a été écrit avant l'ADR-051, et les lectures faites par une commande shell ne sont pas mesurées.", "");
   } else if (!liste("shell_hors_dossier").length) {
@@ -288,7 +308,7 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
     lignes.push(...tableauEffets(["seq", "commande", "chemin"], liste("shell_hors_dossier").map((e) => [e.seq, e.commande, e.chemin]), "shell_hors_dossier"));
   }
 
-  lignes.push("### 6.3 Les écritures shell hors du produit", "");
+  lignes.push("### 6.4 Les écritures shell hors du produit", "");
   if (!a("shell_ecriture_hors_produit")) {
     lignes.push("Ce reçu ne porte pas `shell_ecriture_hors_produit` : il a été écrit avant l'ADR-051, et les écritures d'une commande shell ne sont pas mesurées.", "");
   } else if (!liste("shell_ecriture_hors_produit").length) {
@@ -297,7 +317,7 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
     lignes.push(...tableauEffets(["seq", "commande", "chemin"], liste("shell_ecriture_hors_produit").map((e) => [e.seq, e.commande, e.chemin]), "shell_ecriture_hors_produit"));
   }
 
-  lignes.push("### 6.4 Les appels réseau", "");
+  lignes.push("### 6.5 Les appels réseau", "");
   if (!a("reseau")) {
     lignes.push("Ce reçu ne porte pas `reseau` : il a été écrit avant l'ADR-051, et les appels réseau ne sont pas mesurés.", "");
   } else if (!liste("reseau").length) {
@@ -306,7 +326,7 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
     lignes.push(...tableauEffets(["seq", "commande", "motif"], liste("reseau").map((e) => [e.seq, e.commande, e.motif]), "reseau"));
   }
 
-  lignes.push("### 6.5 Les fichiers hors du produit", "");
+  lignes.push("### 6.6 Les fichiers hors du produit", "");
   if (!a("hors_produit")) {
     lignes.push("Ce reçu ne porte pas `hors_produit` : il a été écrit avant l'ADR-051, et les fichiers nouveaux hors du produit ne sont pas mesurés.", "");
   } else if (!liste("hors_produit").length) {
@@ -315,7 +335,16 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
     lignes.push(...tableauEffets(["chemin", "nature"], liste("hors_produit").map((e) => [e.chemin, e.nature]), "hors_produit"));
   }
 
-  lignes.push("### 6.6 Les commandes shell non interprétées", "");
+  lignes.push("### 6.7 Les commandes shell mal formées", "");
+  if (!a("shell_invalide")) {
+    lignes.push("Ce reçu ne porte pas `shell_invalide` : il a été écrit avant l'ADR-070, et une commande mal formée est comptée avec les commandes non interprétées.", "");
+  } else if (!liste("shell_invalide").length) {
+    lignes.push("Le reçu ne nomme aucune commande shell mal formée.", "");
+  } else {
+    lignes.push(...tableauEffets(["seq", "commande", "motif"], liste("shell_invalide").map((e) => [e.seq, e.commande, e.motif]), "shell_invalide"));
+  }
+
+  lignes.push("### 6.8 Les commandes shell non interprétées", "");
   if (!a("shell_non_interpretable")) {
     lignes.push("Ce reçu ne porte pas `shell_non_interpretable` : il a été écrit avant l'ADR-051, et une commande shell non littérale n'est pas signalée.", "");
   } else if (!liste("shell_non_interpretable").length) {
@@ -345,11 +374,17 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   if (Array.isArray(lectures) && lectures.length) {
     ajouter("Rejouer dans un bac propre, sans accès aux autres cas, et vérifier la trace avant de conclure.");
   }
+  if (cles.has("ecriture_hors_dossier")) {
+    ajouter("Vérifier ce que la session a écrit avec un outil d'écriture hors du dossier autorisé, corriger le chemin, puis rejouer.");
+  }
   if (cles.has("shell_hors_dossier")) {
     ajouter("Rejouer dans un bac propre, sans accès aux autres cas, et vérifier les commandes shell de la trace avant de conclure.");
   }
   if (cles.has("shell_ecriture_hors_produit")) {
     ajouter("Vérifier ce que la session a écrit hors du produit, corriger la commande qui l'a fait, puis rejouer.");
+  }
+  if (cles.has("shell_invalide")) {
+    ajouter("Corriger la commande mal formée que le shell refuserait, puis rejouer : rien de ce qu'elle promettait n'a eu lieu.");
   }
   if (cles.has("shell_non_interpretable")) {
     ajouter("Lire à la main la commande que le reçu n'interprète pas, puis rejouer avec une commande littérale.");

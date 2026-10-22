@@ -50,7 +50,7 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 236 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
+  (`harness/banc-harnais.sh`, 253 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
   ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, sept commandes, ADR-038 à 042 et
   ADR-059, et
   `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et quatre cas gelés (`CASES/` : la promesse

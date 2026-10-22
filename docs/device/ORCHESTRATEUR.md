@@ -45,7 +45,7 @@ l'orchestrateur (`exit 1`), une commande mal formée sort en `2` sans rien écri
 node docs/device/harness/orchestrer.mjs cas --skill <chemin-du-skill> [--terrain <dépôt>] [--id <slug>]
 node docs/device/harness/orchestrer.mjs porte --cas <id> --run <dossier>
 node docs/device/harness/orchestrer.mjs ouvrir --cas <id> --run <dossier> [--cases <dir>] [--api <url>] [--modele <fournisseur/modèle>] [--delai <minutes>]
-node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] --produit <chemin> | --sans-produit
+node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] --par <qui> --conduite agent|humain --produit <chemin> | --sans-produit
 node docs/device/harness/orchestrer.mjs fin --cas <id> --run <dossier> --difference <texte> --phrase <texte> [--verdict <v>]
 node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer] [--cases <dir>]
 node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
@@ -56,7 +56,7 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | `--cases` (deux pièces et le gel), `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
-| `suite` | les faits, l'export de trace par l'adaptateur du client, la copie du produit | `faits.json`, `trace/`, `raw/<cas>/` |
+| `suite` | les faits, l'export de trace par l'adaptateur du client, le dernier message (dernière part `text` d'un assistant, hachée dans `faits.json`, [ADR-065](../DECISIONS.md)), la copie du produit, et l'annexe du scratch quand le cas le déclare | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json` et la copie, plus `annexe/<cas>/manifest.json` et sa copie |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
@@ -69,9 +69,11 @@ dans l'arbre `travail` du gel, puis envoie `texte-a-remettre.txt` **verbatim** a
 recopie. Elle attend ensuite la question, envoie la réponse figée suivante du cas comme message, répond au
 formulaire par l'option marquée « Recommandé » (à défaut la première), et s'arrête quand la session devient
 inactive ; au délai (30 min par défaut), elle refuse sans conclure. Elle n'écrit **rien** dans le dossier
-du run : le fil qu'elle imprime est le `--fil` de `suite`. Ce qu'elle n'atteste pas — qu'une personne ait
-conduit le run, et le choix des options du formulaire — se dit dans `faits.json`, par `--par` et
-`--temoignage`.
+du run : le fil qu'elle imprime est le `--fil` de `suite`. Ce qu'elle n'atteste pas — qui a conduit le run,
+et le choix des options du formulaire — se dit dans `faits.json` : `suite` exige `--conduite agent|humain` et
+`--par`, et le reçu recopie ce bloc avec la limite qui dit qu'il est déclaré, jamais vérifié
+([ADR-071](../DECISIONS.md)). Une personne qui a conduit le run écrit `humain` ; `ouvrir` a conduit, donc
+`agent`. Aucune valeur par défaut ne parle à la place de qui a tenu le volant.
 
 `porte` ajoute au bloc `▸ FIN` deux lignes qui ne viennent d'aucune lecture de la personne : la durée
 observée du cas et la taille de l'échantillon, avec ses réserves. Un cas jamais mesuré reçoit
@@ -94,7 +96,15 @@ laisse ouverte, le §6 de la demande, la marque `P` de l'attendu et la première
 la personne corrige ou confirme, puis l'agent écrit et re-gèle. Le squelette porte aussi un bloc
 `cloisonnement` (`terrain` et `framework-origin` en lecture, `terrain/aidd_docs` en écriture, réseau et
 fichiers de contexte interdits) : c'est le cadre par défaut d'un cas neuf, et la personne le corrige
-dans l'attendu si son cas demande autre chose. `receipt` refuse un attendu sans ce bloc ; il ne retombe
+dans l'attendu si son cas demande autre chose. Ce cadre porte aussi le **scratch**
+(`cloisonnement.ecriture.scratch: terrain/.scratch`), un dossier lisible et scriptible sous l'arbre du cas,
+collecté en annexe par `suite` et jamais compté comme produit : c'est là qu'un skill d'investigation écrit
+les scripts dont il cite la sortie, et un chemin volatil comme `/tmp` reste hors cadre ([ADR-067](../DECISIONS.md)).
+Le gabarit demande enfin le **tableau** de ce que l'agent qualifie, juste après la phrase de qualification,
+et il écrit dans le squelette `attendu_details.tableau.requis: true` et `attendu_details.pause.requis: true` :
+la pause entre la qualification et la première écriture est ainsi mesurée sur un tour de la personne, sans
+exiger l'outil `question` ([ADR-068](../DECISIONS.md), [ADR-069](../DECISIONS.md)). Le §6 de la demande exige
+un produit autosuffisant : ce que le produit cite comme preuve est dans le fichier, ou sous le scratch collecté. `receipt` refuse un attendu sans ce bloc ; il ne retombe
 jamais sur une racine supposée ([ADR-052](../DECISIONS.md)). `run.mjs freeze --refreeze` est la seule
 commande qui re-gèle, et l'orchestrateur ne l'appelle jamais : le re-gel est un geste de l'agent, explicite,
 jamais un effet de bord d'une autre commande.
@@ -145,7 +155,11 @@ La commande précède sa sortie : le bloc dit ce qui a été lancé avant de dir
 - **Le gel décide** du dossier autorisé et de l'état des arbres ; `porte` le re-hache avant d'autoriser.
   **L'attendu décide du cadre** : `cloisonnement.lecture.autorisees` fixe les seules racines dont une
   lecture est dans le cadre, et le reçu les recopie avec leurs chemins résolus. Une lecture hors de ces
-  racines mord, même dans le dossier du cas.
+  racines mord, même dans le dossier du cas ; seule `$RACINE/<cas>/` elle-même est lue par égalité, comme
+  le répertoire de travail que la demande nomme ([ADR-064](../DECISIONS.md)). Le scratch déclaré est lu et écrit
+  au même titre qu'une racine d'écriture, sans jamais compter comme produit ([ADR-067](../DECISIONS.md)). Un outil d'écriture qui
+  nomme un chemin hors de `cloisonnement.ecriture.autorisees` mord de même ([ADR-063](../DECISIONS.md)) ;
+  relire un fichier que la session a elle-même écrit ne mord pas deux fois ([ADR-066](../DECISIONS.md)).
 - **Le reçu décide** du verdict : `fin` demande d'abord, à blanc (`--sans-ecrire`), la valeur que les
   falsificateurs imposent. Sans `--verdict`, l'orchestrateur l'imprime avec sa raison et n'écrit rien :
   c'est la personne qui tranche, et la même commande avec `--verdict` écrit le reçu une seule fois.
@@ -198,12 +212,19 @@ session au répertoire que `porte` imprime, coller le texte, répondre la phrase
   banc prouve que le harnais l'accepte, jamais qu'un run le mériterait.
 - **Le cadre est déclaré, pas mesuré** : le reçu lit les racines de lecture, et il ajoute une limite pour
   l'écriture hors du cadre, le réseau et les fichiers de contexte — il ne prouve pas leur respect.
+- **La pause n'est pas chronométrée** : `pause.mesuree` dit qu'un tour `user` s'est placé entre l'ouverture
+  et la première écriture nommée, jamais qu'une personne a attendu. Un tour donné dans la même seconde
+  compte ; une question posée sans tour `user` reste une rupture distincte (`question_sans_reponse`).
 - **Le contenu d'une commande dynamique** : le reçu lit le texte littéral des commandes `shell` ; une
   variable non résolue, une substitution non bornée ou des backticks refusent `conforme` et disent leurs
   effets non mesurés, jamais ce que la commande a réellement fait. Une substitution `$(…)` bornée est
   lue et ses effets mesurés, mais sa valeur reste inconnue (ADR-056) : elle ne devient jamais un chemin.
   La commande interne d'un `xargs` ou d'un `find -exec` littéral est lue de la même façon, `{}` restant
-  inconnu (ADR-057) ; un `eval` reste refusé. Un binaire opaque qui écrit sans nommer un chemin
+  inconnu (ADR-057) ; un `eval` reste refusé. Une commande que le shell refuserait (guillemet ou
+  substitution non fermés, `find -exec` sans terminateur) est une **faute de session**, nommée
+  `shell_invalide` ; une commande valide que le lecteur ne suit pas (`$P/x`, `eval`, `git commit`) reste
+  une **limite de l'instrument**, nommée `shell_non_interpretable`, plafonnée et dite par une limite par
+  entrée qui nomme son seq et ce qui reste non prouvé ([ADR-070](../DECISIONS.md)). Un binaire opaque qui écrit sans nommer un chemin
   dans sa ligne de commande (`ln`, `dd`, `chmod`, un script) n'est pas vu : le reçu ajoute une limite pour
   la liste des commandes reconnues, il ne prouve pas l'absence d'écriture ni de réseau.
 - **Le puits `/dev/null` n'est pas un chemin** : une redirection ou un argument qui le cible ne compte ni

@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 236 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 253 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -86,6 +86,39 @@ status: in-progress
 > née du reçu `conforme` du cas `plan-simple` de la Séance 102 : une question posée par l'outil déclaré et
 > suivie d'une écriture sans ligne `user` entre les deux mord et nomme les deux seq, la réponse entre les
 > deux laisse le reçu muet, et `conforme` passe.
+
+> V0.37 — 2026-10-22 : **253** contrôles ; 251 à 253 éprouvent la **conduite déclarée** (ADR-071) :
+> `faits --conduite agent` écrit `conduite{mode, qui, quand}` sans `temoignage`, et le reçu le recopie avec
+> la limite qui dit qu'elle est déclarée (251) ; `--conduite` absente ou hors de `agent | humain` sort en
+> `2` sans écrire et le refus nomme les deux valeurs (252) ; un `faits.json` antérieur, qui ne porte qu'un
+> `temoignage`, reste lisible : `conduite: null`, limite `conduite_non_declaree`, verdict inchangé (253).
+> Le contrôle 125 compte toujours dix-huit valeurs, les trois clés de `conduite` remplaçant les trois de
+> `temoignage`.
+> V0.36 — 2026-10-22 : **250** contrôles ; 249 et 250 éprouvent la **phase 2 du protocole**
+> (ADR-070) : une commande au guillemet simple non fermé tombe dans `shell_invalide`, laisse
+> `shell_non_interpretable` vide, fait refuser `conforme` en nommant la faute de session et porte une limite
+> par entrée (249) ; une commande valide que le lecteur ne suit pas reste `shell_non_interpretable`, avec une
+> limite par entrée qui nomme le seq et ce qui reste non prouvé, et la limite agrégée disparaît (250). Le
+> 221 attend désormais `shell_invalide`, et le 234 nomme la seizième clé. Le passage répare aussi le détail
+> d'échec du banc : `controle` exporte `DETAIL`, et quarante-deux contrôles écrivent leurs raisons dans
+> `process.env.DETAIL`, donc les raisons s'impriment sous `FAIL` comme le §5 le promettait.
+> V0.35 — 2026-10-22 : **248** contrôles ; 244 à 248 éprouvent la **phase 1 du protocole**, née du run
+> `spike-annees` (ADR-067 à ADR-069) : un fichier écrit et relu sous `terrain/.scratch/`, déclaré au gel,
+> ne mord ni comme lecture ni comme écriture et n'est pas compté comme produit, alors qu'un fichier voisin
+> hors du cadre mord encore (244) ; `collect --annexe` copie le scratch sous `annexe/<cas>/` avec son
+> manifeste, le reçu le vérifie et le cite, et une retouche de l'annexe fait refuser le reçu (245) ; un
+> attendu sans champ `tableau` mord toujours sur `tableau_absent` (défaut vrai), et une écriture sans aucun
+> tour `user` mord sur `pause_non_tenue` (246) ; un attendu qui déclare `tableau.requis: false` ne mord plus
+> et nomme la limite (247) ; le gabarit de `cas` demande le tableau, autorise le scratch, exige
+> l'autosuffisance du produit et écrit les trois champs dans son squelette (248).
+> V0.34 — 2026-10-22 : **243** contrôles ; 237 à 243 éprouvent la phase 0 du protocole, née du run
+> `spike-annees` (ADR-062 à ADR-066) : un produit sous un dossier neuf ne mord plus sur son parent (237),
+> un fichier d'un dossier déjà non suivi avant le run est sauté et un dossier neuf est nommé fichier par
+> fichier (238), une écriture d'outil hors du cadre mord et nomme son seq (239), une écriture dans le
+> cadre ne mord pas et un outil d'écriture sans chemin reste une limite (240), `$RACINE/<cas>/` se lit
+> par égalité, son parent mord encore et la relecture de son propre fichier ne mord qu'une fois (241),
+> `suite` écrit `last-message.md` et l'atteste (242), un dernier message retouché fait refuser le reçu
+> quand un `faits.json` sans le champ rend une limite (243).
 > V0.33 — 2026-10-22 : **236** contrôles ; 235 et 236 font refuser une lecture mal formée avant toute
 > écriture, et `rapport` accepte `--cases` pour qu'une lecture de banc s'éprouve hors du dossier du dépôt.
 > Ce passage rend effective la phrase du §3 de la spec du 2026-10-22 07:33, qui promettait un refus là où le
@@ -121,7 +154,7 @@ status: in-progress
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 236 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 253 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -137,19 +170,26 @@ la commande interne d'`xargs` et de `find -exec` (contrôles 218 à 221), la que
 écriture suit sans réponse (contrôles 222 et 223), la session qu'`ouvrir` ouvre et conduit par l'API
 (contrôles 224 à 227), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
 lectures des deux autres cas gelés (contrôles 231 à 233), et une phrase et un conseil pour chaque règle
-que les reçus portent (contrôle 234), et le refus d'une lecture mal formée, sans qu'aucune pièce ne
-s'écrive (contrôles 235 et 236).
+que les reçus portent (contrôle 234), le refus d'une lecture mal formée, sans qu'aucune pièce ne
+s'écrive (contrôles 235 et 236), puis la phase 0 de l'instrument (contrôles 237 à 243) : le produit sous
+un dossier neuf, le dossier déjà non suivi, l'écriture d'outil mesurée, la racine du cas lue par égalité,
+et le dernier message écrit et attesté par `suite` ; enfin la phase 1 du protocole (contrôles 244 à 248) :
+le scratch déclaré, collecté en annexe et jamais produit, le tableau que le cas peut ne pas demander, et la
+pause mesurée par un tour de la personne, sans l'outil `question` ; et la phase 2 (contrôles 249 et 250) :
+une commande mal formée séparée d'une commande que le lecteur ne suit pas, chacune avec sa limite par entrée ;
+et la conduite déclarée (contrôles 251 à 253) : le mode `agent` écrit dans `faits.json` et recopié par le reçu,
+la valeur absente ou hors domaine refusée en `2`, et un faits antérieur lu avec `conduite: null`.
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 236/236 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 253/253 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `236/236 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `253/253 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -232,8 +272,13 @@ une panne d'outil se voir dans un `FAIL`.
 | 224 à 227 | **`ouvrir`**, la session ouverte par l'API et la pause jouée par le cas (ADR-059) : sans `gate.json`, `ouvrir` refuse en nommant la porte (224) ; avec un `PATH` vide et aucun `--api`, elle refuse en nommant `opencode` (225) ; contre un serveur factice, elle envoie le texte de `texte-a-remettre.txt` **verbatim** — comparé octet pour octet —, puis la réponse figée du cas comme message **avant** de répondre au formulaire, dont la réponse est l'option `(Recommended)` ; `exit 0`, le fil est imprimé avec « inactive », et le dossier du run est **inchangé** (226) ; un serveur qui pose trois questions pour deux réponses figées fait refuser la troisième (« n'en fige que 2 »), après deux réponses envoyées (227). Le serveur est en `node:http` : aucune session réelle, aucun réseau | [ADR-059](../DECISIONS.md) |
 | 228 à 230 | la **page utilisateur** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les huit sections, une ligne par geste (5), et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](../DECISIONS.md) |
 | 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les trois types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](../DECISIONS.md) |
-| 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les quatorze clés que les reçus du dépôt portent, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend quinze lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
+| 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les seize clés que les reçus du dépôt portent, `pause_non_tenue` et `shell_invalide` comprises, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend dix-sept lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
 | 235 à 236 | **la lecture est vérifiée avant d'être servie** (spec du 2026-10-22 08:46) : sur une copie du run jouet du 2026-10-22 et un dossier `--cases` de banc, un geste privé de ses assertions fait refuser `rapport` en le nommant, et ni `RAPPORT.md` ni `RESULTAT.md` n'est écrit (235) ; une assertion de type `trace_plate` fait refuser en nommant le type et les trois types permis, sans rien écrire non plus (236). Retirer l'appel à `verifierLecture` dans `lectureDe` fait tomber les deux ; le déplacer après l'écriture du rapport fait tomber la vérification des pièces absentes | spec du 2026-10-22 08:46 |
+
+| 237 à 243 | **la phase 0 de l'instrument** (spec du 2026-10-22 10:05, ADR-062 à ADR-066) : un produit sous `aidd_docs/backlog/`, avec un gel propre et une porte propre, rend `hors_produit: []` (237) ; avec `aidd_docs/` déjà non suivi au gel, le fichier neuf d'un dossier neuf est nommé **fichier par fichier** (`terrain/docs/y.md`), un fichier du dossier déjà connu est sauté, et l'ancêtre du produit n'apparaît jamais (238) ; une part `write` vers un chemin hors de `cloisonnement.ecriture.autorisees` rend `ecriture_hors_dossier` avec son seq, son outil et son chemin, et `conforme` est refusé (239) ; une part `write` sous la racine d'écriture ne mord pas, et un outil d'écriture sans chemin rend la limite qui le nomme, sans morsure (240) ; une lecture de `$RACINE/<cas>/` ne mord pas, une lecture de son parent mord encore, une relecture d'un fichier que la session a écrit ne mord qu'une fois (241) ; `suite` écrit `last-message.md` depuis la dernière part `text` d'un assistant, l'atteste dans `faits.json`, et le reçu à blanc accepte (242) ; un dernier message retouché fait refuser le reçu en nommant l'empreinte, un `faits.json` sans le champ reçoit la limite `dernier_message_non_atteste` (243). Les 237 et 238 partent de deux bacs jouets neufs re-gelés sous `$B`, les autres de la base du banc et du jouet ; rien n'est écrit dans le dépôt | ADR-062 à ADR-066 |
+| 244 à 248 | **la phase 1 du protocole** (spec du 2026-10-22 11:50, ADR-067 à ADR-069) : un attendu qui déclare `cloisonnement.ecriture.scratch: terrain/.scratch` laisse écrire et relire un fichier sous ce dossier sans morsure, le reçu porte le chemin et sa résolution, et un fichier écrit juste à côté (`terrain/HORS.txt`) mord encore en nommant son seq (244) ; `collect --annexe` copie le scratch sous `annexe/<cas>/` avec un manifeste `role: annexe`, le reçu vérifie la copie et la cite, et une annexe retouchée après coup fait refuser le reçu en nommant l'empreinte (245) ; l'attendu du banc est **privé du champ `tableau`** puis re-gelé : `tableau_absent` mord par défaut, et une écriture sans aucun tour `user` entre l'ouverture et elle fait mordre `pause_non_tenue` en nommant le seq (246) ; le même attendu re-gelé avec `tableau.requis: false` ne mord plus sur l'absence de tableau et le reçu porte la limite qui dit que le cas n'en demande pas (247) ; le gabarit de `cas` demande le tableau après la qualification, autorise `terrain/.scratch/`, exige un produit autosuffisant, et son squelette porte `cloisonnement.ecriture.scratch`, `attendu_details.tableau.requis: true` et `attendu_details.pause.requis: true` (248). Le 244 mesure aussi la pause **tenue** sans aucun outil `question` : une part `user` en seq 3 entre l'ouverture et l'écriture en seq 4 rend `pause.mesuree: true`. Chaque contrôle part d'une copie fraîche du cas fabriqué sous `$B`, re-gelée avec sa propre racine : rien n'est écrit dans le dépôt | ADR-067, ADR-068, ADR-069 |
+| 249 à 250 | **la phase 2 du protocole** (spec du 2026-10-22 12:26, ADR-070) : une part `shell` dont le texte porte un guillemet simple non fermé rend `shell_invalide` avec son seq et son motif, laisse `shell_non_interpretable` vide, fait refuser `conforme` en nommant la commande mal formée, écrit `non concluant` et porte une limite par entrée qui dit que le shell l'aurait refusée (249) ; sur le reçu du 197, dont la commande est valide mais aveugle, `shell_non_interpretable` porte son entrée, `shell_invalide` reste vide, une limite par entrée nomme le seq, le motif et « rien ne prouve », et la limite agrégée `N commande(s) shell non interprétable(s)` a disparu (250). Le 221 attend `shell_invalide` pour `« find -exec » non terminée`, le 234 nomme la seizième clé, et le détail d'échec des quarante-deux contrôles s'écrit désormais dans `process.env.DETAIL` | ADR-070 |
+| 251 à 253 | **la conduite déclarée** (spec du 2026-10-22 12:45, ADR-071) : `faits --conduite agent` écrit `conduite{mode: "agent", qui, quand}`, le `faits.json` ne porte plus de `temoignage`, le reçu recopie le bloc et ajoute une limite qui dit la conduite déclarée et non prouvée (251) ; `faits` sans `--conduite`, puis avec `--conduite robot`, sortent en `2` sans écrire de `faits.json`, et le refus nomme `agent | humain` (252) ; un `faits.json` antérieur, qui porte un `temoignage` et aucun `conduite`, est accepté : le reçu écrit `conduite: null`, ajoute la limite `conduite_non_declaree`, et ne déduit pas `humain` du témoignage — le verdict reste celui de la preuve (253). Le 125 compte toujours dix-huit valeurs, `conduite` remplaçant `temoignage` clé pour clé ; les fixtures des 251 à 253 sont les seules à ne pas passer `--conduite humain` | ADR-071 |
 | 222 à 223 | la **question sans réponse** (ADR-058) : un fil où l'outil `question` (seq 3) précède une écriture nommée (seq 4) sans aucune ligne `user` entre les deux fait refuser `conforme` en nommant la question et l'écriture, `non concluant` s'écrit, et `question_sans_reponse` porte `{seq_question: 3, seq_ecriture: 4}` (222) ; le même fil avec la réponse figée en seq 4 et l'écriture en seq 5 laisse `question_sans_reponse` vide et `conforme` passer (223). Ignorer la réponse dans la comparaison fait tomber le 223 seul ; retirer la famille de question fait tomber le 222 seul | [ADR-058](../DECISIONS.md) |
 | 214 à 217 | la **substitution de commande bornée** (ADR-056) : `n=$(grep -c plan README.md); echo "$n"` laisse `conforme` passer et `shell_non_interpretable` vide — la substitution est lue, ses effets mesurés, et `$n` n'est qu'affiché (214) ; `n=$(cat ../hors-cadre.md); echo "$n"` fait mordre `shell_hors_dossier`, qui nomme `../hors-cadre.md` — la lecture faite **dans** la substitution est mesurée, pas ignorée (215) ; `cat $(ls aidd_docs)` est refusé avec le motif « valeur inconnue » — le résultat d'une substitution n'est jamais un chemin (216) ; `x=$(cat $(ls))` est refusé avec le motif « substitution imbriquée » — le lecteur ne borne pas une substitution dans une substitution (217). Retirer la lecture fait tomber les quatre ; ignorer les effets internes fait tomber le 215 seul ; retirer la marque fait tomber le 216 seul | [ADR-056](../DECISIONS.md) |
 | 212 à 213 | les deux formes que le lecteur `shell` confondait, mesurées sur le run `plan-simple` de la Séance 98 : `awk '/^```mermaid$/,/^```$/' README.md` laisse `conforme` passer et `shell_hors_dossier` vide — le programme d'`awk`, qui commence par `/`, n'est pas un chemin (212) ; `for f in README.md aidd_docs/memory/api.md; do echo "=== $f ==="; grep -n plan "$f"; done` laisse `conforme` passer et `shell_non_interpretable` vide — la boucle littérale est déroulée, une copie du corps par mot, `$f` substitué hors guillemets simples (213). Retirer le saut du programme fait tomber le 212 seul ; retirer le déroulage fait tomber le 213 seul. Ce que le lecteur refuse encore est dit au §3 du correctif : boucle non littérale, imbriquée, non fermée, ou qui réaffecte sa variable | — |
@@ -301,9 +346,23 @@ le dernier mot change. Trois règles, tenues par les contrôles existants :
   manifeste la déclare, jamais une session réelle. Le 208 ne prouve pas qu'aucune copie n'a eu lieu dans
   cette seconde ; la limite d'ADR-055 dit le contraire.
 - **Le cadre est déclaré, pas mesuré.** Les contrôles 191 à 193 prouvent que le reçu lit le bloc
-  `cloisonnement`, applique ses racines de lecture et refuse un bloc absent ; ils ne prouvent pas que
-  l'écriture, le réseau ou les fichiers de contexte sont respectés : le reçu ajoute une limite pour
-  chacun, il ne les mesure pas.
+  `cloisonnement`, applique ses racines de lecture et refuse un bloc absent. Depuis l'ADR-063, le chemin
+  nommé par un outil d'écriture est mesuré (239 et 240), mais les effets d'un binaire opaque, un client
+  réseau hors liste et un fichier de contexte hors liste restent des limites, pas des mesures.
+- **La frontière des deux familles est le vocabulaire du lecteur.** Les contrôles 249 et 250 prouvent les
+  deux cas nommés, jamais que chaque motif futur est bien classé : un motif neuf tombe du côté aveugle par
+  défaut, et aucun contrôle ne le voit. Une commande mal formée reste plafonnée par `shell_invalide`, donc
+  le verdict ne distingue pas encore une faute de session d'une limite de l'instrument.
+- **La pause n'a pas de durée, et le scratch reste dans l'arbre.** Les contrôles 244, 246 et 247 prouvent
+  qu'une part `user` postérieure à l'ouverture et antérieure à la première écriture nommée rend la pause
+  mesurée, et que son absence mord quand le cas l'exige. Ils ne prouvent ni qu'une personne a attendu, ni
+  la durée de l'attente : un tour arrivé en une seconde compte comme un tour. Le scratch, lui, n'existe
+  qu'à l'intérieur du dossier du cas, sous le `porcelain` du run, et un script écrit sous `/tmp` reste une
+  écriture hors cadre — c'est cette limite-là que le run `spike-annees` a rencontrée.
+- **L'ancêtre du produit n'est pas éprouvé directement.** La règle d'ADR-062 qui saute un chemin ancêtre
+  de la racine du produit n'est atteinte par aucun contrôle sur ce git : `--untracked-files=all` ne replie
+  plus de dossier, et le 238 prouve la mesure fichier par fichier et le saut d'un dossier déjà non suivi.
+  La règle reste un garde-fou pour un `porcelain` replié qui échapperait au premier filtre.
 - **Le scan `shell` est littéral.** Les contrôles 194 à 223 prouvent que les chemins écrits en clair
   dans une commande sont lus, jamais ce qu'une commande fera : `cd` n'est pas suivi, une variable non
   résolue n'est pas suivie, une cible passée par un pipe ou une option (`-o ~/x`) n'est lue que

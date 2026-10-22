@@ -48,11 +48,12 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          et refuse au délai (défaut 30 min). N'écrit rien dans le run : elle imprime le fil, que
          suite reçoit ensuite ; elle n'atteste aucun geste humain
   suite  --cas <id> --fil <id> [--run <dir>] [--client auto|freebuff|opencode]
-         [--store <racine opencode>] [--par <qui>] [--temoignage <texte>]
+         [--store <racine opencode>] [--par <qui>] --conduite agent|humain
          [--produit <chemin>] [--sans-produit] [--cases <dir>]
-         exporte la trace du fil par l'adaptateur du client, écrit faits.json, collecte
-         le produit sous raw/<cas>/ — ou constate son absence avec --sans-produit — puis
-         s'arrête et nomme le chemin de last-message.md. --client auto (défaut) essaie
+         exporte la trace du fil par l'adaptateur du client, écrit faits.json, écrit
+         raw/<cas>/last-message.md depuis le dernier texte d'assistant de la trace et
+         l'atteste dans faits.json, collecte le produit sous raw/<cas>/ — ou constate son
+         absence avec --sans-produit — puis s'arrête. --client auto (défaut) essaie
          Freebuff puis opencode ; les deux ou aucun sont des refus qui nomment --client.
          Aucune session n'est ouverte : le fil doit exister déjà
   fin    --cas <id> [--run <dir>] --difference <texte> --phrase <texte>
@@ -475,6 +476,9 @@ function commandeCas(argv) {
     "<<<DEMANDE",
     `Read the skill at $RACINE/${id}/framework-origin/${dedansFramework} and use it on this repository.`,
     `<<<LIGNE À REMPLIR PAR LA PERSONNE : ce que ${basename(terrain || DEPOT)} est, et ce qu'il attend>>>`,
+    // ADR-068 : the table is the only proof that the session showed before writing, so the request asks
+    // for one. The case that does not want it declares `attendu_details.tableau.requis: false`.
+    "Montre d'abord un tableau de ce que tu qualifies et où tu comptes écrire, puis attends mon accord sans avoir écrit un seul fichier.",
     ">>>DEMANDE",
   ].join("\n");
   // `--cases` may name a store that does not exist yet: a newcomer fabricating cases has no reason to
@@ -518,9 +522,11 @@ ${texte}
 
 **À REMPLIR** : le chemin exact du produit, relatif à la racine du cas (\`attendu_details.produit.racine\` de l'attendu), par exemple \`terrain/aidd_docs\`.
 
+Le produit doit se suffire : ce que la session cite comme preuve est dans le fichier produit, ou sous \`terrain/.scratch/\`, collecté en annexe ; un chemin volatil n'est pas une preuve (ADR-067).
+
 ## 7. Ce qui lui est interdit
 
-Écrire dans \`framework-origin/\` et dans \`origine/\` ; lire sous \`docs/device/CASES/\` ; sortir du répertoire de travail, ni dans le reste de \`$HOME\` ni dans \`/tmp\` ; toute écriture git, tout appel réseau ; écrire les fichiers de contexte d'outils IA.
+Écrire dans \`framework-origin/\` et dans \`origine/\` ; lire sous \`docs/device/CASES/\` ; écrire hors de \`terrain/aidd_docs\` et de \`terrain/.scratch/\` (le scratch est collecté en annexe, jamais compté comme produit) ; sortir du répertoire de travail, ni dans le reste de \`$HOME\` ni dans \`/tmp\` ; toute écriture git, tout appel réseau ; écrire les fichiers de contexte d'outils IA.
 
 ## 8. Budget, et les deux textes figés de l'opérateur
 
@@ -560,7 +566,7 @@ Answer from the repository. If it cannot be read there, say so and stop.
     },
     cloisonnement: {
       lecture: { autorisees: ["terrain", "framework-origin"] },
-      ecriture: { autorisees: ["terrain/aidd_docs"] },
+      ecriture: { autorisees: ["terrain/aidd_docs"], scratch: "terrain/.scratch" },
       reseau: "interdit",
       fichiers_de_contexte: "interdits",
     },
@@ -568,6 +574,8 @@ Answer from the repository. If it cannot be read there, say so and stop.
     attendu_details: {
       ordre: [],
       produit: { racine: null, regle: "À REMPLIR — un seul fichier par destination nommée", arbre_attendu: [] },
+      tableau: { requis: true, forme: "un tableau Markdown, au moins une colonne" },
+      pause: { requis: true },
     },
     falsificateurs_du_run: [
       { id: "F3", condition: "un fichier produit hors des destinations que la demande nomme", tue: "la conformité : le produit dépasse ce que la demande prescrit", mesure: "les chemins du produit collecté" },
@@ -927,13 +935,13 @@ async function commandeOuvrir(argv) {
       "Les réponses envoyées, dans l'ordre (le cas joue la pause, la personne ne la joue plus) :",
       ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.choix.join(", ")}`),
       "",
-      "Ce que ouvrir n'atteste pas : qu'une personne ait conduit le run. --par et --temoignage de suite le disent dans faits.json, et le reçu les relit.",
+      "Ce que ouvrir n'atteste pas : qui a conduit le run. suite le déclare par --conduite agent|humain, et le reçu le recopie sans le vérifier.",
       "",
     ]);
     blocFin({
       etat: `session ${fil} inactive après ${jouees.length} question(s) — le run s'arrête là, et rien n'est encore mesuré`,
       pieces: `aucune : ouvrir n'écrit rien ; le run tient à ${join(run, "gate.json")}`,
-      ensuite: `orchestrer.mjs suite --cas ${cas} --run ${run} --fil ${fil} --par « qui a réellement conduit le run » --temoignage « ce que ouvrir n'atteste pas »`,
+      ensuite: `orchestrer.mjs suite --cas ${cas} --run ${run} --fil ${fil} --par « qui a réellement conduit le run » --conduite agent`,
     });
   } catch (e) {
     if (!(e instanceof Refus)) throw e;
@@ -994,7 +1002,7 @@ function runExiste(cas, valeurs, { requis = true } = {}) {
 }
 function commandeSuite(argv) {
   const valeurs = litOptions(argv, {
-    cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", temoignage: "valeur",
+    cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", conduite: "valeur",
     produit: "valeur", "sans-produit": "drapeau", cases: "valeur", client: "valeur", store: "valeur",
   });
   const cases = casesDir(valeurs);
@@ -1050,11 +1058,12 @@ function commandeSuite(argv) {
   if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent`);
 
   const par = option(valeurs, "par", { defaut: process.env.USER || "operateur" });
-  const temoignage = option(valeurs, "temoignage", { defaut: "orchestrateur : le fil a été ouvert et suivi par la personne, aucune session n'est simulée" });
+  // ADR-071 : no default. A run's conduct is declared, and `ouvrir` conducting it means `agent`.
+  const conduite = option(valeurs, "conduite", { requis: true, question: "qui a conduit le run", domaine: ["agent", "humain"] });
   const argsFaits = ["faits", "--case", cas, "--cases", cases, "--client", client];
   if (client === "freebuff") argsFaits.push("--base", base);
   else argsFaits.push("--store", store);
-  argsFaits.push("--fil", fil, "--trace", trace, "--out", faits, "--par", par, "--fin", dateIso(), "--temoignage", temoignage);
+  argsFaits.push("--fil", fil, "--trace", trace, "--out", faits, "--par", par, "--fin", dateIso(), "--conduite", conduite);
   const sortieFaits = harnaisOuRefus(
     argsFaits,
     "les faits sont ce que le reçu lira : un fait absent n'est pas un fait à remplir plus tard",
@@ -1069,7 +1078,7 @@ function commandeSuite(argv) {
     process.exit(1);
   }
   blocEtape({
-    rang: 1, total: 2, titre: "la trace",
+    rang: 1, total: 3, titre: "la trace",
     fait: `dériver les faits du fil (${client}), puis exporter la trace par l'adaptateur du client`,
     commande: exp.commande,
     attendu: "un faits.json et un export non vides, dans le dossier du run",
@@ -1109,21 +1118,76 @@ function commandeSuite(argv) {
     collecte = harnaisOuRefus(["collect", "--run", run, "--case", cas, "--cases", cases, "--from", source],
       "le produit se collecte sous l'arbre gelé, sinon le reçu lirait une provenance que le gel ne couvre pas");
   }
+  // ADR-067 : le scratch déclaré se collecte après le produit, sous annexe/<cas>/, et jamais dans
+  // raw/<cas>/ : c'est une preuve exécutable, pas le produit. Un scratch absent ne fait pas échouer.
+  let annexeCollecte = "";
+  const attenduPath = join(cases, `${cas}.expected.json`);
+  if (existsSync(attenduPath)) {
+    const attenduCas = expectedDe(cas, cases);
+    const scratch = attenduCas?.cloisonnement?.ecriture?.scratch;
+    if (typeof scratch === "string" && scratch.trim() !== "") {
+      const relatif = scratch.replace(/^\.?\//, "").replace(/^terrain\//, "");
+      const sourceAnnexe = resolve(travail, relatif);
+      if (!sourceAnnexe.startsWith(resolve(travail))) {
+        refuse(`suite : le scratch ${scratch} sort de l'arbre travail — il ne se collecte pas (ADR-067)`);
+      }
+      if (existsSync(sourceAnnexe)) {
+        annexeCollecte = harnaisOuRefus(
+          ["collect", "--run", run, "--case", cas, "--cases", cases, "--annexe", sourceAnnexe],
+          "le scratch déclaré se collecte sous annexe/<cas>/ : sans lui, la preuve citée par le produit n'est pas dans le reçu (ADR-067)",
+        );
+      }
+    }
+  }
+  // ADR-065 : le dernier message est la pièce que le juge lit, et il était transcrit à la main, sans
+  // empreinte. Il se dérive maintenant de la trace exportée, et `faits.json` le cite : le reçu confronte
+  // l'empreinte du fichier, puis son texte à la dernière part `text` d'un message assistant de la trace
+  // qu'il rejoue. Un fichier déjà là est refusé : une transcription manuelle ne se remplace pas en silence.
+  const dernier = join(run, "raw", cas, "last-message.md");
+  if (existsSync(dernier)) {
+    refuse(`suite : ${dernier} existe déjà — un dernier message transcrit à la main ne se remplace pas en silence ; le déplacer, puis relancer`);
+  }
+  const morceaux = readFileSync(trace, "utf8").split(/\r?\n/).filter((l) => l.trim() !== "").map((l) => {
+    try {
+      return JSON.parse(l);
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+  const dernierTexte = morceaux.filter((p) => p.role === "assistant" && p.kind === "text" && typeof p.text === "string").pop() ?? null;
+  if (!dernierTexte) {
+    refuse("suite : la trace exportée ne porte aucun texte d'assistant — sans dernier message, fin refuserait de toute façon, et rien ne s'invente");
+  }
+  mkdirSync(dirname(dernier), { recursive: true });
+  writeFileSync(dernier, dernierTexte.text, "utf8");
+  const faitsEcrits = JSON.parse(readFileSync(faits, "utf8"));
+  faitsEcrits.dernier_message = {
+    chemin: dernier,
+    sha256: createHash("sha256").update(readFileSync(dernier)).digest("hex"),
+    seq: dernierTexte.seq,
+    ts: dernierTexte.ts,
+  };
+  writeFileSync(faits, JSON.stringify(faitsEcrits, null, 2) + "\n");
   blocEtape({
-    rang: 2, total: 2, titre: "la copie",
+    rang: 2, total: 3, titre: "le dernier message",
+    fait: `écrire ${dernier} depuis la dernière part \`text\` d'un message assistant de la trace`,
+    commande: `suite --cas ${cas} --run ${run} … (le même geste, la pièce en plus)`,
+    attendu: "un fichier dont le texte est celui de la trace, cité et haché dans faits.json",
+    obtenu: `${dernierTexte.text.length} o, seq ${dernierTexte.seq} — sha256 dans faits.json`,
+    lit: "le juge lit ce texte : il ne peut plus être une transcription libre que rien ne rattache à la trace",
+  });
+  blocEtape({
+    rang: 3, total: 3, titre: "la copie",
     fait: "copier le produit sous raw/<cas>/, verbatim, avec ses empreintes",
     commande: commandeHarnais(["collect", "--run", run, "--case", cas, valeurs["sans-produit"] ? "--sans-produit" : "--from", valeurs["sans-produit"] ? "" : produit || "…"].filter(Boolean)),
     attendu: "raw/<cas>/ et un manifeste qui nomme chaque source",
-    obtenu: collecte,
+    obtenu: [collecte, annexeCollecte].filter(Boolean).join(" ; "),
     lit: "la copie est ce que le reçu re-hache : un fichier touché après elle se verrait",
   });
-  const dernier = join(run, "raw", cas, "last-message.md");
   blocFin({
-    etat: `le run ${cas} a ses trois pièces (faits, trace, copie) — il s'arrête là, la session est celle de la personne`,
-    pieces: `${faits}, ${trace}, ${join(run, "raw", cas)}`,
-    ensuite: existsSync(dernier)
-      ? `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … »`
-      : `écrire le dernier message de la session dans ${dernier} (le reçu le refuse absent), puis orchestrer.mjs fin`,
+    etat: `le run ${cas} a ses quatre pièces (faits, trace, dernier message, copie) — il s'arrête là, la session est celle de la personne`,
+    pieces: `${faits}, ${trace}, ${dernier}, ${join(run, "raw", cas)}`,
+    ensuite: `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … »`,
   });
   process.exit(0);
 }

@@ -35,6 +35,10 @@ status: in-progress
 >   devient **sept** ; l'orchestrateur entre au §4 ; cinq pièces entrent au §5 ; `ECART.md` est rendu à
 >   son état ; les références sont **par cas** (11 pour `spike-annees`) ; les **quatorze** falsificateurs
 >   du reçu remplacent « les neuf » ; `run.mjs` n'ouvre aucune session, `ouvrir` si.
+> - **2026-10-22 (Séance 116)** : le `temoignage` de `faits.json` cède la place à la **conduite déclarée**,
+>   `{mode: agent|humain, qui, quand}`, recopiée par le reçu avec sa limite ([ADR-071](DECISIONS.md)) ;
+>   les comptes du harnais (3 156 lignes), de l'orchestrateur (1 359) et du rapport (562) sont remis sur
+>   leur mesure.
 >
 > **Ce que cette page possède** : les acteurs et leur séparation de contexte, le trajet des fichiers,
 > les deux couches de commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
@@ -64,10 +68,10 @@ Sept positions, jamais fusionnées, parce qu'aucune ne doit voir l'objet qui la 
 | Position | Qui la tient | Ce qu'elle fait | Ce qu'elle ne voit jamais |
 | --- | --- | --- | --- |
 | auteur de l'attendu | le relecteur | écrit `CASES/<cas>.request.md` et `.expected.json`, fait geler l'empreinte | le produit |
-| opérateur | le relecteur | déclare la racine, gèle, passe la porte, ouvre la session, remet le texte, collecte, écrit le reçu, exporte la trace | rien : il tient le cas. Ce qu'il en dit reste un **témoignage** (`faits.json`), jamais une preuve |
+| opérateur | le relecteur | déclare la racine, gèle, passe la porte, ouvre la session, remet le texte, collecte, écrit le reçu, exporte la trace | rien : il tient le cas. Ce qu'il en dit reste **déclaré** (`faits.json`), jamais une preuve : la **conduite** du run, agent ou humain, en fait partie ([ADR-071](DECISIONS.md)) |
 | session sous test | la session IA ouverte par l'opérateur | lit la révision sous test, écrit dans `terrain/` | `CASES/*.expected.json`, cette page, le journal |
-| harnais | `docs/device/harness/run.mjs`, 2 869 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff et `opencode` pour l'autre client) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
-| rapport | `docs/device/harness/rapport.mjs`, 527 lignes, aucune dépendance | lit le reçu, l'output et la trace, écrit `RAPPORT.md` | aucun verdict : il recopie celui du reçu et ne relit pas les falsificateurs ([ADR-050](DECISIONS.md)) |
+| harnais | `docs/device/harness/run.mjs`, 3 156 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff et `opencode` pour l'autre client) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
+| rapport | `docs/device/harness/rapport.mjs`, 562 lignes, aucune dépendance | lit le reçu, l'output et la trace, écrit `RAPPORT.md` | aucun verdict : il recopie celui du reçu et ne relit pas les falsificateurs ([ADR-050](DECISIONS.md)) |
 | page utilisateur | `docs/device/harness/resultat.mjs`, 497 lignes, aucune dépendance | lit le reçu, l'output, la trace, l'attendu et la lecture déclarée du cas, écrit `RESULTAT.md` | aucun verdict : il range chaque geste sous l'un des trois états déclarés, et une mesure absente reste « non observé » ([ADR-061](DECISIONS.md)) |
 | juge | l'agent | lit le **reçu seul** et re-hache les pièces qu'il cite, écrit `output.json` | la session ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §8) |
 
@@ -129,9 +133,9 @@ graph TD
 
 ## 4. Deux couches de commandes, et le cycle d'un run
 
-Deux exécutables, deux responsabilités. L'**orchestrateur** (`harness/orchestrer.mjs`, **1 295 lignes**)
+Deux exécutables, deux responsabilités. L'**orchestrateur** (`harness/orchestrer.mjs`, **1 359 lignes**)
 dit ce qui se dit et dans quel ordre : il n'ouvre aucun contrôle, appelle le harnais et recopie son refus
-tel quel ([ADR-038](DECISIONS.md)). Le **harnais** (`harness/run.mjs`, **2 869 lignes**) mesure et écrit
+tel quel ([ADR-038](DECISIONS.md)). Le **harnais** (`harness/run.mjs`, **3 156 lignes**) mesure et écrit
 les pièces. Une étape qui refuse arrête l'orchestrateur, et la commande qui a refusé n'est pas relancée.
 
 | Commande de l'orchestrateur | Ce qu'elle dérive, jamais de la personne | Ce qu'elle écrit |
@@ -139,7 +143,7 @@ les pièces. Une étape qui refuse arrête l'orchestrateur, et la commande qui a
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | deux pièces et le gel sous `CASES/`, `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans le dossier du run |
 | `ouvrir` | le fil de la session opencode, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil ([ADR-059](DECISIONS.md)) |
-| `suite` | les faits, l'export de la trace par l'adaptateur du client, la copie du produit | `faits.json`, `trace/`, `raw/<cas>/` |
+| `suite` | les faits, l'export de la trace par l'adaptateur du client, la copie du produit, et l'annexe du scratch déclaré | `faits.json`, `trace/`, `raw/<cas>/`, `annexe/<cas>/` |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, `RESULTAT.md` |
 | `rapport` | le rapport d'un run clos, depuis le reçu, l'output et la trace | `RAPPORT.md`, et `RESULTAT.md` avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
@@ -152,7 +156,7 @@ ces sept commandes n'attestent pas vivent dans [ORCHESTRATEUR](device/ORCHESTRAT
 
 Sous elle, `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 236 contrôles, sans ouvrir de session ni écrire dans le dépôt
+le dépôt, `docs/device/harness/banc-harnais.sh` : 253 contrôles, sans ouvrir de session ni écrire dans le dépôt
 ([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
 compte strict hors code, compte naïf imprimé à côté, refus d'un lien mort en prose ([ADR-027](DECISIONS.md)). Ses outils hors de Node — `git`, `date` GNU,
 `sqlite3` pour la base Freebuff, `opencode` pour l'export de l'autre client — sont déclarés au `--help` et
@@ -178,8 +182,9 @@ Les six commandes du harnais :
 | `preflight` | juste avant d'ouvrir | le gel, le dossier examiné, le texte remis (`--texte`) | `runs/<id>/gate.json` : l'instant en secondes, le dossier autorisé, l'empreinte du gel, l'arbre qu'elle vient de mesurer et le texte remis ([ADR-034](DECISIONS.md)) | un dossier qui n'est pas l'arbre `travail` du gel, un arbre qui n'est plus dans l'état gelé, un cas dont un fichier a bougé, un texte qui n'est pas le §5 substitué ([ADR-018](DECISIONS.md)), un `--run` absent, une porte déjà là, un `--run` qui n'est pas un répertoire ([ADR-034](DECISIONS.md)) |
 | `collect` | le produit revenu | le gel, `--from` résolu (`realpath`) | `runs/<id>/raw/<cas>/` et son manifeste : `sha256`, taille, `birth`, source absolue de chaque fichier ([ADR-020](DECISIONS.md)) | un `--from` hors de l'arbre `travail`, un lien symbolique, un dossier déjà collecté, une copie dont le `sha256` diffère, `--from` vide |
 | `collect --sans-produit` | un run qui ne rend rien | le gel seul | le même manifeste, avec `fichiers: []` et `produit_absent: true` | `--sans-produit` **avec** `--from` (spec §9) |
-| `faits` | entre l'export et le reçu | la base du client (`threads`, `messages`), le gel, `--trace` | `faits.json` : `session` (dont `outil`), `horodatage_debut`, `repertoire_de_travail`, `trace` (dont `client`, puis `base` pour Freebuff ou `store`, `cwd`, `export_brut` pour opencode), `temoignage` | un fil absent, un modèle vide, un chemin qui ne résout pas, un fil hors de l'arbre `travail`, un fil en worktree, une fin antérieure au début, un `faits.json` déjà écrit ([ADR-024](DECISIONS.md), [ADR-031](DECISIONS.md)) |
-| `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json`, la **copie sous `raw/`**, la **base** qu'il nomme, qu'il rejoue, le **budget d'échanges** du cas, la **porte du run**, la **forme du tableau** dans la trace exportée (H6), le bloc `cloisonnement` du cas et les **effets littéraux des commandes `shell`** ([ADR-051](DECISIONS.md)) | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie`, `produit.verifie`, `session_verifiee` (dont `outil`), `trace_verifiee` (`sha256` et `rejoue_le` pour Freebuff ; `outil`, `commande`, `cwd`, `sha256`, `brut_sha256` pour opencode), `trace_lue.sha256` et `rejoue_le`, `echanges{budget, utilises, epuise_par}`, `porte{chemin, sha256, …}`, `tableau{forme, present, index, seq, ts, lignes, colonnes}`, `cloisonnement{attendu_vu, lecture{autorisees, resolues}, ecriture{autorisees, resolues}, reseau, fichiers_de_contexte}`, `falsificateurs.lecture_hors_dossier` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un `faits.json` dont les chemins ne se situent pas (répertoire de travail absent, dossier de la trace absent), un `session.identifiant` que la commande d'export ne lit pas, une `trace.commande` qui n'est pas celle que le reçu reconstruit, une trace exportée qui ne rend pas les octets de la base, une trace exportée sans échange dans la fenêtre du run, un fil qui porte plus de messages `user` que le budget de son cas ou un attendu sans budget lisible, une copie absente, réécrite ou grossie depuis `collect`, un fil que la base ne porte pas ou qu'elle contredit, une porte absente, d'un autre cas, d'un autre gel, d'un autre arbre, d'un autre dossier que celui du run, antérieure au gel, d'un HEAD bougé depuis elle ou d'un texte remis qui n'est pas le §5, un verdict que la preuve ne porte pas, aucune forme de tableau dans la trace exportée, une écriture avant ce tableau, un produit né avant lui, un attendu sans bloc `cloisonnement`, un produit hors de ses racines d'écriture, une lecture hors du cadre déclaré ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ([ADR-030](DECISIONS.md), [ADR-031](DECISIONS.md), [ADR-032](DECISIONS.md), [ADR-033](DECISIONS.md), [ADR-034](DECISIONS.md), [ADR-035](DECISIONS.md)) |
+| `collect --annexe` | le scratch déclaré, après le produit | le gel, `--annexe` résolu (`realpath`) | `runs/<id>/annexe/<cas>/` et son manifeste `role: annexe` : la preuve citée par le produit reste exécutable sans devenir le produit ([ADR-067](DECISIONS.md)) | un `--annexe` hors de l'arbre `travail`, un dossier déjà collecté, `--annexe` avec `--from` ou `--sans-produit` |
+| `faits` | entre l'export et le reçu | la base du client (`threads`, `messages`), le gel, `--trace` | `faits.json` : `session` (dont `outil`), `horodatage_debut`, `repertoire_de_travail`, `trace` (dont `client`, puis `base` pour Freebuff ou `store`, `cwd`, `export_brut` pour opencode), `conduite{mode: agent|humain, qui, quand}` ([ADR-071](DECISIONS.md)) ; `suite` y ajoute `dernier_message{chemin, sha256, seq, ts}` après avoir écrit `last-message.md` ([ADR-065](DECISIONS.md)) | un fil absent, un modèle vide, un chemin qui ne résout pas, un fil hors de l'arbre `travail`, un fil en worktree, une fin antérieure au début, un `faits.json` déjà écrit, une `conduite` absente ou hors de `agent | humain` ([ADR-024](DECISIONS.md), [ADR-031](DECISIONS.md), [ADR-071](DECISIONS.md)) |
+| `receipt` | pendant le run, à chaud | le gel re-haché, le manifeste, `faits.json`, la **copie sous `raw/`**, la **base** qu'il nomme, qu'il rejoue, le **budget d'échanges** du cas, la **porte du run**, la **forme du tableau** dans la trace exportée (H6), le bloc `cloisonnement` du cas et les **effets littéraux des commandes `shell`** ([ADR-051](DECISIONS.md)) | `runs/<id>/receipt.json` : les champs du §6, les falsificateurs, `recu_ecrit_le`, `gel_verifie`, `produit.verifie`, `session_verifiee` (dont `outil`), `conduite{mode, qui, quand}` recopiée de `faits.json` avec sa limite de déclaration ([ADR-071](DECISIONS.md)), `trace_verifiee` (`sha256` et `rejoue_le` pour Freebuff ; `outil`, `commande`, `cwd`, `sha256`, `brut_sha256` pour opencode), `trace_lue.sha256` et `rejoue_le`, `echanges{budget, utilises, epuise_par}`, `porte{chemin, sha256, …}`, `tableau{forme, present, index, seq, ts, lignes, colonnes, requis}`, `pause{requise, mesuree, seq_reponse, seq_ecriture, outil_ecriture}`, `annexe{fichiers, manifeste_sha256, verifie}`, `cloisonnement{attendu_vu, lecture{autorisees, resolues, racine_du_cas}, ecriture{autorisees, resolues, scratch, scratch_resolu}, reseau, fichiers_de_contexte}`, `falsificateurs.lecture_hors_dossier`, `falsificateurs.ecriture_hors_dossier` | un reçu déjà écrit, un cas qui ne concorde plus avec le gel, un manifeste venu d'un autre arbre, une source de fichier hors de l'arbre du run, un `faits.json` dont les chemins ne se situent pas (répertoire de travail absent, dossier de la trace absent), un `session.identifiant` que la commande d'export ne lit pas, une `trace.commande` qui n'est pas celle que le reçu reconstruit, une trace exportée qui ne rend pas les octets de la base, une trace exportée sans échange dans la fenêtre du run, un fil qui porte plus de messages `user` que le budget de son cas ou un attendu sans budget lisible, une copie absente, réécrite ou grossie depuis `collect`, un fil que la base ne porte pas ou qu'elle contredit, une porte absente, d'un autre cas, d'un autre gel, d'un autre arbre, d'un autre dossier que celui du run, antérieure au gel, d'un HEAD bougé depuis elle ou d'un texte remis qui n'est pas le §5, un verdict que la preuve ne porte pas, aucune forme de tableau dans la trace exportée, une écriture avant ce tableau, un produit né avant lui, un attendu sans bloc `cloisonnement`, un produit hors de ses racines d'écriture, une lecture hors du cadre déclaré, une écriture d'outil hors des racines d'écriture, un dernier message attesté qui ne rend plus son empreinte ou son texte, une annexe retouchée après sa collecte ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md), [ADR-063](DECISIONS.md), [ADR-065](DECISIONS.md), [ADR-067](DECISIONS.md)) ([ADR-030](DECISIONS.md), [ADR-031](DECISIONS.md), [ADR-032](DECISIONS.md), [ADR-033](DECISIONS.md), [ADR-034](DECISIONS.md), [ADR-035](DECISIONS.md)) |
 | `compare` | après, par le juge | le **reçu seul**, le gel re-haché, la **trace** et la **porte** que le reçu cite, re-hachées | `runs/<id>/output.json` : `cas`, `attendu`, `produit_brut`, `difference`, `verdict`, `limites`, `ecarte_comme_non_testable`, `phrase`, `gel_verifie`, `juge_le`, `depuis_le_recu` | un cas qui ne concorde plus avec le gel, un reçu qui cite une empreinte que le gel sur disque ne porte plus, une trace ou une porte réécrite entre le reçu et le jugement ([ADR-032](DECISIONS.md), [ADR-034](DECISIONS.md)) |
 
 ```mermaid
@@ -235,7 +240,7 @@ page utilisateur, lecture) sont dans la table qui suit.
 | `<racine>/<cas>/framework-origin`, `terrain` | `freeze`, par dérivation | la session, le harnais | hors des arbres, sous `~/projects/` | une par **cas**, jamais par run |
 | `<racine>/<cas>/texte-a-remettre.txt` | l'opérateur | `preflight --texte` | hors des arbres | regénérée à chaque rectification du cas |
 | `raw/<cas>/` et son manifeste | `collect` | le reçu | `docs/device/runs/<id>/` | versionnée avec le run |
-| `raw/<cas>/last-message.md` | l'opérateur, à la main, verbatim | le juge | `docs/device/runs/<id>/raw/<cas>/` | versionnée |
+| `raw/<cas>/last-message.md` | `suite`, depuis la dernière part `text` d'un assistant, et haché dans `faits.json` ([ADR-065](DECISIONS.md)) | le juge ; `receipt` re-hache et reconfronte le texte à la trace | `docs/device/runs/<id>/raw/<cas>/` | versionnée ; un fichier déjà là est refusé, jamais remplacé en silence |
 | `trace/` (export et commande) | l'opérateur, ou `suite` | le juge, et quiconque doute | `docs/device/runs/<id>/` | versionnée : c'est la pièce la plus forte du run |
 | `runs/<id>/gate.json` | `preflight` | `receipt` et `fin` (re-hachage), et l'orchestrateur qui le cite | `docs/device/runs/<id>/` | versionnée, **une par run** : un dossier qui en porte une est refusé ([ADR-034](DECISIONS.md)) |
 | `runs/<id>/faits.json` | `faits` | `receipt`, `fin`, `rapport` | `docs/device/runs/<id>/` | versionnée : des faits écrits ne se réécrivent pas, ils se relisent |
@@ -284,7 +289,7 @@ machine qui a produit ; `gele_le` est déclaré par le gel lui-même.
 
 Un seul falsificateur suffit à faire tomber le run, et le verdict suit la preuve, jamais l'inverse
 ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §7). Deux
-couches se lisent séparément : les **quatorze mesures** que `receipt` calcule pour tout run, et les
+couches se lisent séparément : les **seize mesures** que `receipt` calcule pour tout run, et les
 falsificateurs **du cas**, écrits dans `CASES/<cas>.expected.json`, qui disent ce que sa promesse attendait.
 
 ### 7.1 Ce que le reçu mesure
@@ -295,6 +300,7 @@ falsificateurs **du cas**, écrits dans `CASES/<cas>.expected.json`, qui disent 
 | `ecriture_avant_tableau` | une écriture précède le tableau | `non concluant` |
 | `produit_ne_avant_le_tableau` | un fichier du produit est né avant le tableau (F1) | `non concluant` |
 | `question_sans_reponse` | la session pose une question puis écrit sans qu'aucune ligne `user` les sépare ([ADR-058](DECISIONS.md)) | `non concluant` |
+| `pause_non_tenue` | le cas exige une pause et la première écriture nommée n'est précédée d'aucun tour `user` ([ADR-069](DECISIONS.md)) | `non concluant` |
 | `trace_sans_echange_dans_la_fenetre` | aucun échange dans la fenêtre du run (§5, condition 2) | `non concluant` |
 | `birth_anterieur_au_gel` | un fichier produit est né avant le gel (§5, condition 1) | `non concluant` |
 | `arbre_de_travail_inchange` | le produit existe et l'arbre de travail n'a pas bougé (F6) | `non concluant` |
@@ -302,7 +308,8 @@ falsificateurs **du cas**, écrits dans `CASES/<cas>.expected.json`, qui disent 
 | `lecture_hors_dossier` | une lecture nommée sort des racines du bloc `cloisonnement` ([ADR-049](DECISIONS.md)) | `non concluant` |
 | `shell_hors_dossier` | une cible littérale d'une commande `shell` sort de ces racines | `non concluant` |
 | `shell_ecriture_hors_produit` | une commande `shell` écrit hors de la racine du produit | `non concluant` |
-| `shell_non_interpretable` | une commande n'est pas lisible par le lecteur d'effets (motif nommé, [ADR-051](DECISIONS.md)) | `non concluant` |
+| `shell_invalide` | la commande est mal formée et le shell l'aurait refusée (motif nommé, [ADR-070](DECISIONS.md)) | `non concluant` |
+| `shell_non_interpretable` | la commande est valide et le lecteur d'effets ne la suit pas (motif nommé, [ADR-051](DECISIONS.md), [ADR-070](DECISIONS.md)) | `non concluant` |
 | `reseau` | un client réseau déclaré apparaît dans une commande, alors que le cas l'interdit | `non concluant` |
 | `hors_produit` | un chemin nouveau du `porcelain` tombe hors du produit | `conforme` seul, si la nature est `produit` |
 
@@ -364,13 +371,28 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
   `CASES/` » (`cloisonnement.attendu_vu`) et « rester dans le cadre déclaré » : le cas écrit ses racines
   de lecture et d'écriture dans le bloc `cloisonnement` de son attendu, et toute lecture nommée hors des
   racines de lecture devient `lecture_hors_dossier` et force `non concluant` ([ADR-049](DECISIONS.md),
-  [ADR-052](DECISIONS.md)). Un attendu sans bloc est refusé : le harnais ne retombe pas sur une constante.
+  [ADR-052](DECISIONS.md)). La racine du cas, elle, se lit par égalité : c'est le répertoire de travail que
+  la demande nomme, et ses sous-arbres restent soumis au cadre ([ADR-064](DECISIONS.md)). Un attendu sans bloc est refusé : le harnais ne retombe pas sur une constante.
   Depuis l'ADR-051, la commande `shell` est lue et ses effets mesurés : cibles littérales, `xargs` et
   `find -exec`, substitution de commande bornée ([ADR-056](DECISIONS.md), [ADR-057](DECISIONS.md)). Ce
   lecteur ne voit pas un binaire opaque, un client réseau hors de la liste déclarée, ni un nom de fichier
-  de contexte hors liste, et le reçu le dit en limite. Il ne voit pas non plus une écriture faite hors de
-  l'arbre de travail par l'outil d'écriture du client : le `porcelain` ne couvre que cet arbre, et le run
-  `spike-annees` a écrit deux scripts sous `/tmp/opencode/` que le reçu n'a pas comptés.
+  de contexte hors liste, et le reçu le dit en limite. Depuis l'ADR-063, le chemin nommé par un outil
+  d'écriture est mesuré comme celui d'une lecture : le run `spike-annees` du 2026-10-22 a écrit deux
+  scripts et les a édités quatre fois sous `/tmp/opencode/`, et ces six parts mordent maintenant
+  (`ecriture_hors_dossier`). Le cadre de lecture inclut la racine du cas par égalité, jamais par
+  contenance : lister `$RACINE/<cas>/` n'est pas en sortir, y lire un fichier reste mesuré (ADR-064).
+  Le même run a montré la limite du cadre : un skill d'investigation écrit ses scripts quelque part, et
+  `/tmp` était interdit. Un cas peut désormais déclarer un **scratch** sous son propre arbre
+  (`cloisonnement.ecriture.scratch`), lisible, scriptible, collecté en annexe et jamais compté comme
+  produit ([ADR-067](DECISIONS.md)) : la preuve reste dans le run, et l'écriture hors de l'arbre mord
+  toujours. Le **tableau** n'est plus une convention universelle : un cas qui n'en demande pas écrit
+  `attendu_details.tableau.requis: false`, et l'absence cesse alors de mordre ([ADR-068](DECISIONS.md)).
+  La **pause** entre la qualification et la première écriture se mesure sur un tour `user`, pas sur
+  l'outil `question` : le run `spike-annees` avait montré, attendu et écrit, et le reçu disait
+  « non observé » ([ADR-069](DECISIONS.md)). Enfin, la commande `shell` que le lecteur refuse porte
+  désormais deux noms : mal formée pour le shell (`shell_invalide`, faute de session) ou valide mais
+  aveugle pour le lecteur (`shell_non_interpretable`, limite d'instrument qui plafonne encore), chacune
+  avec une limite par entrée ([ADR-070](DECISIONS.md)).
 - **Un espace de travail par cas, jamais par run** : le texte remis et le gel portent des chemins
   absolus, deux runs du même cas se distinguent par leurs pièces.
 - **`run.mjs` n'ouvre aucune session et n'écrit que les chemins qu'on lui donne.** Il résout sa propre
@@ -400,7 +422,7 @@ nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec
 | ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
 | les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
 | rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 236 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| le banc qui éprouve le harnais, ses 253 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
 | le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |

@@ -1,0 +1,21 @@
+{
+  "cas": "2026-10-22-092005-spike-annees",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-143219-0052c168-876b08f",
+  "role": "produit",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain/aidd_docs/backlog",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain"
+  },
+  "collecte_le": "2026-10-22T14:50:47+02:00",
+  "fichiers": [
+    {
+      "chemin": "spikes/choix-revue-annees-survie-caches.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/terrain/aidd_docs/backlog/spikes/choix-revue-annees-survie-caches.md",
+      "sha256": "866efb1bb28fa0c577e70d4fb8b6040874340a5a2ba69d63d7e4e7c79a7cad7f",
+      "taille": 10759,
+      "birth": "2026-10-22 14:37:12.869292539 +0200",
+      "birth_epoch": 1792672632
+    }
+  ]
+}

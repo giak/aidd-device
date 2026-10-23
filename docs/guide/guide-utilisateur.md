@@ -156,7 +156,7 @@ Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin
 | `porte` | écrit le texte à coller et autorise l'ouverture dans la copie du dépôt | `gate.json`, `texte-a-remettre.txt` |
 | `ouvrir` | ouvre la session opencode par l'API de son serveur, envoie le texte de la porte, attend la question et envoie la réponse figée du cas puis l'option marquée Recommandé (`ADR-059`) | rien : elle imprime le fil, que `suite` reçoit |
 | `suite` | dérive les faits du fil ou de la session opencode, exporte la trace par l'adaptateur du client, copie le produit | `faits.json`, `trace/`, `raw/<cas>/` |
-| `tracer` | exporte la trace d'un run guidé, sans reçu ni verdict ; `--liste --depuis` nomme les fils récents du projet, sans leur contenu (`ADR-076`) | `trace/echange.jsonl`, `trace/fil.json` |
+| `tracer` | exporte la trace d'un run guidé, sans reçu ni verdict ; `--depuis` et `--jusqu` la bornent au run, `--liste --depuis` nomme les fils actifs depuis cette date, sans leur contenu (`ADR-076`) | `trace/echange.jsonl`, `trace/fil.json` |
 | `fin` | demande à blanc le verdict que la preuve impose, puis écrit le reçu, l'output et le rapport utilisateur | `receipt.json`, `output.json`, `RAPPORT.md` |
 | `rapport` | reconstruit le rapport d'un run déjà clos, sans toucher au reçu ni à l'output | `RAPPORT.md` seulement, avec `--remplacer` |
 | `lire` | relit le verdict, sans rien écrire | rien |

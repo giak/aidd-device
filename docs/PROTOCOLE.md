@@ -32,14 +32,23 @@ Le mode guidé est le défaut depuis le 2026-10-22 : le test se joue dans la **c
 headless, sans second fil, sans modèle à choisir. Il ne passe ni par `cas`, ni par `porte`, ni par `fin` :
 il n'a pas de reçu, et son journal porte toujours `session_non_independante` quand l'agent a vu l'attendu.
 Le dossier vit sous `docs/device/runs/` avec un `run.json` qui porte ses limites ; `runs.mjs` le vérifie et
-l'indexe.
+l'indexe. `run.json` nomme facultativement son fil (`"fil": "<identifiant>"`, ou `null`) : `tracer` refuse
+un `--fil` différent de celui que le run déclare, et `runs.mjs` refuse une `trace/fil.json` qui nomme un
+autre fil que `run.json`. Un run sans `fil` reste valide, et `tracer` n'écrit jamais dans `run.json` : le
+fichier est la déclaration de l'auteur, la trace est sa pièce.
+
+Deux règles tiennent sa grille ([ADR-082](DECISIONS.md)). Elle porte une ligne par action déclarée par le
+`SKILL.md` lu sous la révision sous test, puis les quatre familles de l'[ADR-073](DECISIONS.md) et la borne du
+terrain ; un cas peut préciser une ligne, jamais la remplacer. Et ses trois validations ne comptent que sur un
+tour `user` : une réponse rendue par un outil de question n'est pas un tour, et la ligne est `non observé`,
+avec sa raison, jamais `tenu`.
 
 | Étape du run guidé | Ce qui est produit | Ce qui la clôt |
 | --- | --- | --- |
-| 1 choisir le skill | le skill lu dans la révision sous test, ses actions et ses références | la lecture est faite, pas annoncée |
-| 2 présenter l'épreuve | ce qui est testé, pourquoi, comment, le but, ce qui sera observé, ce qui ne sera pas prouvé | la personne valide, sinon l'étape reste ouverte |
-| 3 écrire le produit attendu | le chemin, la forme, le contenu et les exclusions | la personne valide |
-| 4 jouer le run | le brouillon montré, l'accord, une seule écriture, la grille de traces | le journal `type: run-guide` est écrit |
+| 1 choisir le skill | le skill lu dans la révision sous test, ses actions et ses références ; le fil de la conversation relevé par `tracer --liste`, et son identifiant inscrit dans `run.json` comme `fil` | la lecture est faite, pas annoncée |
+| 2 présenter l'épreuve | ce qui est testé, pourquoi, comment, le but, ce qui sera observé, ce qui ne sera pas prouvé | un tour `user` valide, sinon l'étape reste ouverte |
+| 3 écrire le produit attendu | le chemin, la forme, le contenu et les exclusions | un tour `user` valide |
+| 4 jouer le run | le brouillon montré, l'accord sur un tour `user`, une seule écriture, la grille dérivée des actions du skill | le journal `type: run-guide` est écrit |
 | 5 retour d'expérience, hors gabarit | l'implémentation du produit et ses preuves | la Task est éprouvée, ou la forme est dite non tenue |
 
 L'étape 5 n'est pas une clause du gabarit : la Séance 127 l'a jouée après coup, et rien ne l'exige. Le
@@ -75,7 +84,7 @@ node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client au
 node docs/device/harness/orchestrer.mjs fin --cas <id> --run <dossier> --difference <texte> --phrase <texte> [--verdict <v>]
 node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer] [--cases <dir>]
 node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
-node docs/device/harness/orchestrer.mjs tracer --run <dossier> --fil <id> [--client auto|freebuff|opencode] [--store <dir>]
+node docs/device/harness/orchestrer.mjs tracer --run <dossier> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] [--depuis <iso>] [--jusqu <iso>]
 node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis <iso>
 ```
 
@@ -117,8 +126,17 @@ run écrit `humain` ; `ouvrir` a conduit, donc `agent`.
 `tracer` est la commande du run guidé ([ADR-076](DECISIONS.md)) : elle exporte le fil et écrit
 `trace/echange.jsonl` plus `trace/fil.json`, sans reçu ni verdict. Elle refuse un dossier dont `run.json`
 n'est pas un guidé, un fil inconnu, un client ambigu et une trace déjà écrite.
-`--liste --depuis <iso>` rend les fils récents du projet, identifiant, modèle, nombre de messages et
-début, sans aucun contenu, parce qu'un identifiant ne se devine pas.
+
+`--depuis` et `--jusqu` bornent l'export à la fenêtre du run : `messages.ts >= depuis`, `messages.ts <
+jusqu`, la borne haute exclusive pour que deux fenêtres voisines ne se recouvrent pas. Sans borne, l'export
+couvre le fil entier et la commande reste celle des reçus existants. `fil.json` porte la fenêtre sous
+`fenetre` (`depuis`, `jusqu`, `premier` et `dernier` `seq`/`ts`), et `.lignes` compte les lignes
+exportées : le fichier ne s'appelle plus `messages`, parce qu'une ligne n'est pas un message. Une fenêtre
+qui ne couvre aucune part tombe sur le refus d'export vide, sans second refus.
+`--liste --depuis <iso>` rend les fils **actifs depuis** cette date, identifiant, modèle, nombre de
+messages, dernière activité et date de création, sans aucun contenu, parce qu'un identifiant ne se
+devine pas. L'activité est le dernier message écrit, jamais la création : une conversation reprise garde
+sa date de création d'origine, et une borne sur elle la rendait invisible.
 
 `runs.mjs` tient le dossier des runs ([spec du 08:22](tasks/2026_10/2026-10-23-082232-runs-centralises/2026-10-23-082232-spec-centralisation.md),
 §4) : `--verifier` refuse les défauts du §4, dont un dossier qui ne se classifie pas, un guidé qui porte

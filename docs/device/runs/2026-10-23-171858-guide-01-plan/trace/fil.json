@@ -1,0 +1,37 @@
+{
+  "type": "fil",
+  "client": "freebuff",
+  "application": "Freebuff Desktop (desktop-v2.db, harness_id codebuff)",
+  "identifiant": "ce9c488a-8810-4bef-a495-1a25bf7a8d4f",
+  "modele": "m-096e75164d",
+  "dossier": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-23-171858-guide-01-plan",
+  "exporte_le": "2026-10-23T17:27:17+02:00",
+  "lignes": 133,
+  "premier": {
+    "seq": 656,
+    "ts": 1792768663888
+  },
+  "dernier": {
+    "seq": 657,
+    "ts": 1792769207134
+  },
+  "fenetre": {
+    "depuis": "2026-10-23T17:17:00+02:00",
+    "jusqu": "2026-10-23T17:27:00+02:00",
+    "premier": {
+      "seq": 656,
+      "ts": 1792768663888
+    },
+    "dernier": {
+      "seq": 657,
+      "ts": 1792769207134
+    }
+  },
+  "trace": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-23-171858-guide-01-plan/trace/echange.jsonl",
+    "sha256": "39b523b130ed42d991b1aeaab8becc47114f975d128054dcc268f9279e92fc84",
+    "lignes": 133,
+    "source": "/home/giak/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db (tables threads, messages)",
+    "commande": "sqlite3 -readonly /home/giak/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db \"select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), 'open', json_extract(value,'$.open'), 'outil', json_extract(value,'$.toolName'), 'chemin_outil', json_extract(value,'$.input.path'), 'commande', case when json_type(value,'$.input.command')='text' then json_extract(value,'$.input.command') when json_type(value,'$.input.cmd')='text' then json_extract(value,'$.input.cmd') when json_type(value,'$.input.script')='text' then json_extract(value,'$.input.script') end, 'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, json_each(m.parts_json) where m.thread_id='ce9c488a-8810-4bef-a495-1a25bf7a8d4f' and m.ts >= 1792768620000 and m.ts < 1792769220000 order by m.seq, json_each.key;\" > /home/giak/projects/aidd-device/docs/device/runs/2026-10-23-171858-guide-01-plan/trace/echange.jsonl"
+  }
+}

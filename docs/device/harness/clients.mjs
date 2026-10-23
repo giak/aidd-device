@@ -35,7 +35,9 @@ const isoDeMs = (ms, ou) => {
 // `shell` call did. Three field names are read, in this order, and only a JSON string counts: a
 // number or an object at that place is not a command, and the line carries `null` instead. The
 // receipt never re-runs this text; it compares paths it parses, and says what it cannot parse.
-export const requeteExport = (fil) =>
+// La fenêtre est facultative et n'entre dans la requête que si une borne est nommée : sans borne, le
+// SQL reste octet pour octet celui d'avant, et la commande relue d'un reçu existant ne diverge pas.
+export const requeteExport = (fil, { depuis = null, jusqu = null } = {}) =>
   `select json_object('seq', m.seq, 'role', m.role, 'kind', json_extract(value,'$.kind'), ` +
   `'open', json_extract(value,'$.open'), 'outil', json_extract(value,'$.toolName'), ` +
   `'chemin_outil', json_extract(value,'$.input.path'), ` +
@@ -43,8 +45,11 @@ export const requeteExport = (fil) =>
   `when json_type(value,'$.input.cmd')='text' then json_extract(value,'$.input.cmd') ` +
   `when json_type(value,'$.input.script')='text' then json_extract(value,'$.input.script') end, ` +
   `'text', json_extract(value,'$.text'), 'ts', m.ts) from messages m, ` +
-  `json_each(m.parts_json) where m.thread_id='${fil}' order by m.seq, json_each.key;`;
-export const commandeExport = (base, fil, trace) => `sqlite3 -readonly ${base} "${requeteExport(fil)}" > ${trace}`;
+  `json_each(m.parts_json) where m.thread_id='${fil}'` +
+  `${depuis === null ? "" : ` and m.ts >= ${Math.floor(depuis)}`}` +
+  `${jusqu === null ? "" : ` and m.ts < ${Math.floor(jusqu)}`}` +
+  ` order by m.seq, json_each.key;`;
+export const commandeExport = (base, fil, trace, bornes = {}) => `sqlite3 -readonly ${base} "${requeteExport(fil, bornes)}" > ${trace}`;
 
 function lireBase(base, sql, ou) {
   let sortie;
@@ -127,19 +132,19 @@ export function sessionFreebuff(fil, { base, cwd } = {}) {
   };
 }
 
-export function exportFreebuff(fil, { base, dest } = {}) {
+export function exportFreebuff(fil, { base, dest, depuis = null, jusqu = null } = {}) {
   if (!base) throw new Error("la base Freebuff n'est pas nommée");
   mkdirSync(dirname(dest), { recursive: true });
   let octets;
   try {
-    octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(fil)], { maxBuffer: 64 * 1024 * 1024 });
+    octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(fil, { depuis, jusqu })], { maxBuffer: 64 * 1024 * 1024 });
   } catch (e) {
     if (e.code === "ENOENT") throw new Error("« sqlite3 » est introuvable — le rejeu de l'export ne se devine pas");
     throw new Error(`le rejeu de l'export sur ${base} a échoué — ${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"} ; la pièce (1) du §5 ne se vérifie pas`);
   }
   writeFileSync(dest, octets);
   return {
-    commande: commandeExport(base, fil, dest),
+    commande: commandeExport(base, fil, dest, { depuis, jusqu }),
     source: `${base} (tables threads, messages)`,
     cwd: null,
     sha256: sha256Buf(octets),
@@ -148,23 +153,27 @@ export function exportFreebuff(fil, { base, dest } = {}) {
 }
 
 // ADR-076 : la liste qui aide à choisir un fil — des métadonnées seulement, aucun contenu de message.
-// L'identifiant d'un fil ne se devine pas ; il se lit dans la base du client, borné par une date.
+// L'identifiant d'un fil ne se devine pas ; il se lit dans la base du client, borné par son activité.
+// L'activité est le dernier message écrit, jamais `created_at` : une conversation reprise garde sa date
+// de création, et borner sur elle rendait 0 fil pour un fil actif (spec du 2026-10-23 14:43).
 export function filsFreebuff(depuis, { base } = {}) {
   if (!base) throw new Error("la base Freebuff n'est pas nommée");
   const ms = Number(depuis);
   if (!Number.isFinite(ms)) throw new Error(`« ${depuis} » n'est pas un horodatage — la liste se borne`);
   return lireBase(base,
-    `select json_group_array(json_object('id', id, 'modele', model, 'messages', messages, 'created_at', created_at)) ` +
-    `from (select t.id as id, t.model as model, (select count(*) from messages m where m.thread_id = t.id) as messages, ` +
-    `t.created_at as created_at from threads t where t.created_at >= ${Math.floor(ms)} order by t.created_at desc);`,
+    `select json_group_array(json_object('id', id, 'modele', modele, 'messages', messages, 'created_at', created_at, 'activite', activite)) ` +
+    `from (select t.id as id, t.model as modele, t.created_at as created_at, ` +
+    `coalesce(a.activite, t.created_at) as activite, coalesce(a.messages, 0) as messages ` +
+    `from threads t left join (select thread_id, max(ts) as activite, count(*) as messages from messages group by thread_id) a ` +
+    `on a.thread_id = t.id) as f where activite >= ${Math.floor(ms)} order by activite desc;`,
     "fils") ?? [];
 }
 
-export function replayFreebuff(fil, { base } = {}) {
+export function replayFreebuff(fil, { base, depuis = null, jusqu = null } = {}) {
   if (!base) throw new Error("la base Freebuff n'est pas nommée");
   let octets;
   try {
-    octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(fil)], { maxBuffer: 64 * 1024 * 1024 });
+    octets = execFileSync("sqlite3", ["-readonly", base, requeteExport(fil, { depuis, jusqu })], { maxBuffer: 64 * 1024 * 1024 });
   } catch (e) {
     if (e.code === "ENOENT") throw new Error("« sqlite3 » est introuvable — le rejeu de l'export ne se devine pas");
     throw new Error(`le rejeu de l'export sur ${base} a échoué — ${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"} ; la pièce (1) du §5 ne se vérifie pas`);
@@ -237,7 +246,7 @@ function commandeOutil(p) {
   for (const nom of ["command", "cmd", "script"]) if (typeof i[nom] === "string") return i[nom];
   return null;
 }
-function normaliseOpencode(fil, j) {
+export function normaliseOpencode(fil, j) {
   const messages = Array.isArray(j.messages) ? j.messages : null;
   if (!messages) throw new Error(`l'export opencode du fil « ${fil} » ne porte aucune liste de messages`);
   const lignes = [];
@@ -265,6 +274,15 @@ function normaliseOpencode(fil, j) {
     }
   });
   return lignes;
+}
+
+// La fenêtre d'opencode : l'export du CLI ne prend pas de bornes, le filtre s'applique donc aux lignes
+// normalisées. Une ligne sans horodatage ne se borne pas : elle est refusée, jamais écartée en silence.
+export function fenetrer(lignes, { depuis = null, jusqu = null } = {}) {
+  if (depuis === null && jusqu === null) return lignes;
+  const sans = lignes.find((l) => l.ts === null || l.ts === undefined || !Number.isFinite(Number(l.ts)));
+  if (sans) throw new Error("une ligne de l'export n'a pas d'horodatage — une fenêtre ne se borne pas sur une ligne qui ne dit pas quand");
+  return lignes.filter((l) => (depuis === null || Number(l.ts) >= depuis) && (jusqu === null || Number(l.ts) < jusqu));
 }
 
 export function sessionOpencode(fil, { store, cwd } = {}) {
@@ -314,10 +332,10 @@ export function sessionOpencode(fil, { store, cwd } = {}) {
   };
 }
 
-export function exportOpencode(fil, { store, cwd, dest, brut } = {}) {
+export function exportOpencode(fil, { store, cwd, dest, brut, depuis = null, jusqu = null } = {}) {
   if (!dest) throw new Error("le chemin de la trace normalisée n'est pas nommé");
   const { brut: raw, json: j } = exportBrutOpencode(fil, { cwd });
-  const lignes = normaliseOpencode(fil, j);
+  const lignes = fenetrer(normaliseOpencode(fil, j), { depuis, jusqu });
   const texte = lignes.map((l) => JSON.stringify(l)).join("\n") + (lignes.length ? "\n" : "");
   mkdirSync(dirname(dest), { recursive: true });
   writeFileSync(dest, texte);
@@ -335,9 +353,9 @@ export function exportOpencode(fil, { store, cwd, dest, brut } = {}) {
   };
 }
 
-export function replayOpencode(fil, { store, cwd } = {}) {
+export function replayOpencode(fil, { store, cwd, depuis = null, jusqu = null } = {}) {
   const { brut: raw, json: j } = exportBrutOpencode(fil, { cwd });
-  const lignes = normaliseOpencode(fil, j);
+  const lignes = fenetrer(normaliseOpencode(fil, j), { depuis, jusqu });
   const texte = lignes.map((l) => JSON.stringify(l)).join("\n") + (lignes.length ? "\n" : "");
   return { octets: Buffer.from(texte, "utf8"), sha256: sha256Text(texte), brut_octets: Buffer.from(raw, "utf8"), brut_sha256: sha256Text(raw) };
 }

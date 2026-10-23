@@ -2407,6 +2407,18 @@ déguisé. `tracer` ne remplit pas la grille : elle rend chaque ligne citable.
 hors de `trace/` ; un dossier sans run-guide accepté ; une trace écrasée ; un run guidé présenté comme
 indépendant.
 
+**Rectification (2026-10-23, séance 143).** Trois points du texte ci-dessus sont périmés, sans que la
+décision change. Le dossier n'est plus « exactement un `*-run-guide.md` » : `tracer` lit `run.json.pieces`
+([ADR-081](DECISIONS.md), spec du 08:22). La liste ne rend plus les fils « récents » mais les fils
+**actifs**, sur `max(messages.ts)`, jamais sur `created_at` : une conversation reprise garde sa date de
+création et restait invisible. L'export prend une fenêtre facultative, `--depuis` et `--jusqu` (`ts >=
+depuis`, `ts < jusqu`), et `fil.json` écrit `lignes` au lieu de `messages` et gagne `fenetre` (`null` sans
+borne) : une ligne d'export n'est pas un message, et une trace de sept jours n'est pas la preuve d'un run
+de dix minutes ([spec du 14:43](tasks/2026_10/2026-10-23-144300-trace-du-fil-et-fenetre-d-export/2026-10-23-144300-spec.md)).
+Enfin, `run.json` nomme facultativement son fil (`fil`) : `tracer` refuse un `--fil` autre que celui
+que le run déclare, `runs.mjs` refuse une `trace/fil.json` qui le contredit, et un run sans `fil` reste
+valide ; `tracer` n'écrit jamais dans `run.json`.
+
 ## ADR-077 — Une session inactive sur un texte sans `?` n'est pas un run fini (2026-10-23)
 
 **Contexte.** Sur le run `2026-10-22-211526`, le brouillon de la session finissait par « : » ; la boucle de
@@ -2549,3 +2561,90 @@ lu encore par le motif `*-run-guide.md`.
 **Rectification (2026-10-23).** La migration a eu lieu : les trois run-guides vivent sous
 `docs/device/runs/`, chacun avec son `run.json`, et l'index réel est écrit ([INDEX](device/runs/INDEX.md),
 Séance 136).
+
+## ADR-082 — La grille du run guidé se dérive du skill, et l'accord se lit sur un tour `user` (2026-10-23)
+
+**Contexte.** Le [run guidé de `01-plan`](device/runs/2026-10-23-171858-guide-01-plan/run-guide.md) a montré
+deux trous que le [retour d'expérience](brainstorm/2026-10-23-173017-retour-d-experience-run-guide.md) mesure.
+La grille était écrite par l'agent qui jouait le skill, sans règle de dérivation : elle citait onze fois le
+même `seq 657`, et rien n'obligeait une ligne par action du `SKILL.md`. Et l'accord de la personne, rendu par
+`ask_questions`, n'est pas persisté : les parts d'outil ne portent que `kind`, `id`, `toolName` et `input`,
+donc la réponse n'existe nulle part et la ligne « obtenir l'accord » ne pouvait pas être `tenu`. L'[ADR-069](DECISIONS.md)
+suppose une pause qui laisse un tour `user` ; le mode guidé ([ADR-074](DECISIONS.md)) valide par un outil, et
+la pause n'y existe pas comme fait.
+
+**Options** : laisser la grille au joueur (rejeté : elle déclare ce qu'elle prétend prouver) · exiger un cas
+pour chaque skill (rejeté : `01-plan` n'en a aucun, et un cas par skill coûte une source gelée) · dériver les
+lignes des actions déclarées et ne compter l'accord que sur un tour `user` (choisi).
+
+**Décision.** Deux clauses, qui valent pour tout skill.
+
+1. **La grille se dérive du skill.** Elle porte une ligne par action déclarée dans le `SKILL.md` lu sous la
+   révision sous test, puis les quatre familles de l'[ADR-073](DECISIONS.md) et la borne du terrain. Un cas
+   peut préciser une ligne, jamais la remplacer ; une action sans ligne rend la grille incomplète.
+2. **L'accord est un tour `user`.** Les trois validations du run guidé (présentation, produit attendu, accord
+   avant écriture) ne comptent que si un message `user` les suit. Une réponse rendue par un outil de question
+   n'est pas un tour : la ligne est `non observé`, avec sa raison, jamais `tenu`.
+
+**Conséquences.** Le [PROTOCOLE](PROTOCOLE.md) §1 et le §3 de la [spec du run guidé](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+portent les deux règles. Aucun code, aucun contrôle de banc : elles changent ce qu'un run a le droit d'écrire,
+pas ce que le harnais calcule. Le run de `01-plan` est la première application : sa ligne d'accord est passée
+de `tenu` à `non observé` (rectification du §4). La grille du même run garde ses onze lignes au `seq 657` :
+la granularité par part n'est pas tranchée ici.
+
+**Ce que ce n'est pas** : une preuve qu'une ligne `tenu` désigne bien le geste ; une indépendance ; un
+quatrième mot de verdict ; l'obligation d'un cas par skill. Une ligne `non observé` ne dit pas que le geste a
+manqué, elle dit que la pièce ne le montre pas.
+
+**Falsificateur** : une grille d'un skill à trois actions qui n'en porte pas trois lignes ; une ligne `tenu`
+qui s'appuie sur une réponse d'outil ; un run guidé conduit sans que la présentation soit suivie d'un tour
+`user` et accepté malgré tout.
+
+## ADR-083 — Un refus de `tracer` ne laisse aucune pièce (2026-10-23)
+
+**Contexte.** Le [run de `01-plan`](device/runs/2026-10-23-171858-guide-01-plan/run-guide.md) a lancé `tracer`
+dans le tour qui jouait le run ; l'export était vide, et le refus a laissé `trace/echange.jsonl` de zéro octet.
+Un second appel aurait refusé pour « trace déjà là » : le refus contaminait le run, et seule une suppression à
+la main le rendait rejouable. `mkdirSync` et l'écriture du fichier précédaient la lecture qui constate la
+vacuité.
+
+**Options** : supprimer le fichier après le refus (rejeté : un arrêt entre l'écriture et la suppression laisse
+la même pièce) · écrire dans un fichier de travail et ne le nommer qu'après validation (choisi) · autoriser un
+écrasement forcé (rejeté : une trace ne se réécrit pas).
+
+**Décision.** `tracer` exporte dans `<run>/.tracer-<pid>.echange.jsonl` (et `.export-brut.json` pour opencode),
+relit ce fichier, le refuse s'il est vide ou si une ligne n'est pas du JSON, puis crée `trace/` et **renomme**
+le fichier de travail vers `trace/echange.jsonl`. Tout refus retire les fichiers de travail avant de sortir : le
+dossier du run reste exactement dans l'état où il était. La `commande` consignée dans `trace/fil.json` nomme le
+chemin définitif, jamais le fichier de travail.
+
+**Conséquences.** Contrôle **278** sur une fenêtre vide : `exit 1`, aucun dossier `trace/`, et un second appel
+sur le même dossier réussit — c'est la preuve qu'aucun résidu ne bloque. Le banc passe à **278**. Le renommage
+reste dans le dossier du run, donc sur le même système de fichiers. `suite` exporte encore directement vers
+`trace/echange.jsonl` : ce n'est pas cette ADR.
+
+**Ce que ce n'est pas** : une garantie que la trace nomme le bon fil, ni une atomicité contre un arrêt du
+processus. Un arrêt entre l'export et le renommage laisse un `.tracer-<pid>…` que le prochain appel ne lit pas
+et ne bloque pas ; aucun nettoyage automatique n'est promis.
+
+**Falsificateur** : un refus qui laisse `trace/echange.jsonl` ou `trace/` ; un second appel refusé pour « trace
+déjà là » après un refus ; un `fil.json` écrit sur un refus.
+
+**Rectification (2026-10-23).** `suite` exportait encore directement vers `trace/echange.jsonl`, et créait un
+fichier vide avant même de vérifier que `faits.json` n'existait pas : un refus laissait `trace/` et un
+`echange.jsonl` de zéro octet. Il applique le même fichier de travail (`.suite-<pid>…`), valide l'export avant de
+le renommer, et lève le refus des faits existants avant tout appel client et toute écriture. Contrôle **279** :
+`suite` sur un dossier qui porte déjà `faits.json` rend `exit 1`, nomme le fichier, et laisse le dossier intact.
+Le 162 change de fixture (`oc-run-amb`, porte seule), parce que le 161 remplit `oc-run` de faits et que ce refus
+précède désormais l'ambiguïté des clients. `suite` réécrit toujours une trace existante : ce n'est pas `tracer`.
+
+**Falsificateur.** Un refus de `suite` qui laisse `trace/`, un `.suite-<pid>…`, ou un `faits.json` vide.
+
+**Rectification (2026-10-23, seconde).** La phrase « `suite` réécrit toujours une trace existante » ne tient
+plus. Un dossier qui porte déjà `trace/echange.jsonl` fait désormais refuser `suite`, comme `tracer` (264), et
+ce refus se lève avant tout appel client et avant toute écriture : une trace est une pièce, elle se relit ou se
+déplace, jamais ne se remplace en silence. Le message nomme le fichier et le geste. Contrôle **280** : le dossier
+porte `gate.json` et `trace/echange.jsonl`, le fil nommé n'existe dans aucun client, et le refus dit « existe
+déjà » — s'il venait de la sonde des clients, il dirait « n'existe dans aucune base » : c'est l'ordre qui est
+mesuré. La trace garde ses octets, et aucun `.suite-<pid>` ne reste. Effet de bord assumé : un `suite` qui
+échoue à l'étape des faits, après le renommage, laisse sa trace et devra la voir déplacée avant de repasser.

@@ -1,6 +1,6 @@
 <!-- généré par runs.mjs — ne pas éditer -->
 
-32 runs : 19 indépendants, 3 guidés, 8 avortés, 2 manuels.
+34 runs : 19 indépendants, 5 guidés, 8 avortés, 2 manuels.
 
 | Run | Date | Mode | Cas / skill | Statut ou verdict | Limites | Pièces |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -36,3 +36,5 @@
 | 2026-10-22-221207-guide-10-task | 2026-10-22 | guide | 10-task | forme tenue | 4, session_non_independante, trace_absente, run_non_observe, attendu_non_gele | run-guide.md |
 | 2026-10-23-033645-guide-10-task | 2026-10-23 | guide | 10-task | forme tenue | 4, session_non_independante, trace_absente, revision_non_consignee, attendu_non_gele | run-guide.md |
 | 2026-10-23-075314-guide-03-shadow-areas | 2026-10-23 | guide | 03-shadow-areas | forme tenue | 4, session_non_independante, trace_absente, terrain_non_propre, attendu_non_gele | run-guide.md |
+| 2026-10-23-142623-guide-04-spec | 2026-10-23 | guide | 04-spec | forme tenue | 3, session_non_independante, attendu_non_gele, trace_absente | run-guide.md |
+| 2026-10-23-171858-guide-01-plan | 2026-10-23 | guide | 01-plan | forme tenue | 2, session_non_independante, attendu_non_gele | run-guide.md, trace/echange.jsonl, trace/fil.json |

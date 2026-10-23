@@ -7,7 +7,7 @@
 // l'étape en six lignes (le contrat de narration), et refuser quand une pièce manque.
 import { spawn, spawnSync } from "node:child_process";
 import {
-  cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync,
 } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -73,10 +73,13 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          fin l'écrit automatiquement quand le reçu et l'output viennent d'être écrits.
          La lecture du cas, quand elle existe, est vérifiée avant toute écriture
   tracer --run <dir> --fil <id> [--client auto|freebuff|opencode] [--store <dir>]
+         [--depuis <iso>] [--jusqu <iso>]
          exporte le fil d'un run guidé sous trace/ — echange.jsonl et fil.json — sans reçu
-         ni verdict. Refuse un dossier sans run.json guidé, un mode autre que guide, une
-         trace déjà écrite (ADR-076). --liste --depuis <iso> rend les fils récents du
-         projet, sans contenu de message, parce qu'un identifiant ne se devine pas
+         ni verdict. --depuis et --jusqu bornent la trace au run, sur l'heure de chaque
+         message, borne haute exclue ; sans borne, le fil entier. Refuse un dossier sans
+         run.json guidé, un mode autre que guide, une trace déjà écrite (ADR-076).
+         --liste --depuis <iso> rend les fils actifs depuis cette date, sans contenu
+         de message, parce qu'un identifiant ne se devine pas
 
 codes : 0 tout est allé au bout ; 1 refus motivé, le texte du harnais recopié tel quel ;
         2 commande mal formée (option absente, valeur hors domaine).
@@ -1103,6 +1106,16 @@ function commandeSuite(argv) {
   }
   const fil = option(valeurs, "fil", { requis: false, question: "l'identifiant du fil ouvert dans le client" });
   if (!fil) refuse("suite : --fil est obligatoire — sans fil, il n'y a pas de trace, et rien ne s'invente (refus 7)");
+  // Ce refus se lève avant tout appel client et avant toute écriture : un dossier qui porte déjà des faits
+  // n'a rien à exporter, et le dire ne doit rien y ajouter.
+  const faits = join(run, "faits.json");
+  if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent`);
+  // Une trace déjà écrite est une pièce : `suite` ne la remplace pas, comme `tracer` (ADR-083). Ce refus se
+  // lève avant tout appel client et avant toute écriture : le dire ne doit rien ajouter au dossier.
+  const traceDeja = join(run, "trace", "echange.jsonl");
+  if (existsSync(traceDeja)) {
+    refuse(`suite : ${traceDeja} existe déjà — une trace ne se réécrit pas, elle se relit ; le déplacer, puis relancer`);
+  }
   const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
   if (clientVoulu === "freebuff" && valeurs.store !== undefined) {
     refuse("suite : --client freebuff refuse --store — ce store est celui d'opencode, et un client n'a qu'une source (refus 18)");
@@ -1139,15 +1152,53 @@ function commandeSuite(argv) {
     base = fb.ok ? fb.base : null;
   }
 
-  mkdirSync(join(run, "trace"), { recursive: true });
-  const trace = join(run, "trace", "echange.jsonl");
-  if (!existsSync(trace)) writeFileSync(trace, "", "utf8");
-  const faits = join(run, "faits.json");
-  if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent`);
-
+  const dossierTrace = join(run, "trace");
+  const trace = join(dossierTrace, "echange.jsonl");
   const par = option(valeurs, "par", { defaut: process.env.USER || "operateur" });
   // ADR-071 : no default. A run's conduct is declared, and `ouvrir` conducting it means `agent`.
   const conduite = option(valeurs, "conduite", { requis: true, question: "qui a conduit le run", domaine: ["agent", "humain"] });
+
+  // Le même fichier de travail que `tracer` ([ADR-083](DECISIONS.md)) : la trace ne prend son nom qu'une fois
+  // relue, non vide et ligne par ligne du JSON. Un refus laisse le dossier du run exactement comme il était.
+  const traceTravail = join(run, `.suite-${process.pid}.echange.jsonl`);
+  const brutTravail = join(run, `.suite-${process.pid}.export-brut.json`);
+  const nettoyerTravail = () => {
+    for (const f of [traceTravail, brutTravail]) {
+      try {
+        rmSync(f, { force: true });
+      } catch {
+        /* un fichier de travail déjà absent ne retient pas le refus */
+      }
+    }
+  };
+  let exp;
+  try {
+    exp = exporterTraceClient(client, fil, client === "freebuff"
+      ? { base, dest: traceTravail }
+      : { store, cwd: travail, dest: traceTravail, brut: brutTravail });
+    const contenu = readFileSync(traceTravail, "utf8");
+    const lignes = contenu.split("\n").filter((l) => l.trim() !== "");
+    if (!lignes.length) throw new Error(`suite : l'export de ${fil} est vide — une trace vide ne se cite pas`);
+    lignes.forEach((l, i) => {
+      try {
+        JSON.parse(l);
+      } catch {
+        throw new Error(`suite : la ligne ${i + 1} de l'export n'est pas du JSON — la trace ne se cite pas`);
+      }
+    });
+  } catch (e) {
+    nettoyerTravail();
+    blocRefus({ texte: e.message, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
+    process.exit(1);
+  }
+  mkdirSync(dossierTrace, { recursive: true });
+  renameSync(traceTravail, trace);
+  const brutFinal = join(dossierTrace, "export-brut.json");
+  if (existsSync(brutTravail)) renameSync(brutTravail, brutFinal);
+  nettoyerTravail();
+  // La commande consignée rejoue l'export vers la pièce définitive, jamais vers le fichier de travail.
+  exp.commande = String(exp.commande).split(traceTravail).join(trace).split(brutTravail).join(brutFinal);
+
   const argsFaits = ["faits", "--case", cas, "--cases", cases, "--client", client];
   if (client === "freebuff") argsFaits.push("--base", base);
   else argsFaits.push("--store", store);
@@ -1156,15 +1207,6 @@ function commandeSuite(argv) {
     argsFaits,
     "les faits sont ce que le reçu lira : un fait absent n'est pas un fait à remplir plus tard",
   );
-  let exp;
-  try {
-    exp = exporterTraceClient(client, fil, client === "freebuff"
-      ? { base, dest: trace }
-      : { store, cwd: travail, dest: trace, brut: join(run, "trace", "export-brut.json") });
-  } catch (e) {
-    blocRefus({ texte: e.message, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
-    process.exit(1);
-  }
   blocEtape({
     rang: 1, total: 3, titre: "la trace",
     fait: `dériver les faits du fil (${client}), puis exporter la trace par l'adaptateur du client`,
@@ -1401,7 +1443,7 @@ const isoDepuisMs = (ms) => {
 
 function commandeTracer(argv) {
   const valeurs = litOptions(argv, {
-    run: "valeur", fil: "valeur", client: "valeur", store: "valeur", liste: "drapeau", depuis: "valeur",
+    run: "valeur", fil: "valeur", client: "valeur", store: "valeur", liste: "drapeau", depuis: "valeur", jusqu: "valeur",
   });
   const run = resolve(option(valeurs, "run", { requis: true, question: "le dossier du run guidé" }));
   if (!existsSync(run) || !statSync(run).isDirectory()) {
@@ -1434,6 +1476,7 @@ function commandeTracer(argv) {
 
   if (valeurs.liste) {
     if (valeurs.fil !== undefined) usage("tracer : --liste et --fil s'excluent — une liste ne choisit pas un fil");
+    if (valeurs.jusqu !== undefined) usage("tracer : --jusqu ne s'emploie pas avec --liste — la liste borne par le bas seulement");
     const depuis = option(valeurs, "depuis", { requis: true, question: "l'instant de départ de la liste (ISO 8601)" });
     const ms = Date.parse(depuis);
     if (!Number.isFinite(ms)) usage(`tracer : --depuis « ${depuis} » hors domaine : un instant ISO 8601`);
@@ -1449,19 +1492,42 @@ function commandeTracer(argv) {
       }
       for (const f of lus) fils.push(f);
     }
-    fils.sort((a, b) => Number(b.created_at) - Number(a.created_at));
+    fils.sort((a, b) => Number(b.activite) - Number(a.activite));
     ecrit([
-      `▸ FILS — ${fils.length} depuis ${depuis}`,
+      `▸ FILS — ${fils.length} actifs depuis ${depuis}`,
       ...(fils.length
-        ? fils.map((f) => `  ${f.id}  ${f.modele ?? "(sans modèle)"}  ${f.messages} message(s)  ${isoDepuisMs(f.created_at)}`)
-        : ["  aucun fil postérieur à cette date"]),
+        ? fils.map((f) => `  ${f.id}  ${f.modele ?? "(sans modèle)"}  ${f.messages} message(s)  actif ${isoDepuisMs(f.activite)}  créé ${isoDepuisMs(f.created_at)}`)
+        : ["  aucun fil actif depuis cette date"]),
       "  aucun contenu de message n'est imprimé",
       "",
     ]);
     process.exit(0);
   }
 
+  // La fenêtre ne vaut que pour l'export : la liste, elle, borne sur l'activité du fil.
+  const depuisBrut = Object.prototype.hasOwnProperty.call(valeurs, "depuis") ? valeurs.depuis : null;
+  const jusquBrut = Object.prototype.hasOwnProperty.call(valeurs, "jusqu") ? valeurs.jusqu : null;
+  const instant = (brut, nom) => {
+    if (brut === null) return null;
+    const ms = Date.parse(brut);
+    if (!Number.isFinite(ms)) usage(`tracer : --${nom} « ${brut} » hors domaine : un instant ISO 8601`);
+    return ms;
+  };
+  const depuisMs = instant(depuisBrut, "depuis");
+  const jusquMs = instant(jusquBrut, "jusqu");
+  if (depuisMs !== null && jusquMs !== null && jusquMs <= depuisMs) {
+    refuse("tracer : --jusqu ne suit pas --depuis : une fenêtre vide ne se borne pas");
+  }
+
   const fil = option(valeurs, "fil", { requis: true, question: "l'identifiant du fil" });
+  // Le run déclare son fil ; `tracer` ne l'écrit jamais et ne le remplace pas. Un désaccord se refuse,
+  // parce qu'une trace rattachée au mauvais fil est une pièce qui ne prouve pas ce qu'elle prétend.
+  if (typeof decl.fil === "string" && decl.fil !== fil) {
+    refuse(`tracer : ${run} nomme le fil « ${decl.fil} », pas « ${fil} » — la trace se rattache au fil que le run déclare`);
+  }
+  if (decl.fil !== undefined && decl.fil !== null && typeof decl.fil !== "string") {
+    refuse(`tracer : ${run}/run.json porte un fil qui n'est pas une chaîne — le fil du run se nomme ou reste null`);
+  }
   const trace = join(run, "trace", "echange.jsonl");
   const filJson = join(run, "trace", "fil.json");
   if (existsSync(trace) || existsSync(filJson)) {
@@ -1497,25 +1563,51 @@ function commandeTracer(argv) {
   } catch (e) {
     refuse(`tracer : ${e.message}`);
   }
-  mkdirSync(join(run, "trace"), { recursive: true });
+  // Un refus ne laisse aucune pièce : l'export s'écrit dans un fichier de travail, et ne prend son nom
+  // définitif qu'une fois relu, non vide et ligne par ligne du JSON. Le renommage reste dans le dossier
+  // du run, donc sur le même système de fichiers que `trace/`.
+  const dossierTrace = join(run, "trace");
+  const traceTravail = join(run, `.tracer-${process.pid}.echange.jsonl`);
+  const brutTravail = join(run, `.tracer-${process.pid}.export-brut.json`);
+  const nettoyerTravail = () => {
+    for (const f of [traceTravail, brutTravail]) {
+      try {
+        rmSync(f, { force: true });
+      } catch {
+        /* un fichier de travail déjà absent ne retient pas le refus */
+      }
+    }
+  };
   let exp;
+  let lignes;
+  let lues;
   try {
     exp = exporterTraceClient(client, fil, client === "freebuff"
-      ? { base, dest: trace }
-      : { store, cwd, dest: trace, brut: join(run, "trace", "export-brut.json") });
+      ? { base, dest: traceTravail, depuis: depuisMs, jusqu: jusquMs }
+      : { store, cwd, dest: traceTravail, brut: brutTravail, depuis: depuisMs, jusqu: jusquMs });
+    const contenu = readFileSync(traceTravail, "utf8");
+    lignes = contenu.split("\n").filter((l) => l.trim() !== "");
+    if (!lignes.length) throw new Error(`tracer : l'export de ${fil} est vide — une trace vide ne se cite pas`);
+    lues = lignes.map((l, i) => {
+      try {
+        return JSON.parse(l);
+      } catch {
+        throw new Error(`tracer : la ligne ${i + 1} de l'export n'est pas du JSON — la trace ne se cite pas`);
+      }
+    });
   } catch (e) {
-    refuse(`tracer : ${e.message}`);
+    nettoyerTravail();
+    refuse(String(e.message).startsWith("tracer : ") ? e.message : `tracer : ${e.message}`);
   }
-  const contenu = readFileSync(trace, "utf8");
-  const lignes = contenu.split("\n").filter((l) => l.trim() !== "");
-  if (!lignes.length) refuse(`tracer : l'export de ${fil} est vide — une trace vide ne se cite pas`);
-  const lues = lignes.map((l, i) => {
-    try {
-      return JSON.parse(l);
-    } catch {
-      return refuse(`tracer : la ligne ${i + 1} de ${trace} n'est pas du JSON — la trace ne se cite pas`);
-    }
-  });
+  mkdirSync(dossierTrace, { recursive: true });
+  renameSync(traceTravail, trace);
+  const brutFinal = join(dossierTrace, "export-brut.json");
+  if (existsSync(brutTravail)) renameSync(brutTravail, brutFinal);
+  nettoyerTravail();
+  // La commande consignée rejoue l'export vers la pièce définitive, jamais vers le fichier de travail.
+  exp.commande = String(exp.commande).split(traceTravail).join(trace).split(brutTravail).join(brutFinal);
+  const premier = { seq: lues[0].seq ?? null, ts: lues[0].ts ?? null };
+  const dernier = { seq: lues[lues.length - 1].seq ?? null, ts: lues[lues.length - 1].ts ?? null };
   const piece = {
     type: "fil",
     client,
@@ -1524,9 +1616,10 @@ function commandeTracer(argv) {
     modele: sess.modele ?? null,
     dossier: run,
     exporte_le: dateIso(),
-    messages: lignes.length,
-    premier: { seq: lues[0].seq ?? null, ts: lues[0].ts ?? null },
-    dernier: { seq: lues[lues.length - 1].seq ?? null, ts: lues[lues.length - 1].ts ?? null },
+    lignes: lignes.length,
+    premier,
+    dernier,
+    fenetre: depuisMs === null && jusquMs === null ? null : { depuis: depuisBrut, jusqu: jusquBrut, premier, dernier },
     trace: { chemin: trace, sha256: exp.sha256, lignes: lignes.length, source: exp.source, commande: exp.commande },
   };
   writeFileSync(filJson, JSON.stringify(piece, null, 2) + "\n", "utf8");
@@ -1534,6 +1627,9 @@ function commandeTracer(argv) {
     `▸ TRACE — ${fil}`,
     `  fichier             : ${trace}`,
     `  empreinte           : ${exp.sha256} (${lignes.length} ligne(s))`,
+    ...(depuisMs === null && jusquMs === null
+      ? []
+      : [`  fenêtre             : ${depuisBrut ?? "(début)"} → ${jusquBrut ?? "(fin)"}`]),
     `  source              : ${client}, ${sess.modele ?? "(modèle non nommé)"}`,
     "  à lire ensuite      : remplir le §5 bis du run-guide et citer les seq",
     "",

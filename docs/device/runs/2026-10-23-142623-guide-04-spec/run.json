@@ -1,0 +1,22 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "04-spec", "chemin": "plugins/aidd-pm/skills/04-spec", "revision": "fe48de12" },
+  "terrain": {
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-142623-spec-terrain/terrain",
+    "tete": "416ec1f",
+    "porcelain": "vide au départ (clone neuf), ?? aidd_docs/ après le run"
+  },
+  "conduite": "agent",
+  "rapport_le": "2026-10-23T14:30:50+02:00",
+  "consigne_le": "2026-10-23T14:26:23+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent comme preuve d'indépendance", "detail": "ADR-074" },
+    { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "le §3 vit dans run-guide.md, écrit après la validation de l'épreuve, sans gel" },
+    { "code": "trace_absente", "effet": "aucune ligne ne cite de seq", "detail": "tracer --liste --depuis 2026-10-23T00:00:00 rend 0 fil" }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null
+}

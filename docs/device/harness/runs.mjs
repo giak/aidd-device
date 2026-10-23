@@ -91,6 +91,23 @@ function validerRun(nom, r, dir) {
   if (r.skill && r.skill.revision === null && !codes.has("revision_non_consignee")) {
     refuse(`${nom} a revision null sans revision_non_consignee`);
   }
+  // Le fil est facultatif : absent ou null, un run sans trace reste valide. Une chaîne se lit, et quand
+  // une trace existe, elle doit nommer le même fil, sinon les deux pièces se contredisent.
+  if (r.fil !== undefined && r.fil !== null && !texte(r.fil)) {
+    refuse(`${nom} : fil n'est pas une chaîne — le fil d'un run se nomme ou reste null`);
+  }
+  const traceFil = join(dir, "trace", "fil.json");
+  if (existsSync(traceFil)) {
+    let t;
+    try {
+      t = JSON.parse(readFileSync(traceFil, "utf8"));
+    } catch {
+      refuse(`${nom} : trace/fil.json illisible — une trace se lit ou se refuse`);
+    }
+    if (typeof r.fil === "string" && t.identifiant !== r.fil) {
+      refuse(`${nom} : trace/fil.json nomme « ${t.identifiant} » et run.json nomme « ${r.fil} » — les deux se contredisent`);
+    }
+  }
   if (!Array.isArray(r.pieces) || r.pieces.length === 0) refuse(`${nom} : pieces est vide — un run cite ses pièces`);
   for (const p of r.pieces) {
     if (!piecePropre(p)) refuse(`${nom} : pièce hors du dossier : ${p}`);

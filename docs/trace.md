@@ -7607,3 +7607,541 @@ confronte le runbook au code). `node docs/device/harness/liens.mjs` => 211 fichi
 `exit 0`.
 
 **Prochaine étape.** La spec du 22:12, §2 (chemin), §3 (gabarit et `run.json`) et §6 (critère de sortie).
+
+## Séance 139 — 2026-10-23 (un run guidé sur `04-spec`, jamais éprouvé)
+
+**Objectif.** Éprouver un skill qu'aucun run n'avait encore touché, `aidd-pm/04-spec` action `build`, en
+mode guidé, et vérifier du même geste que la machinerie des runs centralisés tient un run de bout en bout :
+`run.json`, `tracer`, l'index.
+
+**Fait.** Le skill est lu sous `fe48de12` (`SKILL.md`, `actions/01-build.md`, `assets/spec-template.md`,
+`assets/spec-validator.yml`, `references/tbd-marker.md`). Un clone neuf de `audio-sync-tool` sert de
+terrain, à `/home/giak/aidd-device-work/2026-10-23-142623-spec-terrain/terrain`, tête `416ec1f`,
+porcelain vide. L'épreuve est présentée en six champs, la personne la valide, puis valide la demande et
+le produit attendu, puis accepte le brouillon. Le skill écrit une fois
+`aidd_docs/tasks/2026_10/2026-10-23_export-playlist/spec.md` : 28 lignes, `sha256`
+`8f508eda834fc3030377c1f5d89546a3cd26f37f8416ee1cfeb7a4c05ac8594b`. Le dossier du run,
+[2026-10-23-142623-guide-04-spec](device/runs/2026-10-23-142623-guide-04-spec/run-guide.md), porte
+`run-guide.md` et `run.json`, et l'[index](device/runs/INDEX.md) est régénéré.
+
+Le produit tient la forme du skill : cinq sections du gabarit dans l'ordre, `Target`, `Hard constraints`,
+`Non-goals`, `Done-when`, aucune section ajoutée ni renommée, les deux sections facultatives omises faute
+de matière. Trois manques sont marqués en `TBD:` : le format et le nom du fichier exporté, le sort d'un
+fichier déjà présent, le lieu où lire le chemin écrit. Les quatre détails d'implémentation de la demande
+(route Flask, bouton, `fetch`, dossier de données) n'entrent pas dans le contrat.
+
+**Vérifié.** `grep -nEi 'flask|fetch|app\.py|templates/index\.html|static/app\.js|data/exports|POST|route|bouton|<id>|m3u'`
+sur le produit => `exit 1`, aucune ligne ; `grep -c '```'` => `0` ; `find aidd_docs -type f` => un seul
+fichier ; `git status --porcelain` du terrain => `?? aidd_docs/` seul, le dépôt réel `audio-sync-tool`
+gardant son `?? .freebuff/` antérieur. `node docs/device/harness/runs.mjs --verifier` => `exit 0` ;
+`--index` => `33 run(s)`, dont **4 guidés** ; `node docs/device/harness/liens.mjs` => 212 fichiers,
+1 294 liens hors code, **0 mort**, `exit 0`, puis 1 296 une fois cette section ajoutée, ses deux
+renvois compris ; `git diff --check` => `exit 0`.
+`tracer --liste --depuis 2026-10-23T00:00:00` => `FILS — 0`, donc `trace_absente` au `run.json`.
+
+**Dérives signalées, non corrigées.** Le premier `tracer --liste` du run a refusé faute de `run.json`
+(`n'a pas run.json — la trace se lit par run.json.pieces`) : la liste des fils n'est pas offerte avant
+l'écriture du `run.json` qu'elle ne lit pas, et le §5 bis du journal porte le refus tel que la console l'a
+rendu. Le README du terrain a été lu au moment de choisir la demande, avant l'épreuve, donc la règle du
+skill « ne jamais explorer le code » n'est pas vierge, même si aucun fichier de code n'a été lu pendant le
+run. La convention du slug reste ouverte : `export-playlist` porte un trait d'union dans un nom de dossier
+dont la règle écrit `<yyyy_mm_dd>_<slug>`, et aucune page du skill ne tranche. Le calcul du nom d'un run
+guidé garde `<horodatage>-guide-<slug>` : l'index le classe par `mode` et non par le motif du nom.
+
+**Rectifications de ses propres affirmations.** Le §6 du journal comptait « quatre manques » alors que le
+produit en porte trois ; corrigé en trois. Le premier `run.json` portait un `rapport_le` de `14:40`,
+écrit d'avance ; il est ramené à l'heure mesurée. Le §5 bis dit la relance de `tracer --liste` après ajout
+de `run.json` : ce n'est pas la même commande sur le même état, le refus nommait la pièce manquante.
+
+**Prochaines étapes.** La spec du 22:12, §2, §3 et §6, reste la seule page à aligner sur la centralisation
+des runs. Rien d'autre n'est en suspens dans le dispositif.
+
+**Mémoires.** `fe053a1c-80a9-49f6-97ac-a67009339721` : le choix du skill, le clone propre, le produit à
+28 lignes, les trois `TBD`, l'absence de nom d'implémentation, les checks et les réserves du run, relue.
+
+## Séance 140 — 2026-10-23 (la trace du fil courant : la borne, pas l'absence)
+
+**Objectif.** Établir si le fil de la conversation courante existe dans les bases des clients, et pourquoi
+`tracer` ne le voit pas.
+
+**Fait.** La base du projet est
+`~/.config/freebuff-desktop/projects/aidd-device-ca79e757-e60b-4091-a426-64d8dae7c937/desktop-v2.db`
+(136 802 304 octets, un `-wal` de 42 398 952, écrit jusqu'à `14:37`). Elle porte cinq fils, dont le plus
+récent a été **créé** le 2026-10-16 à 16:43.
+
+La conversation courante est le fil `ce9c488a-8810-4bef-a495-1a25bf7a8d4f` : `project_path`
+`/home/giak/projects/aidd-device`, `created_at` `2026-10-16T09:19:16`, `updated_at` et `last_prompt_at`
+`2026-10-23T14:36:51`, `execution_mode` `local`, sans `branch` ni `worktree_path`, modèle
+`m-096e75164d`, `harness_id` `codebuff`, 488 lignes de messages, `seq` jusqu'à 640. Elle le reconnaît :
+`parts_json` porte « faisons un point » trois fois.
+
+`filsFreebuff` ([clients.mjs](device/harness/clients.mjs), ligne 152) filtre et trie sur
+`threads.created_at`. D'où les deux mesures, mêmes bases, même jour :
+
+- `tracer --liste --depuis 2026-10-23T00:00:00` => `FILS — 0` ;
+- `tracer --liste --depuis 2026-10-15T00:00:00` => `FILS — 9`, dont `ce9c488a…`, 488 messages, daté du
+  2026-10-16.
+
+L'export, essayé sur une copie du dossier du run sous `/tmp/trace-essai`, sort en `exit 0` : 18 414 lignes,
+22 170 278 octets, `sha256`
+`039c1279b25e4b9a3f6daa6d844fd5d8c057ae8515786c794cb157c0f89d8280`, `seq` 73 à 640, du 16 au 23 octobre.
+La fenêtre du run, `ts >= 2026-10-23T14:24:00+02:00`, fait 96 lignes, `seq` 636 à 640, 124 236 octets,
+dont 46 lignes d'outils, 16 textes, 30 `reasoning`, une compaction et un `changes`.
+
+**Vérifié.** Les trois commandes ci-dessus, leurs codes de sortie et les empreintes. Le fil est
+exportable : `sessionFreebuff` accepte son `execution_mode`, l'absence de worktree, le modèle et son
+premier message utilisateur (`seq` 73). `--client auto` laisse fuiter sur `stderr` un refus d'opencode
+(`Expected a string starting with "ses" at ["sessionID"]`) alors que Freebuff répond : bruit, pas refus.
+
+**Dérives signalées, non corrigées.** Trois. La liste borne sur la création et rate une conversation
+reprise, ce qui est le cas de tous les runs guidés. L'export n'a aucune fenêtre : la trace d'un run guidé
+est celle de toute la conversation, 22 Mo et sept jours ici, donc une preuve non bornée par le run. Et
+l'inférence des quatre runs guidés précédents, « le fil courant n'est pas dans ce que la frontière lit »,
+est fausse : le fil y était, la borne le cachait. Rien n'est corrigé dans le harnais à cette séance.
+
+**Rectifications de ses propres affirmations.** Le §5 bis du [run du 04-spec](device/runs/2026-10-23-142623-guide-04-spec/run-guide.md)
+et la Séance 139 disent le fil absent de la base : faux, et daté au §5 bis. La Séance 139 garde son texte,
+la rectification vit ici.
+
+**Prochaines étapes.** Décider, avant tout code : borne d'activité pour la liste, fenêtre pour l'export,
+et un champ `fil` dans `run.json` pour que la trace d'un run se rattache sans redériver l'identifiant.
+
+**Mémoires.** `ae57de74-5227-4365-bac3-a6bced79e1ef` : le fil, sa borne, l'export à 18 414 lignes, la
+fenêtre à 96 lignes, les quatre runs trompés, relue. Le doublon créé par la relance (`434f3526…`) est
+supprimé en douceur.
+
+## Séance 141 — 2026-10-23 (la spec qui borne la trace par le run)
+
+**Objectif.** Mettre par écrit les trois corrections que la Séance 140 a mesurées, avant toute
+ligne de code : la liste bornée sur l'activité, la fenêtre d'export, et le fil nommé dans `run.json`.
+
+**Fait.** La [spec du 14:43](tasks/2026_10/2026-10-23-144300-trace-du-fil-et-fenetre-d-export/2026-10-23-144300-spec.md)
+est écrite, `status: open`, 175 lignes. Elle porte le défaut mesuré, la règle en trois points, les refus
+ajoutés, les deux contrôles de banc (**276**, **277**, le banc passe de 275 à 277), les pages à aligner,
+les falsificateurs, l'ordre, et ce qu'elle ne fait pas. Le dossier et le fichier portent l'heure de
+naissance mesurée, `2026-10-23-144300`, après renommage depuis un `144240` deviné trop tôt.
+
+**Vérifié.** `stat -c %w` => `2026-10-23 14:43:00.303253363 +0200`, identique au préfixe. Les six
+`run.json` du dépôt sont recensés, aucun ne porte `fil`, donc le champ facultatif ne les invalide pas.
+`node docs/device/harness/liens.mjs` => 213 fichiers, 1 308 liens hors code, **0 mort**, `exit 0` ;
+`runs.mjs --verifier` => `exit 0` ; `git diff --check` => `exit 0`.
+
+**Rectifications de ses propres affirmations.** Deux, dans la spec, avant clôture de cette section :
+l'exemple de `fenetre` portait un premier `ts` inventé (`1792758300119`), remplacé par le mesuré
+(`1792758248434`, `seq` 636) ; et l'en-tête disait que trois runs sur quatre attribuaient le zéro à une
+absence du fil, alors que seuls le `03-shadow-areas` et le `04-spec` le disent, les deux runs du `10-task`
+s'arrêtant à « le fil n'est pas exporté ».
+
+**Dérives signalées, non corrigées.** Aucune dans le harnais : la spec est écrite, pas appliquée. Le bruit
+`stderr` d'opencode, la réécriture des journaux clos et la convention du slug du skill restent hors de
+son périmètre, et la spec le dit au §12.
+
+**Prochaines étapes.** L'accord sur la spec, puis l'ordre du §11 : la liste et le contrôle 276, la fenêtre
+et le contrôle 277, le champ `fil`, puis les cinq pages.
+
+**Mémoires.** `bbd00ec0-adac-4ced-8a75-83c55179096e` : les trois corrections, les deux contrôles, les
+mesures de référence, les exclusions, relue.
+
+**Double-check du même jour, avant clôture.** La spec a été falsifiée avant d'être tenue pour bonne, et
+onze points ont bougé.
+
+Ce qui tenait : la cause de la liste vide (`created_at`), l'exportabilité du fil, les mesures (0 contre 9
+fils, 18 414 lignes, 96 lignes de fenêtre, `seq` 636 à 640, 488 lignes en base).
+
+Ce qui est tombé :
+
+1. `coalesce(last_prompt_at, updated_at)` ne mesure pas l'activité. `last_prompt_at` ne bouge qu'à un
+   envoi de la personne : un run dont la consigne précède la borne serait raté alors que ses tours sont
+   dans la fenêtre ; `updated_at` bouge sur une écriture qui n'est pas une conversation. L'activité est
+   `max(messages.ts)`, une seule sous-requête groupée.
+2. `fil.json` nomme `messages` un compte de lignes JSONL (18 414 pour 488 messages en base). Le champ
+   devient `lignes` ; aucun `fil.json` n'existe dans le dépôt, donc le renommage ne rompt rien.
+3. `pieces` ne peut pas citer `trace/` : `piecePropre` refuse un chemin qui finit par `/` (évalué sur la
+   fonction elle-même). Un run qui attache sa trace cite `trace/echange.jsonl` et `trace/fil.json`.
+4. Le refus « fenêtre vide » faisait doublon avec le refus existant d'un export vide. Retiré ; seul
+   `--jusqu` antérieur au `--depuis` est un refus neuf.
+5. « Rejoué par la commande inscrite » était faux : le rejeu est un appel avec les mêmes options, la
+   commande inscrite documente et ne s'exécute pas.
+6. L'export sans borne doit garder un SQL octet pour octet identique, sinon la commande relue d'un reçu
+   existant diverge de celle que le code régénère. Ajouté comme contrainte.
+7. `fenetre.lignes` recopiait le compte du haut. Retiré.
+8. `--jusqu précède --depuis` ne couvrait pas des bornes égales. Devenu « ne suit pas ».
+9. `status: open` sort du jeu de valeurs du document consigné. La spec prend `pending` ; les deux specs
+   sœurs du 08:22 gardent `open`, et la dérive est nommée, pas corrigée ici.
+10. L'obligation de `fil` vit dans le gabarit, pas dans `runs.mjs`, qui ne peut pas dater un run. Dit.
+11. Le banc déteste déjà `sqlite3` (35 occurrences, contrôle 57) : les deux contrôles sur une base de
+    fixture n'ajoutent aucune dépendance. Craint, puis réfuté.
+
+**Mémoires.** La décision `bbd00ec0-adac-4ced-8a75-83c55179096e` est mise à jour : l'activité est
+`max(messages.ts)`, pas `last_prompt_at`, et les onze points du double-check y sont résumés.
+
+## Séance 142 — 2026-10-23 (la liste des fils bornée sur l'activité, contrôle 276)
+
+**Objectif.** Appliquer le point 1 de la [spec du 14:43](tasks/2026_10/2026-10-23-144300-trace-du-fil-et-fenetre-d-export/2026-10-23-144300-spec.md) :
+`tracer --liste` borne et ordonne sur l'activité du fil, jamais sur sa création, avec un contrôle de banc.
+
+**Fait.** `filsFreebuff` ([clients.mjs](device/harness/clients.mjs)) joint
+`(select thread_id, max(ts) as activite, count(*) as messages from messages group by thread_id)`, prend
+`coalesce(a.activite, t.created_at)` pour activité, filtre et trie dessus. `orchestrer.mjs` trie sur
+`activite`, imprime `n actifs depuis <iso>` et, par fil, `actif <iso>  créé <iso>` ; son usage dit « actifs
+depuis cette date ». Le contrôle **276** ouvre une base de fixture sous `$O/home-fils` avec deux fils, l'un
+créé il y a dix jours et écrit aujourd'hui, l'autre muet depuis dix jours : bornée à hier, la liste rend le
+premier seul et compte `1 actifs` ; bornée à trente jours, elle rend les deux dans l'ordre d'activité. Le
+banc passe de **275** à **276**. Suivent [BANC](BANC.md) (V0.44, comptes, tableau), [PROTOCOLE](PROTOCOLE.md)
+§2 et le [guide utilisateur](guide/guide-utilisateur.md).
+
+**Généricité demandée, et tenue.** Aucun nom de skill, de cas ni de terrain n'entre dans le code : la règle
+porte sur le fil, quel que soit le skill dont le run est la trace, et quel que soit son produit. La liste
+reste celle de Freebuff, opencode n'ayant pas d'équivalent : la limite est dite dans la spec §3, pas
+contournée. La fenêtre du point 2 vaudra pour les deux clients, Freebuff en SQL, opencode dans
+`normaliseOpencode` ; `run.json.fil` est l'identifiant que le client donne, jamais un nom de skill.
+
+**Vérifié.** Premier passage du 276 : `FAIL 276 … exit=1 attendu=0`, SQL invalide (sous-requête sans alias,
+parenthèse finale en trop) ; corrigé en `as f` et sans la parenthèse. Deuxième passage : `PASS 276`,
+`276/276 PASS`, `exit 0`. Sur la base réelle, bornée au `2026-10-23T00:00:00` : `FILS — 2`,
+`ce9c488a…` 498 messages, actif `14:51:59`, créé le 16 octobre, et `1641d695…` 360 messages, actif
+`04:25:44` ; la même commande rendait `0` avant le correctif. `runs.mjs --verifier` => `exit 0` ;
+`liens.mjs` => 213 fichiers, 1 309 liens, **0 mort** ; `git diff --check` => `exit 0`.
+
+**Dérives signalées, non corrigées.** Le premier banc a été tué en cours d'exécution et s'était arrêté sur
+le 276 en échec ; le PASS vient d'une exécution complète, relancée en arrière-plan. La liste sans Freebuff
+reste sans équivalent. `fil.json.messages` attend son renommage au point 2, et le contrôle 263 affirme ce
+champ : il changera avec lui, la spec le dit.
+
+**Rectifications de ses propres affirmations.** Le SQL du premier jet était invalide et je l'ai écrit sans
+l'éprouver ; c'est le contrôle 276 qui l'a attrapé, avant tout usage sur une base réelle. Aucun run
+n'a été conduit avec ce code.
+
+**Prochaines étapes.** Point 2 : la fenêtre d'export, `fil.json` renommé, et le contrôle 277. Puis le champ
+`fil` et les pages restantes.
+
+**Mémoires.** `542ff999-d103-403e-a1fb-552f3363f2b0` : la jointure, l'affichage, le contrôle 276, le FAIL
+initial, les deux fils réels, les limites, relue.
+
+## Séance 143 — 2026-10-23 (la fenêtre d'export, `lignes`, contrôle 277)
+
+**Objectif.** Appliquer le point 2 de la [spec du 14:43](tasks/2026_10/2026-10-23-144300-trace-du-fil-et-fenetre-d-export/2026-10-23-144300-spec.md) :
+`tracer` prend une fenêtre, l'inscrit dans `fil.json`, et le compte des lignes cesse de s'appeler
+`messages`.
+
+**Fait.** `requeteExport` ([clients.mjs](device/harness/clients.mjs)) reçoit `depuis` et `jusqu` et
+n'ajoute `and m.ts >= <ms>` et `and m.ts < <ms>` que si une borne est nommée : sans borne, le SQL reste
+celui des reçus existants. `commandeExport` porte les mêmes bornes, `exportFreebuff` et `replayFreebuff`
+les reçoivent. `fil.json` écrit `lignes` au lieu de `messages` et gagne `fenetre` : `null` sans borne,
+sinon `{depuis, jusqu, premier, dernier}`, les bornes en ISO telles que reçues. opencode n'a pas d'export
+borné : `fenetrer` filtre les lignes normalisées en mémoire et refuse une ligne sans `ts` au lieu de
+l'écarter en silence. `tracer` accepte `--depuis` et `--jusqu`, refuse un instant hors domaine en usage,
+un `--jusqu` qui ne suit pas `--depuis` en `1`, et `--jusqu` avec `--liste` en usage ; une fenêtre qui ne
+couvre aucune part tombe sur le refus existant d'export vide. Le contrôle **277** naît sur la base du 276,
+avec un troisième fil à trois messages : la fenêtre `[t2, t3)` ne garde que le deuxième, `fil.json` porte
+`fenetre` et `premier.seq` 2, la commande citée porte les deux bornes, le rejeu rend la même empreinte, un
+`--jusqu` antérieur au `--depuis` est refusé, l'export vide aussi, et le filtre d'opencode rend la même
+borne sur une fixture, sans CLI. Le 263 affirme `f.lignes`. Le banc passe de **276** à **277**. Suivent
+[BANC](BANC.md) (V0.45, comptes, tableau), [PROTOCOLE](PROTOCOLE.md) §2 et le [guide
+utilisateur](guide/guide-utilisateur.md).
+
+**Vérifié.** Banc complet : `PASS 277`, `277/277 PASS`, `exit 0`. Le contrôle mord : sur une fenêtre
+élargie à trois messages, il rend `exit 1` et `lignes 2 au lieu de 1`, `premier/dernier
+[{"seq":1,…},{"seq":2,…}]`. Sur une fixture à trois instants, `tracer --depuis … --jusqu …` rend
+`1 ligne(s)`, `fenetre` avec les deux bornes, la commande avec `m.ts >= 2000000 and m.ts < 3000000`.
+`runs.mjs --verifier` => `exit 0` ; `liens.mjs` => 213 fichiers, 1 321 liens, **0 mort** ;
+`git diff --check` => `exit 0`.
+
+**Rectifications.** Deux passages du banc ont échoué avant celui-ci, et pas pour la raison supposée : le
+premier a été relancé pendant que j'éditais `banc-harnais.sh`. Bash relit le fichier du script en cours
+d'exécution, et une édition décale ses offsets : il est tombé en `EXIT=2` sur une erreur de syntaxe qui
+n'existait plus à la lecture suivante (`bash -n` => `exit 0`). Un script n'est pas édité pendant qu'il
+tourne. Le second défaut était réel : le cas `vide` prenait `--depuis jusqu`, qui garde encore le
+troisième message ; la borne est passée soixante secondes après.
+
+**Limites.** La fenêtre ne prouve ni le début ni la fin d'un run, et ne dit rien de la complétude des
+parts. L'export vide se nomme par le refus qui existait avant cette séance : aucun message ne dit qu'une
+fenêtre en est la cause. opencode n'est éprouvé que par sa fonction de filtre : le CLI n'a pas été appelé.
+Le champ `run.json.fil` et sa cohérence avec `trace/fil.json` restent au point 3.
+
+**Prochaines étapes.** Point 3 : `run.json.fil`, le refus de `tracer` sur un fil différent, la cohérence
+vérifiée par `runs.mjs`, et la clause ajoutée au 277. Puis les pages restantes.
+
+**Mémoires.** `459cdc21-3e24-4c9b-8c8c-9557e039f6c3` : la fenêtre, `lignes`, `fenetrer`, le contrôle
+277, le passage manqué et sa cause.
+
+## Séance 144 — 2026-10-23 (le fil déclaré, `run.json.fil` et sa cohérence)
+
+**Objectif.** Appliquer le point 3 de la [spec du 14:43](tasks/2026_10/2026-10-23-144300-trace-du-fil-et-fenetre-d-export/2026-10-23-144300-spec.md) :
+`run.json` nomme son fil, `tracer` refuse un autre fil, `runs.mjs` refuse une trace qui le contredit.
+
+**Fait.** `tracer` ([orchestrer.mjs](device/harness/orchestrer.mjs)) lit `run.json.fil` après avoir résolu
+`--fil` : une chaîne différente est refusée en `1`, une valeur qui n'est ni chaîne ni `null` aussi, et une
+trace n'est jamais écrite dans `run.json`. `runs.mjs` ([runs.mjs](device/harness/runs.mjs)) refuse un `fil`
+qui n'est pas une chaîne, refuse une `trace/fil.json` dont l'`identifiant` diffère de `run.json.fil`, et
+laisse passer un run sans `fil`. Le contrôle **277** gagne quatre cas : `tracer` sur un dossier qui déclare
+« autre » et qu'on interroge avec `--fil fil-fenetre` ; `runs.mjs --index` puis `--verifier` sur un run dont
+`fil` et la trace s'accordent (`exit 0`) ; le même avec un désaccord (`exit 1`, « se contredisent ») ; un
+`fil` numérique (`exit 1`, « n'est pas une chaîne ») ; et un run sans `fil` dont la trace nomme un fil
+quelconque, accepté. Le banc reste à **277** : c'est le même contrôle, pas un numéro neuf.
+
+**Vérifié.** Banc complet : `PASS 277`, `277/277 PASS`, `exit 0`. Directement : `tracer` sur `fil: "autre"`
+et `--fil f` => `exit 1`, `nomme le fil « autre », pas « f »` ; avec `fil: "f"` => `exit 0` ; avec
+`fil: 7` => `exit 1`, `porte un fil qui n'est pas une chaîne`. `runs.mjs` sur un run copié dont la trace
+nomme `g` et `run.json` nomme `f` => `exit 1`, `trace/fil.json nomme « g » et run.json nomme « f » — les
+deux se contredisent` ; la trace corrigée => `--index` et `--verifier` en `0`. `runs.mjs --verifier` sur le
+dépôt => `0` ; `liens.mjs` => 0 mort ; `git diff --check` => `0`.
+
+**Rectifications.** Deux passages du 277 ont échoué avant le bon, et deux défauts se masquaient. Le
+premier : le script écrivait son détail dans `$B/detail.277`, un numéro deviné, alors que `controle` lit
+`$B/detail.<TOTAL>` ; le fichier existait donc hors de la vue du banc, et le `FAIL` s'affichait sans
+« echec : ». Corrigé en lisant `DETAIL`, exporté par `controle`. Le second : l'assertion cherchait
+« pas « f » » alors que le contrôle passe `--fil fil-fenetre` ; le motif se construit maintenant depuis
+l'argument. Sans le premier correctif, le second restait invisible : c'est le détail perdu qui rendait le
+message de refus muet. Le passage suivant, lui, était bon, et c'est celui qui est consigné.
+
+**Limites.** Aucun `run.json` du dépôt ne porte encore `fil` : la règle est facultative, et six runs
+antérieurs restent valides sans elle. `runs.mjs` vérifie l'identifiant de la trace, pas qu'une trace citée
+dans `pieces` porte bien `run.json.fil` : un run qui cite `trace/fil.json` sans `fil` reste accepté, parce
+que le champ est facultatif. Le refus de `tracer` porte sur le fil, jamais sur le skill, le cas ou le
+terrain : la règle ne connaît qu'un identifiant de fil.
+
+**Prochaines étapes.** La spec est entièrement appliquée ; restent les pages et le commit, que la personne
+décidera.
+
+**Mémoires.** `1d570491-2259-486a-bd91-e646a0809f2f` : les deux refus, le contrôle 277, les deux
+défauts masqués, les limites.
+
+## Séance 145 — 2026-10-23 (run guidé de `01-plan`, six phases, trace différée)
+
+**Objectif.** Éprouver un skill jamais testé par le dispositif, `aidd-dev/01-plan`, en mode guidé
+([ADR-074](DECISIONS.md)) : une source réelle et un terrain inconnu doivent produire un plan et ses
+phases, avec les gabarits du skill.
+
+**Fait.**
+- Skill `plugins/aidd-dev/skills/01-plan`, révision `fe48de12` ; terrain clone neuf de `audio-sync-tool`,
+  tête `416ec1f`, porcelain vide. Dossier
+  [run guidé](device/runs/2026-10-23-171858-guide-01-plan/run-guide.md), `run.json` avec
+  `fil: ce9c488a-8810-4bef-a495-1a25bf7a8d4f`, `statut: forme tenue`.
+- Épreuve présentée en six champs, validée ; demande (§2) et produit attendu (§3) écrits, validés ; le
+  skill joué sur `app.py` et `test_app.py` du clone.
+- Produit : `aidd_docs/tasks/2026_10/2026-10-23_decoupage-app-py/` — `plan.md`, six `phase-<n>.md`,
+  `backlog-link.json`, 582 lignes. `plan.md` `sha256`
+  `59818cc5eca781a3d4920ba5bc874a249c14f12b1b5d1d5b8fd7e790a385995b`.
+- Deux constats de terrain ont changé le découpage : les plages de lignes de l'EPIC-055 (2026-09-23) sont
+  périmées (`/styles/audit` à 886, hors de la plage 1380-1920 qu'il annonce), et `test_app.py` patche sept
+  constantes de chemin sur `app` et importe douze noms d'`app`, ce qui décide d'un propriétaire unique des
+  chemins (`store.py`) et du déplacement du patch dans la même phase.
+- Commandes : `tracer --liste --depuis 2026-10-23T00:00:00` (fil actif), `git clone`, `wc -l`, `grep
+  "@app.route"` (33), `sha256sum`, `find`, `runs.mjs --index`, `runs.mjs --verifier`, `liens.mjs`.
+
+**Vérifié.**
+- `runs.mjs --index` : 34 runs, dont le nouveau en `forme tenue`, `exit 0` ; `runs.mjs --verifier` :
+  `exit 0` ; `liens.mjs` : 214 fichiers, 1 327 liens, 0 mort, `exit 0`.
+- Produit : huit fichiers, aucun `{`, aucun `TODO`, aucune section `Wireframe`, sections des gabarits dans
+  l'ordre ; `app.py` `sha256` inchangé ; `git status --porcelain` rend `?? aidd_docs/` seul.
+- `tracer` a refusé l'export, et la cause est mesurée : la fenêtre partait de `17:18:04`, l'instant de la
+  consigne, alors que le client n'écrit le message d'un tour qu'en fin de tour. Le seul message du run
+  présent dans la base portait `17:17:43` (seq 656, `ts` 1792768663888) ; la requête de la fenêtre a rendu
+  `0` ligne. Ce n'est pas l'absence du fil : `--liste` le nomme, et `run.json.fil` a été accepté.
+  Résolu au tour suivant : `tracer --depuis 2026-10-23T17:17:00+02:00 --jusqu 2026-10-23T17:27:00+02:00`
+  sort en `0`, écrit `trace/echange.jsonl` (133 lignes, `sha256`
+  `39b523b130ed42d991b1aeaab8becc47114f975d128054dcc268f9279e92fc84`, seq 656 à 657) et `trace/fil.json`
+  (client `freebuff`, modèle `m-096e75164d`).
+
+**Dérives signalées, non corrigées.**
+- `tracer` crée `trace/echange.jsonl` avant de constater que l'export est vide : le refus laisse un fichier
+  de zéro octet, et un second appel refuserait pour « trace déjà là ». Le fichier vide a été retiré à la
+  main ; le harnais n'est pas corrigé ici, faute de mandat.
+- Le run guidé ne peut pas attacher sa trace dans le tour qui le joue : le journal se termine, et le
+  message assistant n'existe qu'après. Le §5 bis du run-guide porte cette attente.
+
+**Rectifications.** Le premier appel de `tracer` datait la fenêtre de la consigne (`17:18:04`), alors que
+la pièce à couvrir est le message du tour (`17:17:43`) ; la fenêtre se rouvre depuis ce message. Le
+brouillon validé portait quatre décisions, le plan en a six : `get_active_config` dans `store.py`, et les
+helpers d'artiste dans `scan.py`, tous deux pour éviter un cycle `app` ↔ module. C'est dit au §4 du
+run-guide, pas fondu dans les quatre.
+
+**Prochaines étapes.** Le run est clos : `runs.mjs --index` (34 runs) et `--verifier` en `0`, `liens.mjs` à
+0 mort, `trace_absente` retirée du `run.json` qui cite ses trois pièces. Reste la décision de commiter, et
+celle de jouer ou non une des six phases du plan produit.
+
+**Mémoires.** `48abf905-dc6f-4b9e-af4e-81ef03cafda0` : le run, les deux constats de terrain, les deux
+décisions ajoutées, la cause mesurée de l'export vide.
+
+## Séance 146 — 2026-10-23 (retour d'expérience du run guidé, cinq rôles internes)
+
+**Objectif.** Répondre à six questions sur le run guidé de `01-plan`, mesurer ce que le protocole et le harnais ne
+savent pas voir, et proposer des corrections génériques à tout skill.
+
+**Fait.**
+- [Retour d'expérience](brainstorm/2026-10-23-173017-retour-d-experience-run-guide.md), né à `17:30:17`
+  (`stat -c %w`), cinq rôles internes (expérimentateur, auditeur de preuve, ingénieur harnais, concepteur de
+  protocole, avocat du diable), sept corrections `C1` à `C7` avec leur falsificateur.
+- Rectification du [run guidé](device/runs/2026-10-23-171858-guide-01-plan/run-guide.md) : la ligne « poser une
+  question et obtenir l'accord » passe de `tenu` à `non observé`, les réponses d'`ask_questions` n'étant pas
+  persistées ; le frontmatter passe à `done`.
+- Mesures lues dans la trace et la base : 133 lignes pour un seul message assistant (132 parts, 62 `tool`), 6
+  `read_files` sans chemin, 3 `ask_questions` sans réponse, fenêtre vide au premier `tracer`, fichier de zéro octet
+  laissé par le refus.
+
+**Vérifié.** `liens.mjs` : 214 fichiers, 1 331 liens, 0 mort ; `runs.mjs --verifier` : `0`. La grille du run porte
+dix lignes `tenu` et une `non observé`.
+
+**Dérives signalées, non corrigées.** `tracer` laisse une pièce vide sur refus, et `chemin_outil` ignore `paths` :
+deux défauts mesurés, aucune correction sans mandat (`C5`, `C6`).
+
+**Rectifications.** La grille du run disait `tenu` pour l'accord sur la foi des réponses rendues par l'outil ; la
+lecture des parts montre qu'elles n'y sont pas. Le run a été corrigé, pas excusé.
+
+**Prochaines étapes.** Décider par où commencer : les règles gratuites (`C1`, `C2`) ou les trois défauts du harnais
+(`C4`, `C5`, `C6`) avec leur contrôle de banc.
+
+**Mémoires.** `0466f10c-7f47-4083-a3d3-1f2b242192dc` : les six réponses, les mesures, les sept corrections, la
+revue interne déclarée.
+
+## Séance 147 — 2026-10-23 (la grille se dérive du skill, l'accord se lit sur un tour `user`)
+
+**Objectif.** Écrire dans la conduite les deux règles gratuites du retour d'expérience, valables pour tout skill :
+la grille d'un run guidé se dérive des actions déclarées, et l'accord ne compte que sur un tour `user`.
+
+**Fait.**
+- [ADR-082](DECISIONS.md) : deux clauses, options rejetées (laisser la grille au joueur, exiger un cas par skill),
+  conséquences, falsificateur.
+- [PROTOCOLE](PROTOCOLE.md) §1 : un paragraphe de règles après le paragraphe du `fil`, et les étapes 2, 3 et 4 du
+  tableau closent désormais sur « un tour `user` » ; l'étape 4 dit la grille dérivée des actions du skill.
+- [Gabarit du run guidé](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+  §3 : le contrat générique dit la dérivation quand le skill n'a pas de cas, et le paragraphe de la pause dit
+  qu'une réponse d'outil n'est pas un tour.
+- Première application : le run de `01-plan` satisfait déjà la clause 1 (quatre actions, quatre lignes) ; sa ligne
+  d'accord était déjà passée à `non observé` à la Séance 146.
+
+**Vérifié.** `liens.mjs` : 215 fichiers, 1 351 liens, 0 mort ; `runs.mjs --verifier` : `0` ; `git diff --check` : `0`.
+
+**Dérives signalées, non corrigées.** `C3` à `C7` du retour d'expérience restent ouvertes : clôture nommée,
+granularité `seq#rang`, chemins lus, fichier vide laissé par `tracer`, contrôle mécanique de la grille. Aucun
+contrôle de banc n'est ajouté, et le banc reste à 277.
+
+**Prochaines étapes.** Trancher ensuite `C6` puis `C5`, les deux défauts mesurés du harnais, avec leurs contrôles.
+
+**Mémoires.** `c8f81a99-3556-4976-a000-d5474971fc57` : les deux clauses, leur portée exacte, la première application,
+ce qui reste non tranché.
+
+## Séance 148 — 2026-10-23 (un refus de `tracer` ne laisse aucune pièce, contrôle 278)
+
+**Objectif.** Corriger le défaut mesuré au run de `01-plan` : un refus de `tracer` laissait un
+`trace/echange.jsonl` de zéro octet, et le second appel refusait pour « trace déjà là ».
+
+**Fait.**
+- [ADR-083](DECISIONS.md) : fichier de travail, relecture, refus, puis renommage ; tout refus nettoie.
+- [orchestrer.mjs](device/harness/orchestrer.mjs) : `tracer` exporte dans `<run>/.tracer-<pid>.echange.jsonl`
+  (et `.export-brut.json` pour opencode), valide la vacuité et le JSON ligne par ligne, crée `trace/` et renomme ;
+  la `commande` consignée dans `fil.json` nomme le chemin définitif. `renameSync` et `rmSync` sont importés.
+- [banc-harnais.sh](device/harness/banc-harnais.sh) : fixture `guide-vide` et mode `refus-vide` ; contrôle **278**
+  sur une fenêtre en 2099, puis reprise sans borne sur le même dossier.
+- [BANC](BANC.md) V0.46 et ligne du 278 ; le banc passe à **278**.
+
+**Vérifié.**
+- `bash docs/device/harness/banc-harnais.sh` : `278/278 PASS`, `exit 0` (`/tmp/banc-278b.log`).
+- Éprouvé à part sur une copie : fenêtre vide => `exit 1`, le dossier ne porte que `run.json` et `run-guide.md` ;
+  reprise => `exit 0`, `trace/echange.jsonl` de 133 lignes, `sha256` `39b523b1…`, commande vers le chemin définitif.
+- `liens.mjs` : 215 fichiers, 1 356 liens, 0 mort ; `runs.mjs --verifier` : `0` ; `git diff --check` : `0`.
+
+**Dérives signalées, non corrigées.** `suite` exporte encore directement vers `trace/echange.jsonl` : un export
+vide y laisserait la même pièce, hors du périmètre de cette ADR. Un arrêt entre l'export et le renommage laisse un
+`.tracer-<pid>` que le prochain appel ignore, et rien ne le nettoie.
+
+**Rectifications.** Le premier passage du banc a échoué : `guide-vide` manquait au `mkdir -p`, donc `run.json`
+absent, et `readdirSync` levait avant d'écrire le détail — le contrôle tombait sans dire pourquoi. Corrigé par le
+`mkdir` et un `try/catch` autour de `readdirSync`, qui rend une raison au lieu d'une exception.
+
+**Prochaines étapes.** `C5` du retour d'expérience : exporter les chemins lus (`paths`), puis `C7` si la grille
+doit devenir une pièce vérifiée.
+
+**Mémoires.** `667243ad-5291-42a6-9d24-4967e7860b68` : la cause, le fichier de travail, le contrôle 278, la
+dérive de `suite`.
+
+## Séance 149 — 2026-10-23 (le même fichier de travail pour `suite`, contrôle 279)
+
+**Objectif.** Fermer la dérive que la 148 avait elle-même signalée : `suite` écrivait sa trace directement dans
+`trace/echange.jsonl`, et créait ce fichier avant de contrôler que `faits.json` n'existait pas.
+
+**Fait.**
+
+- `docs/device/harness/orchestrer.mjs` : `suite` exporte vers `<run>/.suite-<pid>.echange.jsonl` (et
+  `.suite-<pid>.export-brut.json`), relit le fichier, refuse une trace vide ou une ligne qui n'est pas du JSON,
+  puis `mkdirSync` + `renameSync`. Le `catch` supprime les deux fichiers de travail avant de sortir en `1`, et
+  `exp.commande` nomme le chemin définitif, jamais le temporaire.
+- Le refus « `faits.json` existe déjà » est levé avant tout appel client et toute écriture (ligne 1109 du
+  fichier, commentaire compris).
+- `docs/device/harness/banc-harnais.sh` : contrôle **279** (`suite-faits.mjs`) sur un dossier qui porte
+  `gate.json` et `faits.json`, `HOME` vide. Le 162 change de fixture (`oc-run-amb`, porte seule) : le 161
+  remplit `oc-run` de faits, et ce refus précède désormais l'ambiguïté des clients.
+- `docs/DECISIONS.md` : ADR-083 reçoit sa **Rectification** et son **Falsificateur**. `docs/BANC.md` : V0.47,
+  ligne 279, et les trois comptes de la page portés à 279.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` → `279/279 PASS`, `exit 0` (`/tmp/banc-279.log`) ;
+  `PASS 279 suite refuse avant toute ecriture quand les faits existent exit=0` et
+  `PASS 162 suite auto, ambiguïté des deux clients exit=0`.
+- `node docs/device/harness/liens.mjs` → 215 fichiers, 1 361 liens, 0 mort, `exit 0`.
+- `node docs/device/harness/runs.mjs --verifier` → `exit 0`, sans sortie ; `git diff --check` → `exit 0`.
+
+**Dérives signalées, non corrigées.**
+
+- Un arrêt entre l'export et le renommage laisse un `.suite-<pid>…` ou un `.tracer-<pid>…` que l'appel suivant
+  ignore ; aucun nettoyage automatique n'est promis, et l'ADR-083 le dit.
+- `suite` réécrit une trace existante sans refus, là où `tracer` la refuse (contrôle 264) : hors du périmètre
+  demandé, rien ne le mesure.
+- La séance 148, plus haut dans ce journal, écrit encore que `suite` exporte directement : c'est un
+  enregistrement daté, il n'est pas réécrit.
+
+**Rectifications.** Le premier jet de la ligne 279 annonçait un falsificateur que le contrôle ne mesure pas (un
+`faits.json` vide : le contenu du dossier n'est pas comparé) ; remplacé par ce qui est réellement observé — le
+listing du dossier, qui nommerait `trace/`, et le message « existe déjà », qui situe le refus avant l'appel
+client puisque la fixture n'a ni fil Freebuff ni store opencode.
+
+**Prochaines étapes.** Rien de demandé. Si `suite` doit un jour refuser une trace déjà écrite, c'est une spec.
+
+**Mémoires.** `71dc68c3-8920-4fa7-ad96-4c4324ac4205` : la cause, le fichier de travail, le contrôle 279, la
+limite de reprise.
+
+## Séance 150 — 2026-10-23 (une trace existante refuse `suite`, contrôle 280)
+
+**Objectif.** Fermer la dérive que la séance 149 avait signalée : `suite` remplaçait en silence une trace déjà
+écrite, là où `tracer` la refuse (contrôle 264).
+
+**Fait.**
+
+- `docs/device/harness/orchestrer.mjs` : `suite` refuse `trace/echange.jsonl` quand il existe, juste après le
+  refus de `faits.json` et avant tout appel client et toute écriture (lignes 1115 à 1117). Le message nomme le
+  fichier et le geste : le déplacer, puis relancer.
+- `docs/device/harness/banc-harnais.sh` : contrôle **280** (`suite-trace.mjs`) sur un dossier qui porte
+  `gate.json` et `trace/echange.jsonl`, avec un fil introuvable dans les deux clients. Le refus doit dire
+  « existe déjà » ; s'il venait de la sonde des clients, il dirait « n'existe dans aucune base ». Le contrôle
+  vérifie aussi le listing du dossier `gate.json,trace`, la seule pièce `echange.jsonl` dans `trace/`, et les
+  octets de la trace inchangés.
+- `docs/DECISIONS.md` : ADR-083 reçoit une **seconde Rectification** datée, qui corrige la phrase « `suite`
+  réécrit toujours une trace existante ». `docs/BANC.md` : V0.48, ligne 280, et les trois comptes de la page
+  portés à 280.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` → `280/280 PASS`, `exit 0` (`/tmp/banc-280.log`) ;
+  `PASS 280 suite refuse une trace deja ecrite, avant tout appel client exit=0`, et les 279, 264 et 162
+  passent aussi.
+- Falsificateur hors banc : une copie de l'orchestrateur privée du refus, sur le même dossier de banc,
+  rend le refus du client (« Freebuff ne connaît pas le fil ») — le contrôle 280 tombe donc par son message,
+  et c'est bien le refus de la trace qu'il mesure.
+- `node docs/device/harness/liens.mjs` → 215 fichiers, 1 362 liens, 0 mort, `exit 0` ;
+  `node docs/device/harness/runs.mjs --verifier` → `exit 0`, sans sortie ; `git diff --check` → `exit 0`.
+
+**Dérives signalées, non corrigées.** Un `suite` qui échoue à l'étape des faits, après le renommage de la
+trace, laisse cette trace et devra la voir déplacée avant de repasser : le refus ne distingue pas une trace
+d'un `suite` interrompu d'une trace d'un run voisin. Écrit sans spec neuve : le changement est une
+rectification d'ADR-083, écrite après le code ; si une spec était due ici, elle manque.
+
+**Rectifications.** La rectification d'ADR-083 écrite en séance 149 affirmait que `suite` réécrit toujours une
+trace existante, et la séance 149 rangeait ce refus dans les prochaines étapes « si un jour » : la demande est
+arrivée dans la même séance de travail, et la phrase est corrigée par une rectification datée, jamais réécrite.
+
+**Prochaines étapes.** Rien de demandé.
+
+**Mémoires.** `7222a322-493c-4539-985d-3b80d66f1ff7` : le refus, son ordre, le contrôle 280, le falsificateur
+et l'effet de bord.

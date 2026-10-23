@@ -1357,7 +1357,11 @@ mkdir -p "$OCB/home-amb/.config/freebuff-desktop/projects/banc"
 cp "$DBF" "$OCB/home-amb/.config/freebuff-desktop/projects/banc/desktop-v2.db"
 sqlite3 "$OCB/home-amb/.config/freebuff-desktop/projects/banc/desktop-v2.db" \
   "insert into threads values('banc-ambigu','$O/cas-oc/terrain','local','','','codebuff','aucun',$(date +%s)000);"
-controle "162 suite auto, ambiguïté des deux clients" 0 refus-nomme 1 "deux clients" bash -c "HOME='$OCB/home-amb' PATH='$OCBIN:$PATH' OPENCODE_FIXTURE_DIR='$OCFIX' node '$ORCH' suite --cas cas-oc --cases '$O/cases' --run '$O/oc-run' --fil banc-ambigu --store '$OCB/home/.local/share/opencode' --produit aidd_docs </dev/null"
+# Le 162 ne réutilise pas `$O/oc-run`, que le 161 a rempli de faits : depuis l'ADR-083, `suite` refuse un
+# dossier qui porte déjà `faits.json` avant même de sonder les clients, et l'ambiguïté ne serait plus lue.
+mkdir -p "$O/oc-run-amb"
+printf '%s\n' '{}' > "$O/oc-run-amb/gate.json"
+controle "162 suite auto, ambiguïté des deux clients" 0 refus-nomme 1 "deux clients" bash -c "HOME='$OCB/home-amb' PATH='$OCBIN:$PATH' OPENCODE_FIXTURE_DIR='$OCFIX' node '$ORCH' suite --cas cas-oc --cases '$O/cases' --run '$O/oc-run-amb' --fil banc-ambigu --store '$OCB/home/.local/share/opencode' --produit aidd_docs </dev/null"
 copie-porte-oc "$O/oc-run-c163"
 controle "163 suite --client opencode, ambiguïté" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
@@ -2571,8 +2575,8 @@ insert into messages values('fil-trace',2,'assistant',$P263,'[{"kind":"text","te
 SQL
 mkdir -p "$O/home-trace/.config/freebuff-desktop/projects/banc"
 cp "$DBF" "$O/home-trace/.config/freebuff-desktop/projects/banc/desktop-v2.db"
-mkdir -p "$O/guide" "$O/guide-fil" "$O/guide-spec" "$O/sans-runjson" "$O/mode-manuel" "$O/pieces-sans-guide" "$O/sans-run-guide"
-for d in guide guide-fil; do
+mkdir -p "$O/guide" "$O/guide-fil" "$O/guide-vide" "$O/guide-spec" "$O/sans-runjson" "$O/mode-manuel" "$O/pieces-sans-guide" "$O/sans-run-guide"
+for d in guide guide-fil guide-vide; do
   printf '%s\n' '{"mode":"guide","pieces":["run-guide.md"]}' > "$O/$d/run.json"
   printf '%s\n' '# Run guide' > "$O/$d/run-guide.md"
 done
@@ -2595,10 +2599,11 @@ import { join } from "node:path";
 const [orch, mode, run, home, store] = process.argv.slice(2);
 const raisons = [];
 const env = { ...process.env, HOME: home };
-const appel = (dossier, fil) => {
+const appel = (dossier, fil, bornes = null) => {
+  const args = [orch, "tracer", "--run", dossier, "--fil", fil, "--client", "freebuff", "--store", store];
+  if (bornes) args.push("--depuis", bornes[0], "--jusqu", bornes[1]);
   try {
-    const sortie = execFileSync(process.execPath,
-      [orch, "tracer", "--run", dossier, "--fil", fil, "--client", "freebuff", "--store", store],
+    const sortie = execFileSync(process.execPath, args,
       { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     return { code: 0, sortie };
   } catch (e) {
@@ -2616,8 +2621,8 @@ if (mode === "ok") {
       const f = JSON.parse(readFileSync(p, "utf8"));
       const b = readFileSync(join(run, "trace", "echange.jsonl"));
       const lignes = b.toString("utf8").split("\n").filter(Boolean);
-      if (f.messages !== 2 || f.trace?.lignes !== 2 || lignes.length !== 2) {
-        raisons.push("messages/lignes " + f.messages + "/" + f.trace?.lignes + "/" + lignes.length);
+      if (f.lignes !== 2 || f.trace?.lignes !== 2 || lignes.length !== 2) {
+        raisons.push("lignes " + f.lignes + "/" + f.trace?.lignes + "/" + lignes.length);
       }
       if (f.trace?.sha256 !== createHash("sha256").update(b).digest("hex")) raisons.push("sha256 qui ne rend pas le fichier");
       if (f.identifiant !== "fil-trace") raisons.push("identifiant " + f.identifiant);
@@ -2644,6 +2649,23 @@ if (mode === "ok") {
     if (!r.sortie.includes(mot)) raisons.push(d + " : le refus ne dit pas « " + mot + " » : " + r.sortie.split("\n")[0]);
     if (existsSync(join(run, d, "trace"))) raisons.push(d + " : une trace a ete ecrite");
   }
+} else if (mode === "refus-vide") {
+  const vide = appel(run, "fil-trace", ["2099-01-01T00:00:00", "2099-01-02T00:00:00"]);
+  if (vide.code !== 1) raisons.push("fenetre vide : exit " + vide.code);
+  if (!/vide/.test(vide.sortie)) raisons.push("le refus ne dit pas que l'export est vide");
+  let restes = "(dossier illisible)";
+  try {
+    restes = readdirSync(run).sort().join(",");
+  } catch {
+    /* un dossier absent est deja une raison, le controle ne tombe pas sur une exception */
+  }
+  if (restes !== "run-guide.md,run.json") raisons.push("un refus a laisse : " + restes);
+  const apres = appel(run, "fil-trace");
+  if (apres.code !== 0) raisons.push("apres refus, le meme dossier refuse : exit " + apres.code + " : " + apres.sortie.split("\n")[0]);
+  else {
+    const pieces = readdirSync(join(run, "trace")).sort().join(",");
+    if (pieces !== "echange.jsonl,fil.json") raisons.push("pieces apres reprise : " + pieces);
+  }
 } else if (mode === "run-json") {
   const bon = appel(join(run, "guide-spec"), "fil-trace");
   if (bon.code !== 0) raisons.push("guide-spec : exit " + bon.code + " : " + bon.sortie.split("\n")[0]);
@@ -2658,7 +2680,285 @@ JS
 controle "263 tracer, export du fil et fil.json" 0 node "$O/tracer-banc.mjs" "$ORCH" ok "$O/guide" "$O/home-trace" "$O/opencode-vide"
 controle "264 tracer refuse un fil inconnu et une trace deja ecrite" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-fil "$O/guide-fil" "$O/home-trace" "$O/opencode-vide"
 controle "265 tracer refuse un run.json absent ou hors guide" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-runjson "$O" "$O/home-trace" "$O/opencode-vide"
+controle "278 un refus de tracer ne laisse aucune piece, et le dossier reste rejouable" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-vide "$O/guide-vide" "$O/home-trace" "$O/opencode-vide"
+
+# 279 : `suite` refuse avant toute ecriture quand les faits existent deja. Le refus se leve avant l'appel
+# client et avant la trace : le dossier du run reste exactement ce qu'il etait.
+mkdir -p "$O/suite-faits" "$O/home-vide"
+printf '%s\n' '{}' > "$O/suite-faits/gate.json"
+printf '%s\n' '{}' > "$O/suite-faits/faits.json"
+cat > "$O/suite-faits.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { readdirSync, writeFileSync } from "node:fs";
+const [orch, cases, run, home] = process.argv.slice(2);
+const raisons = [];
+let code = 0;
+let sortie = "";
+try {
+  sortie = execFileSync(process.execPath,
+    [orch, "suite", "--cas", "cas-test", "--cases", cases, "--run", run, "--fil", "banc", "--conduite", "humain", "--sans-produit"],
+    { env: { ...process.env, HOME: home }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+} catch (e) {
+  code = e.status;
+  sortie = String(e.stdout || "") + String(e.stderr || "");
+}
+if (code !== 1) raisons.push("exit " + code);
+if (!/existe déjà/.test(sortie)) raisons.push("le refus ne dit pas que les faits existent : " + sortie.split("\n")[0]);
+let restes = "(dossier illisible)";
+try {
+  restes = readdirSync(run).sort().join(",");
+} catch {
+  /* un dossier absent est deja une raison */
+}
+if (restes !== "faits.json,gate.json") raisons.push("un refus a laisse : " + restes);
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "279 suite refuse avant toute ecriture quand les faits existent" 0 node "$O/suite-faits.mjs" "$ORCH" "$O/cases" "$O/suite-faits" "$O/home-vide"
+
+# 280 : comme `tracer` (264), `suite` refuse une trace deja ecrite. Le fil nomme est volontairement
+# introuvable : si le refus venait du client, le controle lirait « n'existe dans aucune base ». Le message
+# « existe déjà » prouve donc que la trace est refusee avant tout appel client, et le dossier reste intact.
+mkdir -p "$O/suite-trace/trace" "$O/home-vide"
+printf '%s\n' '{}' > "$O/suite-trace/gate.json"
+printf '%s\n' '{"seq":1,"role":"user","kind":"text","text":"une trace deja ecrite"}' > "$O/suite-trace/trace/echange.jsonl"
+cat > "$O/suite-trace.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [orch, cases, run, home] = process.argv.slice(2);
+const raisons = [];
+const avant = readFileSync(join(run, "trace", "echange.jsonl"), "utf8");
+let code = 0;
+let sortie = "";
+try {
+  sortie = execFileSync(process.execPath,
+    [orch, "suite", "--cas", "cas-test", "--cases", cases, "--run", run, "--fil", "fil-fantome", "--conduite", "humain", "--sans-produit"],
+    { env: { ...process.env, HOME: home }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+} catch (e) {
+  code = e.status;
+  sortie = String(e.stdout || "") + String(e.stderr || "");
+}
+if (code !== 1) raisons.push("exit " + code);
+if (!/existe déjà/.test(sortie)) raisons.push("le refus ne dit pas que la trace existe deja : " + sortie.split("\n")[0]);
+if (/n'existe dans aucune base/.test(sortie)) raisons.push("le refus vient du client, pas de la trace");
+let restes = "(dossier illisible)";
+try {
+  restes = readdirSync(run).sort().join(",");
+} catch {
+  /* un dossier absent est deja une raison */
+}
+if (restes !== "gate.json,trace") raisons.push("un refus a laisse : " + restes);
+let pieces = "(dossier illisible)";
+try {
+  pieces = readdirSync(join(run, "trace")).sort().join(",");
+} catch {
+  /* le dossier trace absent est deja une raison */
+}
+if (pieces !== "echange.jsonl") raisons.push("un refus a laisse dans trace/ : " + pieces);
+if (readFileSync(join(run, "trace", "echange.jsonl"), "utf8") !== avant) raisons.push("la trace a change");
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "280 suite refuse une trace deja ecrite, avant tout appel client" 0 node "$O/suite-trace.mjs" "$ORCH" "$O/cases" "$O/suite-trace" "$O/home-vide"
 controle "275 tracer lit run.json.pieces, une spec voisine ne gene pas" 0 node "$O/tracer-banc.mjs" "$ORCH" run-json "$O" "$O/home-trace" "$O/opencode-vide"
+
+# 276 : la liste des fils borne sur l'activite, jamais sur la creation (spec du 2026-10-23 14:43).
+# Un fil cree il y a dix jours et ecrit aujourd'hui est actif ; un fil muet depuis dix jours ne l'est pas.
+# L'ancien filtre, `threads.created_at`, rendait 0 pour le premier : c'est la derive mesuree ce jour-la.
+rm -rf "$O/home-fils"
+mkdir -p "$O/home-fils/.config/freebuff-desktop/projects/banc"
+DB276="$O/home-fils/.config/freebuff-desktop/projects/banc/desktop-v2.db"
+VIEUX=$(date -d '10 days ago' +%s%3N)
+RECENT=$(date +%s%3N)
+sqlite3 "$DB276" "create table threads(id text primary key, project_path text, execution_mode text, branch text, worktree_path text, harness_id text, model text, created_at integer);
+create table messages(thread_id text, seq integer, role text, ts integer, parts_json text);
+insert into threads values('fil-actif','$W/terrain','local','','','codebuff','m-banc',$VIEUX);
+insert into messages values('fil-actif',1,'user',$VIEUX,'[{\"kind\":\"text\",\"text\":\"consigne\"}]');
+insert into messages values('fil-actif',2,'assistant',$((RECENT-60000)),'[]');
+insert into threads values('fil-vieux','$W/terrain','local','','','codebuff','m-banc',$VIEUX);
+insert into messages values('fil-vieux',1,'user',$VIEUX,'[]');"
+cat > "$O/fils-banc.mjs" <<'JS'
+// La liste de `tracer` sur une base de fixture : argv orchestrer, dossier guide, HOME, detail.
+import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
+
+const [orch, run, home, detail] = process.argv.slice(2);
+const raisons = [];
+const appeler = (depuis) => {
+  try {
+    return { code: 0, sortie: execFileSync(process.execPath,
+      [orch, "tracer", "--run", run, "--liste", "--depuis", depuis],
+      { env: { ...process.env, HOME: home }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) };
+  } catch (e) {
+    return { code: e.status, sortie: String(e.stdout || "") + String(e.stderr || "") };
+  }
+};
+const depuis = (jours) => new Date(Date.now() - jours * 86400000).toISOString();
+
+const hier = appeler(depuis(1));
+if (hier.code !== 0) raisons.push("hier : exit " + hier.code + " : " + hier.sortie.split("\n")[0]);
+else {
+  if (!hier.sortie.includes("fil-actif")) raisons.push("le fil ecrit aujourd'hui n'est pas rendu");
+  if (hier.sortie.includes("fil-vieux")) raisons.push("un fil muet depuis dix jours est rendu");
+  if (!/actif \d{4}-/.test(hier.sortie)) raisons.push("la ligne ne nomme pas l'activite");
+  if (!/créé \d{4}-/.test(hier.sortie)) raisons.push("la ligne ne nomme pas la creation");
+  if (!/1 actifs depuis/.test(hier.sortie)) raisons.push("l'en-tete ne compte pas les fils actifs : " + hier.sortie.split("\n")[0]);
+}
+
+const large = appeler(depuis(30));
+if (large.code !== 0) raisons.push("30 jours : exit " + large.code + " : " + large.sortie.split("\n")[0]);
+else {
+  const a = large.sortie.indexOf("fil-actif");
+  const v = large.sortie.indexOf("fil-vieux");
+  if (a < 0 || v < 0) raisons.push("30 jours : un des deux fils manque");
+  else if (a > v) raisons.push("30 jours : l'ordre n'est pas celui de l'activite");
+  if (!/2 actifs depuis/.test(large.sortie)) raisons.push("30 jours : l'en-tete ne compte pas deux fils");
+}
+
+if (raisons.length) { writeFileSync(detail, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "276 liste des fils bornee sur l'activite" 0 node "$O/fils-banc.mjs" "$ORCH" "$O/guide" "$O/home-fils" "$B/detail.276"
+
+# 277 : la fenetre d'export, ses bornes et son rejeu (spec du 2026-10-23 14:43). Trois messages a trois
+# instants ; la fenetre [t2, t3) ne garde que le deuxieme, `fil.json.fenetre` le dit, le rejeu avec les
+# memes bornes rend la meme empreinte, et l'export vide est refuse par le refus qui existait deja.
+# Le filtre en memoire d'opencode est eprouve sur une fixture, sans appeler le CLI.
+T1=$((RECENT-300000)); T2=$((RECENT-200000)); T3=$((RECENT-100000))
+sqlite3 "$DB276" "insert into threads values('fil-fenetre','$W/terrain','local','','','codebuff','m-banc',$T1);
+insert into messages values('fil-fenetre',1,'user',$T1,'[{\"kind\":\"text\",\"text\":\"un\"}]');
+insert into messages values('fil-fenetre',2,'user',$T2,'[{\"kind\":\"text\",\"text\":\"deux\"}]');
+insert into messages values('fil-fenetre',3,'user',$T3,'[{\"kind\":\"text\",\"text\":\"trois\"}]');"
+DEPUIS277=$(date -d "@$((T2/1000))" --iso-8601=seconds)
+JUSQU277=$(date -d "@$((T3/1000))" --iso-8601=seconds)
+rm -rf "$O/guide-fenetre" "$O/guide-fenetre-vide" "$O/guide-fenetre-inverse" "$O/guide-fenetre-fil" \
+  "$O/runs-fil-ok" "$O/runs-fil-faux" "$O/runs-fil-type" "$O/runs-sans-fil"
+for d in guide-fenetre guide-fenetre-vide guide-fenetre-inverse guide-fenetre-fil; do
+  mkdir -p "$O/$d"
+  printf '%s\n' '{"mode":"guide","pieces":["run-guide.md"]}' > "$O/$d/run.json"
+  printf '%s\n' '# Run guide' > "$O/$d/run-guide.md"
+done
+printf '%s\n' '{"mode":"guide","pieces":["run-guide.md"],"fil":"autre"}' > "$O/guide-fenetre-fil/run.json"
+cat > "$O/fenetre-banc.mjs" <<'JS'
+// La fenetre de `tracer` sur une base de fixture : orch, repo, dossier, HOME, detail, depuis, jusqu, fil.
+import { execFileSync } from "node:child_process";
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+
+const [orch, repo, run, home, detail, depuis, jusqu, fil] = process.argv.slice(2);
+// `controle` exporte le fichier de détail qu'il lira ; c'est lui qui fait foi, pas un numéro deviné.
+const sortieDetail = process.env.DETAIL || detail;
+const raisons = [];
+const env = { ...process.env, HOME: home };
+const appel = (dossier, ...bornes) => {
+  try {
+    return { code: 0, sortie: execFileSync(process.execPath,
+      [orch, "tracer", "--run", dossier, "--fil", fil, "--client", "freebuff", ...bornes],
+      { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) };
+  } catch (e) {
+    return { code: e.status, sortie: String(e.stdout || "") + String(e.stderr || "") };
+  }
+};
+
+const fenetre = appel(run, "--depuis", depuis, "--jusqu", jusqu);
+if (fenetre.code !== 0) raisons.push("fenetre : exit " + fenetre.code + " : " + fenetre.sortie.split("\n")[0]);
+else {
+  const p = join(run, "trace", "fil.json");
+  if (!existsSync(p)) raisons.push("fil.json absent");
+  else {
+    const f = JSON.parse(readFileSync(p, "utf8"));
+    if (f.lignes !== 1) raisons.push("lignes " + f.lignes + " au lieu de 1");
+    if (f.fenetre?.depuis !== depuis) raisons.push("fenetre.depuis " + f.fenetre?.depuis);
+    if (f.fenetre?.jusqu !== jusqu) raisons.push("fenetre.jusqu " + f.fenetre?.jusqu);
+    if (f.premier?.seq !== 2 || f.dernier?.seq !== 2) raisons.push("premier/dernier " + JSON.stringify([f.premier, f.dernier]));
+    if (!/m\.ts >= \d+/.test(f.trace?.commande || "")) raisons.push("la commande ne porte pas la borne basse");
+    if (!/m\.ts < \d+/.test(f.trace?.commande || "")) raisons.push("la commande ne porte pas la borne haute");
+  }
+}
+
+const vide = appel(join(run, "..", "guide-fenetre-vide"), "--depuis", new Date(Date.parse(jusqu) + 60000).toISOString());
+if (vide.code !== 1) raisons.push("fenetre vide : exit " + vide.code);
+else if (!/vide/.test(vide.sortie)) raisons.push("fenetre vide : le refus ne dit pas la trace vide");
+
+const inverse = appel(join(run, "..", "guide-fenetre-inverse"), "--depuis", jusqu, "--jusqu", depuis);
+if (inverse.code !== 1) raisons.push("bornes inversees : exit " + inverse.code);
+else if (!/ne suit pas/.test(inverse.sortie)) raisons.push("bornes inversees : le refus ne dit pas l'ordre");
+
+const clients = await import(join(repo, "docs/device/harness/clients.mjs"));
+const base = join(home, ".config/freebuff-desktop/projects/banc/desktop-v2.db");
+const ms = { depuis: Date.parse(depuis), jusqu: Date.parse(jusqu) };
+const e = clients.exportFreebuff(fil, { base, dest: join(detail, "..", "rejeu.jsonl"), ...ms });
+const r = clients.replayFreebuff(fil, { base, ...ms });
+if (e.sha256 !== r.sha256) raisons.push("rejeu : empreinte differente");
+
+const j = { info: { id: fil }, messages: [
+  { type: "user", time: { created: ms.depuis - 1000 }, parts: [{ type: "text", text: "un" }] },
+  { type: "user", time: { created: ms.depuis }, parts: [{ type: "text", text: "deux" }] },
+  { type: "user", time: { created: ms.jusqu }, parts: [{ type: "text", text: "trois" }] },
+] };
+const gardees = clients.fenetrer(clients.normaliseOpencode(fil, j), ms).map((l) => l.text);
+if (gardees.join("|") !== "deux") raisons.push("opencode : fenetre " + JSON.stringify(gardees));
+try { clients.fenetrer([{ ts: null }], { depuis: 1 }); raisons.push("opencode : une ligne sans ts n'est pas refusee"); } catch {}
+
+// Le fil déclaré : `tracer` refuse un --fil autre que celui du run, et `runs.mjs` refuse une trace qui
+// nomme un autre fil que `run.json`, tout en acceptant un run sans `fil`.
+const filDeclare = appel(join(run, "..", "guide-fenetre-fil"), "--depuis", depuis, "--jusqu", jusqu);
+if (filDeclare.code !== 1) raisons.push("fil du run : exit " + filDeclare.code);
+else if (!new RegExp("nomme le fil « autre », pas « " + fil + " »").test(filDeclare.sortie)) {
+  raisons.push("fil du run : le refus ne nomme pas les deux fils : " + filDeclare.sortie.split("\n")[0]);
+}
+
+const runsMjs = join(repo, "docs/device/harness/runs.mjs");
+const lancer = (args) => {
+  try {
+    return { code: 0, sortie: execFileSync(process.execPath, [runsMjs, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }) };
+  } catch (e) {
+    return { code: e.status, sortie: String(e.stdout || "") + String(e.stderr || "") };
+  }
+};
+const decl = {
+  type: "run", mode: "guide", statut: "forme tenue",
+  skill: { nom: "03-shadow-areas", chemin: "plugins/aidd-refine/skills/03-shadow-areas", revision: "fe48de12" },
+  terrain: { chemin: "/tmp/terrain", tete: "416ec1f", porcelain: "" },
+  conduite: "agent", rapport_le: "2026-10-23T07:55:41+02:00", consigne_le: "2026-10-23T07:53:14+02:00",
+  pertinence: { comme_preuve_du_skill: false, raison: "session_non_independante" },
+  limites: [{ code: "session_non_independante", effet: "non pertinent comme preuve", detail: "ADR-074" }],
+  pieces: ["run-guide.md", "trace/echange.jsonl", "trace/fil.json"], verdict: null,
+};
+const poserRun = (racine, nom, champs, identifiant) => {
+  const d = join(racine, nom);
+  mkdirSync(join(d, "trace"), { recursive: true });
+  writeFileSync(join(d, "run.json"), JSON.stringify({ ...decl, ...champs }, null, 2) + "\n");
+  writeFileSync(join(d, "run-guide.md"), "# Run guide\n");
+  writeFileSync(join(d, "trace/echange.jsonl"), "{}\n");
+  if (identifiant !== undefined) writeFileSync(join(d, "trace/fil.json"), JSON.stringify({ type: "fil", identifiant }) + "\n");
+};
+const racineOk = join(run, "..", "runs-fil-ok");
+poserRun(racineOk, "2026-10-23-000000-guide-coherent", { fil: "f" }, "f");
+const ok = lancer(["--index", "--runs", racineOk]);
+const okVerif = ok.code === 0 ? lancer(["--verifier", "--runs", racineOk]) : ok;
+if (ok.code !== 0 || okVerif.code !== 0) {
+  raisons.push("runs fil coherent : exit " + ok.code + "/" + okVerif.code + " : " + (ok.sortie || okVerif.sortie).split("\n")[0]);
+}
+const racineFaux = join(run, "..", "runs-fil-faux");
+poserRun(racineFaux, "2026-10-23-000000-guide-contredit", { fil: "f" }, "g");
+const faux = lancer(["--index", "--runs", racineFaux]);
+if (faux.code !== 1) raisons.push("runs fil contredit : exit " + faux.code);
+else if (!/se contredisent/.test(faux.sortie)) raisons.push("runs fil contredit : " + faux.sortie.split("\n")[0]);
+const racineType = join(run, "..", "runs-fil-type");
+poserRun(racineType, "2026-10-23-000000-guide-type", { fil: 7 }, undefined);
+const type = lancer(["--index", "--runs", racineType]);
+if (type.code !== 1) raisons.push("runs fil non-chaine : exit " + type.code);
+else if (!/fil n'est pas une chaîne/.test(type.sortie)) raisons.push("runs fil non-chaine : " + type.sortie.split("\n")[0]);
+const racineSans = join(run, "..", "runs-sans-fil");
+poserRun(racineSans, "2026-10-23-000000-guide-sans-fil", {}, "h");
+const sans = lancer(["--index", "--runs", racineSans]);
+const sansVerif = sans.code === 0 ? lancer(["--verifier", "--runs", racineSans]) : sans;
+if (sans.code !== 0 || sansVerif.code !== 0) {
+  raisons.push("runs sans fil : exit " + sans.code + "/" + sansVerif.code + " : " + (sans.sortie || sansVerif.sortie).split("\n")[0]);
+}
+
+if (raisons.length) { writeFileSync(sortieDetail, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "277 tracer borne l'export, fenetre et rejeu" 0 node "$O/fenetre-banc.mjs" "$ORCH" "$REPO" "$O/guide-fenetre" "$O/home-fils" "$B/detail.277" "$DEPUIS277" "$JUSQU277" fil-fenetre
 
 # 259-262 : les traces de texte et de commande (spec du 2026-10-22 22:12, ADR-075). Un reçu synthétique
 # suffit : rien n'ouvre de session, et les contrôles portent sur les trois états d'une assertion de texte,

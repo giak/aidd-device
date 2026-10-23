@@ -1,0 +1,22 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "01-plan", "chemin": "plugins/aidd-dev/skills/01-plan", "revision": "fe48de12" },
+  "terrain": {
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-171858-plan-terrain/terrain",
+    "tete": "416ec1f",
+    "porcelain": "vide au départ (clone neuf)"
+  },
+  "fil": "ce9c488a-8810-4bef-a495-1a25bf7a8d4f",
+  "conduite": "agent",
+  "rapport_le": "2026-10-23T17:27:45+02:00",
+  "consigne_le": "2026-10-23T17:18:04+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent comme preuve d'indépendance", "detail": "ADR-074" },
+    { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "le §3 vit dans run-guide.md, écrit après la validation de l'épreuve, sans gel" }
+  ],
+  "pieces": ["run-guide.md", "trace/echange.jsonl", "trace/fil.json"],
+  "verdict": null
+}

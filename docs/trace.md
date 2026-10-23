@@ -6870,3 +6870,297 @@ du seul run `182505` que la promesse du skill tient : le produit est incomplet e
 cadre.
 
 **Mémoires.** Aucune écrite.
+
+## Séance 122 — 2026-10-22 (le raisonnement se juge sur ses traces, le run tient dans une session)
+
+**Objectif.** Trancher ce qu'on évalue quand un skill produit du raisonnement, puis simplifier le test
+d'un skill : une seule session, pas de headless.
+
+**Fait.**
+
+- Décision : seules les **traces vérifiables** sont jugées — question posée, décision motivée, source
+  citée, commande, fichier écrit. Une trace absente est une limite, jamais un `écart` ; une part
+  `reasoning` montre ce que le modèle a émis, pas ce qu'il a pensé ([ADR-073](DECISIONS.md)).
+- Décision : le test d'un skill se joue dans la **conversation courante**, sans `ouvrir`, sans serveur
+  `opencode`, sans choix de modèle, sans second fil. Le run est **guidé** et **doit** porter la limite
+  déclarée `session_non_independante` ([ADR-074](DECISIONS.md)).
+- Les sept pages demandées sont mises à jour : [ARCHITECTURE](ARCHITECTURE.md) (§2 mode guidé, §7.3
+  traces, §8 limites), [DASHBOARD](DASHBOARD.md), [DECISIONS](DECISIONS.md) (ADR-073 et 074),
+  [EXPLICATION](EXPLICATION.md) (§3, §6, §12, lexique), [PFD](PFD.md), [VISION](VISION.md), ce journal.
+  Le [brainstorm du test `10-task`](brainstorm/2026-10-22-210512-processus-de-test-skill-10-task.md)
+  gagne ses étapes 6 et 7.
+- La ligne d'`AGENTS.md` qui route « test ça » est réconciliée : la conversation courante est le mode
+  par défaut (ADR-073 et 074), `ORCHESTRATEUR` ne reste que pour un run indépendant. Sans cela, la
+  prochaine session aurait repris le chemin headless que l'ADR-074 diffère.
+- Les trois portes d'entrée qui décrivaient le run indépendant comme seul chemin — `README.md`, le
+  [guide utilisateur](guide/guide-utilisateur.md), [ORCHESTRATEUR](device/ORCHESTRATEUR.md) — portent une
+  note d'une phrase : mode guidé par défaut, run indépendant sur demande.
+- Deux specs `status: pending` prennent le relais :
+  [`2026-10-22-221207-spec-traces.md`](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-traces.md)
+  remplace `attendu_details.traces[]` par deux assertions de `lecture.json` (`trace_texte`,
+  `commande_contient`), parce que `ordre` et `lecture.json` portent déjà `geste` et `preuve` ; quatre
+  contrôles 259 à 262, banc 258 → 262.
+  [`2026-10-22-221207-spec-run-guide.md`](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+  fixe le gabarit du run guidé, sans reçu, avec sa grille et ses limites (`session_non_independante`,
+  antériorité non gelée). L'ADR-073 et le §7.3 de l'ARCHITECTURE portent une note de rectification en
+  attente ; l'ADR-075 la portera à l'approbation.
+- Aucun code, aucun cas, aucun gel et aucun reçu n'est touché : la décision change ce qu'on attend d'un
+  test, pas l'instrument qui l'a déjà mesuré. Le banc reste à 258.
+
+**Vérifié.**
+
+- `node docs/device/harness/liens.mjs` : **192** fichiers, **1 227** liens hors code, **0** mort,
+  `exit 0`.
+- `ls docs/device/runs/*/receipt.json | wc -l` rend **19** ; `ls docs/device/runs/*/output.json |
+  wc -l` rend **18** ; `grep '"verdict"'` sur les reçus rend **14** `non concluant`, **3** `conforme`,
+  **2** `ecart`. Le PFD est corrigé sur ces mesures, et l'ARCHITECTURE passe de « quatorze » à
+  « dix-neuf » reçus.
+- `git diff --stat` : onze fichiers suivis modifiés, plus le brainstorm non suivi ; aucun fichier de
+  `docs/device/runs/` ni de `docs/device/CASES/` n'entre dans le diff.
+- Après les specs : `node docs/device/harness/liens.mjs` => **194** fichiers, **1 256** liens, **0** mort,
+  `exit 0` ; `git diff --check` => `0` ; le produit du run 21:37 fait **36** lignes, `sha256`
+  `c5c844be…516e6` (`wc -l`, `sha256sum`).
+
+**Dérives signalées.** Le bloc `attendu_details.traces[]` est **décidé, pas mesuré** : aucune commande
+ne le lit, le reçu ne le porte pas, aucun cas ne l'écrit. Les pages le disent au lieu de le laisser
+croire ; l'instrumentation reste à faire. Le run guidé n'a pas encore été rejoué avec la grille : la
+seule mesure de forme reste le run guidé du 2026-10-22 21:37, sans reçu.
+
+**Prochaines étapes.** Approuver les deux specs, puis les appliquer : étendre `lecture.json` et
+`resultat.mjs` (contrôles 259 à 262), écrire l'ADR-075, puis rejouer `10-task` avec le gabarit. Le
+headless reste différé, pas abandonné.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 123 — 2026-10-22 (les traces de texte et de commande, et le gabarit du run guidé)
+
+**Objectif.** Appliquer les deux specs du 22:12 : lire les traces vérifiables dans `lecture.json`, et
+consigner un run guidé dans un gabarit, sans troisième structure ni reçu.
+
+**Fait.**
+
+- [resultat.mjs](device/harness/resultat.mjs) expose `textes` à côté de `parts`, lit `trace_texte`
+  (`role`, `contient` ou `finit_par`, `a_partir_du_tour`) et `trace_outil.commande_contient`, et garde
+  trois états : `tenu` avec preuve citée, `violé` sur une partie examinable qui contredit, `non observé`
+  sans partie examinable. Une part `reasoning` n'est jamais lue.
+- [ADR-075](DECISIONS.md) rectifie l'ADR-073 : pas de bloc `attendu_details.traces[]` ; `attendu_details.ordre`
+  reste la promesse gelée, `lecture.json` la lecture déclarée hors du gel. Le principe — juger des
+  traces, jamais le thinking — ne change pas.
+- Le banc passe à **262** contrôles : 259 éprouve les trois états de `trace_texte`, 260 la dernière
+  ligne hors bloc et le rappel système, 261 `commande_contient` et les deux critères, 262 le refus des
+  assertions de texte mal formées ; le 233 inclut `trace_texte` dans son vocabulaire fermé.
+- Les pages alignées : [ARCHITECTURE](ARCHITECTURE.md) §7.3, [PFD](PFD.md) v0.5,
+  [DASHBOARD](DASHBOARD.md), [DEVICE](device/DEVICE.md), [BANC](device/BANC.md) v0.39,
+  [EXPLICATION](EXPLICATION.md), [README](../README.md), [guide utilisateur](guide/guide-utilisateur.md) et
+  [ORCHESTRATEUR](device/ORCHESTRATEUR.md) ; le [run guidé du 21:37](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-run-guide.md)
+  est recasté dans le gabarit, avec ses limites.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` => **262/262 PASS**, `exit 0` ; `node --check` sur
+  `resultat.mjs` et `orchestrer.mjs` => `0` ; `bash -n` sur le banc => `0`.
+- `node docs/device/harness/liens.mjs` => **195** fichiers, **1 290** liens hors code, **0** mort,
+  `exit 0` ; `git diff --check` => `0`.
+- Le produit du 21:37 reste `aidd_docs/backlog/tasks/refuser-config-manquante.md`, **36** lignes,
+  `sha256` `c5c844be9c5ed1f2a2a4db6434f43e60b8943c9cd5e29dacbf4a234ae65516e6` ; le terrain rend
+  `?? aidd_docs/` et `git diff --stat` vide.
+- Sur une copie de `/tmp` du run `2026-10-22-182505`, `rapport` lit un `lecture.json` de deux gestes
+  `trace_texte` (question `finit_par: "?"`, décision `contient: "successfully written"`) : `RESULTAT.md`
+  porte deux lignes `tenu`, avec « texte du tour 10 » et « texte du tour 15 », `exit 0`.
+
+**Dérives signalées.** Le run guidé est un **recast** du rapport du 21:37, pas un run neuf : le fil n'est
+pas exporté, donc la lecture du skill, le brouillon, la décision et la pause restent `non observé` ; seul
+le produit est `tenu`, par son chemin et son empreinte. L'effet du produit — implémenter le contrôle et
+exécuter les quatre cas de configuration — n'est pas testé. Le produit refuse une configuration présente
+et invalide, pas l'absence littérale de `data/config.json` : le conflit a été tranché dans le run, et le
+run-guide le dit.
+
+**Prochaines étapes.** Éprouver l'effet du produit dans une copie, puis, si l'indépendance est demandée,
+rejouer `10-task` avec un fil exporté. Le headless reste différé, pas abandonné.
+
+**Mémoires.** Aucune écrite.
+
+## Séance 124 — 2026-10-23 (l'effet de la Task, éprouvé par ses quatre cas)
+
+**Objectif.** Fermer ce que la Séance 123 laissait ouvert : la Task du run guidé est-elle actionable, et
+change-t-elle le démarrage comme elle le promet ?
+
+**Fait.**
+
+- Le contrôle `config_startup_error(path)` entre dans une copie jetable du terrain
+  (`/home/giak/aidd-device-work/2026-10-23-025200-task-effet-config/terrain`, tête `416ec1f`) : fichier
+  absent accepté, JSON illisible, `configs` absent ou vide, profil actif hors bornes refusés, et l'appel
+  au démarrage écrit `Démarrage refusé : …` sur `stderr` puis sort avec `1`. Il n'est pas posé à l'import,
+  la fixture de `test_app.py` remplaçant `app.CONFIG_PATH` après l'import.
+- Un script à côté de la copie, `cas-quatre.sh`, lance la commande réelle `python3 app.py`, sonde
+  `http://127.0.0.1:8765/config` et rend, par cas, l'accès HTTP, le code de sortie et la première ligne de
+  `stderr`.
+- Quatre tests neufs dans `test_app.py`, un par cas, plus la forme « clés manquantes » du profil valide.
+- [L'épreuve](tasks/2026_10/2026-10-23-025408-effet-de-la-task/2026-10-23-025408-epreuve.md) est écrite,
+  avec ce qu'elle établit et ce qu'elle n'établit pas.
+
+**Vérifié.**
+
+- Quatre cas : `1-absent` HTTP 200, `2-json-illisible` `exit 1`, `3-profil-hors-bornes` `exit 1`,
+  `4-profil-valide` HTTP 200, **4 conformes** ; sur la copie témoin rendue à `HEAD`, les cas 2 et 3
+  répondent HTTP 200, **2 écarts** pour la même copie sans le contrôle.
+- `python3 -m pytest -q test_app.py -k config_startup` => **4 passed**, `exit 0` ;
+  `python3 -m pytest -q test_app.py` => **200 passed, 1 failed** ; témoin => **196 passed, 1 failed**, même
+  échec `test_cache_buster_covers_css` (il exige `static/dist/script.css`, absent sans `npm run build`).
+- Diff de la copie : `app.py` **+31**, `test_app.py` **+39**, **70 insertions, 0 suppression**.
+- Terrain du run intact : `git status --porcelain` => `?? aidd_docs/`, `git diff --stat` vide ; sa Task
+  garde `sha256` `c5c844be…516e6`.
+
+**Dérives signalées.** « Message explicite » et « code non nul » ne sont pinnés par aucune phrase de la
+Task : le texte d'une ligne et le code `1` sont mes choix. Le message accorde mal « 1 profils ». Le contrôle
+accepte un profil actif qui n'est pas un objet et un `active` booléen, que la Task ne nomme pas. Il lit le
+fichier au démarrage seulement : un `POST /config` invalide n'est pas refusé. L'absence reste acceptée,
+contrairement à la demande d'origine, comme le run du 21:37 l'avait tranché.
+
+**Prochaines étapes.** Si l'indépendance est demandée, rejouer `10-task` avec un fil exporté ; le headless
+reste différé. Rien n'est commité.
+
+**Mémoires.** `cc9b222a-74a5-435b-b781-73d5329e2a6f` — l'épreuve mesurée, ses quatre cas, le témoin et ses deux réserves, relue par `read_memory`.
+
+## Séance 125 — 2026-10-23 (le protocole de test se consolide : trace du run guidé, refus de `ouvrir`, durée de pause)
+
+**Objectif.** Fermer les trois défauts mesurés le 23 octobre : le mode guidé, majoritaire, ne laissait
+aucune trace machine ; `ouvrir` prenait une session arrêtée sur un texte sans `?` pour un run fini ; la
+pause n'avait pas de durée.
+
+**Fait.**
+
+- [Brainstorm](brainstorm/2026-10-23-030728-consolider-le-protocole.md) puis
+  [spec](tasks/2026_10/2026-10-23-030816-consolider-le-protocole/2026-10-23-030816-spec.md), statut
+  `done` : trois correctifs bornés, huitième commande.
+- `tracer --run <dir> --fil <id>` exporte le fil d'un run guidé sous `trace/echange.jsonl` et
+  `trace/fil.json` (client, modèle, nombre de messages, premier et dernier `seq`, `sha256`), et refuse un
+  dossier sans exactement un `*-run-guide.md`, un fil inconnu, une trace déjà écrite, un client ambigu ;
+  `--liste --depuis <iso>` rend les fils récents sans leur contenu ([ADR-076](DECISIONS.md)).
+- `ouvrir` refuse en `1` une session devenue inactive sur un texte qui ne finit pas par `?` quand une
+  réponse figée reste à jouer, cite la dernière ligne et le geste de reprise ; le refus de délai nomme le
+  fil ([ADR-077](DECISIONS.md)).
+- `receipt.pause.attente_ms` porte l'écart entre la part qui précède le tour `user` de la pause et ce
+  tour, `null` quand un instant manque, avec une limite nommée sous une seconde
+  ([ADR-078](DECISIONS.md)).
+- Banc : contrôles **263** à **268**, le **257** change d'attente et exige désormais le refus ; le **153**
+  dérive la liste des commandes de la sortie d'usage au lieu de la coder en dur.
+- Pages alignées : ORCHESTRATEUR, DEVICE, ARCHITECTURE §4 et §7.3, BANC v0.40, DASHBOARD, PFD,
+  EXPLICATION §14, README, et l'annexe du guide utilisateur qui passe à huit commandes avec sa ligne
+  `tracer`.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` => **268/268 PASS**, 0 `FAIL`, `exit 0`.
+- `node --check` sur `orchestrer.mjs`, `run.mjs`, `clients.mjs` => `0` ; `bash -n` sur le banc => `0`.
+- `node docs/device/harness/liens.mjs` => 199 fichiers, **1 349** liens hors code, **0 mort**, `exit 0`.
+- `git diff --check` => `0`.
+- Aucun reçu réécrit : `git status --porcelain` ne montre aucun chemin `docs/device/runs/` modifié.
+
+**Dérives signalées.**
+
+- Le contrôle **153** codait en dur les sept noms de commandes : l'ajout de `tracer` l'a fait tomber
+  (`runbook §2 : 9 ligne(s) de commande, 7 offerte(s)`). Il lit désormais les commandes offertes dans
+  l'usage réel, et une commande inventée reste refusée.
+- Trois figures de pages étaient périmées, trouvées à la main et corrigées : le guide du test disait
+  `262/262` (il dit `268/268` et ajoute l'étape) ; README et DASHBOARD citaient **1 314** liens, chiffre qui
+  grossit à chaque document, et le compte est retiré des deux pages, seul le **zéro mort** demeure ;
+  EXPLICATION donnait `rapport.mjs` à **527** lignes (562 mesurées). Aucune mesure ne garde le total du
+  banc hors de sa propre sortie : `OPEN`.
+- `tracer` n'a exporté aucun fil Freebuff réel : les contrôles 263 à 265 lisent une base de fixture, donc
+  ils prouvent l'adaptateur, pas une conversation. Le premier run guidé qui l'appellera le mesurera ou
+  nommera l'échec.
+- Le run guidé reste **non indépendant** ([ADR-074](DECISIONS.md)) : `tracer` ajoute une source, pas une
+  attestation.
+
+**Prochaines étapes.** Rejouer `10-task` guidé avec `tracer` et le §5 bis du gabarit, puis comparer la
+grille à la trace. Rien n'est commité.
+
+**Mémoires.** `cfd97db7-9025-4827-bb23-6a74f3beee5d` : les trois correctifs, le banc 268/268, la dérive du
+contrôle 153 et les trois figures périmées.
+
+## Séance 126 — 2026-10-23 (le test de `10-task` déroulé pas à pas, et la présentation de l'épreuve)
+
+**Objectif.** Écrire, étape par étape, ce que l'on fait quand on teste un skill AIDD, et rendre la
+première étape obligatoire : ce que l'on va tester, pourquoi, comment, le but, ce qui sera observé, ce que
+le test ne prouvera pas.
+
+**Fait.**
+
+- [Spec de la présentation de l'épreuve](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) :
+  six champs avant toute demande, validés par la personne ; un champ manquant vaut présentation non faite.
+- [Journal du déroulé](tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md),
+  `type: run-guide`, `status: done` : étape 1 choix du skill, étape 2 présentation validée à 03:48, étape 3
+  demande et produit attendu validés à 03:53, étape 4 run guidé.
+- Terrain : clone détaché de `audio-sync-tool` à `416ec1f`,
+  `/home/giak/aidd-device-work/2026-10-23-035316-task-config-terrain/terrain`, porcelain `0`, sans
+  `aidd_docs` ni `data/` (`data/` est ignoré par git).
+- Demande du 22:12 rejouée ; brouillon complet montré à 03:54, accord explicite, puis **un** fichier écrit :
+  `aidd_docs/backlog/tasks/refuser-config-manquante.md`, `sha256`
+  `818db266102b8c13a1a0a27a1df56dd3d67d81e36a79ea18873349edc5fffc6f`, quatre sections.
+- Grille des gestes : douze lignes, onze tenues, une limite (trace machine absente).
+
+**Vérifié.**
+
+- Clone : `git status --porcelain` => `?? aidd_docs/` ; `find aidd_docs -type f` => 1 fichier ; frontmatter
+  `type: task`, `status: proposed` ; `grep -c '^## '` => 4.
+- Vrai dépôt `audio-sync-tool` : `git status --porcelain` => `?? .freebuff/` seulement.
+- `node docs/device/harness/liens.mjs` => **0 mort** ; `git diff --check` => `0`.
+
+**Dérives signalées.**
+
+- J'avais annoncé un backlog réel sous `aidd_docs/` : le dépôt n'en a pas. Corrigé dans la présentation,
+  et la Task crée l'arbre dans le clone.
+- Aucune trace machine : `tracer` n'a pas été appelé, le fil courant n'est pas exporté, et le §5 bis du
+  gabarit reste sans objet pour ce run.
+- Les tests ajoutés au `Scope` et au `Done When` sont une inférence : la demande ne les nomme pas.
+- Le conducteur avait lu les références du skill avant le run : la découverte n'est pas mesurée.
+
+**Prochaines étapes.** Implémenter la Task dans le clone reste un travail de livraison séparé ; rejouer la
+même demande avec un autre modèle séparerait le skill de la session. Rien n'est commité.
+
+**Mémoires.** `1a05dc24-dc25-433b-87b5-ec5bdb5b1a92` : la présentation obligatoire, le déroulé en quatre
+étapes, la Task écrite dans le clone et ses limites.
+## Séance 127 — 2026-10-23 (la Task du terrain implémentée et éprouvée)
+
+**Objectif.** Implémenter la Task écrite par `10-task` dans le terrain, et éprouver ses deux cas de
+démarrage.
+
+**Fait.**
+
+- Terrain `/home/giak/aidd-device-work/2026-10-23-035316-task-config-terrain/terrain`, tête `416ec1f`.
+  Deux fichiers suivis modifiés : `app.py` (+33/−3), `test_app.py` (+39/−2) ; `aidd_docs/` reste non suivi.
+- `app.py` : `startup_config_error()` et `run_app(argv)` ; le bloc `__main__` sort 1 avant `app.run`, donc
+  sans ouvrir le port 8765, quand `data/config.json` manque. Message sur stderr, chemin absolu nommé.
+- `test_app.py` : `test_startup_refuses_without_config` et `test_startup_serves_with_config` ; le test
+  `runpy` existant (routes en `run_name='__main__'`) reçoit un `data/config.json` temporaire, son assertion
+  inchangée.
+- Environnement : `npm ci` puis `npm run build`, parce que `static/dist` naît absent et que
+  `test_cache_buster_covers_css` l'exige.
+
+**Vérifié.**
+
+- Sans `data/config.json` : `timeout 15 python3 app.py` => stderr « Démarrage refusé :
+  .../data/config.json est absent. », `exit=1`, `ss -ltn` => aucun écouteur 8765.
+- Avec `data/config.json` : `GET /ping` => `200` et `{"ok":true,...}`, puis processus arrêté (`ps` => non).
+- `python3 -m pytest -q` => **373 passed**, `exit 0`. Sans le build : `1 failed, 372 passed`, la seule
+  chute étant `test_cache_buster_covers_css`.
+- `git status --porcelain` => ` M app.py`, ` M test_app.py`, `?? aidd_docs/`. Le vrai dépôt
+  `audio-sync-tool` n'est pas touché.
+
+**Dérives signalées.**
+
+- La suite exige un build Node absent d'un clone neuf : ce n'est pas une régression du changement, c'est
+  une condition d'environnement, mesurée avant et après le build.
+- Le test `runpy` existant a changé de décor (lien symbolique et configuration temporaire) : son assertion
+  est intacte, mais le test n'est plus celui d'avant.
+- `data/config.json`, créé pour la preuve, a été retiré (`rm`) ; `data/style_apply_journal.jsonl` reste,
+  produit par pytest.
+- La Task reste `status: proposed` : aucune transition n'a été décidée, et le code vit dans le clone,
+  pas dans le vrai dépôt.
+
+**Prochaines étapes.** Décider du sort de la Task, puis porter le travail dans le vrai dépôt avec son
+commit si elle doit vivre. Rien n'est commité ici.
+
+**Mémoires.** `c219b668-5374-4e42-9b15-d4c72ed4637f` : le changement, les deux lancements, les 373 tests
+et les limites du terrain.

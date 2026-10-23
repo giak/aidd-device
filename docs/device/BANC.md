@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 258 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 268 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 ---
@@ -87,6 +87,23 @@ status: in-progress
 > suivie d'une écriture sans ligne `user` entre les deux mord et nomme les deux seq, la réponse entre les
 > deux laisse le reçu muet, et `conforme` passe.
 
+> V0.40 — 2026-10-23 : **268** contrôles ; 263 à 265 éprouvent `tracer` ([ADR-076](../DECISIONS.md)) —
+> l'export d'un fil Freebuff de fixture, `trace/echange.jsonl` et `trace/fil.json`, le compte des lignes
+> et le `sha256` qui rend le fichier (263) ; le fil inconnu et la trace déjà écrite, refusés sans rien
+> écrire (264) ; le dossier sans run-guide unique, refusé avant tout appel client (265). 266 éprouve une
+> session arrêtée sur un texte sans `?` quand une réponse reste à jouer : `ouvrir` refuse en nommant le
+> fil et `suite --fil`, sans envoyer de message ([ADR-077](../DECISIONS.md)) ; 267 lit dans le code le
+> refus de délai qui nomme le fil — le comportement voisin est le 266, et une minute d'attente pour un
+> message n'aurait pas sa place dans un banc ; 268 éprouve `pause.attente_ms` sur deux fils de fixture
+> (10 000 ms et 200 ms), la limite courte sur le second seulement, et la relecture d'un reçu antérieur
+> sans le champ ([ADR-078](../DECISIONS.md)).
+> V0.39 — 2026-10-22 : **262** contrôles ; 259 à 262 éprouvent les **traces de texte et de commande**
+> (ADR-075) : `trace_texte` trouve une décision, rend `violé` sur une autre chaîne ou une autre casse, et
+> `non observé` sans texte assistant (259) ; `finit_par` lit la dernière ligne hors bloc, refuse un `?`
+> seulement dans un bloc, et écarte un rappel système (260) ; `commande_contient` lit la commande d'une
+> part `shell`, refuse une autre commande, et rend `non observé` sans commande lisible (261) ;
+> `verifierLecture` accepte `trace_texte` et `commande_contient`, refuse une assertion sans critère, avec
+> les deux, vide, un `role` hors domaine ou un tour non entier, et le 233 inclut `trace_texte` (262).
 > V0.38 — 2026-10-22 : **258** contrôles ; 254 à 258 éprouvent la **question en texte** (ADR-072) : une
 > question posée par un texte `assistant` dont la dernière ligne hors bloc finit par `?` reçoit la réponse
 > figée du cas, une fois (254) ; un formulaire garde la priorité, puis une question en texte reçoit la
@@ -161,7 +178,7 @@ status: in-progress
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 258 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 268 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -175,7 +192,7 @@ confondait, la plage d'un `awk` et la variable d'une boucle littérale (contrôl
 substitution de commande bornée, lue sans que sa valeur devienne un chemin (contrôles 214 à 217), puis
 la commande interne d'`xargs` et de `find -exec` (contrôles 218 à 221), la question que la première
 écriture suit sans réponse (contrôles 222 et 223), la session qu'`ouvrir` ouvre et conduit par l'API
-(contrôles 224 à 227), puis la question posée en texte, jouée sans formulaire (contrôles 254 à 258), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
+(contrôles 224 à 227), puis la question posée en texte, jouée sans formulaire (contrôles 254 à 258), puis les traces de texte et de commande (contrôles 259 à 262), et la page utilisateur que `resultat.mjs` écrit (contrôles 228 à 230), puis les
 lectures des deux autres cas gelés (contrôles 231 à 233), et une phrase et un conseil pour chaque règle
 que les reçus portent (contrôle 234), le refus d'une lecture mal formée, sans qu'aucune pièce ne
 s'écrive (contrôles 235 et 236), puis la phase 0 de l'instrument (contrôles 237 à 243) : le produit sous
@@ -185,18 +202,20 @@ le scratch déclaré, collecté en annexe et jamais produit, le tableau que le c
 pause mesurée par un tour de la personne, sans l'outil `question` ; et la phase 2 (contrôles 249 et 250) :
 une commande mal formée séparée d'une commande que le lecteur ne suit pas, chacune avec sa limite par entrée ;
 et la conduite déclarée (contrôles 251 à 253) : le mode `agent` écrit dans `faits.json` et recopié par le reçu,
-la valeur absente ou hors domaine refusée en `2`, et un faits antérieur lu avec `conduite: null`.
+la valeur absente ou hors domaine refusée en `2`, et un faits antérieur lu avec `conduite: null` ; et les
+trois correctifs du 2026-10-23 (contrôles 263 à 268) : `tracer` et ses pièces, la session arrêtée sur un
+texte sans question, et la durée de la pause.
 
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 258/258 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 268/268 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `258/258 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `268/268 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -279,9 +298,11 @@ une panne d'outil se voir dans un `FAIL`.
 | 224 à 227 | **`ouvrir`**, la session ouverte par l'API et la pause jouée par le cas (ADR-059) : sans `gate.json`, `ouvrir` refuse en nommant la porte (224) ; avec un `PATH` vide et aucun `--api`, elle refuse en nommant `opencode` (225) ; contre un serveur factice, elle envoie le texte de `texte-a-remettre.txt` **verbatim** — comparé octet pour octet —, puis la réponse figée du cas comme message **avant** de répondre au formulaire, dont la réponse est l'option `(Recommended)` ; `exit 0`, le fil est imprimé avec « inactive », et le dossier du run est **inchangé** (226) ; un serveur qui pose trois questions pour deux réponses figées fait refuser la troisième (« n'en fige que 2 »), après deux réponses envoyées (227). Le serveur est en `node:http` : aucune session réelle, aucun réseau | [ADR-059](../DECISIONS.md) |
 | 254 à 258 | la **question en texte** (spec du 2026-10-22 15:26, ADR-072) : contre le serveur factice des contrôles 224 à 227, un texte `assistant` dont la dernière ligne finit par `?` reçoit la réponse figée **une fois**, `exit 0`, et le bloc nomme la question (254) ; un formulaire répond d'abord, puis une question en texte reçoit la réponse suivante : trois messages, un formulaire, aucune réponse deux fois (255) ; trois questions en texte pour deux réponses figées font refuser la troisième (« n'en fige que 2 »), `exit 1`, sans envoyer de réponse de plus (256) ; un `?` présent seulement dans un bloc de code ne déclenche aucun envoi et le bloc compte zéro question (257) ; un rappel système qui finit par `?` est écarté et le bloc compte zéro question (258). Le serveur factice ne parle à aucun réseau | ADR-072 |
 | 228 à 230 | la **page utilisateur** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les huit sections, une ligne par geste (5), et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](../DECISIONS.md) |
-| 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les trois types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](../DECISIONS.md) |
+| 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les cinq types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](../DECISIONS.md) |
 | 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les seize clés que les reçus du dépôt portent, `pause_non_tenue` et `shell_invalide` comprises, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend dix-sept lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
-| 235 à 236 | **la lecture est vérifiée avant d'être servie** (spec du 2026-10-22 08:46) : sur une copie du run jouet du 2026-10-22 et un dossier `--cases` de banc, un geste privé de ses assertions fait refuser `rapport` en le nommant, et ni `RAPPORT.md` ni `RESULTAT.md` n'est écrit (235) ; une assertion de type `trace_plate` fait refuser en nommant le type et les trois types permis, sans rien écrire non plus (236). Retirer l'appel à `verifierLecture` dans `lectureDe` fait tomber les deux ; le déplacer après l'écriture du rapport fait tomber la vérification des pièces absentes | spec du 2026-10-22 08:46 |
+| 259 à 262 | **les traces de texte et de commande** (spec du 2026-10-22 22:12, ADR-075) : sur un reçu synthétique et une `lecture.json` de banc, `trace_texte` trouve une décision, cite le tour et la chaîne bornée, rend `violé` sur une chaîne absente ou une autre casse, et `non observé` sans texte assistant (259) ; `finit_par` rend `tenu` sur une question hors bloc, `violé` sur un `?` présent seulement dans un bloc, et `non observé` sur un rappel `<system-reminder>` seul (260) ; `commande_contient` rend `tenu` sur la commande attendue, avec `chemin_contient` quand les deux sont déclarés, `violé` sur une autre commande, et `non observé` sur une part `shell` sans commande (261) ; `verifierLecture` accepte `trace_texte` et `commande_contient`, refuse une assertion sans critère, avec les deux, un critère vide, un `role` hors domaine, un `a_partir_du_tour` nul ou fractionnaire, et le contrôle 233 inclut `trace_texte` (262). Le harnais ne valide pas le contenu d'un JSON, d'un code ou d'un rapport : c'est le travail du juge | ADR-075 |
+| 263 à 268 | **les trois correctifs du 2026-10-23** (ADR-076 à ADR-078) : `tracer` exporte un fil Freebuff de fixture sous un `HOME` factice, écrit `trace/echange.jsonl` et `trace/fil.json`, et le contrôle recalcule le `sha256` du fichier, compte les deux lignes et vérifie le premier et le dernier `seq` (263) ; un fil inconnu est refusé en `1` sans écrire de trace, une trace déjà présente refuse le second appel (264) ; un dossier sans `-run-guide.md`, puis un dossier qui en porte deux, sont refusés avant tout appel client (265) ; une session qui s'arrête sur un texte sans `?` alors qu'une réponse reste à jouer rend `exit 1`, cite la dernière ligne et `suite --fil ses_banc`, sans envoyer de message (266) ; le refus de délai nomme le fil — le 267 lit ce texte dans le code, le 266 éprouve le comportement voisin (267) ; deux fils de fixture donnent `pause.attente_ms` à 10 000 ms et 200 ms, la limite courte ne mord que sur le second, et un reçu antérieur sans le champ reste lisible par `lire` (268). Le 257 change d'attente : le `?` d'un bloc n'est toujours pas une question, mais la session s'arrête sur `Rien d'autre.` et le contrôle exige désormais le refus | ADR-076, ADR-077, ADR-078 |
+| 235 à 236 | **la lecture est vérifiée avant d'être servie** (spec du 2026-10-22 08:46) : sur une copie du run jouet du 2026-10-22 et un dossier `--cases` de banc, un geste privé de ses assertions fait refuser `rapport` en le nommant, et ni `RAPPORT.md` ni `RESULTAT.md` n'est écrit (235) ; une assertion de type `trace_plate` fait refuser en nommant le type et les cinq types permis, sans rien écrire non plus (236). Retirer l'appel à `verifierLecture` dans `lectureDe` fait tomber les deux ; le déplacer après l'écriture du rapport fait tomber la vérification des pièces absentes | spec du 2026-10-22 08:46 |
 
 | 237 à 243 | **la phase 0 de l'instrument** (spec du 2026-10-22 10:05, ADR-062 à ADR-066) : un produit sous `aidd_docs/backlog/`, avec un gel propre et une porte propre, rend `hors_produit: []` (237) ; avec `aidd_docs/` déjà non suivi au gel, le fichier neuf d'un dossier neuf est nommé **fichier par fichier** (`terrain/docs/y.md`), un fichier du dossier déjà connu est sauté, et l'ancêtre du produit n'apparaît jamais (238) ; une part `write` vers un chemin hors de `cloisonnement.ecriture.autorisees` rend `ecriture_hors_dossier` avec son seq, son outil et son chemin, et `conforme` est refusé (239) ; une part `write` sous la racine d'écriture ne mord pas, et un outil d'écriture sans chemin rend la limite qui le nomme, sans morsure (240) ; une lecture de `$RACINE/<cas>/` ne mord pas, une lecture de son parent mord encore, une relecture d'un fichier que la session a écrit ne mord qu'une fois (241) ; `suite` écrit `last-message.md` depuis la dernière part `text` d'un assistant, l'atteste dans `faits.json`, et le reçu à blanc accepte (242) ; un dernier message retouché fait refuser le reçu en nommant l'empreinte, un `faits.json` sans le champ reçoit la limite `dernier_message_non_atteste` (243). Les 237 et 238 partent de deux bacs jouets neufs re-gelés sous `$B`, les autres de la base du banc et du jouet ; rien n'est écrit dans le dépôt | ADR-062 à ADR-066 |
 | 244 à 248 | **la phase 1 du protocole** (spec du 2026-10-22 11:50, ADR-067 à ADR-069) : un attendu qui déclare `cloisonnement.ecriture.scratch: terrain/.scratch` laisse écrire et relire un fichier sous ce dossier sans morsure, le reçu porte le chemin et sa résolution, et un fichier écrit juste à côté (`terrain/HORS.txt`) mord encore en nommant son seq (244) ; `collect --annexe` copie le scratch sous `annexe/<cas>/` avec un manifeste `role: annexe`, le reçu vérifie la copie et la cite, et une annexe retouchée après coup fait refuser le reçu en nommant l'empreinte (245) ; l'attendu du banc est **privé du champ `tableau`** puis re-gelé : `tableau_absent` mord par défaut, et une écriture sans aucun tour `user` entre l'ouverture et elle fait mordre `pause_non_tenue` en nommant le seq (246) ; le même attendu re-gelé avec `tableau.requis: false` ne mord plus sur l'absence de tableau et le reçu porte la limite qui dit que le cas n'en demande pas (247) ; le gabarit de `cas` demande le tableau après la qualification, autorise `terrain/.scratch/`, exige un produit autosuffisant, et son squelette porte `cloisonnement.ecriture.scratch`, `attendu_details.tableau.requis: true` et `attendu_details.pause.requis: true` (248). Le 244 mesure aussi la pause **tenue** sans aucun outil `question` : une part `user` en seq 3 entre l'ouverture et l'écriture en seq 4 rend `pause.mesuree: true`. Chaque contrôle part d'une copie fraîche du cas fabriqué sous `$B`, re-gelée avec sa propre racine : rien n'est écrit dans le dépôt | ADR-067, ADR-068, ADR-069 |
@@ -332,6 +353,12 @@ le dernier mot change. Trois règles, tenues par les contrôles existants :
   construction : le `non concluant` du contrôle 143 est la valeur que le reçu impose, pas une opinion sur
   un skill. Les contrôles 131 à 153 éprouvent l'enchaînement et les refus de l'orchestrateur, jamais la
   qualité d'un cas qu'il aurait fabriqué sur un skill réel.
+- **Le refus de délai est lu dans le code.** Le contrôle 267 lit le refus de délai dans `orchestrer.mjs` : il dit
+  que le message nomme le fil, jamais que la branche s'exécute — une minute d'attente pour un message
+  n'aurait pas sa place dans un banc, et le comportement voisin est tenu par le 266.
+- **Un fil de fixture n'est pas une conversation.** Les contrôles 263 à 265 et 268 lisent une base
+  Freebuff fabriquée sous un `HOME` factice : ils prouvent l'adaptateur et les refus, jamais que la base
+  réelle de la personne se lit ainsi, ni qu'un fil guidé réel s'exporte sans erreur.
 - **Un faux serveur n'est pas opencode.** Les contrôles 224 à 227 et 254 à 258 prouvent `ouvrir` contre un serveur
   factice qui imite cinq routes : ils disent que la commande envoie le bon texte, joue les réponses dans
   le bon ordre et refuse les cas nommés, jamais que l'API de la version installée se comporte ainsi.

@@ -2254,3 +2254,202 @@ formulaire : aucun champ n'est rempli, aucune option n'est choisie, et la répon
 **Falsificateur** : une réponse figée envoyée deux fois au même texte ; une question en texte non jouée
 alors qu'une réponse restait ; un formulaire qui perd la priorité ; un `?` dans un bloc de code qui
 déclenche un envoi ; un `exit 0` alors que la session est encore vivante.
+
+## ADR-073 — Le raisonnement ne se juge que sur ses traces vérifiables (2026-10-22)
+
+**Contexte.** Le protocole de test d'un skill jugeait surtout le produit — fichiers, chemins, contenu —
+avec quelques gestes mécaniques (pause, tableau). Le 22 octobre, la question « qu'est-ce qu'on évalue quand une Task produit du raisonnement ? » a été
+tranchée : « seulement les traces vérifiables qu'il laisse ». Un raisonnement caché n'est ni lisible ni
+falsifiable ; une trace absente ne prouve pas une pensée absente, elle prouve une mesure absente.
+
+**Options** : juger le `reasoning` exporté (rejeté : il montre ce que le modèle a émis, pas ce qu'il a
+pensé) · juger le produit seul (insuffisant : une question, une décision ou une source citée peut être
+le geste attendu) · juger des traces déclarées par le cas (choisi).
+
+**Décision.** Le protocole prévoit qu'un cas déclare `attendu_details.traces[]`, une liste d'entrées
+`{geste, preuve}`. `geste` dit ce qui doit être observable, `preuve` dit où le lire : un `seq` et un type
+de part dans la trace, un chemin dans une pièce. Une entrée déclarée est requise, il n'y a pas de trace facultative.
+Quatre familles sont admises : question posée et tour suivant, décision énoncée avec son motif, accès à
+une source ou à une commande, production écrite avec son chemin. Une trace déclarée et absente est une
+**limite nommée**, jamais un `écart` : l'instrument peut ne pas l'avoir vue. Une part `reasoning` n'est
+une preuve que si le cas y déclare un fait nommé ; elle ne prouve jamais l'intention. Le juge ne lit que
+la trace exportée et les pièces du run.
+
+**Conséquences.** Le protocole est décidé, pas mesuré : aucune commande ne lit `traces[]`, le reçu ne le
+porte pas et aucun cas ne l'écrit encore. Tant que la mesure manque, la grille se remplit **à la main
+dans le rapport du run**, une ligne par geste, avec sa preuve ou `non observé` ; la page utilisateur range
+en `non observé` ce qu'elle ne peut pas lier. Le harnais ne doit pas être décrit comme jugeant le
+raisonnement. Un run guidé (ADR-074) peut appliquer la grille, à condition de dire qu'elle est manuelle.
+
+**Ce que ce n'est pas** : une note de style, une obligation de commenter chaque geste, ni une lecture du
+raisonnement interne. Une trace présente se juge sur son contenu, jamais sur l'intention qu'on lui prête.
+
+**Falsificateur** : un verdict qui note une pensée absente de la trace ; une trace déclarée absente non
+nommée en limite ; un cas sans bloc `traces` déclaré complet par défaut ; une part `reasoning` acceptée
+comme preuve de l'intention.
+
+**Rectification (2026-10-22).** La spec
+[`2026-10-22-221207-spec-traces.md`](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-traces.md)
+montre que `attendu_details.ordre` porte déjà `geste` et `preuve`, et que `lecture.json` porte déjà les
+assertions lues par `resultat.mjs`. L'[ADR-075](DECISIONS.md)
+ne crée donc pas `attendu_details.traces[]` et étend `lecture.json` (`trace_texte`, `commande_contient`).
+L'ADR-073 reste datée ; le principe, juger des traces et jamais le thinking, ne change pas.
+
+## ADR-074 — Le test d'un skill se joue dans la conversation courante, sans headless (2026-10-22)
+
+**Contexte.** Le 22 octobre, trois essais headless du cas `10-task` ont échoué avant toute mesure du
+skill : quota OpenRouter (HTTP 402), limite de jetons Groq (413, 10 152 > 8 000 par minute), puis un
+modèle local lent dont le brouillon finissait par « : » et n'était donc pas reconnu comme une question
+par `ouvrir`. Décision de la personne : « pour l'instant, on fait au plus simple, tout tourne sous la
+même session/conversation ».
+
+**Options** : continuer le headless (rejeté pour l'instant : coût, latence, détection de pause fragile) ·
+ouvrir un fil Freebuff séparé (plus indépendant, mais pas le plus simple) · jouer le skill dans la
+conversation courante (choisi).
+
+**Décision.** Le test d'un skill se joue dans la conversation courante : le même agent est opérateur et
+session sous test. Aucun serveur `opencode`, aucun choix de modèle, aucun fil neuf, aucun appel à
+`ouvrir`. La conduite se déclare `agent` (ADR-071). Le run est dit **guidé**. Les cas gelés, `ouvrir`,
+les deux clients et les runs opencode restent en place : ce mode s'applique au protocole de test d'un
+skill, il ne réécrit pas le dispositif.
+
+**Conséquences.** La séparation de contexte tombe : l'agent a lu l'attendu et cette page avant de
+produire. Un run guidé prouve la forme du produit, ses chemins, l'absence d'écriture hors produit et la
+présence des traces déclarées ; il ne prouve pas que le skill seul produit le geste. Un `conforme` obtenu
+ainsi ne se publie pas comme preuve du skill : le rapport **doit** porter la limite
+`session_non_independante`, **déclarée**, jamais mesurée, et la page utilisateur range l'indépendance en
+`non observé`. Le headless peut revenir par une nouvelle ADR, quand un cas exigera l'indépendance et
+qu'un modèle stable sera disponible.
+
+**Ce que ce n'est pas** : une suppression d'`ouvrir` ou des runs indépendants ; une équivalence entre un
+run guidé et un run aveugle ; un quatrième mot de verdict. `conforme`, `écart` et `non concluant` gardent
+leur sens ; c'est la portée de la preuve qui est bornée.
+
+**Falsificateur** : un run guidé présenté comme indépendant ; un `conforme` publié sans la limite
+d'indépendance ; `ouvrir` réintroduit dans ce mode sans nouvelle ADR.
+
+## ADR-075 — Les traces vérifiables se lisent dans `lecture.json`, pas dans un troisième bloc (2026-10-22)
+
+**Contexte.** L'ADR-073 a nommé un bloc `attendu_details.traces[]`. La mesure du 2026-10-22 ne le trouve
+nulle part : les attendus portent `attendu_details.ordre`, une liste `{rang, geste, preuve}`, et
+`CASES/<cas>.lecture.json` porte déjà `gestes[].assertions`, lues par `resultat.mjs`. Ajouter `traces[]`
+crée une troisième structure pour le même couple geste/preuve. En parallèle, `resultat.mjs` ne gardait de
+la trace que les parts `kind: "tool"` : une décision énoncée en texte, ou une question en texte, restait
+invisible à la page.
+
+**Options** : créer et instrumenter `traces[]` (rejeté : troisième structure, re-gel des cas) · étendre
+`lecture.json`, hors du gel (choisi) · ne rien mesurer (rejeté : la page ne peut pas citer une décision).
+
+**Décision.** Aucun bloc `attendu_details.traces[]`. `attendu_details.ordre` reste la **promesse gelée**,
+en prose. `lecture.json` reste la **lecture déclarée**, hors du gel ([ADR-032](DECISIONS.md), [ADR-061](DECISIONS.md)). Deux assertions génériques s'ajoutent :
+`trace_texte` (`role` `assistant | user`, `contient` ou `finit_par` exclusifs, `a_partir_du_tour` entier
+positif facultatif) et `trace_outil.commande_contient`. `lireParts` expose une liste `textes` à côté de
+`parts` ; une part `reasoning` n'est jamais lue. La page cite le tour et la valeur bornée, jamais le texte
+entier. Trois états : `tenu` avec preuve citée, `violé` sur une partie examinable qui contredit, `non
+observé` sur une trace absente ou sans partie examinable. Le reçu, l'output et le verdict ne changent pas.
+
+**Conséquences.** `resultat.mjs` lit les textes et les commandes ; les contrôles **259 à 262** éprouvent
+les trois états, la dernière ligne hors bloc, `commande_contient` et le refus d'une assertion mal formée ;
+le banc passe de **258** à **262**. Le contrôle 233 inclut `trace_texte` dans son vocabulaire fermé. Un run
+guidé (ADR-074) applique la même lecture à la main, dans le gabarit du run ; il ne gagne pas de reçu. Le
+contenu spécifique d'un JSON, d'un code ou d'un rapport reste au juge et à l'`attendu` du cas : le harnais
+ne gagne aucun type par format.
+
+**Ce que ce n'est pas** : une lecture du raisonnement, une expression régulière, un quatrième verdict, ou
+une pièce gelée. `contient` et `finit_par` sont littéraux ; une question rhétorique reste un texte.
+
+**Falsificateur** : un `?` présent seulement dans un bloc de code rend `tenu` ; une trace absente rend
+`tenu` ; `commande_contient` accepte une autre commande ; une assertion `trace_texte` change un verdict ;
+une lecture mal formée est servie sans `verifierLecture` ; le contrôle 233 n'inclut pas `trace_texte`.
+
+## ADR-076 — Le run guidé attache sa trace machine, et le gabarit cite des `seq` (2026-10-23)
+
+**Contexte.** L'[ADR-074](DECISIONS.md) fait de la conversation courante le mode par défaut du test d'un
+skill. Ce mode ne laissait aucune trace machine : le run guidé du 2026-10-22 21:37 est un recast de son
+rapport, la grille du gabarit se remplit à la main, et la Séance 124 n'a pu tenir que le chemin, la forme
+et l'empreinte du produit. La spec du 22:12 disait l'export du fil **optionnel** ; rien n'obligeait à le
+joindre, et rien ne reliait une ligne du gabarit à une pièce.
+
+**Options** : un reçu pour le run guidé (rejeté : sans gel ni porte, il attesterait plus que le run) ·
+laisser l'export optionnel (rejeté : le mode majoritaire reste le moins instrumenté) · une commande qui
+exporte le fil et écrit ce qu'il faut pour le citer (choisi).
+
+**Décision.** `orchestrer.mjs tracer --run <dossier> --fil <id> [--client auto|freebuff|opencode]
+[--store <dir>]` exporte le fil par la frontière des clients (`clients.mjs`) et écrit deux pièces sous
+`trace/` : `echange.jsonl`, l'export normalisé, et `fil.json` (client, application, identifiant, modèle,
+nombre de lignes, premier et dernier `{seq, ts}`, `sha256` de l'export, source, commande). Le dossier doit
+porter **exactement un** `*-run-guide.md` ; un fil inconnu, une trace déjà présente et un fil en worktree
+sont refusés. `--liste --depuis <iso>` rend les fils récents du projet avec leur modèle et leur nombre de
+messages, **sans contenu**, parce que l'identifiant ne se devine pas. Le gabarit du run guidé gagne un
+**§5 bis** qui nomme le fichier, son empreinte, ses lignes et sa source ; les preuves du §4 citent un `seq`
+de ce fichier. Sans trace, le §5 bis dit `absente` et aucune ligne ne devient `tenu` sur un tour illisible.
+
+**Conséquences.** L'orchestrateur passe de sept à **huit** commandes. Le banc gagne **263** (export et
+empreinte), **264** (fil inconnu, trace existante) et **265** (dossier sans run-guide unique), et passe à
+**268** contrôles. Aucun reçu n'est écrit ni réécrit ; un run guidé reste `run-guide`, sans verdict. La
+trace contient la conversation entière, messages de la personne compris : elle vit sous `docs/tasks/` et le
+gabarit le dit.
+
+**Ce que ce n'est pas** : une preuve d'indépendance, une attestation, un jugement du contenu, ni un reçu
+déguisé. `tracer` ne remplit pas la grille : elle rend chaque ligne citable.
+
+**Falsificateur** : une grille `tenu` citant un `seq` absent de la trace jointe ; un `tracer` qui écrit
+hors de `trace/` ; un dossier sans run-guide accepté ; une trace écrasée ; un run guidé présenté comme
+indépendant.
+
+## ADR-077 — Une session inactive sur un texte sans `?` n'est pas un run fini (2026-10-23)
+
+**Contexte.** Sur le run `2026-10-22-211526`, le brouillon de la session finissait par « : » ; la boucle de
+`ouvrir` ne reconnaissait comme question qu'une dernière ligne terminée par `?`, sortait, et rendait un
+**succès à zéro question** alors que la réponse figée restait à jouer. La réponse a été envoyée à la main,
+et la pièce n'a rien dit. Sur le run `182505`, le refus de délai ne nommait pas le fil : la reprise n'avait
+pas d'identifiant.
+
+**Options** : lire « : » comme une question (rejeté : deviner une intention) · refuser toute session sans
+question détectée (rejeté : un run fini sans question est légitime) · refuser seulement quand une réponse
+figée reste à jouer, et nommer le fil partout (choisi).
+
+**Décision.** Quand la session est inactive, sans formulaire, et que la dernière part `text` d'un message
+`assistant` postérieur à la référence ne finit pas par `?` : si toutes les réponses figées sont jouées,
+`ouvrir` s'arrête en `0` comme avant ; sinon elle refuse en `1`, sans envoyer de message, en citant le fil,
+la dernière ligne non vide hors bloc et le geste `suite --fil <fil>`. Le refus de délai nomme le fil et la
+même reprise. La règle du `?` ne change pas ; aucun texte n'est joué à la main par la commande.
+
+**Conséquences.** Le contrôle **257** change d'attente : un `?` dans un bloc n'est toujours pas une
+question, mais la session s'arrête sur `Rien d'autre.` et le contrôle exige désormais `exit 1` avec le
+refus. **266** éprouve le cas général (brouillon finissant par « : », une réponse restante), **267** lit
+le texte du refus de délai. Le banc reste à **268**. Un run dont toutes les réponses sont jouées finit
+toujours en `0`.
+
+**Ce que ce n'est pas** : une lecture de l'intention, une réponse automatique à un texte libre, ou un
+quatrième verdict. Une session qui s'arrête sur une question terminée par `?` est jouée comme avant.
+
+**Falsificateur** : un succès `0` à zéro question sur un texte sans `?` avec une réponse restante ; un
+refus qui ne nomme pas le fil ; un `?` présent seulement dans un bloc joué comme question.
+
+## ADR-078 — La pause porte son intervalle, jamais une attente humaine (2026-10-23)
+
+**Contexte.** `receipt.pause` portait `{requise, mesuree, seq_reponse, seq_ecriture, outil_ecriture}`, et
+la limite disait « sa durée n'est pas mesurée » : un tour `user` dans la même seconde que le message
+précédent comptait comme une attente, et rien ne distinguait une pause tenue d'un accord auto-répondu.
+
+**Options** : laisser la limite (rejeté : une mesure disponible n'est pas prise) · mesurer une durée
+humaine (impossible : la trace ne porte que des instants) · mesurer l'intervalle entre les deux parts
+(choisi).
+
+**Décision.** `pause.attente_ms` reçoit l'entier de millisecondes entre l'instant de la part qui précède
+immédiatement le tour `user` de la pause (par `index`) et celui de ce tour ; `null` si l'un des deux
+instants n'est pas numérique, `0` si l'écart est négatif. La limite qui disait la durée non mesurée dit
+désormais ce que l'intervalle mesure, et cite l'ADR-078. Un écart inférieur à `1000` ms ajoute une limite
+nommée. `mesuree`, `question_sans_reponse` et le verdict ne changent pas ; un reçu antérieur sans le champ
+reste lisible.
+
+**Conséquences.** Le contrôle **268** mesure deux fils de fixture (10 000 ms et 200 ms), exige la valeur,
+la limite courte sur le second seulement, et relit un reçu antérieur sans le champ. Le banc reste à
+**268**. Les reçus du dépôt ne sont pas réécrits.
+
+**Ce que ce n'est pas** : une preuve qu'une personne a attendu, une horloge de session, ou un nouveau
+falsificateur. L'intervalle est un fait de la trace, pas une qualité de la pause.
+
+**Falsificateur** : un `attente_ms` différent de l'écart ; une pause de 200 ms sans limite courte ; une
+limite courte sur une pause d'une minute ; un reçu antérieur refusé faute du champ.

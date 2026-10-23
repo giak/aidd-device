@@ -147,6 +147,19 @@ export function exportFreebuff(fil, { base, dest } = {}) {
   };
 }
 
+// ADR-076 : la liste qui aide à choisir un fil — des métadonnées seulement, aucun contenu de message.
+// L'identifiant d'un fil ne se devine pas ; il se lit dans la base du client, borné par une date.
+export function filsFreebuff(depuis, { base } = {}) {
+  if (!base) throw new Error("la base Freebuff n'est pas nommée");
+  const ms = Number(depuis);
+  if (!Number.isFinite(ms)) throw new Error(`« ${depuis} » n'est pas un horodatage — la liste se borne`);
+  return lireBase(base,
+    `select json_group_array(json_object('id', id, 'modele', model, 'messages', messages, 'created_at', created_at)) ` +
+    `from (select t.id as id, t.model as model, (select count(*) from messages m where m.thread_id = t.id) as messages, ` +
+    `t.created_at as created_at from threads t where t.created_at >= ${Math.floor(ms)} order by t.created_at desc);`,
+    "fils") ?? [];
+}
+
 export function replayFreebuff(fil, { base } = {}) {
   if (!base) throw new Error("la base Freebuff n'est pas nommée");
   let octets;

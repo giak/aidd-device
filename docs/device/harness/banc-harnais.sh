@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 236 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 262 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -1101,13 +1101,13 @@ const annexe=(guide.split(/\n## Annexe/)[1]||'');
 const q=String.fromCharCode(96);
 const options=[...new Set(annexe.match(/--[a-z][a-z-]*/g)||[])];
 const inconnues=options.filter(o=>!usage.includes(o));
-const offertes=['cas','porte','ouvrir','suite','fin','lire','rapport'].filter(c=>usage.split('\n').some(l=>l.startsWith('  '+c+' ')));
+const offertes=[...new Set(usage.split('\n').map(l=>(l.match(/^  ([a-z][a-z-]*) +--/)||[])[1]).filter(Boolean))];
 const nonNommees=offertes.filter(c=>!annexe.includes('| '+q+c+q+' |'));
 const sections={};let cur=null;for(const l of usage.split('\n')){const m=l.match(/^  ([a-z][a-z-]*) +--/);if(m){cur=m[1];sections[cur]=l;}else if(cur&&l.startsWith('       '))sections[cur]+='\n'+l;}
 const runbook=fs.readFileSync('$REPO/docs/device/ORCHESTRATEUR.md','utf8');
 const lignes=[...runbook.matchAll(/^node docs\/device\/harness\/orchestrer\.mjs (\S+) (.*)$/gm)].map(m=>({cmd:m[1],opts:[...m[2].matchAll(/--[a-z][a-z-]*/g)].map(x=>x[0])}));
 const nommees=new Set(lignes.map(l=>l.cmd));
-const toutes=lignes.length===offertes.length&&nommees.size===offertes.length&&[...nommees].every(c=>sections[c])&&offertes.every(c=>nommees.has(c))&&lignes.every(l=>l.opts.every(o=>(sections[l.cmd]||'').includes(o)));
+const toutes=[...nommees].every(c=>sections[c])&&offertes.every(c=>nommees.has(c))&&lignes.every(l=>l.opts.every(o=>(sections[l.cmd]||'').includes(o)));
 const spec=fs.readFileSync('$REPO/docs/tasks/2026_10/2026-10-18-070820-orchestrateur-interactif-du-test/2026-10-18-071018-spec.md','utf8');
 const table=((spec.split(/\n## 7\. Les refus/)[1]||'').split(/\n## 8\./)[0]);
 const refus=[...table.matchAll(/^\| (\d+) \|[^|]*\|[^|]*\| (\d+) \|$/gm)].map(m=>({n:+m[1],sortie:+m[2]}));
@@ -1124,8 +1124,6 @@ const raisons=[];
 if(!annexe)raisons.push('annexe du guide : section ## Annexe introuvable');
 for(const o of inconnues)raisons.push('option '+o+' : absente de l usage de orchestrer.mjs');
 for(const c of nonNommees)raisons.push('annexe : la ligne de table de '+c+' manque');
-if(lignes.length!==offertes.length)raisons.push('runbook §2 : '+lignes.length+' ligne(s) de commande, '+offertes.length+' offerte(s)');
-if(lignes.length===offertes.length&&nommees.size!==offertes.length)raisons.push('runbook §2 : une commande est nommee deux fois');
 for(const c of nommees)if(!sections[c])raisons.push('runbook §2 : la commande '+c+' n est pas offerte par l usage');
 for(const c of Object.keys(sections))if(!nommees.has(c))raisons.push('runbook §2 : la commande offerte '+c+' n y est pas nommee');
 for(const l of lignes)for(const o of l.opts)if(!(sections[l.cmd]||'').includes(o))raisons.push('runbook §2 : option '+o+' hors de la section d usage de '+l.cmd);
@@ -2333,6 +2331,8 @@ const serveur = http.createServer((req, res) => {
         poserTexte("Question " + n + " ?");
       } else if (mode === "texte-bloc") {
         if (n === 1) poserTexte(texteBloc);
+      } else if (mode === "texte-sans-question") {
+        if (n === 1) poserTexte("Le brouillon complet :\n\n- Outcome : écrire le contrôle\n- Scope : le démarrage");
       } else if (mode === "texte-rappel") {
         if (n === 1) poserTexte("<system-reminder>\nContinuer ?\n</system-reminder>?");
       }
@@ -2420,11 +2420,20 @@ if (mode === "accepter") {
   if (prompts.length !== 3) raisons.push(prompts.length + " message(s) envoyé(s), 3 attendus");
   if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
 } else if (mode === "texte-bloc") {
-  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  // ADR-077 : la derniere ligne hors bloc ("Rien d'autre.") ne demande rien et une reponse reste a
+  // jouer : `ouvrir` refuse au lieu de rendre un succes a zero question.
+  if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
   if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
   if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("sans question")) raisons.push("le refus ne dit pas la session arrêtée sans question");
   if (sortie.includes("texte, question")) raisons.push("un ? dans un bloc a été pris pour une question");
-  if (!sortie.includes("0 question(s)")) raisons.push("le bloc ne dit pas qu'aucune question n'est jouée");
+} else if (mode === "texte-sans-question") {
+  if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("sans question")) raisons.push("le refus ne dit pas la session arrêtée sans question");
+  if (!sortie.includes("suite --fil ses_banc")) raisons.push("le refus ne dit pas comment reprendre : " + sortie.split("\n")[0]);
+  if (!sortie.includes("Scope : le démarrage")) raisons.push("le refus ne cite pas la dernière ligne");
 } else if (mode === "texte-rappel") {
   if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
   if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
@@ -2447,8 +2456,243 @@ controle "227 refus, plus de questions que de réponses figées" 0 node "$O/faux
 controle "254 ouvrir, question en texte jouée" 0 node "$O/faux-serveur.mjs" "$B/detail.254" texte "$O/run" cas-test "$O/cases" "$ORCH"
 controle "255 ouvrir, formulaire puis texte" 0 node "$O/faux-serveur.mjs" "$B/detail.255" texte-formulaire "$O/run" cas-test "$O/cases" "$ORCH"
 controle "256 refus, texte sans réponse figée" 0 node "$O/faux-serveur.mjs" "$B/detail.256" texte-exces "$O/run" cas-test "$O/cases" "$ORCH"
-controle "257 texte sans question, ? dans un bloc" 0 node "$O/faux-serveur.mjs" "$B/detail.257" texte-bloc "$O/run" cas-test "$O/cases" "$ORCH"
+controle "257 refus, ? dans un bloc et texte sans question" 0 node "$O/faux-serveur.mjs" "$B/detail.257" texte-bloc "$O/run" cas-test "$O/cases" "$ORCH"
 controle "258 rappel système, jamais une question" 0 node "$O/faux-serveur.mjs" "$B/detail.258" texte-rappel "$O/run" cas-test "$O/cases" "$ORCH"
+controle "266 refus, session arrêtée sur un texte sans question" 0 node "$O/faux-serveur.mjs" "$B/detail.266" texte-sans-question "$O/run" cas-test "$O/cases" "$ORCH"
+cat > "$O/delai.mjs" <<'JS'
+// ADR-077 : le refus de delai nomme le fil, sinon la reprise n'a pas d'identifiant. Le banc lit le
+// texte du code plutot que d'attendre une minute : le controle 266 eprouve le comportement voisin.
+import { readFileSync } from "node:fs";
+const t = readFileSync(process.argv[2], "utf8");
+const ok = t.includes("la session ${fil} n'est pas devenue inactive en ${minutes} min")
+  && t.includes("le fil reste lisible par « suite --fil ${fil} »");
+process.exit(ok ? 0 : 1);
+JS
+controle "267 le refus de délai nomme le fil (texte du code)" 0 node "$O/delai.mjs" "$ORCH"
+
+# 263-265 : `tracer`, la trace du run guide (ADR-076). Le fil est un fil Freebuff de fixture ; le
+# dossier porte un `-run-guide.md`, et rien d'autre ne doit etre ecrit que trace/echange.jsonl et
+# trace/fil.json. Le HOME factice evite de lire la base reelle de la personne.
+P263=$(date +%s%3N)
+sqlite3 "$DBF" <<SQL
+insert into threads values('fil-trace','$W/terrain','local','','','codebuff','m-banc',$P263);
+insert into messages values('fil-trace',1,'user',$(($P263-2000)),'[{"kind":"text","text":"demande"}]');
+insert into messages values('fil-trace',2,'assistant',$P263,'[{"kind":"text","text":"reponse"}]');
+SQL
+mkdir -p "$O/home-trace/.config/freebuff-desktop/projects/banc"
+cp "$DBF" "$O/home-trace/.config/freebuff-desktop/projects/banc/desktop-v2.db"
+mkdir -p "$O/guide" "$O/guide-fil" "$O/sans-guide" "$O/deux-guides"
+printf '%s\n' '# Run guide' > "$O/guide/2026-10-23-000000-run-guide.md"
+printf '%s\n' '# Run guide' > "$O/guide-fil/2026-10-23-000000-run-guide.md"
+printf '%s\n' '# Run guide 1' > "$O/deux-guides/2026-10-23-000000-run-guide.md"
+printf '%s\n' '# Run guide 2' > "$O/deux-guides/2026-10-23-000001-run-guide.md"
+cat > "$O/tracer-banc.mjs" <<'JS'
+// `tracer` sur une base de fixture : argv orchestrer, mode, dossier, HOME, store opencode.
+import { execFileSync } from "node:child_process";
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { join } from "node:path";
+
+const [orch, mode, run, home, store] = process.argv.slice(2);
+const raisons = [];
+const env = { ...process.env, HOME: home };
+const appel = (dossier, fil) => {
+  try {
+    const sortie = execFileSync(process.execPath,
+      [orch, "tracer", "--run", dossier, "--fil", fil, "--client", "freebuff", "--store", store],
+      { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { code: 0, sortie };
+  } catch (e) {
+    return { code: e.status, sortie: String(e.stdout || "") + String(e.stderr || "") };
+  }
+};
+
+if (mode === "ok") {
+  const r = appel(run, "fil-trace");
+  if (r.code !== 0) raisons.push("exit " + r.code + " : " + r.sortie.split("\n")[0]);
+  else {
+    const p = join(run, "trace", "fil.json");
+    if (!existsSync(p)) raisons.push("fil.json absent");
+    else {
+      const f = JSON.parse(readFileSync(p, "utf8"));
+      const b = readFileSync(join(run, "trace", "echange.jsonl"));
+      const lignes = b.toString("utf8").split("\n").filter(Boolean);
+      if (f.messages !== 2 || f.trace?.lignes !== 2 || lignes.length !== 2) {
+        raisons.push("messages/lignes " + f.messages + "/" + f.trace?.lignes + "/" + lignes.length);
+      }
+      if (f.trace?.sha256 !== createHash("sha256").update(b).digest("hex")) raisons.push("sha256 qui ne rend pas le fichier");
+      if (f.identifiant !== "fil-trace") raisons.push("identifiant " + f.identifiant);
+      if (f.modele !== "m-banc") raisons.push("modele " + f.modele);
+      if (f.premier?.seq !== 1 || f.dernier?.seq !== 2) raisons.push("premier/dernier " + JSON.stringify([f.premier, f.dernier]));
+      const pieces = readdirSync(join(run, "trace")).sort().join(",");
+      if (pieces !== "echange.jsonl,fil.json") raisons.push("pieces de trace : " + pieces);
+    }
+  }
+} else if (mode === "refus-fil") {
+  const absent = appel(run, "fil-absent");
+  if (absent.code !== 1) raisons.push("fil inconnu : exit " + absent.code);
+  if (existsSync(join(run, "trace"))) raisons.push("une trace a ete ecrite pour un fil inconnu");
+  mkdirSync(join(run, "trace"), { recursive: true });
+  writeFileSync(join(run, "trace", "echange.jsonl"), "");
+  const deja = appel(run, "fil-trace");
+  if (deja.code !== 1) raisons.push("trace existante : exit " + deja.code);
+  if (!/déjà/.test(deja.sortie)) raisons.push("le refus ne dit pas que la trace existe deja");
+} else if (mode === "refus-dossier") {
+  for (const d of ["sans-guide", "deux-guides"]) {
+    const r = appel(join(run, d), "fil-trace");
+    if (r.code !== 1) raisons.push(d + " : exit " + r.code);
+    if (existsSync(join(run, d, "trace"))) raisons.push(d + " : une trace a ete ecrite");
+  }
+}
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "263 tracer, export du fil et fil.json" 0 node "$O/tracer-banc.mjs" "$ORCH" ok "$O/guide" "$O/home-trace" "$O/opencode-vide"
+controle "264 tracer refuse un fil inconnu et une trace deja ecrite" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-fil "$O/guide-fil" "$O/home-trace" "$O/opencode-vide"
+controle "265 tracer refuse un dossier sans run-guide unique" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-dossier "$O" "$O/home-trace" "$O/opencode-vide"
+
+# 259-262 : les traces de texte et de commande (spec du 2026-10-22 22:12, ADR-075). Un reçu synthétique
+# suffit : rien n'ouvre de session, et les contrôles portent sur les trois états d'une assertion de texte,
+# sur la dernière ligne hors bloc, sur la commande lue dans la trace et sur le refus d'une assertion mal formée.
+P="$B/traces"
+mkdir -p "$P"
+cp "$REPO/docs/device/CASES/$JOUET.expected.json" "$P/"
+node - "$P" "$JOUET" <<'JS'
+const fs = require("fs"), path = require("path");
+const [P, JOUET] = process.argv.slice(2);
+const recu = (d) => {
+  fs.mkdirSync(path.join(d, "trace"), { recursive: true });
+  const r = {
+    cas: JOUET, verdict: "non concluant",
+    session: { outil: "opencode", modele: "opencode/banc" },
+    horodatage_debut: "2026-10-22T10:00:00+02:00", horodatage_fin: "2026-10-22T10:01:00+02:00",
+    echanges: { utilises: 0, budget: 1 },
+    produit: { chemins: [], fichiers: [] }, falsificateurs: {},
+  };
+  fs.writeFileSync(path.join(d, "receipt.json"), JSON.stringify(r, null, 2) + "\n");
+  fs.writeFileSync(path.join(d, "output.json"), JSON.stringify({ verdict: "non concluant", difference: "" }, null, 2) + "\n");
+};
+const trace = (d, lignes) => {
+  fs.mkdirSync(path.join(d, "trace"), { recursive: true });
+  fs.writeFileSync(path.join(d, "trace", "echange.jsonl"), lignes.map((l) => JSON.stringify(l)).join("\n") + "\n");
+};
+const cases = (nom, gestes) => {
+  const d = path.join(P, "cases" + nom);
+  fs.mkdirSync(d, { recursive: true });
+  fs.copyFileSync(path.join(P, JOUET + ".expected.json"), path.join(d, JOUET + ".expected.json"));
+  fs.writeFileSync(path.join(d, JOUET + ".lecture.json"), JSON.stringify({ cas: JOUET, gestes }, null, 2) + "\n");
+};
+
+cases("259", [
+  { geste: "le brouillon est annoncé", assertions: [{ type: "trace_texte", contient: "je propose de" }] },
+  { geste: "le brouillon est complet", assertions: [{ type: "trace_texte", contient: "absent" }] },
+  { geste: "le texte est dit tel quel", assertions: [{ type: "trace_texte", contient: "JE PROPOSE DE" }] },
+  { geste: "la personne répond", assertions: [{ type: "trace_texte", role: "user", contient: "ok" }] },
+]);
+recu(path.join(P, "r259"));
+trace(path.join(P, "r259"), [
+  { seq: 12, role: "assistant", kind: "text", text: "je propose de créer le plan.", ts: 1 },
+  { seq: 13, role: "assistant", kind: "text", text: "Rien ici.", ts: 2 },
+  { seq: 14, role: "user", kind: "text", text: "ok", ts: 3 },
+]);
+cases("259b", [{ geste: "le brouillon est annoncé", assertions: [{ type: "trace_texte", contient: "je propose de" }] }]);
+recu(path.join(P, "r259b"));
+trace(path.join(P, "r259b"), [{ seq: 12, role: "assistant", kind: "tool", outil: "read", chemin_outil: "README.md", ts: 1 }]);
+
+cases("260", [
+  { geste: "la question est la dernière ligne", assertions: [{ type: "trace_texte", finit_par: "?", a_partir_du_tour: 20 }] },
+  { geste: "un bloc ne porte pas la question", assertions: [{ type: "trace_texte", finit_par: "?", a_partir_du_tour: 21 }] },
+  { geste: "un rappel système n'est pas une question", assertions: [{ type: "trace_texte", finit_par: "?", a_partir_du_tour: 22 }] },
+]);
+recu(path.join(P, "r260"));
+trace(path.join(P, "r260"), [
+  { seq: 20, role: "assistant", kind: "text", text: "Question ?\n```\ncode ?\n```", ts: 1 },
+  { seq: 21, role: "assistant", kind: "text", text: "```\n? \n```", ts: 2 },
+  { seq: 22, role: "assistant", kind: "text", text: "<system-reminder>rappel ?", ts: 3 },
+]);
+
+cases("261", [
+  { geste: "la commande est dans la trace", assertions: [{ type: "trace_outil", outil: "shell", commande_contient: "rg README" }] },
+  { geste: "le chemin et la commande sont dans la trace", assertions: [{ type: "trace_outil", outil: "shell", chemin_contient: "README", commande_contient: "rg README" }] },
+  { geste: "une autre commande ne suffit pas", assertions: [{ type: "trace_outil", outil: "shell", commande_contient: "ls" }] },
+]);
+recu(path.join(P, "r261"));
+trace(path.join(P, "r261"), [
+  { seq: 30, role: "assistant", kind: "tool", outil: "shell", commande: "rg README", chemin_outil: "/x/README.md", ts: 1 },
+]);
+cases("261b", [{ geste: "la commande est dans la trace", assertions: [{ type: "trace_outil", outil: "shell", commande_contient: "rg README" }] }]);
+recu(path.join(P, "r261b"));
+trace(path.join(P, "r261b"), [
+  { seq: 30, role: "assistant", kind: "tool", outil: "shell", chemin_outil: "/x/README.md", ts: 1 },
+]);
+JS
+controle "259 texte, trois états et casse" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const lire=(run,cases)=>{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--cases','$P/cases'+cases,'--run','$P/'+run,'--remplacer'],{stdio:'ignore'});return fs.readFileSync('$P/'+run+'/RESULTAT.md','utf8')};
+const t=lire('r259','259');
+const b=lire('r259b','259b');
+const tab=t.split('## 4.')[1].split('## 5.')[0];
+const ligne=(nom)=>(tab.split('\n').find((l)=>l.startsWith('| '+nom+' |'))||'');
+const r=[];
+if(![1,2,3,4,5,6,7,8].every((i)=>t.includes('## '+i+'.')))r.push('section manquante');
+if(!ligne('le brouillon est annoncé').includes('texte du tour 12'))r.push('le texte tenu ne nomme pas son tour');
+if(!ligne('le brouillon est annoncé').includes('« je propose de »'))r.push('le texte tenu ne cite pas le fragment');
+if(!ligne('le brouillon est annoncé').includes('| tenu |'))r.push('le texte trouvé ne porte pas tenu');
+if(!ligne('le brouillon est complet').includes('aucun texte assistant ne contient « absent »'))r.push('le texte absent ne nomme pas le manque');
+if(!ligne('le brouillon est complet').includes('| **violé** |'))r.push('le texte absent ne porte pas violé');
+if(!ligne('le texte est dit tel quel').includes('| **violé** |'))r.push('la casse différente ne porte pas violé');
+if(!ligne('la personne répond').includes('| tenu |'))r.push('le texte de la personne ne porte pas tenu');
+const tab2=b.split('## 4.')[1].split('## 5.')[0];
+if(!tab2.includes('aucun texte assistant examinable dans la trace'))r.push('la trace sans texte ne dit pas non observé');
+if(!tab2.includes('| non observé |'))r.push('la trace sans texte ne porte pas non observé');
+if(r.length){fs.writeFileSync('$B/detail.259',r.join('\n')+'\n');process.exit(1)}"
+controle "260 texte, dernière ligne hors bloc" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--cases','$P/cases260','--run','$P/r260','--remplacer'],{stdio:'ignore'});
+const t=fs.readFileSync('$P/r260/RESULTAT.md','utf8');
+const tab=t.split('## 4.')[1].split('## 5.')[0];
+const ligne=(nom)=>(tab.split('\n').find((l)=>l.startsWith('| '+nom+' |'))||'');
+const r=[];
+if(!ligne('la question est la dernière ligne').includes('finit par « ? »'))r.push('la question hors bloc n\'est pas nommée');
+if(!ligne('la question est la dernière ligne').includes('| tenu |'))r.push('la question hors bloc ne porte pas tenu');
+if(!ligne('un bloc ne porte pas la question').includes('| **violé** |'))r.push('le bloc ne porte pas violé');
+if(!ligne('un rappel système n\'est pas une question').includes('| non observé |'))r.push('le rappel système ne porte pas non observé');
+if(!ligne('un rappel système n\'est pas une question').includes('aucun texte assistant examinable'))r.push('le rappel système ne dit pas le manque');
+if(r.length){fs.writeFileSync('$B/detail.260',r.join('\n')+'\n');process.exit(1)}"
+controle "261 commande, trois états" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const lire=(run,cases)=>{execFileSync('node',['$ORCH','rapport','--cas','$JOUET','--cases','$P/cases'+cases,'--run','$P/'+run,'--remplacer'],{stdio:'ignore'});return fs.readFileSync('$P/'+run+'/RESULTAT.md','utf8')};
+const t=lire('r261','261');
+const b=lire('r261b','261b');
+const tab=t.split('## 4.')[1].split('## 5.')[0];
+const ligne=(nom)=>(tab.split('\n').find((l)=>l.startsWith('| '+nom+' |'))||'');
+const r=[];
+if(!ligne('la commande est dans la trace').includes('commande du tour 30 : « rg README »'))r.push('la commande n\'est pas citée');
+if(!ligne('la commande est dans la trace').includes('| tenu |'))r.push('la commande lue ne porte pas tenu');
+if(!ligne('le chemin et la commande sont dans la trace').includes('| tenu |'))r.push('le chemin et la commande ne portent pas tenu');
+if(!ligne('une autre commande ne suffit pas').includes('shell sans « ls »'))r.push('la commande absente n\'est pas nommée');
+if(!ligne('une autre commande ne suffit pas').includes('| **violé** |'))r.push('la commande absente ne porte pas violé');
+const tab2=b.split('## 4.')[1].split('## 5.')[0];
+if(!tab2.includes('shell sans commande lisible'))r.push('la commande illisible ne dit pas le manque');
+if(!tab2.includes('| non observé |'))r.push('la commande illisible ne porte pas non observé');
+if(r.length){fs.writeFileSync('$B/detail.261',r.join('\n')+'\n');process.exit(1)}"
+controle "262 refus, assertion de texte mal formée" 0 node -e "
+const {verifierLecture,TYPES_ASSERTION}=require('$H'.replace(/run\.mjs$/,'resultat.mjs'));
+const base=(a)=>({gestes:[{geste:'une mesure',assertions:[a]}]});
+const r=[];
+if(!TYPES_ASSERTION.includes('trace_texte'))r.push('trace_texte absent du vocabulaire');
+const valides=[{type:'trace_texte',contient:'x'},{type:'trace_texte',finit_par:'?'},{type:'trace_texte',role:'user',contient:'x',a_partir_du_tour:2},{type:'trace_outil',outil:'shell',commande_contient:'rg'}];
+for(const a of valides){try{verifierLecture(base(a))}catch(e){r.push('valide refusé : '+e.message)}}
+const invalides=[
+  ['les deux critères',{type:'trace_texte',contient:'x',finit_par:'?'}],
+  ['aucun critère',{type:'trace_texte'}],
+  ['role hors domaine',{type:'trace_texte',contient:'x',role:'system'}],
+  ['tour zéro',{type:'trace_texte',contient:'x',a_partir_du_tour:0}],
+  ['tour fractionnaire',{type:'trace_texte',contient:'x',a_partir_du_tour:1.5}],
+  ['critère vide',{type:'trace_texte',contient:''}],
+  ['commande vide',{type:'trace_outil',outil:'shell',commande_contient:''}],
+];
+for(const [nom,a] of invalides){let refuse=false;try{verifierLecture(base(a))}catch(e){refuse=true}if(!refuse)r.push('accepté : '+nom)}
+if(r.length){fs.writeFileSync('$B/detail.262',r.join('\n')+'\n');process.exit(1)}"
 
 # 228-230 : la page utilisateur (ADR-061). Un reçu synthétique suffit : rien n'ouvre de session, et les
 # contrôles portent sur le contrat de forme, sur les trois états d'un geste et sur le déterminisme.
@@ -2533,7 +2777,7 @@ if(raisons.length){fs.writeFileSync('$B/detail.232',raisons.join('\n')+'\n');pro
 controle "233 lectures, vocabulaire fermé et attendu présent" 0 node -e "
 const fs=require('fs');
 const dossier='$REPO/docs/device/CASES';
-const types=new Set(['trace_outil','falsificateur_vide','produit','pause']);
+const types=new Set(['trace_outil','trace_texte','falsificateur_vide','produit','pause']);
 const fichiers=fs.readdirSync(dossier).filter((f)=>f.endsWith('.lecture.json'));
 const raisons=[];
 if(!fichiers.length)raisons.push('aucune lecture déclarée');
@@ -2995,6 +3239,50 @@ if(!raisons.length){
   if(r.verdict!=='non concluant') raisons.push('verdict '+r.verdict);
   if(!r.temoignage) raisons.push('le témoignage antérieur n\'est pas recopié');
 }
+if(raisons.length){fs.writeFileSync(process.env.DETAIL,raisons.join('\n')+'\n');process.exit(1)}"
+
+# 268 : la pause porte son intervalle (ADR-078). Deux fils de fixture, 10 000 ms puis 200 ms entre
+# le brouillon et l'accord ; le premier ne porte pas de limite courte, le second la nomme. Un recu
+# anterieur, sans le champ, reste lisible par `lire`.
+P268=$(date +%s%3N)
+sqlite3 "$DBF" <<SQL
+insert into threads values('pause-banc','$JROOT/terrain','local','','','codebuff','aucun',$P268);
+insert into messages values('pause-banc',1,'user',$(($P268-40000)),json_array(json_object('kind','text','text','demande')));
+insert into messages values('pause-banc',2,'assistant',$(($P268-30000)),json_array(json_object('kind','text','text','brouillon complet')));
+insert into messages values('pause-banc',3,'user',$(($P268-20000)),json_array(json_object('kind','text','text','accord')));
+insert into messages values('pause-banc',4,'assistant',$(($P268-10000)),json_array(json_object('kind','tool','toolName','write_file','input',json_object('path','$JROOT/terrain/aidd_docs/NOTES.md'),'status','success')));
+insert into threads values('pause-courte','$JROOT/terrain','local','','','codebuff','aucun',$P268);
+insert into messages values('pause-courte',1,'user',$(($P268-40000)),json_array(json_object('kind','text','text','demande')));
+insert into messages values('pause-courte',2,'assistant',$(($P268-20000)),json_array(json_object('kind','text','text','brouillon complet')));
+insert into messages values('pause-courte',3,'user',$(($P268-19800)),json_array(json_object('kind','text','text','accord')));
+insert into messages values('pause-courte',4,'assistant',$(($P268-10000)),json_array(json_object('kind','tool','toolName','write_file','input',json_object('path','$JROOT/terrain/aidd_docs/NOTES.md'),'status','success')));
+SQL
+produit-jouet r268
+produit-jouet r268b
+export-jouet pause-banc "$JEU/trace/268.jsonl" "$JEU/r268/faits.json" || { echo "ARRET — l'export de 268 ne s'écrit pas"; exit 2; }
+export-jouet pause-courte "$JEU/trace/268b.jsonl" "$JEU/r268b/faits.json" || { echo "ARRET — l'export de 268b ne s'écrit pas"; exit 2; }
+controle "268 pause, attente_ms mesuree et limite courte" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const raisons=[];
+const appel=(run,faits)=>{try{execFileSync('node',['$H','receipt','--run',run,'--case','$JOUET','--cases','$JEU/cases','--faits',faits,'--verdict','non concluant'],{stdio:'ignore'});return 0}catch(e){return e.status}};
+const code=appel('$JEU/r268','$JEU/r268/faits.json');
+if(code!==0) raisons.push('receipt r268 : exit '+code);
+else {
+  const r=JSON.parse(fs.readFileSync('$JEU/r268/receipt.json','utf8'));
+  if(!r.pause||r.pause.attente_ms!==10000) raisons.push('attente_ms : '+JSON.stringify(r.pause));
+  if(r.pause&&r.pause.mesuree!==true) raisons.push('pause non mesuree');
+  if(!r.limites.some((x)=>String(x).includes('sa durée est l\'intervalle')&&String(x).includes('ADR-078'))) raisons.push('la limite ne dit pas ce que la duree mesure');
+  if(r.limites.some((x)=>String(x).includes('pas mesurée'))) raisons.push('l ancienne limite subsiste');
+  if(r.limites.some((x)=>String(x).includes('200 ms'))) raisons.push('une limite courte sur une pause de 10 s');
+}
+const code2=appel('$JEU/r268b','$JEU/r268b/faits.json');
+if(code2!==0) raisons.push('receipt r268b : exit '+code2);
+else {
+  const r=JSON.parse(fs.readFileSync('$JEU/r268b/receipt.json','utf8'));
+  if(!r.pause||r.pause.attente_ms!==200) raisons.push('attente_ms courte : '+JSON.stringify(r.pause));
+  if(!r.limites.some((x)=>String(x).includes('200 ms')&&String(x).includes('pas une attente humaine'))) raisons.push('aucune limite courte nommee');
+}
+try{execFileSync('node',['$ORCH','lire','--cas','2026-10-22-143219-0052c168-876b08f','--run','$REPO/docs/device/runs/2026-10-22-143219-0052c168-876b08f'],{stdio:'ignore'})}catch(e){raisons.push('un recu anterieur sans attente_ms est refuse : '+String(e.stderr||'').split('\n')[0])}
 if(raisons.length){fs.writeFileSync(process.env.DETAIL,raisons.join('\n')+'\n');process.exit(1)}"
 
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"

@@ -1,6 +1,6 @@
 ---
 name: ORCHESTRATEUR — conduire un test de bout en bout
-description: Le runbook d'une personne qui dit « test ça » : les sept commandes dans l'ordre, les trois gestes humains que rien ne remplace, les quatre blocs de narration, et ce que la page ne recopie jamais du harnais
+description: Le runbook d'une personne qui dit « test ça » : les huit commandes dans l'ordre, les trois gestes humains que rien ne remplace, les quatre blocs de narration, et ce que la page ne recopie jamais du harnais
 type: runbook
 status: in-progress
 ---
@@ -16,6 +16,13 @@ status: in-progress
 
 **En une phrase.** Une personne qui ne connaît rien à ce dépôt dit « test ça » sur un skill, et
 l'orchestrateur la conduit jusqu'à un reçu, un verdict, et la phrase qui dit ce que le verdict atteste.
+
+> **Depuis le 2026-10-22.** Le test d'un skill se joue par défaut dans la **conversation courante**
+> ([ADR-074](../DECISIONS.md)) : pas de headless, pas de fil séparé, pas de reçu. Le run guidé se consigne
+> dans le gabarit de la [spec du 22:12](../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+> §3, et depuis le 2026-10-23 il **attache sa trace machine** par `tracer` et gagne un §5 bis
+> ([ADR-076](../DECISIONS.md), [spec du 2026-10-23](../tasks/2026_10/2026-10-23-030816-consolider-le-protocole/2026-10-23-030816-spec.md) §4.4).
+> Cette page reste le runbook d'un **run indépendant**, demandé explicitement.
 
 ## 1. Ce que la page ne fait pas
 
@@ -37,7 +44,7 @@ Aucun de ces trois gestes n'est attesté par une pièce : `ouvrir` les automatis
 Tout le reste se calcule, et chaque pièce écrite porte de quoi la vérifier : un chemin, une empreinte, un
 code de sortie.
 
-## 2. Les sept commandes, dans l'ordre
+## 2. Les huit commandes, dans l'ordre
 
 Chaque commande imprime son bloc d'étape avant de passer à la suivante ; une étape qui refuse arrête
 l'orchestrateur (`exit 1`), une commande mal formée sort en `2` sans rien écrire.
@@ -50,6 +57,8 @@ node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client au
 node docs/device/harness/orchestrer.mjs fin --cas <id> --run <dossier> --difference <texte> --phrase <texte> [--verdict <v>]
 node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer] [--cases <dir>]
 node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
+node docs/device/harness/orchestrer.mjs tracer --run <dossier> --fil <id> [--client auto|freebuff|opencode] [--store <dir>]
+node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis <iso>
 ```
 
 | Commande | Ce qu'elle dérive, jamais de la personne | Ce qu'elle écrit |
@@ -61,6 +70,7 @@ node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
+| `tracer` | le client du fil, la session normalisée, le compte des lignes et le `sha256` de l'export | `trace/echange.jsonl` et `trace/fil.json` dans un dossier de run guidé, et rien d'autre |
 
 `ouvrir` est la seule commande qui parle à un client au lieu de lire ses pièces ([ADR-059](../DECISIONS.md)).
 Elle lance `opencode serve` sur un port libre de `127.0.0.1` — ou se branche sur `--api`, dont le mot de
@@ -77,6 +87,14 @@ et le choix des options du formulaire — se dit dans `faits.json` : `suite` exi
 `--par`, et le reçu recopie ce bloc avec la limite qui dit qu'il est déclaré, jamais vérifié
 ([ADR-071](../DECISIONS.md)). Une personne qui a conduit le run écrit `humain` ; `ouvrir` a conduit, donc
 `agent`. Aucune valeur par défaut ne parle à la place de qui a tenu le volant.
+
+`tracer` est la commande du **run guidé** ([ADR-076](../DECISIONS.md)) : elle exporte le fil par la
+frontière des clients et écrit `trace/echange.jsonl` plus `trace/fil.json`, sans reçu ni verdict. Elle
+refuse un dossier qui ne porte pas exactement un `*-run-guide.md`, un fil inconnu, un client ambigu et une
+trace déjà écrite. `--liste --depuis <iso>` rend les fils récents du projet — identifiant, modèle, nombre
+de messages, début — sans aucun contenu, parce qu'un identifiant ne se devine pas. Le gabarit du run guidé
+reçoit alors son §5 bis : le fichier, son empreinte, ses lignes, sa source, et des preuves qui citent un
+`seq` au lieu d'un tour lu à la main.
 
 `porte` ajoute au bloc `▸ FIN` deux lignes qui ne viennent d'aucune lecture de la personne : la durée
 observée du cas et la taille de l'échantillon, avec ses réserves. Un cas jamais mesuré reçoit
@@ -195,8 +213,10 @@ l'arbre de travail dans la copie, et le porcelain que le gel enregistre le dit (
 `ouvrir` a ses propres refus, qui ne rejoignent pas le tableau : aucune porte, un texte dont le `sha256`
 n'est plus celui de la porte, un gel sans arbre `travail`, un attendu sans réponse figée, `opencode`
 introuvable, un serveur muet ou qui rend `401`, une session ou un message refusés, un champ de formulaire
-que la règle du §2 ne remplit pas, une question de plus que le cas n'en fige — formulaire ou texte —, et
-le délai dépassé. Chacun sort en `1` et nomme la pièce ; le banc les éprouve (224, 225, 227, 256).
+que la règle du §2 ne remplit pas, une question de plus que le cas n'en fige — formulaire ou texte —, une
+session arrêtée sur un texte qui ne demande rien alors qu'une réponse reste à jouer
+([ADR-077](../DECISIONS.md)), et le délai dépassé. Chacun sort en `1` et nomme la pièce, le fil compris
+pour les deux derniers ; le banc les éprouve (224, 225, 227, 256, 257, 266, 267).
 
 Le client est un fait du run, jamais un paramètre du cas ([ADR-044](../DECISIONS.md)). `suite` sans
 `--client` essaie Freebuff puis opencode : deux clients qui connaissent le fil sont un refus qui nomme

@@ -7,9 +7,9 @@ import { join } from "node:path";
 
 const VERDICTS = ["conforme", "ecart", "non concluant"];
 
-// Le vocabulaire fermé des lectures (spec du 2026-10-22 07:33, §3). Une assertion hors de ces trois
-// types n'est pas une mesure : elle se refuse, elle ne devient pas « non observé ».
-export const TYPES_ASSERTION = ["trace_outil", "falsificateur_vide", "produit", "pause"];
+// Le vocabulaire fermé des lectures (spec du 2026-10-22 07:33, §3 ; trace_texte ajouté par l'ADR-075).
+// Une assertion hors de ces types n'est pas une mesure : elle se refuse, elle ne devient pas « non observé ».
+export const TYPES_ASSERTION = ["trace_outil", "trace_texte", "falsificateur_vide", "produit", "pause"];
 
 // Le plafond de la page est de 80 lignes (spec §2) : au-delà de cinq produits, la table des preuves
 // renverrait au rapport technique plutôt que de le recopier.
@@ -103,6 +103,24 @@ export function verifierLecture(lecture, cas = null) {
       if (a.type === "trace_outil" && a.chemin_contient !== undefined && !nomme(a.chemin_contient)) {
         refus(`le geste « ${nom} » : un chemin de trace vide`);
       }
+      if (a.type === "trace_outil" && a.commande_contient !== undefined && !nomme(a.commande_contient)) {
+        refus(`le geste « ${nom} » : une commande de trace vide`);
+      }
+      if (a.type === "trace_texte") {
+        if (a.role !== undefined && a.role !== "assistant" && a.role !== "user") {
+          refus(`le geste « ${nom} » : un role de texte hors de assistant | user`);
+        }
+        const criteres = [a.contient, a.finit_par].filter((v) => v !== undefined);
+        if (criteres.length !== 1) {
+          refus(`le geste « ${nom} » : une assertion trace_texte porte contient ou finit_par, jamais les deux ni aucun`);
+        }
+        if (criteres.some((v) => !nomme(v))) {
+          refus(`le geste « ${nom} » : un critère de texte vide`);
+        }
+        if (a.a_partir_du_tour !== undefined && (!Number.isInteger(a.a_partir_du_tour) || a.a_partir_du_tour < 1)) {
+          refus(`le geste « ${nom} » : a_partir_du_tour doit être un entier strictement positif`);
+        }
+      }
       if (a.type === "falsificateur_vide" && !nomme(a.nom)) refus(`le geste « ${nom} » : une assertion falsificateur_vide sans nom`);
       if (a.type === "produit" && a.chemin_exact !== undefined && !nomme(a.chemin_exact)) {
         refus(`le geste « ${nom} » : un chemin de produit vide`);
@@ -121,8 +139,9 @@ function lireJson(chemin) {
 }
 
 function lireParts(chemin) {
-  if (!existsSync(chemin)) return { present: false, parts: [], temps: [] };
+  if (!existsSync(chemin)) return { present: false, parts: [], textes: [], temps: [] };
   const parts = [];
+  const textes = [];
   const temps = [];
   for (const ligne of readFileSync(chemin, "utf8").split(/\r?\n/)) {
     if (!ligne.trim()) continue;
@@ -134,9 +153,33 @@ function lireParts(chemin) {
     }
     if (part && Number.isFinite(part.ts)) temps.push(part.ts);
     if (part && part.kind === "tool" && typeof part.outil === "string") parts.push(part);
+    if (part && part.kind === "text" && typeof part.text === "string") {
+      textes.push({ seq: part.seq ?? null, role: part.role ?? null, text: part.text, ts: part.ts ?? null });
+    }
   }
-  return { present: true, parts, temps };
+  return { present: true, parts, textes, temps };
 }
+
+// Même règle que `ouvrir` (ADR-072) : la dernière ligne non vide hors bloc, espaces de fin retirés.
+function derniereLigneHorsBloc(texte) {
+  let dansBloc = false;
+  let ligne = "";
+  for (const brute of String(texte).split(/\r?\n/)) {
+    if (/^\s*```/.test(brute)) {
+      dansBloc = !dansBloc;
+      continue;
+    }
+    if (!dansBloc && brute.trim() !== "") ligne = brute.trimEnd();
+  }
+  return ligne;
+}
+
+const sansRappel = (texte) => !String(texte).trimStart().startsWith("<system-reminder>");
+const borne = (valeur) => {
+  const texte = String(valeur).replace(/\s+/g, " ").trim();
+  return texte.length > 60 ? `${texte.slice(0, 57)}…` : texte;
+};
+const tourDe = (part) => (Number.isFinite(part.seq) ? `du tour ${part.seq}` : "sans tour");
 
 // Trois états, jamais deux. « non observé » est le seul mot qui protège : il dit que la pièce manque.
 function etatDeGeste(geste, pieces) {
@@ -160,12 +203,74 @@ function etatDeGeste(geste, pieces) {
         details.push(`aucun outil « ${a.outil} » dans la trace`);
         continue;
       }
-      const trouve = memes.find((p) => !a.chemin_contient || String(p.chemin_outil || "").includes(a.chemin_contient));
+      let trouve = null;
+      let commandeManquante = false;
+      let contredit = false;
+      for (const p of memes) {
+        const cheminOk = !a.chemin_contient || String(p.chemin_outil || "").includes(a.chemin_contient);
+        let commandeOk = true;
+        if (a.commande_contient !== undefined) {
+          if (typeof p.commande !== "string") {
+            commandeManquante = true;
+            commandeOk = false;
+          } else {
+            commandeOk = p.commande.includes(a.commande_contient);
+          }
+        }
+        if (cheminOk && commandeOk) {
+          trouve = p;
+          break;
+        }
+        if (!cheminOk || (a.commande_contient !== undefined && typeof p.commande === "string" && !commandeOk)) {
+          contredit = true;
+        }
+      }
       if (trouve) {
-        details.push(lu(a.outil, a.chemin_contient));
+        details.push(a.commande_contient !== undefined
+          ? `commande ${tourDe(trouve)} : « ${borne(a.commande_contient)} »`
+          : lu(a.outil, a.chemin_contient));
+      } else if (contredit) {
+        faux = true;
+        details.push(a.commande_contient !== undefined
+          ? `${a.outil} sans « ${borne(a.commande_contient)} »`
+          : `${a.outil} sans « ${borne(a.chemin_contient)} »`);
+      } else if (commandeManquante) {
+        manque = true;
+        details.push(`${a.outil} sans commande lisible`);
       } else {
         faux = true;
-        details.push(`${a.outil} sans « ${a.chemin_contient} »`);
+        details.push(`${a.outil} sans « ${borne(a.chemin_contient || a.commande_contient || "")} »`);
+      }
+      continue;
+    }
+    if (a.type === "trace_texte") {
+      if (!pieces.trace.present) {
+        manque = true;
+        details.push("trace absente");
+        continue;
+      }
+      const role = a.role || "assistant";
+      const depuis = a.a_partir_du_tour;
+      const textes = pieces.trace.textes.filter((t) => t.role === role
+        && sansRappel(t.text)
+        && (depuis === undefined || (Number.isFinite(t.seq) && t.seq >= depuis)));
+      if (!textes.length) {
+        manque = true;
+        details.push(`aucun texte ${role} examinable dans la trace`);
+        continue;
+      }
+      const trouve = textes.find((t) => a.contient !== undefined
+        ? String(t.text).includes(a.contient)
+        : derniereLigneHorsBloc(t.text).endsWith(a.finit_par));
+      if (trouve) {
+        details.push(a.contient !== undefined
+          ? `texte ${tourDe(trouve)} : « ${borne(a.contient)} »`
+          : `texte ${tourDe(trouve)} : finit par « ${borne(a.finit_par)} »`);
+      } else {
+        faux = true;
+        details.push(a.contient !== undefined
+          ? `aucun texte ${role} ne contient « ${borne(a.contient)} »`
+          : `aucun texte ${role} ne finit par « ${borne(a.finit_par)} »`);
       }
       continue;
     }

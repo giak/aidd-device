@@ -50,9 +50,9 @@ l'objet qui la contredit le plus.
 ## L'état
 
 - **Existent** : cette page, `BOUNDARY.md`, la spec du run, le harnais (`harness/run.mjs`), son banc
-  (`harness/banc-harnais.sh`, 258 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
-  ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, sept commandes, ADR-038 à 042 et
-  ADR-059, et
+  (`harness/banc-harnais.sh`, 268 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
+  ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, huit commandes, ADR-038 à 042,
+  ADR-059 et ADR-076, et
   `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et quatre cas gelés (`CASES/` : la promesse
   mémoire, le cas jouet, `plan-simple` et `spike-annees`).
 - **Manquent** : le compte-rendu `ECART.md`.
@@ -101,7 +101,7 @@ redéclare (ADR-019).
 
 Le harnais : `docs/device/harness/run.mjs`. Pas de commande unique de lancement, et la dire unique
 serait mentir. Son banc, qui éprouve l'harnais sans ouvrir de session :
-`bash docs/device/harness/banc-harnais.sh` → `258/258 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
+`bash docs/device/harness/banc-harnais.sh` → `268/268 PASS` ([BANC.md](BANC.md)). La séquence d'un run :
 
 1. relever les deux `git status --porcelain` ([BOUNDARY.md](BOUNDARY.md)) ;
 2. écrire la demande, puis `freeze --racine <racine>` — l'empreinte de `CASES/`, la racine des espaces
@@ -119,7 +119,8 @@ de travail déclarée une seule fois, et l'état des arbres avant ;
 
 Ces six étapes à la main ont désormais un enchaînement : `node docs/device/harness/orchestrer.mjs`
 (`cas`, `porte`, `suite`, `fin`, `lire`) les appelle dans l'ordre, imprime quatre blocs de narration, et
-laisse à la personne les trois gestes humains ([ORCHESTRATEUR.md](ORCHESTRATEUR.md)).
+laisse à la personne les trois gestes humains ([ORCHESTRATEUR.md](ORCHESTRATEUR.md)). Pour un **run
+guidé**, `tracer` exporte le fil et écrit `trace/fil.json`, sans gel, porte ni reçu ([ADR-076](../DECISIONS.md)).
 
 ## Les noms du v6, et leur foyer
 

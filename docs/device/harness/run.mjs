@@ -2483,12 +2483,22 @@ function cmdReceipt(a) {
         Number(p.index) > Number(ouverture.index) &&
         Number(p.index) < Number(premiereEcriture.index));
   const reponsePause = reponsesAvantEcriture.length ? reponsesAvantEcriture[reponsesAvantEcriture.length - 1] : null;
+  // ADR-078 : la durée est l'écart entre la part qui précède immédiatement le tour `user` et ce tour.
+  // Deux instants absents ou non numériques rendent `null` ; un écart négatif (horloges mêlées) vaut 0.
+  const indicePause = reponsePause === null ? -1 : partiesLues.findIndex((p) => p.index === reponsePause.index);
+  const partAvantPause = indicePause > 0 ? partiesLues[indicePause - 1] : null;
+  const tsPause = reponsePause?.ts ?? null;
+  const tsAvantPause = partAvantPause?.ts ?? null;
+  const attenteMs = tsPause !== null && tsAvantPause !== null && Number.isFinite(Number(tsPause)) && Number.isFinite(Number(tsAvantPause))
+    ? Math.max(0, Math.round(Number(tsPause) - Number(tsAvantPause)))
+    : null;
   const pause = {
     requise: pauseRequise,
     mesuree: reponsePause !== null && premiereEcriture !== null,
     seq_reponse: reponsePause?.seq ?? null,
     seq_ecriture: premiereEcriture?.seq ?? null,
     outil_ecriture: premiereEcriture?.outil ?? null,
+    attente_ms: attenteMs,
   };
   const questionSansReponse = [];
   if (premiereEcriture) {
@@ -2902,8 +2912,11 @@ function cmdReceipt(a) {
     limites.push(`outil(s) dont le nom évoque une écriture et qui ne nomment aucun chemin : ${outilsEcritureSansChemin.slice(0, 3).join(", ")} — l'ordre écriture/tableau ne les classe pas (H6)`);
   }
   limites.push(
-    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée n'est pas mesurée, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069)",
+    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée est l'intervalle entre la part précédente et ce tour, jamais une attente humaine, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069, ADR-078)",
   );
+  if (pause.attente_ms !== null && pause.attente_ms < 1000) {
+    limites.push(`la pause a été donnée ${pause.attente_ms} ms après la part précédente : elle prouve un tour, pas une attente humaine`);
+  }
   if (outilsLectureSansChemin.size) {
     limites.push(`outil(s) de lecture sans chemin : ${[...outilsLectureSansChemin].slice(0, 3).join(", ")} — la lecture hors dossier ne les classe pas`);
   }

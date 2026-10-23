@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// L'orchestrateur interactif du test (spec §3, ADR-038 à 040) : cinq sous-commandes qui enchaînent les
-// commandes du harnais — cas, porte, suite, fin, lire — et rien de plus. Il ne réimplémente aucun contrôle :
+// L'orchestrateur interactif du test (spec §3, ADR-038 à 040) : les sous-commandes qui enchaînent
+// les commandes du harnais — cas, porte, suite, fin, lire — et rien de plus. Il ne réimplémente aucun contrôle :
 // chaque garantie (gel re-haché, porte écrite en dernier, produit collecté sous l'arbre gelé, reçu unique)
 // vit dans run.mjs, et le texte d'un refus est recopié tel quel, jamais reformulé. Ce fichier ne sait que
 // trois choses : dériver ce qu'une personne ne peut pas retaper (la demande, la commande, le chemin), dire
@@ -13,7 +13,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
-import { exportTrace as exporterTraceClient, session as sessionClient } from "./clients.mjs";
+import { exportTrace as exporterTraceClient, filsFreebuff, session as sessionClient } from "./clients.mjs";
 import { ecrireRapport } from "./rapport.mjs";
 import { ecrireResultat, verifierLecture } from "./resultat.mjs";
 
@@ -72,6 +72,11 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          sans modèle ni réseau. Un rapport déjà présent est refusé sans --remplacer ;
          fin l'écrit automatiquement quand le reçu et l'output viennent d'être écrits.
          La lecture du cas, quand elle existe, est vérifiée avant toute écriture
+  tracer --run <dir> --fil <id> [--client auto|freebuff|opencode] [--store <dir>]
+         exporte le fil d'un run guidé sous trace/ — echange.jsonl et fil.json — sans reçu
+         ni verdict. Refuse un dossier sans un unique *-run-guide.md, un fil inconnu, une
+         trace déjà écrite (ADR-076). --liste --depuis <iso> rend les fils récents du
+         projet, sans contenu de message, parce qu'un identifiant ne se devine pas
 
 codes : 0 tout est allé au bout ; 1 refus motivé, le texte du harnais recopié tel quel ;
         2 commande mal formée (option absente, valeur hors domaine).
@@ -807,7 +812,7 @@ function derniereLigneHorsBloc(texte) {
   return ligne;
 }
 
-function questionEnTexte(messages, reference, dejaRepondu = null) {
+function derniereReponseEnTexte(messages, reference, dejaRepondu = null) {
   let dernier = null;
   for (const m of messages) {
     const role = m.type ?? m.info?.role ?? m.role;
@@ -825,8 +830,9 @@ function questionEnTexte(messages, reference, dejaRepondu = null) {
   }
   if (!dernier) return null;
   const ligne = derniereLigneHorsBloc(dernier.texte);
-  return ligne.endsWith("?") ? { ligne, id: dernier.id } : null;
+  return ligne === "" ? null : { ligne, id: dernier.id };
 }
+
 
 // La règle de la spec §5 : l'option marquée Recommandé, sinon la première ; un tableau quand le champ
 // en est un ; le défaut d'un booléen ou d'un nombre ; et le refus pour tout le reste, parce qu'un texte
@@ -961,8 +967,15 @@ async function commandeOuvrir(argv) {
       }
       const messages = await messagesDe(api, fil, motDePasse);
       if (estInactive(messages, reference)) {
-        const question = questionEnTexte(messages, reference, dejaRepondu);
-        if (!question) break;
+        const texte = derniereReponseEnTexte(messages, reference, dejaRepondu);
+        if (!texte) break;
+        const question = texte.ligne.endsWith("?") ? texte : null;
+        if (!question) {
+          // ADR-077 : une session arrêtée sur un texte qui ne demande rien n'est pas un run fini.
+          // Tant qu'une réponse figée reste à jouer, la tenir pour un succès effacerait la pause.
+          if (jouees.length >= reponses.length) break;
+          throw new Refus(`la session ${fil} s'est arrêtée sans question après ${jouees.length} réponse(s) jouée(s) : dernière ligne « ${uneLigne(texte.ligne).slice(0, 80)} » — réponds à la main, puis « suite --fil ${fil} » ; le run n'est pas un succès à zéro question`);
+        }
         if (jouees.length >= reponses.length) {
           throw new Refus(`la session a posé ${jouees.length + 1} question(s) et ${cas} n'en fige que ${reponses.length} — la suivante se fige dans l'attendu, jamais à la volée`);
         }
@@ -973,7 +986,7 @@ async function commandeOuvrir(argv) {
         continue;
       }
       if (Date.now() > limite) {
-        throw new Refus(`la session n'est pas devenue inactive en ${minutes} min — elle est peut-être encore vivante, et rien ne se conclut d'un tour inachevé`);
+        throw new Refus(`la session ${fil} n'est pas devenue inactive en ${minutes} min — elle est peut-être encore vivante, et rien ne se conclut d'un tour inachevé ; le fil reste lisible par « suite --fil ${fil} »`);
       }
       await dormir(2000);
     }
@@ -1359,6 +1372,141 @@ function commandeFin(argv) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// tracer — la trace machine d'un run guidé (ADR-076). Elle exporte le fil par la frontière des
+// clients et écrit deux pièces sous trace/ : l'export normalisé et ce qu'il faut pour le citer.
+const isoDepuisMs = (ms) => {
+  const r = spawnSync("date", ["-d", "@" + Math.floor(Number(ms) / 1000), "-Is"], { encoding: "utf8" });
+  return (r.stdout || "").trim() || String(ms);
+};
+
+function commandeTracer(argv) {
+  const valeurs = litOptions(argv, {
+    run: "valeur", fil: "valeur", client: "valeur", store: "valeur", liste: "drapeau", depuis: "valeur",
+  });
+  const run = resolve(option(valeurs, "run", { requis: true, question: "le dossier du run guidé" }));
+  if (!existsSync(run) || !statSync(run).isDirectory()) {
+    refuse(`tracer : ${run} n'est pas un dossier — la trace s'écrit dans un dossier de run guidé, jamais dans un chemin inventé`);
+  }
+  const guides = readdirSync(run).filter((n) => n.endsWith("-run-guide.md"));
+  if (guides.length !== 1) {
+    refuse(`tracer : ${run} contient ${guides.length} fichier(s) en « -run-guide.md » — un run guidé porte un seul document, et un dossier d'un autre type se refuse`);
+  }
+  const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
+  const storeBrut = option(valeurs, "store", { defaut: process.env.HOME ? join(process.env.HOME, ".local/share/opencode") : "" });
+  if (!storeBrut) refuse("tracer : le store opencode se nomme par --store ou par HOME — sans lui, aucune session opencode ne se lit");
+  const store = resolve(storeBrut);
+  const cwd = toplevel(run) ?? run;
+
+  if (valeurs.liste) {
+    if (valeurs.fil !== undefined) usage("tracer : --liste et --fil s'excluent — une liste ne choisit pas un fil");
+    const depuis = option(valeurs, "depuis", { requis: true, question: "l'instant de départ de la liste (ISO 8601)" });
+    const ms = Date.parse(depuis);
+    if (!Number.isFinite(ms)) usage(`tracer : --depuis « ${depuis} » hors domaine : un instant ISO 8601`);
+    const bases = basesDuClient();
+    if (!bases.length) refuse(`tracer : aucune base Freebuff sous ${join(process.env.HOME || "~", ".config/freebuff-desktop/projects")} — --liste lit le client, elle ne le devine pas`);
+    const fils = [];
+    for (const base of bases) {
+      let lus;
+      try {
+        lus = filsFreebuff(ms, { base });
+      } catch (e) {
+        refuse(`tracer : ${e.message}`);
+      }
+      for (const f of lus) fils.push(f);
+    }
+    fils.sort((a, b) => Number(b.created_at) - Number(a.created_at));
+    ecrit([
+      `▸ FILS — ${fils.length} depuis ${depuis}`,
+      ...(fils.length
+        ? fils.map((f) => `  ${f.id}  ${f.modele ?? "(sans modèle)"}  ${f.messages} message(s)  ${isoDepuisMs(f.created_at)}`)
+        : ["  aucun fil postérieur à cette date"]),
+      "  aucun contenu de message n'est imprimé",
+      "",
+    ]);
+    process.exit(0);
+  }
+
+  const fil = option(valeurs, "fil", { requis: true, question: "l'identifiant du fil" });
+  const trace = join(run, "trace", "echange.jsonl");
+  const filJson = join(run, "trace", "fil.json");
+  if (existsSync(trace) || existsSync(filJson)) {
+    refuse(`tracer : ${existsSync(trace) ? trace : filJson} existe déjà — une trace ne se réécrit pas, elle se relit`);
+  }
+  let client;
+  let base = null;
+  if (clientVoulu === "freebuff") {
+    const essai = essaiFreebuff(fil);
+    if (!essai.ok) refuse(`tracer : Freebuff ne connaît pas le fil « ${fil} » — ${essai.raison} ; nommer le bon fil (refus 7)`);
+    client = "freebuff";
+    base = essai.base;
+  } else if (clientVoulu === "opencode") {
+    const essai = essaiOpencode(fil, { store, cwd });
+    if (!essai.ok) refuse(`tracer : opencode ne connaît pas le fil « ${fil} » — ${essai.raison} ; nommer la bonne session (refus 7)`);
+    client = "opencode";
+  } else {
+    const fb = essaiFreebuff(fil);
+    const oc = essaiOpencode(fil, { store, cwd });
+    if (fb.ok && oc.ok) {
+      refuse(`tracer : le fil « ${fil} » existe dans les deux clients (Freebuff ${fb.base}, opencode ${store}) — un fil a un client, et --client le nomme (refus 10)`);
+    }
+    if (!fb.ok && !oc.ok) {
+      refuse(`tracer : le fil « ${fil} » n'existe dans aucune base Freebuff, et opencode ne le connaît pas non plus — Freebuff : ${fb.raison} ; opencode : ${oc.raison} (refus 11)`);
+    }
+    client = fb.ok ? "freebuff" : "opencode";
+    base = fb.ok ? fb.base : null;
+  }
+
+  let sess;
+  try {
+    sess = sessionClient(client, fil, client === "freebuff" ? { base } : { store, cwd });
+  } catch (e) {
+    refuse(`tracer : ${e.message}`);
+  }
+  mkdirSync(join(run, "trace"), { recursive: true });
+  let exp;
+  try {
+    exp = exporterTraceClient(client, fil, client === "freebuff"
+      ? { base, dest: trace }
+      : { store, cwd, dest: trace, brut: join(run, "trace", "export-brut.json") });
+  } catch (e) {
+    refuse(`tracer : ${e.message}`);
+  }
+  const contenu = readFileSync(trace, "utf8");
+  const lignes = contenu.split("\n").filter((l) => l.trim() !== "");
+  if (!lignes.length) refuse(`tracer : l'export de ${fil} est vide — une trace vide ne se cite pas`);
+  const lues = lignes.map((l, i) => {
+    try {
+      return JSON.parse(l);
+    } catch {
+      return refuse(`tracer : la ligne ${i + 1} de ${trace} n'est pas du JSON — la trace ne se cite pas`);
+    }
+  });
+  const piece = {
+    type: "fil",
+    client,
+    application: sess.application ?? null,
+    identifiant: sess.identifiant ?? fil,
+    modele: sess.modele ?? null,
+    dossier: run,
+    exporte_le: dateIso(),
+    messages: lignes.length,
+    premier: { seq: lues[0].seq ?? null, ts: lues[0].ts ?? null },
+    dernier: { seq: lues[lues.length - 1].seq ?? null, ts: lues[lues.length - 1].ts ?? null },
+    trace: { chemin: trace, sha256: exp.sha256, lignes: lignes.length, source: exp.source, commande: exp.commande },
+  };
+  writeFileSync(filJson, JSON.stringify(piece, null, 2) + "\n", "utf8");
+  ecrit([
+    `▸ TRACE — ${fil}`,
+    `  fichier             : ${trace}`,
+    `  empreinte           : ${exp.sha256} (${lignes.length} ligne(s))`,
+    `  source              : ${client}, ${sess.modele ?? "(modèle non nommé)"}`,
+    "  à lire ensuite      : remplir le §5 bis du run-guide et citer les seq",
+    "",
+  ]);
+  process.exit(0);
+}
+
+// ---------------------------------------------------------------------------------------------
 // lire — aucune écriture : deux pièces relues, le même bloc de verdict.
 
 function commandeLire(argv) {
@@ -1402,7 +1550,7 @@ function commandeRapport(argv) {
 const [commande, ...reste] = process.argv.slice(2);
 const COMMANDES = {
   cas: commandeCas, porte: commandePorte, ouvrir: commandeOuvrir, suite: commandeSuite,
-  fin: commandeFin, lire: commandeLire, rapport: commandeRapport,
+  fin: commandeFin, lire: commandeLire, rapport: commandeRapport, tracer: commandeTracer,
 };
 if (!commande || commande === "--help" || commande === "-h") {
   process.stdout.write(USAGE + "\n");

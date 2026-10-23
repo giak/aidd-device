@@ -1,0 +1,146 @@
+{
+  "cas": "2026-10-22-211800-task-config-manquante",
+  "type": "case-expected",
+  "statut": "attendu rempli le 2026-10-22T21:18:00+02:00 — le falsificateur de promesse est écrit ; le re-gel qui suit hache ces deux pièces avant l'ouverture (ADR-039)",
+  "demande": {
+    "fichier": "CASES/2026-10-22-211800-task-config-manquante.request.md",
+    "texte_verbatim": "Read the skill at $RACINE/2026-10-22-211800-task-config-manquante/framework-origin/plugins/aidd-pm/skills/10-task/SKILL.md and use it on this repository.\nCe dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README. Crée une Task interne pour ajouter un contrôle de démarrage qui échoue clairement quand `data/config.json` manque, sans implémenter ce contrôle. Montre d'abord le brouillon complet de la Task et attends mon accord sans avoir écrit un seul fichier. Après accord, écris la Task sous `aidd_docs/backlog/tasks/refuser-config-manquante.md`, et rien d'autre.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Continue : écris la Task sous aidd_docs/backlog/tasks/refuser-config-manquante.md, sans rien demander d'autre.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "`origine/framework` (copie de /home/giak/aidd-src-20261022-2115/framework) et `origine/terrain` (copie de /home/giak/aidd-src-20261022-2115/terrain), puis leurs clones détachés `framework-origin` et `terrain`",
+    "repertoire_de_travail": "$RACINE/2026-10-22-211800-task-config-manquante/ — la valeur de la racine est celle que le gel déclare (racine_espace_de_travail)",
+    "gel": "CASES/2026-10-22-211800-task-config-manquante.freeze.json — pris après l'écriture de ce squelette",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans l'original du terrain",
+      "lire sous docs/device/CASES/ (l'attendu y vit)",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste"
+    ]
+  },
+  "cloisonnement": {
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "scratch": "terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "attendu": "La session lit le skill 10-task de la révision sous test, montre le brouillon complet d'une Task interne pour un contrôle de démarrage qui refuse une configuration obligatoire manquante, et attend l'accord sans écrire un seul fichier ; après la réponse figée, elle écrit l'unique fichier `terrain/aidd_docs/backlog/tasks/refuser-config-manquante.md`, avec `type: task`, `status: proposed` et les sections Outcome, Scope, Done When et Completion Evidence, et rien d'autre sous `terrain/`.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire le skill 10-task et les fichiers d'action qu'il nomme, dans `framework-origin`",
+        "preuve": "la trace : les lectures du skill, sans aucune écriture avant elles"
+      },
+      {
+        "rang": 2,
+        "geste": "montrer le brouillon complet de la Task et attendre l'accord",
+        "preuve": "le message qui porte le brouillon ; aucune écriture sous `terrain/` avant la réponse figée"
+      },
+      {
+        "rang": 3,
+        "geste": "après la réponse figée, écrire l'unique Task au chemin demandé",
+        "preuve": "le fichier sous `terrain/aidd_docs/backlog/tasks/`, et sa naissance postérieure à la réponse"
+      },
+      {
+        "rang": 4,
+        "geste": "terminer par un court rapport du chemin écrit",
+        "preuve": "le dernier message de la trace, nommant le chemin écrit"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/backlog/tasks/",
+      "regle": "un seul fichier, à ce chemin exact : `aidd_docs/backlog/tasks/refuser-config-manquante.md` ; frontmatter `type: task`, `status: proposed` ; sections `Outcome`, `Scope` avec `Includes` et `Excludes`, `Done When`, `Completion Evidence` ; pas de `Cancellation` ; aucun plan ni code",
+      "arbre_attendu": [
+        "aidd_docs/backlog/tasks/refuser-config-manquante.md"
+      ]
+    },
+    "tableau": {
+      "requis": false
+    },
+    "pause": {
+      "requis": true
+    }
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F3",
+      "condition": "un fichier produit hors des destinations que la demande nomme",
+      "tue": "la conformité : le produit dépasse ce que la demande prescrit",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F4",
+      "condition": "le fichier que la demande interdit existe néanmoins",
+      "tue": "la conformité",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail",
+      "tue": "le cloisonnement → non concluant",
+      "mesure": "les git status --porcelain du reçu, plus le birth de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe et l'arbre de travail n'a pas bougé",
+      "tue": "le cas : rien n'a été écrit → non concluant",
+      "mesure": "le manifeste du produit contre l'arbre avant/après"
+    },
+    {
+      "id": "F7",
+      "condition": "le produit est identique à une empreinte antérieure au run",
+      "tue": "le cas : un fichier recopié n'est pas un travail",
+      "mesure": "les sha256 du manifeste contre ceux du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier produit",
+      "tue": "le cas : la session n'a rien produit → non concluant",
+      "mesure": "l'arbre du produit collecté"
+    },
+    {
+      "id": "F9",
+      "condition": "la session a lu le skill hors de la révision sous test",
+      "tue": "la conformité : ce n'est plus ce skill qui est testé",
+      "mesure": "les chemins lus dans la trace exportée"
+    },
+    {
+      "id": "P",
+      "condition": "aucun fichier au chemin exact, ou un fichier qui ne porte ni `type: task`, ni `status: proposed`, ni les sections Outcome, Scope, Done When et Completion Evidence",
+      "tue": "la promesse du skill : une Task bornée, persistée au chemin qu'il nomme, écrite après l'accord",
+      "mesure": "le produit collecté, lu par le juge : son chemin et son contenu"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "le contenu de la Task est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes, le chemin et les sections, jamais la justesse du texte"
+    },
+    {
+      "attendu": "la session n'a posé aucune question",
+      "critere": "le skill peut clarifier une question à la fois ; la seconde réponse figée couvre une question qui ne demande pas l'écriture"
+    },
+    {
+      "attendu": "un handoff vers une Story, un Defect ou un Spike est accepté",
+      "critere": "la demande est une Task interne, sans valeur indépendante ; un handoff serait un écart de qualification à analyser, pas le produit attendu"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte attendu_vu: oui et le cas se conclut non concluant"
+}

@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-22-211800-task-config-manquante",
+  "passe_le": "2026-10-22T21:14:45.677435491+0200",
+  "passe_le_epoch": 1792696485,
+  "repertoire": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-22-211800-task-config-manquante.freeze.json",
+    "empreinte": "95c42aa95e667e5767bc69626b9a9c11618c1458601cf5d7945ad09f0c688381",
+    "gele_le_epoch": 1792696401
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/terrain",
+    "head": "416ec1f",
+    "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/test/aidd-installation"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-22-211445-95c42aa9-c085712/texte-a-remettre.txt",
+    "sha256": "a428cad4a61e2a09d43a1068148e3b9b82a47365a9cbec6ccf1a4d103952d883",
+    "octets": 633
+  }
+}

@@ -53,8 +53,8 @@ l'objet qui la contredit le plus.
   (`harness/banc-harnais.sh`, 268 contrôles, [BANC.md](BANC.md)), l'orchestrateur interactif
   ([ORCHESTRATEUR.md](ORCHESTRATEUR.md) et `harness/orchestrer.mjs`, huit commandes, ADR-038 à 042,
   ADR-059 et ADR-076, et
-  `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et quatre cas gelés (`CASES/` : la promesse
-  mémoire, le cas jouet, `plan-simple` et `spike-annees`).
+  `harness/rapport.mjs` pour la commande `rapport`, ADR-050) et cinq cas gelés (`CASES/` : la promesse
+  mémoire, le cas jouet, `plan-simple`, `spike-annees` et `task-config-manquante`).
 - **Manquent** : le compte-rendu `ECART.md`.
 - **Deux clients** : Freebuff (base `desktop-v2.db`, lu en `-readonly`, `sqlite3` requis) et opencode
   (session exportée par `opencode session export`, `opencode` requis ; son store est lu, jamais écrit).

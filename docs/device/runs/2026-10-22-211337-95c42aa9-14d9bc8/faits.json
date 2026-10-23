@@ -1,0 +1,30 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e9af73e59ffeup7mD3IqP3Ow8D",
+    "modele": "openrouter/z-ai/glm-5.3",
+    "ouverte_par": "Buffy",
+    "ouverte_le": "2026-10-22T21:13:55+02:00"
+  },
+  "horodatage_debut": "2026-10-22T21:13:56+02:00",
+  "horodatage_fin": "2026-10-22T21:14:14+02:00",
+  "repertoire_de_travail": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-211337-95c42aa9-14d9bc8/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-22-211337-95c42aa9-14d9bc8/trace/export-brut.json",
+    "commande": "opencode session export ses_e9af73e59ffeup7mD3IqP3Ow8D"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "Buffy",
+    "quand": "2026-10-22T21:14:14+02:00"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "cas": "2026-10-22-211800-task-config-manquante",
+  "racine_espace_de_travail": "/home/giak/aidd-device-work",
+  "gele_le": "2026-10-22T21:13:21.168846454+0200",
+  "gele_le_epoch": 1792696401,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-211800-task-config-manquante --cases docs/device/CASES --refreeze --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/framework --arbre terrain=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain",
+  "empreinte": "95c42aa95e667e5767bc69626b9a9c11618c1458601cf5d7945ad09f0c688381",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-22-211800-task-config-manquante.expected.json",
+      "sha256": "a29320007991780088e1d8ae03a9d178d7896089a1d485e15c2a333d33c3ddc7",
+      "taille": 7326,
+      "birth": "2026-10-22 21:11:34.760311483 +0200",
+      "birth_epoch": 1792696294
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-22-211800-task-config-manquante.request.md",
+      "sha256": "08378bfabf814c71df85342bd79a3f0b5c679a86b3f023b482b3ab21951a0a47",
+      "taille": 3312,
+      "birth": "2026-10-22 21:11:34.758311400 +0200",
+      "birth_epoch": 1792696294
+    }
+  ],
+  "references": [],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/projects/audio-sync-tool"
+        }
+      ],
+      "refs_distants": [
+        "origin/main",
+        "origin/test/aidd-installation"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/test/aidd-installation"
+      ]
+    }
+  ]
+}

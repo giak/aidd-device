@@ -29,5 +29,7 @@ question: Qu'est-ce qui reste ouvert ?
 
 ## 2. Ce que cette page ne porte pas
 
-Ni inventaire des documents (il est dans [INDEX](INDEX.md)), ni commits (ils sont dans `git log`), ni
-prose d'historique (elle est dans le journal). Un chiffre recopié ici serait un second foyer.
+Ni inventaire des documents (il est dans [INDEX](INDEX.md)), ni runs : l'[index généré des
+runs](device/runs/INDEX.md) les compte par mode (indépendants, guidés, avortés, manuels) et porte leurs
+limites. Ni commits (ils sont dans `git log`), ni prose d'historique (elle est dans le journal). Un chiffre
+recopié ici serait un second foyer.

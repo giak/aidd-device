@@ -74,7 +74,7 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          La lecture du cas, quand elle existe, est vérifiée avant toute écriture
   tracer --run <dir> --fil <id> [--client auto|freebuff|opencode] [--store <dir>]
          exporte le fil d'un run guidé sous trace/ — echange.jsonl et fil.json — sans reçu
-         ni verdict. Refuse un dossier sans un unique *-run-guide.md, un fil inconnu, une
+         ni verdict. Refuse un dossier sans run.json guidé, un mode autre que guide, une
          trace déjà écrite (ADR-076). --liste --depuis <iso> rend les fils récents du
          projet, sans contenu de message, parce qu'un identifiant ne se devine pas
 
@@ -1407,9 +1407,24 @@ function commandeTracer(argv) {
   if (!existsSync(run) || !statSync(run).isDirectory()) {
     refuse(`tracer : ${run} n'est pas un dossier — la trace s'écrit dans un dossier de run guidé, jamais dans un chemin inventé`);
   }
-  const guides = readdirSync(run).filter((n) => n.endsWith("-run-guide.md"));
-  if (guides.length !== 1) {
-    refuse(`tracer : ${run} contient ${guides.length} fichier(s) en « -run-guide.md » — un run guidé porte un seul document, et un dossier d'un autre type se refuse`);
+  const cheminRun = join(run, "run.json");
+  if (!existsSync(cheminRun)) {
+    refuse(`tracer : ${run} n'a pas run.json — la trace se lit par run.json.pieces, jamais par un motif de nom`);
+  }
+  let decl;
+  try {
+    decl = JSON.parse(readFileSync(cheminRun, "utf8"));
+  } catch {
+    refuse(`tracer : ${cheminRun} n'est pas du JSON — un run.json se lit ou se refuse`);
+  }
+  if (decl.mode !== "guide") {
+    refuse(`tracer : ${run} a le mode « ${decl.mode} » — tracer ne lit qu'un run guidé`);
+  }
+  if (!Array.isArray(decl.pieces) || !decl.pieces.includes("run-guide.md")) {
+    refuse(`tracer : ${run} ne cite pas run-guide.md dans pieces — la spec du run guidé le nomme`);
+  }
+  if (!existsSync(join(run, "run-guide.md"))) {
+    refuse(`tracer : ${run}/run-guide.md est absent — pieces le cite, le fichier manque`);
   }
   const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
   const storeBrut = option(valeurs, "store", { defaut: process.env.HOME ? join(process.env.HOME, ".local/share/opencode") : "" });

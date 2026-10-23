@@ -82,9 +82,11 @@ Champs requis : `type`, `mode`, `statut`, `skill`, `terrain`, `conduite`, `rappo
 Nouveau fichier `docs/device/harness/runs.mjs`, sans réseau, sans session.
 
 ```text
-node docs/device/harness/runs.mjs --verifier
-node docs/device/harness/runs.mjs --index
+node docs/device/harness/runs.mjs --verifier [--runs <dossier>]
+node docs/device/harness/runs.mjs --index [--runs <dossier>]
 ```
+
+`--runs` lit un autre dossier que `docs/device/runs/`, pour le banc ; sans lui, le dossier du dépôt.
 
 `--verifier` parcourt `docs/device/runs/*/` et refuse, en `1`, au premier défaut :
 
@@ -108,8 +110,9 @@ un index périmé : l'index est une vue, pas une source, et sa dérive se mesure
 
 ## 5. `INDEX.md`
 
-Généré, jamais édité. Première ligne : `<!-- généré par runs.mjs — ne pas éditer -->`. Puis un tableau
-trié par nom de dossier :
+Généré, jamais édité. Première ligne : `<!-- généré par runs.mjs — ne pas éditer -->`. Puis la ligne des
+comptes par mode, calculée à chaque écriture (`32 runs : 19 indépendants, 3 guidés, 8 avortés, 2 manuels.`).
+Puis un tableau trié par nom de dossier :
 
 ```text
 | Run | Date | Mode | Cas / skill | Statut ou verdict | Limites | Pièces |
@@ -157,21 +160,28 @@ Trois run-guides réels, déplacés par `git mv`, contenu inchangé hors liens :
 - [Spec du 22:12](../2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md) : §2
   (chemin), §3 (gabarit et `run.json`), §6 (critère de sortie).
 - [ADR-076](../../../DECISIONS.md) et `tracer` : lecture par `run.json.pieces`.
-- [ORCHESTRATEUR](../../../device/ORCHESTRATEUR.md) : `runs.mjs`, la trace et le foyer du guidé.
-- [DASHBOARD](../../../DASHBOARD.md), [README](../../../../README.md) : un lien vers `INDEX.md`, des
-  comptes séparés « reçus », « guidés », « avortés », « manuels ».
-- [ARCHITECTURE](../../../ARCHITECTURE.md), [EXPLICATION](../../../EXPLICATION.md),
+- [PROTOCOLE](../../../PROTOCOLE.md) : `runs.mjs`, la trace et le foyer du guidé.
+- [DASHBOARD](../../../DASHBOARD.md), [README](../../../../README.md), [la carte](../../../INDEX.md) : un
+  lien vers `INDEX.md`, qui porte seul les comptes par mode (indépendants, guidés, avortés, manuels) ; une
+  page qui ne calcule pas un chiffre ne le recopie pas ([INDEX](../../../INDEX.md) §2).
+- [ARCHITECTURE](../../../ARCHITECTURE.md), [guide/explication](../../../guide/explication.md),
   [PFD](../../../PFD.md), [guide utilisateur](../../../guide/guide-utilisateur.md) : le foyer unique.
-- [BANC](../../../device/BANC.md) : les quatre contrôles ci-dessous.
+- [BANC](../../../BANC.md) : les quatre contrôles ci-dessous.
+
+Les chemins `device/BANC.md`, `device/ORCHESTRATEUR.md` et `EXPLICATION.md` sont des **notes datées** :
+elles ne s'éditent pas, et un lien daté vers elles garde le nom d'alors.
 
 ## 9. Le banc
 
-Quatre contrôles, **269** à **272**, et le banc passe à **272**.
+Quatre contrôles, **272** à **275**, et le banc passe à **275**. Les numéros 269 et 270 sont pris par
+l'[ADR-080](../../../DECISIONS.md) et 271 par le contrôle de la révision gelée ([journal, Séance
+134](../../../trace.md)) : le refus du dépôt du skill est passé avant la centralisation, et deux contrôles
+ne peuvent pas porter le même numéro.
 
-- **269** : `runs.mjs --verifier` refuse un dossier guidé qui porte un reçu.
-- **270** : il refuse un guidé sans limite, et accepte le même dossier avec une limite.
-- **271** : `--index` écrit l'index ; `--verifier` refuse un index périmé, puis passe après `--index`.
-- **272** : `tracer` lit `run.json.pieces` ; un dossier qui porte `run-guide.md` et une spec nommée
+- **272** : `runs.mjs --verifier` refuse un dossier guidé qui porte un reçu.
+- **273** : il refuse un guidé sans limite, et accepte le même dossier avec une limite.
+- **274** : `--index` écrit l'index ; `--verifier` refuse un index périmé, puis passe après `--index`.
+- **275** : `tracer` lit `run.json.pieces` ; un dossier qui porte `run-guide.md` et une spec nommée
   `*-spec-run-guide.md` est accepté, un dossier sans `run.json` est refusé.
 
 ## 10. Ce qui rendrait cette spec fausse
@@ -184,8 +194,8 @@ Quatre contrôles, **269** à **272**, et le banc passe à **272**.
 
 ## 11. L'ordre
 
-1. `runs.mjs`, ses refus et les contrôles 269 à 272.
-2. `tracer` par `run.json.pieces`, contrôle 272.
+1. `runs.mjs`, ses refus et les contrôles 272 à 274.
+2. `tracer` par `run.json.pieces`, contrôle 275.
 3. La migration des trois run-guides, des deux dossiers manuels et des liens.
 4. L'index généré, les pages et les comptes.
 

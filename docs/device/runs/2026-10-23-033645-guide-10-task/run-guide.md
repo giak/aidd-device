@@ -8,7 +8,7 @@ status: done
 # Déroulé du test de `10-task`
 
 > 2026-10-23, Séance 126. Ce fichier suit le gabarit du run guidé
-> ([spec du 2026-10-22 22:12](../2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)),
+> ([spec du 2026-10-22 22:12](../../../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)),
 > avec une section **0** de plus : le déroulé et ses validations. Il se remplit au fur et à mesure ; une
 > étape n'est close que par une validation de la personne, et une validation refusée rouvre l'étape au
 > lieu d'ouvrir la suivante.
@@ -18,7 +18,7 @@ status: done
 | # | Étape | Ce qui est fait | Preuve | État |
 | --- | --- | --- | --- | --- |
 | 1 | Choisir le skill | `10-task` du plugin `aidd-pm` : il produit une Task de backlog, savoir-faire borné et vérifiable, sans code | `SKILL.md` lu (235 lignes pour le skill entier, `wc -l`) | fait |
-| 2 | Présenter l'épreuve | les six champs ci-dessous, puis le §1 comme référence | [spec de l'étape](../2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) ; `SKILL.md`, trois `actions/`, six `references/` et `assets/task-template.md` lus | **validée le 2026-10-23 à 03:48** |
+| 2 | Présenter l'épreuve | les six champs ci-dessous, puis le §1 comme référence | [spec de l'étape](../../../tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) ; `SKILL.md`, trois `actions/`, six `references/` et `assets/task-template.md` lus | **validée le 2026-10-23 à 03:48** |
 | 3 | Ce que la Task doit produire pour un vrai projet | le §2 (demande) et le §3 (produit attendu) : projet, Task visée, chemin et contenu | `audio-sync-tool` à `416ec1f` ; `app.py` sans contrôle de configuration (`grep` vide) | **validée le 2026-10-23 à 03:53** |
 | 4 | Tester dans un vrai projet | le run guidé, puis les §4 à §8 du gabarit | clone `2026-10-23-035316-task-config-terrain`, tête `416ec1f`, porcelain `0` | **terminé le 2026-10-23 à 03:58** |
 
@@ -56,7 +56,7 @@ indépendante ([ADR-074](../../../DECISIONS.md)). Il ne dit rien non plus de la 
 projet.
 
 Cette présentation est la règle du protocole depuis le 2026-10-23
-([spec](../2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)) : un champ manquant
+([spec](../../../tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)) : un champ manquant
 vaut présentation non faite, et aucune demande n'est écrite avant ta validation.
 
 **Validée le 2026-10-23 à 03:48.** L'étape 3 s'ouvre : le projet réel, puis la Task à produire.

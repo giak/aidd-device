@@ -2329,6 +2329,15 @@ leur sens ; c'est la portée de la preuve qui est bornée.
 **Falsificateur** : un run guidé présenté comme indépendant ; un `conforme` publié sans la limite
 d'indépendance ; `ouvrir` réintroduit dans ce mode sans nouvelle ADR.
 
+**Rectification (2026-10-23).** Le journal guidé vit sous `docs/device/runs/`, un dossier par run :
+`<horodatage>-guide-<slug>/run-guide.md`, plus `run.json` ([ADR-081](DECISIONS.md)). Ce fichier déclare
+`mode: guide`, le `statut` de forme (`forme tenue`, `forme non tenue`, `non observé`), `skill` (nom, chemin,
+révision), `terrain` (chemin, tête, porcelain), `conduite`, `rapport_le`, `consigne_le`, `pertinence`,
+`limites`, `pieces`, et `verdict: null` : un guidé ne porte ni `receipt.json`, ni `gate.json`, ni
+`output.json`. `pertinence.comme_preuve_du_skill` est faux dès que `session_non_independante` est déclarée,
+et une `revision: null` exige `revision_non_consignee`. `runs.mjs` vérifie ces défauts et les indexe ; un
+guidé reste sans verdict, son statut dit la forme, pas la valeur.
+
 ## ADR-075 — Les traces vérifiables se lisent dans `lecture.json`, pas dans un troisième bloc (2026-10-22)
 
 **Contexte.** L'ADR-073 a nommé un bloc `attendu_details.traces[]`. La mesure du 2026-10-22 ne le trouve
@@ -2513,3 +2522,30 @@ n'est pas joué ici.
 
 **Falsificateur** : un skill du framework encore refusé ; un skill du dépôt du dispositif accepté ; un
 skill dans un `travail` accepté ; un contrôle retiré au lieu d'être repointé ; un cas fabriqué sans gel.
+
+## ADR-081 — Les runs se classent par `run.json`, et `tracer` le lit (2026-10-23)
+
+**Contexte.** L'[ADR-076](DECISIONS.md) exigeait du dossier de run « exactement un `*-run-guide.md` » : la
+spec du 22:12, nommée elle aussi `*-run-guide.md`, était confondue avec un run, et un run guidé dont la
+pièce est déclarée ne pouvait pas être lu autrement que par un motif de nom. La spec du 08:22 centralise
+les runs sous `docs/device/runs/`, avec un `run.json` qui porte le mode, le statut, la pertinence et les
+limites.
+
+**Décision.** `runs.mjs` vérifie un dossier de runs et écrit son `INDEX.md` ; `tracer` lit `run.json`,
+exige `mode: guide`, une liste `pieces` qui cite `run-guide.md` et le fichier présent. Le dossier de runs
+reste `docs/device/runs/` ; `--runs` sert au banc. Le point de l'ADR-076 qui exigeait « exactement un
+`*-run-guide.md` » est supersédé ; le reste de l'ADR-076 tient.
+
+**Conséquences.** Contrôles 272 à 275, banc à **275**. `tracer` refuse désormais les trois run-guides
+d'avant la centralisation, qui n'ont pas de `run.json`, jusqu'à leur migration (spec du 08:22, étape 3).
+L'index réel n'est pas écrit tant que les deux dossiers non classés n'ont pas leur `run.json`.
+
+**Ce que ce n'est pas** : une preuve que l'index dit vrai, ni une attestation d'un run guidé. L'index est
+une vue ; le vérificateur contrôle la forme, pas la vérité des limites.
+
+**Falsificateur** : un guidé accepté avec un reçu ; un index accepté après édition à la main ; un run-guide
+lu encore par le motif `*-run-guide.md`.
+
+**Rectification (2026-10-23).** La migration a eu lieu : les trois run-guides vivent sous
+`docs/device/runs/`, chacun avec son `run.json`, et l'index réel est écrit ([INDEX](device/runs/INDEX.md),
+Séance 136).

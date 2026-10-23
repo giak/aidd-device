@@ -10,7 +10,7 @@ status: open
 > 2026-10-23, Séance 124 (suite). Sources : [Séance 121](../trace.md) (le délai qui coupe `ouvrir`),
 > [run `2026-10-22-211526`](../device/runs/2026-10-22-211526-95c42aa9-b259cc8/gate.json) et
 > [brainstorm du 22 octobre](2026-10-22-210512-processus-de-test-skill-10-task.md) (le brouillon fini par
-> « : »), [run guidé du 21:37](../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-run-guide.md),
+> « : »), [run guidé du 21:37](../device/runs/2026-10-22-221207-guide-10-task/run-guide.md),
 > [reçu du 151155](../device/runs/2026-10-22-151155-bee028f8-e2df6dc/receipt.json), et le banc mesuré
 > aujourd'hui, **262/262 PASS**.
 

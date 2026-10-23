@@ -8,8 +8,8 @@ status: open
 # Brainstorm — centraliser les runs
 
 > 2026-10-23, après le run guidé de `03-shadow-areas`. Sources mesurées : [les runs](../device/runs),
-> [le run-guide du 10-task](../tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md),
-> [celui du 03-shadow-areas](../tasks/2026_10/2026-10-23-075314-test-03-shadow-areas/2026-10-23-075314-run-guide.md),
+> [le run-guide du 10-task](../device/runs/2026-10-23-033645-guide-10-task/run-guide.md),
+> [celui du 03-shadow-areas](../device/runs/2026-10-23-075314-guide-03-shadow-areas/run-guide.md),
 > la [spec du run guidé](../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
 > et le [refus du `cas`](../device/harness/orchestrer.mjs) mesuré aujourd'hui.
 
@@ -81,7 +81,7 @@ run-guide du 10-task n'en cite aucune), et son terrain peut être sale sans que 
     { "code": "terrain_non_propre", "effet": "la condition de copie neuve n'est pas remplie", "detail": " M app.py, M test_app.py, ?? aidd_docs/ au départ" },
     { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "spec du 22:12, §2" }
   ],
-  "pieces": ["2026-10-23-075314-run-guide.md"],
+  "pieces": ["run-guide.md"],
   "verdict": null
 }
 ```

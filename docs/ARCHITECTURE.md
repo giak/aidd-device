@@ -515,6 +515,6 @@ raisonnement, et cette page ne doit pas le laisser croire.
 | le même test, chapitre par chapitre, sorties observées | [guide du test](guide/guide-du-test-de-bout-en-bout.md) |
 | ce qui a eu lieu, et ce qu'un run a laissé | `docs/device/runs/`, son `PV.md` |
 | le protocole de test d'un skill, ses étapes et ses traces | [brainstorm du 22 octobre](brainstorm/2026-10-22-210512-processus-de-test-skill-10-task.md) |
-| le déroulé guidé, ses validations et sa grille | [journal du run](tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md) et [présentation de l'épreuve](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) |
+| le déroulé guidé, ses validations et sa grille | [journal du run](device/runs/2026-10-23-033645-guide-10-task/run-guide.md) et [présentation de l'épreuve](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) |
 | où en est le projet aujourd'hui | [DASHBOARD](DASHBOARD.md) |
 | ce qui a été décidé, et quand | [DECISIONS](DECISIONS.md) |

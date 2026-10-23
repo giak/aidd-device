@@ -6953,7 +6953,7 @@ consigner un run guidé dans un gabarit, sans troisième structure ni reçu.
 - Les pages alignées : [ARCHITECTURE](ARCHITECTURE.md) §7.3, [PFD](PFD.md) v0.5,
   [DASHBOARD](DASHBOARD.md), [DEVICE](device/DEVICE.md), [BANC](device/BANC.md) v0.39,
   [EXPLICATION](EXPLICATION.md), [README](../README.md), [guide utilisateur](guide/guide-utilisateur.md) et
-  [ORCHESTRATEUR](device/ORCHESTRATEUR.md) ; le [run guidé du 21:37](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-run-guide.md)
+  [ORCHESTRATEUR](device/ORCHESTRATEUR.md) ; le [run guidé du 21:37](device/runs/2026-10-22-221207-guide-10-task/run-guide.md)
   est recasté dans le gabarit, avec ses limites.
 
 **Vérifié.**
@@ -7090,7 +7090,7 @@ le test ne prouvera pas.
 
 - [Spec de la présentation de l'épreuve](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md) :
   six champs avant toute demande, validés par la personne ; un champ manquant vaut présentation non faite.
-- [Journal du déroulé](tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md),
+- [Journal du déroulé](device/runs/2026-10-23-033645-guide-10-task/run-guide.md),
   `type: run-guide`, `status: done` : étape 1 choix du skill, étape 2 présentation validée à 03:48, étape 3
   demande et produit attendu validés à 03:53, étape 4 run guidé.
 - Terrain : clone détaché de `audio-sync-tool` à `416ec1f`,
@@ -7457,3 +7457,153 @@ avant ce contrôle. Elle reste datée, et le chiffre vivant est dans `BANC`.
 
 **Mémoires.** `739e7745-cb5b-4173-a629-ac0fdaec2c4a` : le contrôle 271, sa preuve de sensibilité et le
 compte, écrite puis relue.
+
+## Séance 135 — 2026-10-23 (les runs se classent, `tracer` lit `run.json`)
+
+**Objectif.** Implémenter les étapes 1 et 2 de la [spec de centralisation](tasks/2026_10/2026-10-23-082232-runs-centralises/2026-10-23-082232-spec-centralisation.md) :
+`runs.mjs` et ses contrôles 272 à 274, puis `tracer` lisant `run.json.pieces`, contrôle 275.
+
+**Fait.**
+
+- [runs.mjs](device/harness/runs.mjs) : classe chaque dossier en guidé (`run.json`), indépendant
+  (`receipt.json`), avorté (`gate.json`) ou refusé ; valide le schéma de `run.json` (mode, statut, limites,
+  pertinence, révision, pièces) ; `--index` écrit `INDEX.md` après validation de tous les dossiers ;
+  `--verifier` régénère et refuse un index absent ou divergent. `--runs <dossier>` sert le banc ; le défaut
+  reste `docs/device/runs/`.
+- [orchestrer.mjs](device/harness/orchestrer.mjs) : `tracer` ne cherche plus `*-run-guide.md` ; il exige
+  `run.json`, `mode: guide`, `pieces` citant `run-guide.md`, et le fichier présent.
+- Banc : contrôles **272** (un guidé qui porte un reçu), **273** (un guidé sans limite refusé, le même avec
+  une limite accepté), **274** (index écrit, index périmé refusé, régénération) et **275** (spec voisine
+  acceptée, dossier sans `run.json` refusé). **265** change de fixture et éprouve les quatre refus de
+  `tracer`. Le dossier de runs des contrôles vit dans le bac.
+- [ADR-081](DECISIONS.md) : le point de l'ADR-076 qui exigeait un motif de nom est supersédé, le reste
+  tient. [BANC](BANC.md) passe à **275** (V0.43). [PROTOCOLE](PROTOCOLE.md) dit ce que `tracer` lit.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **275/275 PASS**, `exit 0`, avec
+`PASS 272`, `PASS 273`, `PASS 274`, `PASS 265` et `PASS 275`. Dix copies cassées de `run.json` ou du reçu
+rendent chacune le refus nommé attendu (`guide + reçu`, `sans limite`, `sans run-guide`, `+ gate`,
+`pertinence contredite`, `revision null`, `code inconnu`, `pièce absente`, `dossier non classé`, `reçu sans
+verdict`). `node --check` sur les deux fichiers → ok ; `bash -n` sur le banc → ok. Sur un run-guide réel
+sans `run.json`, `tracer --liste` rend `REFUS — … n'a pas run.json`, `exit 1` : c'est la casse annoncée.
+
+**Rectifications de ses propres affirmations.** Le premier passage du banc a rendu **273/275**, avec 273 et
+274 en `FAIL` : la fonction `run` des deux scripts de contrôle avait un `}` de moins, la déclaration
+suivante devenait le corps de la flèche et heurtait son paramètre `a`. Trouvé en rejouant le corps hors du
+banc, corrigé, puis vert. Un premier essai de 274 hors banc avait aussi supprimé le dossier de fixture que
+le contrôle recrée juste avant ; cet essai ne prouvait rien.
+
+**Dérives signalées, non corrigées.** Les trois run-guides d'avant la centralisation n'ont pas de
+`run.json` : `tracer` les refuse jusqu'à la migration (étape 3). L'index réel de `docs/device/runs/` n'est
+pas écrit : les deux dossiers non classés n'ont pas encore leur `run.json`, et `--index` refuse avant
+d'écrire. La spec §8 demandait d'aligner l'ADR-076 ; une ADR neuve le supersède au lieu d'éditer une ADR
+datée.
+
+**Prochaines étapes.** Migrer les trois run-guides, les deux dossiers manuels et les dix références, puis
+écrire l'index réel et aligner les comptes des pages.
+
+**Mémoires.** `671314f2-8819-4d49-bd2a-ced75e0b1bc8` : `runs.mjs`, la lecture de `run.json` par
+`tracer`, les quatre contrôles, l'erreur de brace et les limites, écrite puis relue.
+
+## Séance 136 — 2026-10-23 (les runs migrés sous `docs/device/runs`, l'index réel écrit)
+
+**Objectif.** Étapes 3 et 4 de la [spec de centralisation](tasks/2026_10/2026-10-23-082232-runs-centralises/2026-10-23-082232-spec-centralisation.md) :
+déplacer les trois run-guides, classer les deux dossiers manuels, réécrire les dix références, écrire
+l'index réel.
+
+**Fait.**
+
+- Trois `git mv` : le run du 21:37 vers `docs/device/runs/2026-10-22-221207-guide-10-task/run-guide.md`,
+  celui du 10-task vers `2026-10-23-033645-guide-10-task/run-guide.md`, celui du 03-shadow-areas vers
+  `2026-10-23-075314-guide-03-shadow-areas/run-guide.md`. Les dossiers de tâche du 03:36 et du 07:53,
+  vidés, sont supprimés ; celui du 22:12 garde ses deux specs.
+- Cinq `run.json` : trois guidés, `statut: forme tenue`, avec les limites du §7 ; deux manuels,
+  `statut: non observé`. Le run du 2026-10-15 porte `protocole_anterieur` et `run_non_observe` ; son
+  verdict `non concluant` reste dans `PV.md`. Le dossier du 2026-10-22 00:22 n'a que
+  `texte-a-remettre.txt` : `skill` et `terrain` nuls, limites `run_non_observe`, `protocole_anterieur`,
+  `trace_absente`.
+- Liens : cinq liens internes des guides déplacés réécrits (trois, deux) ; dix références externes dans
+  sept pages ([brainstorm du 03:07](brainstorm/2026-10-23-030728-consolider-le-protocole.md), [brainstorm
+  du 08:14](brainstorm/2026-10-23-081413-centraliser-les-runs.md), [explication](guide/explication.md),
+  ce journal deux fois, [spec de l'épreuve](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md),
+  [épreuve de la task](tasks/2026_10/2026-10-23-025408-effet-de-la-task/2026-10-23-025408-epreuve.md),
+  [ARCHITECTURE](ARCHITECTURE.md)). Aucun nom `*-run-guide.md` ne subsiste.
+- [INDEX.md](device/runs/INDEX.md) : **32 runs**, 3 guidés, 2 manuels, 19 indépendants, 8 avortés.
+
+**Vérifié.** `node docs/device/harness/runs.mjs --index` => `INDEX — 32 run(s) écrit(s)`, `exit 0` ;
+`--verifier` => `exit 0`. `bash docs/device/harness/banc-harnais.sh` => **275/275 PASS**, `exit 0`.
+`node docs/device/harness/liens.mjs` => 211 fichiers, 1 266 liens hors code, **0 mort**, `exit 0`
+(rejoué après l'écriture de cette séance, qui ajoute dix liens).
+`tracer` sur `2026-10-22-221207-guide-10-task` avec un fil inexistant => `REFUS — … Freebuff ne connaît
+pas le fil « inexistant »`, `exit 1` : le `run.json` est accepté, seul le fil manque. `git diff --check`
+=> `exit 0`.
+
+**Rectification de ses propres affirmations.** Le premier `--verifier` de la séance rend `exit 1` avec
+`INDEX.md diverge de la génération` : l'index n'existait pas encore. Il est écrit juste après, et le
+vérificateur repasse à `exit 0`. Aucun index n'avait été écrit avant la migration.
+
+**Dérives signalées, non corrigées.** [DASHBOARD](DASHBOARD.md) et [README](../README.md) ne portent ni
+les comptes séparés ni le lien vers `INDEX.md` que le §8 demande. L'index est une vue : le vérificateur
+contrôle la forme, pas la vérité des limites. Le `statut` du run manuel du 2026-10-15 est `non observé`
+alors que son `PV.md` conclut `non concluant` ; c'est la règle du §5 pour le mode manuel, le verdict
+reste dans la pièce. Rien n'est commité.
+
+**Prochaines étapes.** Aligner les comptes et le lien d'index dans DASHBOARD et README ; puis l'ADR-074,
+la spec du 22:12 et le PROTOCOLE (le foyer et `run.json`).
+
+**Mémoires.** `d3ad49c9-546e-4650-b14a-ad292ff6fecc` : la migration, ses cinq `run.json`, l'index à
+32 runs, le banc à 275/275, les liens à 0 mort, relue.
+
+## Séance 137 — 2026-10-23 (les comptes par mode, un seul foyer)
+
+**Objectif.** Fermer la dérive signalée en fin de séance 136 : [DASHBOARD](DASHBOARD.md) et
+[README](../README.md) sans lien vers l'[index des runs](device/runs/INDEX.md), et des comptes par mode sans
+foyer calculé.
+
+**Fait.** Le §8 de la [spec de centralisation](tasks/2026_10/2026-10-23-082232-runs-centralises/2026-10-23-082232-spec-centralisation.md)
+demandait les comptes dans les deux pages ; la [carte](INDEX.md) §2 interdit qu'un chiffre apparaisse ailleurs
+que dans son foyer. Le chiffre va donc dans l'index, qui le calcule :
+
+- `runs.mjs` écrit, sous l'en-tête, `32 runs : 19 indépendants, 3 guidés, 8 avortés, 2 manuels.` : un compte
+  par mode, recalculé à chaque `--index`.
+- [README](../README.md) : le renvoi vers `docs/device/runs/` nomme l'index généré et les quatre modes.
+- [DASHBOARD](DASHBOARD.md) §2 : l'index des runs rejoint ce que la page ne porte pas.
+- [Carte](INDEX.md) : une ligne pour `runs/INDEX.md`, page créée par la migration et absente de la table.
+- Spec du 08:22, §5 et §8 corrigées : la ligne de comptes de l'index, et le foyer unique des comptes.
+
+**Vérifié.** `node docs/device/harness/runs.mjs --index` => `INDEX — 32 run(s) écrit(s)`, `exit 0` ;
+l'en-tête de l'index porte la ligne de comptes. `--verifier` => `exit 0`. `bash
+docs/device/harness/banc-harnais.sh` => **275/275 PASS**, `exit 0` (les contrôles 272 à 274 relisent le
+format). `node docs/device/harness/liens.mjs` => 211 fichiers, 1 271 liens hors code, **0 mort**, `exit 0`.
+`git diff --check` => `exit 0`.
+
+**Écart déclaré.** Les deux pages ne recopient pas le chiffre : elles le nomment et le lient. C'est une
+correction de la spec, pas un oubli ; les quatre modes sont nommés dans chacune.
+
+**Prochaine étape.** L'ADR-074, la spec du 22:12 et le PROTOCOLE, pour le foyer et `run.json`.
+
+## Séance 138 — 2026-10-23 (l'ADR-074 et le PROTOCOLE au foyer des runs)
+
+**Objectif.** Aligner la doctrine sur la migration : l'[ADR-074](DECISIONS.md) ne disait ni le foyer du
+journal guidé ni `run.json`, et le [PROTOCOLE](PROTOCOLE.md) lisait encore le dossier par le motif
+`*-run-guide.md`.
+
+**Fait.**
+
+- [ADR-074](DECISIONS.md) : rectification datée. Le journal guidé vit sous `docs/device/runs/`, un dossier
+  par run, avec `run.json` qui déclare mode, statut de forme, skill, terrain, conduite, dates, pertinence,
+  limites et pièces, et `verdict: null` ; `runs.mjs` vérifie ces défauts et les indexe, les détails du
+  vérificateur restant à l'[ADR-081](DECISIONS.md).
+- [ADR-081](DECISIONS.md) : rectification datée ; la migration est faite, l'index réel est écrit. L'ADR-076
+  reste tel quel, son point sur « exactement un `*-run-guide.md` » étant déjà supersédé par l'ADR-081.
+- [PROTOCOLE](PROTOCOLE.md) §1 : le guidé laisse `run.json` et son `run-guide.md` sous `docs/device/runs/`.
+- [PROTOCOLE](PROTOCOLE.md) §2 : `tracer` est décrit par `run.json`, non plus par un motif de fichier ; «
+  jusqu'à leur migration » devient « les trois guides migrés ». Un paragraphe ajoute `runs.mjs`, ses refus,
+  `--index` et `--runs`, et dit l'index comme vue.
+- [PROTOCOLE](PROTOCOLE.md) §7 : le renvoi vers les runs mène aussi à leur index.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **275/275 PASS**, `exit 0` (le contrôle 153
+confronte le runbook au code). `node docs/device/harness/liens.mjs` => 211 fichiers, 1 291 liens hors code,
+**0 mort**, `exit 0`. `node docs/device/harness/runs.mjs --verifier` => `exit 0`. `git diff --check` =>
+`exit 0`.
+
+**Prochaine étape.** La spec du 22:12, §2 (chemin), §3 (gabarit et `run.json`) et §6 (critère de sortie).

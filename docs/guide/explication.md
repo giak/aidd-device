@@ -167,7 +167,7 @@ flowchart TD
 ```
 
 Ce déroulé a été écrit le 2026-10-23 en jouant `10-task` ; le
-[journal du run](../tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md) le
+[journal du run](../device/runs/2026-10-23-033645-guide-10-task/run-guide.md) le
 porte étape par étape, avec les validations à leur heure.
 
 Trois pièces attestent qu'un run a eu lieu, de la plus forte à la plus faible : **la trace machine**

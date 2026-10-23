@@ -1,0 +1,23 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "10-task", "chemin": "plugins/aidd-pm/skills/10-task", "revision": null },
+  "terrain": {
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-035316-task-config-terrain/terrain",
+    "tete": "416ec1f",
+    "porcelain": "?? aidd_docs/"
+  },
+  "conduite": "agent",
+  "rapport_le": "2026-10-23T03:59:52+02:00",
+  "consigne_le": "2026-10-23T03:36:45+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent comme preuve d'indépendance", "detail": "ADR-074" },
+    { "code": "trace_absente", "effet": "aucune ligne ne cite de seq", "detail": "le fil n'a pas été exporté" },
+    { "code": "revision_non_consignee", "effet": "la révision du skill sous test n'est pas prouvée", "detail": "le run-guide ne cite aucune révision du framework ; le terrain est à 416ec1f" },
+    { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "spec du 22:12, §2" }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null
+}

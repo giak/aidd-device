@@ -1,0 +1,23 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "03-shadow-areas", "chemin": "plugins/aidd-refine/skills/03-shadow-areas", "revision": "fe48de12" },
+  "terrain": {
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-035316-task-config-terrain/terrain",
+    "tete": "416ec1f",
+    "porcelain": " M app.py, M test_app.py, ?? aidd_docs/"
+  },
+  "conduite": "agent",
+  "rapport_le": "2026-10-23T07:55:41+02:00",
+  "consigne_le": "2026-10-23T07:53:14+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent comme preuve d'indépendance", "detail": "ADR-074" },
+    { "code": "trace_absente", "effet": "aucune ligne ne cite de seq", "detail": "le fil n'a pas été exporté" },
+    { "code": "terrain_non_propre", "effet": "la condition de copie neuve n'est pas remplie", "detail": " M app.py, M test_app.py, ?? aidd_docs/ au départ" },
+    { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "spec du 22:12, §2" }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null
+}

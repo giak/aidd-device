@@ -22,7 +22,8 @@ rejouable. Il garde de quoi refaire le départ, jamais la réponse.
 - [docs/BANC.md](docs/BANC.md) : les contrôles qui éprouvent le harnais. [docs/REPLAY.md](docs/REPLAY.md) :
   rejouer un gel depuis un clone neuf.
 - [docs/device/CASES/](docs/device/CASES/) : les cas gelés. [docs/device/runs/](docs/device/runs/) : les
-  pièces des runs.
+  pièces des runs, une par dossier ; leur [index généré](docs/device/runs/INDEX.md) les classe par mode
+  (indépendants, guidés, avortés, manuels), avec les comptes et les limites de chacun.
 - [AGENTS.md](AGENTS.md) : le contrat de travail, autonome ; il vaut pour tout ce qui s'écrit ici.
 - [docs/brainstorm/](docs/brainstorm/) et [docs/tasks/](docs/tasks/) : le raisonnement qui a précédé, et le
   travail spécifié.

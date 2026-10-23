@@ -1,0 +1,23 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "10-task", "chemin": "plugins/aidd-pm/skills/10-task", "revision": "fe48de12" },
+  "terrain": {
+    "chemin": "/home/giak/aidd-device-work/2026-10-22-213000-task-guide/terrain",
+    "tete": "416ec1f",
+    "porcelain": "?? aidd_docs/"
+  },
+  "conduite": "agent",
+  "rapport_le": null,
+  "consigne_le": "2026-10-22T23:10:00+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent comme preuve d'indépendance", "detail": "ADR-074" },
+    { "code": "trace_absente", "effet": "aucune ligne ne cite de seq", "detail": "le fil du 21:37 n'a pas été exporté" },
+    { "code": "run_non_observe", "effet": "le déroulé vient d'un rapport, pas d'une trace", "detail": "run recasté depuis le rapport du 21:37, §2 du run-guide" },
+    { "code": "attendu_non_gele", "effet": "l'antériorité de l'attendu n'est pas prouvée", "detail": "spec du 22:12, §2" }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null
+}

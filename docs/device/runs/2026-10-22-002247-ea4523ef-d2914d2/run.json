@@ -1,0 +1,18 @@
+{
+  "type": "run",
+  "mode": "manuel",
+  "statut": "non observé",
+  "skill": null,
+  "terrain": null,
+  "conduite": "humain",
+  "rapport_le": null,
+  "consigne_le": null,
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "run_non_observe" },
+  "limites": [
+    { "code": "run_non_observe", "effet": "le run n'a laissé qu'un texte de demande", "detail": "le dossier ne porte que texte-a-remettre.txt, sans trace ni statut" },
+    { "code": "protocole_anterieur", "effet": "le run précède le protocole du run guidé", "detail": "dossier du 2026-10-22 00:22, la spec du run guidé est de 22:12" },
+    { "code": "trace_absente", "effet": "aucune ligne ne cite de seq", "detail": "aucun dossier trace/ dans le run" }
+  ],
+  "pieces": ["texte-a-remettre.txt"],
+  "verdict": null
+}

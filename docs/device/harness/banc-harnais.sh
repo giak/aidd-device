@@ -1119,6 +1119,62 @@ for(const l of ['framework-origin','terrain']){
   if(vu!==a.head_complet) r.push(l+' : copie '+vu+' != gel '+a.head_complet);
 }
 if(r.length){fs.writeFileSync(process.env.DETAIL,r.join('\n')+'\n');process.exit(1)}"
+# 272-274 : `runs.mjs`, le verificateur et l'index (spec du 2026-10-23 08:22). Le dossier de runs
+# vit dans le bac ; rien n'ecrit dans docs/device/runs, qui n'a pas encore d'index.
+RUNS="$REPO/docs/device/harness/runs.mjs"
+rm -rf "$O/runs-fixture"
+mkdir -p "$O/runs-fixture/2026-10-23-010101-guide-banc"
+cat > "$O/runs-fixture/2026-10-23-010101-guide-banc/run.json" <<'JSON'
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": { "nom": "banc", "chemin": "plugins/banc", "revision": "abc1234" },
+  "terrain": { "chemin": "/tmp/banc/terrain", "tete": "def5678", "porcelain": "" },
+  "conduite": "humain",
+  "rapport_le": "2026-10-23T08:00:00+02:00",
+  "consigne_le": "2026-10-23T08:05:00+02:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [
+    { "code": "session_non_independante", "effet": "non pertinent", "detail": "banc" }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null
+}
+JSON
+printf '# run guide\n' > "$O/runs-fixture/2026-10-23-010101-guide-banc/run-guide.md"
+rm -rf "$O/runs-272"
+cp -a "$O/runs-fixture" "$O/runs-272"
+printf '{"verdict":"conforme","cas":"banc","limites":[]}\n' > "$O/runs-272/2026-10-23-010101-guide-banc/receipt.json"
+controle "272 runs refuse un guide avec recu" 0 refus-nomme 1 "porte receipt.json et run.json" node "$RUNS" --verifier --runs "$O/runs-272"
+controle "273 runs refuse un guide sans limite, accepte avec" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const src='$O/runs-fixture', bad='$O/runs-273', good='$O/runs-273b';
+fs.rmSync(bad,{recursive:true,force:true}); fs.cpSync(src,bad,{recursive:true});
+fs.rmSync(good,{recursive:true,force:true}); fs.cpSync(src,good,{recursive:true});
+const p=bad+'/2026-10-23-010101-guide-banc/run.json';
+const r=JSON.parse(fs.readFileSync(p,'utf8')); r.limites=[]; fs.writeFileSync(p,JSON.stringify(r));
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const a=run(['--verifier','--runs',bad]);
+if(a.c!==1 || !a.o.includes('guidé sans limite')) process.exit(1);
+const b=run(['--index','--runs',good]); if(b.c!==0) process.exit(1);
+const c=run(['--verifier','--runs',good]); if(c.c!==0) process.exit(1);
+process.exit(0)"
+rm -rf "$O/runs-274"
+mkdir -p "$O/runs-274/2026-10-23-020202-recu"
+printf '{"verdict":"conforme","cas":"banc","limites":[]}\n' > "$O/runs-274/2026-10-23-020202-recu/receipt.json"
+controle "274 runs index ecrit, index perime refuse" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),path=require('path');
+const r='$O/runs-274', i=path.join(r,'INDEX.md');
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const a=run(['--index','--runs',r]); if(a.c!==0) process.exit(1);
+if(!fs.existsSync(i)) process.exit(1);
+if(fs.readFileSync(i,'utf8').split('\n')[0]!=='<!-- généré par runs.mjs — ne pas éditer -->') process.exit(1);
+fs.appendFileSync(i,'x\n');
+const b=run(['--verifier','--runs',r]); if(b.c!==1 || !b.o.includes('diverge')) process.exit(1);
+const c=run(['--index','--runs',r]); if(c.c!==0) process.exit(1);
+const d=run(['--verifier','--runs',r]); if(d.c!==0) process.exit(1);
+process.exit(0)"
 # Les deux pages qui parlent des commandes sont confrontees au code : l'annexe du guide et le runbook
 # de PROTOCOLE.md. Chaque option nommee doit exister dans l'usage reel, toutes les commandes
 # offertes doivent y etre nommees, et les douze refus du runbook doivent etre ceux du §7 de la spec, chacun
@@ -2505,8 +2561,8 @@ JS
 controle "267 le refus de délai nomme le fil (texte du code)" 0 node "$O/delai.mjs" "$ORCH"
 
 # 263-265 : `tracer`, la trace du run guide (ADR-076). Le fil est un fil Freebuff de fixture ; le
-# dossier porte un `-run-guide.md`, et rien d'autre ne doit etre ecrit que trace/echange.jsonl et
-# trace/fil.json. Le HOME factice evite de lire la base reelle de la personne.
+# dossier porte un run.json guide et run-guide.md, et rien d'autre ne doit etre ecrit que
+# trace/echange.jsonl et trace/fil.json. Le HOME factice evite de lire la base reelle de la personne.
 P263=$(date +%s%3N)
 sqlite3 "$DBF" <<SQL
 insert into threads values('fil-trace','$W/terrain','local','','','codebuff','m-banc',$P263);
@@ -2515,11 +2571,20 @@ insert into messages values('fil-trace',2,'assistant',$P263,'[{"kind":"text","te
 SQL
 mkdir -p "$O/home-trace/.config/freebuff-desktop/projects/banc"
 cp "$DBF" "$O/home-trace/.config/freebuff-desktop/projects/banc/desktop-v2.db"
-mkdir -p "$O/guide" "$O/guide-fil" "$O/sans-guide" "$O/deux-guides"
-printf '%s\n' '# Run guide' > "$O/guide/2026-10-23-000000-run-guide.md"
-printf '%s\n' '# Run guide' > "$O/guide-fil/2026-10-23-000000-run-guide.md"
-printf '%s\n' '# Run guide 1' > "$O/deux-guides/2026-10-23-000000-run-guide.md"
-printf '%s\n' '# Run guide 2' > "$O/deux-guides/2026-10-23-000001-run-guide.md"
+mkdir -p "$O/guide" "$O/guide-fil" "$O/guide-spec" "$O/sans-runjson" "$O/mode-manuel" "$O/pieces-sans-guide" "$O/sans-run-guide"
+for d in guide guide-fil; do
+  printf '%s\n' '{"mode":"guide","pieces":["run-guide.md"]}' > "$O/$d/run.json"
+  printf '%s\n' '# Run guide' > "$O/$d/run-guide.md"
+done
+cp -a "$O/guide/." "$O/guide-spec/"
+printf '%s\n' '# Spec voisine' > "$O/guide-spec/2026-10-23-000000-spec-run-guide.md"
+printf '%s\n' '# Run guide' > "$O/sans-runjson/run-guide.md"
+printf '%s\n' '{"mode":"manuel","pieces":["run-guide.md"]}' > "$O/mode-manuel/run.json"
+printf '%s\n' '# Run guide' > "$O/mode-manuel/run-guide.md"
+printf '%s\n' '{"mode":"guide","pieces":["autre.md"]}' > "$O/pieces-sans-guide/run.json"
+printf '%s\n' '# Run guide' > "$O/pieces-sans-guide/run-guide.md"
+printf '%s\n' 'autre' > "$O/pieces-sans-guide/autre.md"
+printf '%s\n' '{"mode":"guide","pieces":["run-guide.md"]}' > "$O/sans-run-guide/run.json"
 cat > "$O/tracer-banc.mjs" <<'JS'
 // `tracer` sur une base de fixture : argv orchestrer, mode, dossier, HOME, store opencode.
 import { execFileSync } from "node:child_process";
@@ -2571,18 +2636,29 @@ if (mode === "ok") {
   const deja = appel(run, "fil-trace");
   if (deja.code !== 1) raisons.push("trace existante : exit " + deja.code);
   if (!/déjà/.test(deja.sortie)) raisons.push("le refus ne dit pas que la trace existe deja");
-} else if (mode === "refus-dossier") {
-  for (const d of ["sans-guide", "deux-guides"]) {
+} else if (mode === "refus-runjson") {
+  const cas = [["sans-runjson", "run.json"], ["mode-manuel", "mode"], ["pieces-sans-guide", "pieces"], ["sans-run-guide", "run-guide.md"]];
+  for (const [d, mot] of cas) {
     const r = appel(join(run, d), "fil-trace");
     if (r.code !== 1) raisons.push(d + " : exit " + r.code);
+    if (!r.sortie.includes(mot)) raisons.push(d + " : le refus ne dit pas « " + mot + " » : " + r.sortie.split("\n")[0]);
     if (existsSync(join(run, d, "trace"))) raisons.push(d + " : une trace a ete ecrite");
   }
+} else if (mode === "run-json") {
+  const bon = appel(join(run, "guide-spec"), "fil-trace");
+  if (bon.code !== 0) raisons.push("guide-spec : exit " + bon.code + " : " + bon.sortie.split("\n")[0]);
+  else if (!existsSync(join(run, "guide-spec", "trace", "fil.json"))) raisons.push("guide-spec : fil.json absent");
+  const mauvais = appel(join(run, "sans-runjson"), "fil-trace");
+  if (mauvais.code !== 1) raisons.push("sans-runjson : exit " + mauvais.code);
+  else if (!/run\.json/.test(mauvais.sortie)) raisons.push("sans-runjson : le refus ne nomme pas run.json");
+  if (existsSync(join(run, "sans-runjson", "trace"))) raisons.push("sans-runjson : une trace a ete ecrite");
 }
 if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
 JS
 controle "263 tracer, export du fil et fil.json" 0 node "$O/tracer-banc.mjs" "$ORCH" ok "$O/guide" "$O/home-trace" "$O/opencode-vide"
 controle "264 tracer refuse un fil inconnu et une trace deja ecrite" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-fil "$O/guide-fil" "$O/home-trace" "$O/opencode-vide"
-controle "265 tracer refuse un dossier sans run-guide unique" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-dossier "$O" "$O/home-trace" "$O/opencode-vide"
+controle "265 tracer refuse un run.json absent ou hors guide" 0 node "$O/tracer-banc.mjs" "$ORCH" refus-runjson "$O" "$O/home-trace" "$O/opencode-vide"
+controle "275 tracer lit run.json.pieces, une spec voisine ne gene pas" 0 node "$O/tracer-banc.mjs" "$ORCH" run-json "$O" "$O/home-trace" "$O/opencode-vide"
 
 # 259-262 : les traces de texte et de commande (spec du 2026-10-22 22:12, ADR-075). Un reçu synthétique
 # suffit : rien n'ouvre de session, et les contrôles portent sur les trois états d'une assertion de texte,

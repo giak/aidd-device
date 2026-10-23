@@ -26,11 +26,13 @@ le test se joue dans la conversation courante.
 | Mode | Ce qu'il laisse | Ce qu'il prouve | Ce qu'il ne prouve pas |
 | --- | --- | --- | --- |
 | **indépendant** | gel, porte, trace, produit, reçu, verdict | la chaîne complète, sur une session qui n'a pas lu l'attendu | la justesse du skill, ni celle du produit |
-| **guidé** | présentation validée, produit attendu validé, journal `type: run-guide`, trace machine | la forme, les chemins, les écritures, les traces | l'indépendance : l'agent qui produit a lu l'attendu ([ADR-074](DECISIONS.md)) |
+| **guidé** | présentation validée, produit attendu validé, `run.json` et son `run-guide.md` sous `docs/device/runs/`, trace machine | la forme, les chemins, les écritures, les traces | l'indépendance : l'agent qui produit a lu l'attendu ([ADR-074](DECISIONS.md)) |
 
 Le mode guidé est le défaut depuis le 2026-10-22 : le test se joue dans la **conversation courante**, sans
 headless, sans second fil, sans modèle à choisir. Il ne passe ni par `cas`, ni par `porte`, ni par `fin` :
 il n'a pas de reçu, et son journal porte toujours `session_non_independante` quand l'agent a vu l'attendu.
+Le dossier vit sous `docs/device/runs/` avec un `run.json` qui porte ses limites ; `runs.mjs` le vérifie et
+l'indexe.
 
 | Étape du run guidé | Ce qui est produit | Ce qui la clôt |
 | --- | --- | --- |
@@ -88,6 +90,10 @@ node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis 
 | `lire` | rien : elle relit | rien |
 | `tracer` | le client du fil, la session normalisée, le compte des lignes et le `sha256` de l'export | `trace/echange.jsonl` et `trace/fil.json` dans un dossier de run guidé, et rien d'autre |
 
+`tracer` lit `run.json` : le dossier doit être un run guidé dont `pieces` cite `run-guide.md`, et le
+fichier doit être présent. Un run-guide d'avant la centralisation, sans `run.json`, est refusé ; les trois
+guides existants ont été migrés sous `docs/device/runs/`.
+
 **Trois gestes restent humains**, et aucun n'est attesté par une pièce :
 
 1. **ouvrir le fil** dans l'application, au répertoire que `porte` imprime, ou laisser `ouvrir` le faire
@@ -109,10 +115,19 @@ limite qui dit qu'il est déclaré, jamais vérifié ([ADR-071](DECISIONS.md)). 
 run écrit `humain` ; `ouvrir` a conduit, donc `agent`.
 
 `tracer` est la commande du run guidé ([ADR-076](DECISIONS.md)) : elle exporte le fil et écrit
-`trace/echange.jsonl` plus `trace/fil.json`, sans reçu ni verdict. Elle refuse un dossier qui ne porte pas
-exactement un `*-run-guide.md`, un fil inconnu, un client ambigu et une trace déjà écrite.
+`trace/echange.jsonl` plus `trace/fil.json`, sans reçu ni verdict. Elle refuse un dossier dont `run.json`
+n'est pas un guidé, un fil inconnu, un client ambigu et une trace déjà écrite.
 `--liste --depuis <iso>` rend les fils récents du projet, identifiant, modèle, nombre de messages et
 début, sans aucun contenu, parce qu'un identifiant ne se devine pas.
+
+`runs.mjs` tient le dossier des runs ([spec du 08:22](tasks/2026_10/2026-10-23-082232-runs-centralises/2026-10-23-082232-spec-centralisation.md),
+§4) : `--verifier` refuse les défauts du §4, dont un dossier qui ne se classifie pas, un guidé qui porte
+`receipt.json`, `gate.json` ou `output.json`, un guidé sans limite, une `pertinence` vraie quand
+`session_non_independante` est déclarée, une `revision: null` sans `revision_non_consignee`, une pièce citée
+et absente, et un `INDEX.md` qui diverge de la génération. `--index` écrit `docs/device/runs/INDEX.md` : la
+ligne des comptes par mode, puis une ligne par dossier avec ses limites et ses pièces ; `--runs <dossier>`
+lit un autre dossier, pour le banc. L'index est une vue : le reçu et le `run.json` restent les sources, et un
+compte de runs se cite de l'index, jamais d'une page qui le recopie.
 
 `cas` fabrique un **squelette** : le falsificateur de la promesse reste marqué `a_remplir`, et tant qu'il
 l'est, le reçu porte `attendu_incomplet` et le verdict plafonne à `non concluant` ([ADR-039](DECISIONS.md)).
@@ -255,4 +270,4 @@ session par `opencode session export` dans le répertoire `travail` du gel, et `
 | rejouer un gel depuis un clone neuf | [REPLAY](REPLAY.md) |
 | ce qu'une personne fait, sans taper une commande | [guide utilisateur](guide/guide-utilisateur.md) |
 | le même test, chapitre par chapitre, sorties observées | [guide du test](guide/guide-du-test-de-bout-en-bout.md) |
-| ce qui a eu lieu, et ce qu'un run a laissé | [trace](trace.md), [runs](device/runs/) |
+| ce qui a eu lieu, et ce qu'un run a laissé | [trace](trace.md), [runs](device/runs/), leur [index](device/runs/INDEX.md) |

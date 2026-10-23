@@ -11,8 +11,8 @@ status: done
 > ([ADR-074](../../../DECISIONS.md)). Skill `plugins/aidd-refine/skills/03-shadow-areas`, révision
 > `fe48de12` du dépôt `framework` (porcelain : `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, hors du
 > skill). Terrain `/home/giak/aidd-device-work/2026-10-23-035316-task-config-terrain/terrain`, tête
-> `416ec1f`. Le run suit le [gabarit du run guidé](../2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
-> et la [présentation de l'épreuve](../2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md).
+> `416ec1f`. Le run suit le [gabarit du run guidé](../../../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+> et la [présentation de l'épreuve](../../../tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md).
 
 ## 0. Déroulé et validations
 

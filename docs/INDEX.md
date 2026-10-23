@@ -33,6 +33,7 @@ question: Quelle page répond à quelle question ?
 | [brainstorm/](brainstorm/) | quel raisonnement a précédé une décision ? | travail | vivant |
 | [CASES/](device/CASES/) | quelles demandes, quels attendus, quels gels ? | preuve | vivant |
 | [runs/](device/runs/) | quelles pièces un run a-t-il laissées ? | preuve | vivant |
+| [runs/INDEX](device/runs/INDEX.md) | quels runs, par mode, et quelles limites ? | preuve | vivant |
 | [README](../README.md) | comment entrer dans ce dépôt ? | entrée | vivant |
 
 ## 1 bis. Les notes

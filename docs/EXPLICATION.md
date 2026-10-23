@@ -11,8 +11,10 @@ status: in-progress
 > aident à comprendre, elles ne prouvent rien. Chaque fait sérieux a sa source dans un autre document
 > de `docs/`, et ce document-ci n'est pas une source : il raconte.
 >
-> État décrit : **2026-10-15**, complété le **2026-10-16**, le **2026-10-20**, puis le **2026-10-22** (la
-> page utilisateur, les 258 contrôles, le quatrième cas, la phase 2 du protocole). Un chiffre ici a
+> État décrit : **2026-10-15**, complété le **2026-10-16**, le **2026-10-20**, le **2026-10-22** (la page
+> utilisateur, les 268 contrôles, le quatrième cas, la phase 2 du protocole, les traces de texte et de
+> commande), puis le **2026-10-23** (le déroulé guidé en quatre étapes, la présentation obligatoire, et une
+> Task menée jusqu'à son implémentation). Un chiffre ici a
 > toujours la même forme : ce qui est **mesuré** est dit mesuré, ce qui vient d'un document est dit
 > `SUPPOSÉ`. L'état **courant** ne se lit pas ici : il est au [tableau de bord](DASHBOARD.md).
 >
@@ -76,6 +78,12 @@ flowchart TD
 Cette astuce a un nom dans les documents : **le gel antérieur au run** (« l'attendu, écrit avant
 d'avoir vu le produit »). C'est la seule preuve possible qu'un corrigé n'a pas été écrit après coup.
 
+**Ce qu'on juge, et ce qu'on ne juge pas.** Le dispositif ne lit pas dans la tête du candidat. Il juge ce
+que la copie et la caméra montrent : les questions posées, les décisions énoncées avec leur motif, les
+sources citées, les commandes lancées, les fichiers écrits. Une pensée qui ne laisse aucune trace n'est
+pas une faute : c'est une mesure absente. Et un `reasoning` affiché est une trace de ce que le modèle a
+dit, pas une preuve de ce qu'il a pensé. Cette règle est l'[ADR-073](DECISIONS.md).
+
 ## 4. Les personnages
 
 | Personnage | Qui, ici | Ce qu'il fait | Ce qu'il ne voit pas |
@@ -125,7 +133,7 @@ sequenceDiagram
   Note over Dis: étape 7, verdict conforme, écart ou non concluant
 ```
 
-Le harnais — `docs/device/harness/run.mjs`, 2 834 lignes, aucune dépendance, et `clients.mjs` pour la
+Le harnais — `docs/device/harness/run.mjs`, 3 169 lignes, aucune dépendance, et `clients.mjs` pour la
 frontière des deux clients — n'a que six
 commandes : `freeze` (avant, qui déclare la racine des espaces de travail une seule fois et en dérive
 les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie le dossier et le texte
@@ -138,6 +146,34 @@ ouvrir dans le mauvais dossier, un texte remis qui n'est pas celui du cas, un ge
 écrit la machine, un verdict que la preuve ne porte pas…). Il ne décide rien tout seul et n'ouvre aucune
 session : en principe, une personne ouvre le candidat ; le run du 2026-10-20 a été ouvert par l'agent via
 l'API d'opencode, et son reçu le dit.
+
+**Le mode simple, pour l'instant.** Le test d'un skill se joue dans la conversation courante : la même
+session sert d'opérateur et de candidat. Pas de client headless, pas de modèle à choisir, pas de second
+fil, pas d'appel à `ouvrir` ([ADR-074](DECISIONS.md)). Ce mode **guidé** est plus simple, et il coûte une
+chose : le candidat connaît le corrigé, donc le run ne prouve pas que le skill seul fait le geste. Il
+prouve la forme du produit, ses chemins, ses écritures et ses traces. Un `conforme` obtenu ainsi ne se
+publie pas comme preuve du skill ; il doit porter la limite `session_non_independante`.
+
+**Comment il se déroule, en quatre étapes validées**
+([spec](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)) :
+
+1. choisir le skill et le lire dans la révision sous test ;
+2. présenter l'épreuve en six champs, puis attendre l'accord : ce qui est testé, pourquoi, comment, le but,
+   ce qui sera observé, ce qui ne sera pas prouvé ;
+3. écrire le produit attendu, chemin, forme, contenu et exclusions, puis attendre l'accord ;
+4. jouer le run : brouillon montré, accord, une seule écriture, puis le journal et sa grille.
+
+```mermaid
+flowchart TD
+  S["1 choisir le skill"] --> P["2 présenter l'épreuve<br/>six champs, validés"]
+  P --> E["3 écrire le produit attendu<br/>validé avant le run"]
+  E --> R["4 jouer le run<br/>brouillon, accord, écriture"]
+  R --> J["journal du déroulé<br/>et grille de traces"]
+```
+
+Ce déroulé a été écrit le 2026-10-23 en jouant `10-task` ; le
+[journal du run](tasks/2026_10/2026-10-23-033645-deroule-du-test-10-task/2026-10-23-033645-run-guide.md) le
+porte étape par étape, avec les validations à leur heure.
 
 Trois pièces attestent qu'un run a eu lieu, de la plus forte à la plus faible : **la trace machine**
 (la seule que l'opérateur n'écrit pas), **l'état des arbres et les dates de naissance des fichiers**,
@@ -169,7 +205,7 @@ suffit à faire tomber le dossier, et il se conclut alors « non concluant » :
 | la copie existe mais **la cuisine est propre** | le plat est sorti sans que personne n'ait cuisiné |
 | la copie est **mot pour mot** une page déjà présente | recopiage, pas travail |
 
-## 9. Où en est le projet, au 2026-10-20
+## 9. Où en est le projet, au 2026-10-23
 
 **La phrase honnête : l'instrument est construit, un run opencode réel a produit un reçu le
 2026-10-20, et ce reçu conclut `non concluant`.** Le premier run, le 2026-10-15, n'avait rien produit.
@@ -189,10 +225,10 @@ après le run, le gel rejoué `exit 0`).
 | La page du dispositif — [DEVICE.md](device/DEVICE.md) | écrite, **896 mots** pour une limite de 900 (v6 §10), mesuré le 2026-10-16 |
 | La frontière — [BOUNDARY.md](device/BOUNDARY.md) | écrite, avec ses preuves chiffrées |
 | La recette de rejeu — [REPLAY.md](device/REPLAY.md) | écrite et **mesurée depuis un clone neuf** : un bloc à copier, la sortie observée, les quatre limites |
-| Le harnais — [run.mjs](device/harness/run.mjs) | écrit, **2 869 lignes**, 6 commandes, banc **258/258 PASS** ; `freeze --racine` déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; `collect --sans-produit` permet à un run sans produit de laisser quand même un reçu et un verdict ; une lecture hors du cadre que l'attendu du cas déclare interdit `conforme`, et un attendu sans bloc `cloisonnement` est refusé ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ; `clients.mjs` sépare Freebuff et opencode ([ADR-043](DECISIONS.md)) ; `rapport.mjs`, **527 lignes**, écrit le rapport technique depuis le reçu, l'output et la trace, appelé par `fin` et reconstructible par `rapport` ([ADR-050](DECISIONS.md)), et `resultat.mjs`, **497 lignes**, écrit la page utilisateur quand le cas déclare sa lecture ([ADR-061](DECISIONS.md)) |
+| Le harnais — [run.mjs](device/harness/run.mjs) | écrit, **3 169 lignes**, 6 commandes, banc **268/268 PASS** ; `freeze --racine` déclare la racine des espaces de travail une fois pour toutes en dérivant les deux copies du cas ([ADR-019](DECISIONS.md)), la porte refuse d'ouvrir hors de l'espace gelé et vérifie le texte remis ([ADR-018](DECISIONS.md)), `collect` refuse un produit venu d'ailleurs que de cet espace ([ADR-020](DECISIONS.md)), et ceux qui tombent quand un fichier du cas ne concorde plus avec le gel, au reçu comme au jugement ; `collect --sans-produit` permet à un run sans produit de laisser quand même un reçu et un verdict ; une lecture hors du cadre que l'attendu du cas déclare interdit `conforme`, et un attendu sans bloc `cloisonnement` est refusé ([ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md)) ; `clients.mjs` sépare Freebuff et opencode ([ADR-043](DECISIONS.md)) ; `rapport.mjs`, **562 lignes**, écrit le rapport technique depuis le reçu, l'output et la trace, appelé par `fin` et reconstructible par `rapport` ([ADR-050](DECISIONS.md)), et `resultat.mjs`, **637 lignes**, écrit la page utilisateur quand le cas déclare sa lecture ([ADR-061](DECISIONS.md)) ; il lit aussi les textes et les commandes de la trace (`trace_texte`, `commande_contient`, [ADR-075](DECISIONS.md)) |
 | Le premier cas — [CASES/](device/CASES/) | écrit le 2026-10-15, **re-gelé** après le premier run, après le déplacement de l'espace de travail, après le passage à la racine déclarée, puis le 2026-10-21 pour le bloc `cloisonnement` (empreinte `ba1096aa` ; les anciennes `0d9a2180`, `bc126fe6`, `38fa91f4` et `07246039` détruites) : le cas nomme `$RACINE` — la racine que le gel déclare une fois —, le texte remis garde son chemin absolu, et le bloc déclare `terrain` et `framework-origin` en lecture, `terrain/aidd_docs` en écriture ([ADR-052](DECISIONS.md)) |
 | Le mode d'emploi du run — [2026-10-15-154303-run.md](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | écrit, prêt à suivre ; **mis à jour le 2026-10-15 au soir** pour un candidat Freebuff : la source de la trace (§1.5) et la lecture de la fenêtre (§1.6) ont changé avec le client |
-| Le dépôt public | `https://github.com/giak/aidd-device` : l'historique publié suit `origin/main` ; le travail du 2026-10-20 n'est pas encore commité |
+| Le dépôt public | `https://github.com/giak/aidd-device` : l'historique publié suit `origin/main` ; les travaux des 22 et 23 octobre ne sont pas encore poussés |
 | **Un premier run réel** | **il a eu lieu le 2026-10-15** (`17:16:12`–`17:29:51`, session `opencode`, trace exportée de 161 022 octets) et s'est conclu **`non concluant`** : aucun tableau rendu, aucun fichier produit. Deux trous en sont sortis — la prémisse du cas (un chemin qui ne résout pas) et l'absence de chemin de reçu pour un run sans produit ([PV](device/runs/2026-10-15-171559-4c39e5c5-1d471a5/PV.md), [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md)) |
 | **Un second run réel du cas « promesse mémoire »** | **il a eu lieu le 2026-10-21** (`07:51:03`–`08:11:07`, session opencode `ollama/qwen3:8b` `ses_ea2fcbb86ffeStrQPkoONhWbXb`, ouverte et conduite par l'agent) et s'est conclu **`non concluant`** : la skill a été lue, puis la session a posé une question, tenté quatre scans par `execute` en `ReferenceError`, fait un `glob` et s'est arrêtée sans tableau ni produit ; `1/3` échanges mesurés, le formulaire de réponse n'étant pas compté ([reçu](device/runs/2026-10-21-073817-0d9a2180-30b82d0/receipt.json), [rapport](device/runs/2026-10-21-073817-0d9a2180-30b82d0/RAPPORT.md)) |
 | **Le premier reçu réel** | **écrit le 2026-10-20** par le run opencode du cas jouet : session `ses_ea564a976ffevcpzB4aY03ELBF`, deux échanges sur deux, `receipt.json` et `output.json` écrits, verdict `non concluant` ; produit `terrain/aidldocs/NOTES.md` au lieu de `aidd_docs/NOTES.md`, et F2 mordait parce que le tableau rendu n'a qu'une colonne ; le reçu est resté tel quel, et depuis l'ADR-047 la même trace rend `tableau.present = true` ([reçu](device/runs/2026-10-20-202333-50664060-1028c8b/receipt.json)) |
@@ -204,6 +240,14 @@ et un run opencode réel a laissé le premier `receipt.json` et le premier `outp
 désormais un tableau d'une colonne ([ADR-047](DECISIONS.md)). Ce qui reste n'est plus une mesure mais un
 geste : ouvrir un run Freebuff par une personne si ce client doit être éprouvé. Le détail est au
 [tableau de bord](DASHBOARD.md).
+
+**Au 2026-10-23, une chaîne complète a été suivie jusqu'au bout.** Le skill `10-task` a produit une Task,
+« refuser le démarrage quand `data/config.json` manque », puis la Task a été implémentée dans un clone
+jetable du terrain et éprouvée : sans configuration, le programme sort `1` en nommant le fichier, sans
+ouvrir le port 8765 ; avec la configuration, `GET /ping` rend `200` ; la suite du projet passe à
+**373 tests**. C'est la première fois qu'un produit de skill est mené jusqu'à sa livraison, et cela change
+ce que le test peut dire : la Task était implémentable sans clarification, et ses conditions de fin ont
+servi de plan de test. Cela ne prouve pas la valeur du skill : un cas n'est pas une loi.
 
 Le candidat de cette première épreuve : une session IA à qui l'on donne **deux lignes en anglais** et
 rien d'autre — « lis la compétence *project-memory* qui est là, et applique-la à ce dépôt : il n'a
@@ -287,6 +331,10 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   répondrait « oui » après le premier envoi — mesuré, c'était faux (l'envoi ne remplit qu'une partie
   de la question). Corrigé, commité, repoussé. La règle du dépôt : **un fait contredit se corrige,
   pas se discute.**
+- **Une porte sans sortie de secours.** La Task du 2026-10-23 refuse le démarrage sans `data/config.json`
+  et exclut la création automatique : sur une installation neuve, l'écran qui écrit la configuration
+  devient inatteignable. Personne ne l'a vu avant l'implémentation. Leçon : une Task qui ajoute un refus
+  doit dire ce que la personne peut faire ensuite.
 
 ## 11. Les réussites
 
@@ -296,7 +344,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
   2026-10-15 (`36/36 PASS` selon le [journal](trace.md)), et ses commandes ont été réessayées le
   2026-10-15 : chaque refus attendu est arrivé (`exit 1`), y compris le refus de conclure « écart »
   quand la preuve ne le porte pas. Le 2026-10-16, ce banc est **entré au dépôt** :
-  `docs/device/harness/banc-harnais.sh`, **258 contrôles**, `258/258 PASS`, renommé avec son foyer
+  `docs/device/harness/banc-harnais.sh`, **268 contrôles**, `268/268 PASS`, renommé avec son foyer
   ([BANC.md](device/BANC.md), [ADR-022](DECISIONS.md)). Un banc de douze contrôles y éprouve le
   **re-hachage du cas** : les deux fichiers du gel, la demande et l'attendu, et les huit références du
   framework sont relus sur le disque au reçu et au jugement (`12/12` le 2026-10-15, dont un gel réécrit
@@ -319,7 +367,7 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 
 ## 12. Ce qui pourrait encore casser
 
-- **Rien n'est prouvé par ce run.** Les 258 contrôles et les refus testent l'outil, pas la promesse de
+- **Rien n'est prouvé par ce run.** Les 268 contrôles et les refus testent l'outil, pas la promesse de
   la fiche. Le run du 2026-10-20 a produit un fichier hors du chemin attendu ; l'ADR-047 a corrigé la
   lecture de son tableau, pas le produit. Il a montré que la chaîne écrit un reçu, pas que le skill tient
   sa promesse.
@@ -343,6 +391,12 @@ Un projet qui ne liste que ses réussites ment sur son état. Voici les ratés, 
 - **Le fil du client peut vivre en *worktree*.** Mesuré le 2026-10-16 : ouverte ainsi sur la copie du
   terrain, la session y créerait une **branche** et déplacerait le `HEAD` gelé. À refuser avant d'ouvrir,
   dans le même geste que le choix du dossier.
+- **Un run guidé n'est pas indépendant.** La même session a lu le corrigé avant de produire ; elle peut
+  donc avoir bien fait sans que la fiche y soit pour quelque chose. Le run guidé prouve la forme et les
+  traces, pas la causalité.
+- **« La suite est verte » dépend de l'environnement.** Dans un clone neuf du terrain, un test de CSS
+  échoue avant `npm ci && npm run build`. Une preuve qui cite la suite doit nommer ce prérequis, sinon
+  elle dit plus qu'elle ne mesure.
 - **On ne rejoue pas une réponse.** On peut seulement refaire le même départ.
 
 ## 13. Où lire les choses sérieuses
@@ -379,6 +433,9 @@ git clone https://github.com/giak/aidd-device
 | **framework-origin** | la boîte à fiches d'origine : lue, jamais écrite |
 | **session** | l'assistant IA à qui l'on remet la demande ; le « candidat » |
 | **trace machine** | l'enregistrement technique de la session, copié dans le dossier de l'épreuve |
+| **trace vérifiable** | ce que le raisonnement laisse d'observable : une question, une décision motivée, une source citée, une commande, un fichier écrit ; jamais la pensée elle-même. Elle se lit dans `lecture.json` pour un run instrumenté, ou à la main dans le gabarit du run guidé, pas dans un bloc `traces[]` ([ADR-075](DECISIONS.md)) |
+| **run guidé** | un run joué dans la conversation courante, où l'opérateur et le candidat sont le même agent ; il s'ouvre par une **présentation de l'épreuve** validée, puis trois étapes validées (produit attendu, run, journal) ; il se consigne dans le gabarit de la [spec du 22:12](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md) §3, attache sa trace machine par `tracer` ([ADR-076](DECISIONS.md)), et prouve la forme, pas l'indépendance |
+| **présentation de l'épreuve** | les six champs validés avant toute demande : ce qui est testé, pourquoi, comment, le but, ce qui sera observé, ce qui ne sera pas prouvé ([spec](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)) |
 | **run** | une épreuve complète : un cas gelé, une session ouverte, un produit recueilli, un reçu à chaud, un verdict |
 | **cas** | la fiche de l'épreuve : la demande écrite, l'attendu scellé, le texte remis, le budget d'échanges |
 | **état A / état B** | A : un run a eu lieu. B : la session a été demandée, rien n'est encore revenu |

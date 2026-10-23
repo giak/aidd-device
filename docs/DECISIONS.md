@@ -3,6 +3,7 @@ name: Registre des décisions
 description: ADR léger — contexte, choix, conséquences, numéroté, au fil de l'eau ; le fond du contrat documentaire
 type: decisions
 status: in-progress
+question: Pourquoi chaque choix, et quelles options ont été écartées ?
 ---
 
 # DECISIONS — Registre des décisions
@@ -2453,3 +2454,62 @@ falsificateur. L'intervalle est un fait de la trace, pas une qualité de la paus
 
 **Falsificateur** : un `attente_ms` différent de l'écart ; une pause de 200 ms sans limite courte ; une
 limite courte sur une pause d'une minute ; un reçu antérieur refusé faute du champ.
+
+## ADR-079 — Une réponse, un foyer : six pages absorbées, et la conduite d'un test a sa page (2026-10-23)
+
+**Contexte.** Douze pages de doctrine portaient trois natures à la fois. Mesuré le 2026-10-23 :
+`ARCHITECTURE` citait 44 numéros d'ADR dans de la prose descriptive, `DASHBOARD` faisait 130 lignes pour
+80 128 octets, le compte **268** apparaissait dans 8 fichiers, et la question « où en est le projet » avait
+quatre foyers déclarés. La cause est unique : une page qui a besoin d'un fait le recopie au lieu de le
+citer, parce que rien n'interdisait la copie.
+
+**Options** : les règles seules, sans déplacement (rejeté : douze foyers restent, la copie reste permise) ·
+la carte cible en deux tranches (choisi) · la réécriture à zéro (rejeté : les mesures, les falsificateurs et
+les limites vivent dans les pages actuelles, une réécriture les perd sans le dire).
+
+**Décision.** Une page répond à une question, une réponse a un foyer, et trois natures ont trois formats :
+état sans dates ni ADR, décision immuable, récit daté. La règle est écrite **une seule fois**, dans
+`~/.AGENTS.md`, et citée ici par un lien. `docs/INDEX.md` nomme les foyers et leur question.
+`docs/PROTOCOLE.md` est créé et absorbe `ORCHESTRATEUR` et le §4.1 d'`ARCHITECTURE` (les deux modes, les
+huit commandes, les quatre blocs, les refus). `DEVICE` est absorbé par `ARCHITECTURE` et le `README`,
+`BOUNDARY` par `ARCHITECTURE` §3 et §3.1, `PFD` par `VISION` et `DASHBOARD`, `NEGATIVE` par le journal
+(Séance 29) et `DASHBOARD`, et `EXPLICATION` devient `docs/guide/explication.md`, sans sa section d'état.
+Une page absorbée devient une **note datée** qui renvoie à son repreneur : elle n'est plus un foyer, elle
+existe pour qu'un lien ancien ne meure pas. La nomenclature de l'[ADR-013](DECISIONS.md) est donc supersédée
+pour ces trois noms : un artefact du v6 §10 peut vivre comme section, et son nom reste dans l'ADR.
+
+**Conséquences.** Le contrôle **153** du banc lit `docs/PROTOCOLE.md` au lieu du runbook, et ses
+confrontations sont inchangées : mêmes huit commandes, mêmes options, mêmes douze refus. `liens.mjs` rend
+208 fichiers et 0 mort ; le banc reste à **268**. `BANC` et `REPLAY` remontent sous `docs/` avec les autres
+manuels : `device/` ne garde que les preuves et les outils. Le journal et les brainstorm datés
+continuent de citer les anciens chemins, que les notes tiennent vivants.
+
+**Falsificateur** : un fait chiffré présent dans deux pages ; une page de doctrine sans `question:` ; une
+page de description qui cite un numéro d'ADR dans sa prose ; un contrôle du banc retiré au lieu d'être
+repointé ; une chronologie qui revient dans `DASHBOARD` ; un lien mort, ou une note sans date.
+
+## ADR-080 — `cas` refuse la destination du skill, jamais sa source (2026-10-23)
+
+**Contexte.** `cas` refusait tout skill dont le dépôt était un des arbres nommés par les gels. Depuis le
+gel du 2026-10-15, `/home/giak/projects/framework` en est un : le mode qui produit un reçu était fermé aux
+skills AIDD, alors que les cinq cas gelés testent des skills du framework. Mesuré :
+`REFUS — cas : le skill vit dans un des quatre arbres déjà gelés (…/framework)`.
+
+**Options** : garder le refus et acter que les skills AIDD n'ont que le mode guidé (rejeté : le corpus
+existant le contredit) · refuser la destination du skill, jamais sa source (choisi) · laisser chaque appel
+juger au cas par cas (rejeté : une règle qui dépend de l'appel n'est pas une règle).
+
+**Décision.** `cas` refuse un skill dont le dépôt est un arbre de label `travail` des gels de `--cases`,
+ou le dépôt du dispositif. Il accepte un skill de `framework-origin`, `terrain` ou `revision-sous-test` :
+ces arbres sont lus et copiés, jamais écrits par la session. `arbresEcrits(cases)` rend les `travail` ;
+`arbresGeles` reste pour le contrôle du terrain. Les deux refus portent leur texte, et le contrôle du
+terrain comme celui d'un dépôt sale ne changent pas.
+
+**Conséquences.** Le contrôle 145 change de fixture : il refuse un skill dans l'arbre `travail` d'un gel.
+Deux contrôles naissent : 269 accepte un skill de `framework-origin` et fabrique le cas, 270 refuse un
+skill du dépôt du dispositif. Le banc passe de 268 à **270**, sans renuméroter un contrôle existant. La
+spec de l'orchestrateur, §7 condition 2, est réécrite. Le cas `03-shadow-areas` devient fabricable ; il
+n'est pas joué ici.
+
+**Falsificateur** : un skill du framework encore refusé ; un skill du dépôt du dispositif accepté ; un
+skill dans un `travail` accepté ; un contrôle retiré au lieu d'être repointé ; un cas fabriqué sans gel.

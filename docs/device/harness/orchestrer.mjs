@@ -349,9 +349,10 @@ function runParDefaut(cas, gel) {
   const alea = randomBytes(4).toString("hex").slice(0, 7);
   return join(DEPOT, "docs/device/runs", `${horodatage()}-${String(gel.empreinte).slice(0, 8)}-${alea}`);
 }
-// Les quatre arbres que le dispositif nomme déjà : ceux de tous les gels de --cases. Un skill, un
-// terrain, ou un dossier de travail qui tombe dedans n'est pas un sujet de test, c'est le dispositif
-// lui-même — et le cas fabriqué y écrirait (refus 2 et 3).
+// Les quatre arbres que le dispositif nomme déjà : ceux de tous les gels de --cases. Un terrain, ou un
+// dossier de travail qui tombe dedans n'est pas un sujet de test, c'est le dispositif lui-même — et le
+// cas fabriqué y écrirait (refus 3). Un skill n'est refusé que par sa destination : un arbre que le run
+// écrit, ou le dépôt du dispositif (refus 2, ADR-080).
 function arbresGeles(cases) {
   if (!existsSync(cases)) return [];
   const chemins = [];
@@ -360,6 +361,22 @@ function arbresGeles(cases) {
     try {
       const gel = JSON.parse(readFileSync(join(cases, nom), "utf8"));
       for (const arbre of gel.arbres || []) if (arbre.chemin) chemins.push(resolve(arbre.chemin));
+    } catch {
+      continue;
+    }
+  }
+  return chemins;
+}
+// Les arbres de label « travail » : ceux que la session écrira. Un skill qui y vit serait testé sur son
+// propre terrain, et le run se confondrait avec ce qu'il mesure.
+function arbresEcrits(cases) {
+  if (!existsSync(cases)) return [];
+  const chemins = [];
+  for (const nom of readdirSync(cases)) {
+    if (!nom.endsWith(".freeze.json")) continue;
+    try {
+      const gel = JSON.parse(readFileSync(join(cases, nom), "utf8"));
+      for (const arbre of gel.arbres || []) if (arbre.label === "travail" && arbre.chemin) chemins.push(resolve(arbre.chemin));
     } catch {
       continue;
     }
@@ -394,8 +411,11 @@ function commandeCas(argv) {
   if (dedansFramework.startsWith("..")) refuse(`cas : ${skillDonne} sort du dépôt ${framework} — le gel ne couvrirait pas le skill ; rien ne s'écrit`);
 
   const geles = arbresGeles(cases);
-  if (dedans(framework, geles)) {
-    refuse(`cas : le skill vit dans un des quatre arbres déjà gelés (${framework}) — tester le dispositif avec lui-même ne prouve rien ; rien ne s'écrit`);
+  if (dedans(framework, [DEPOT])) {
+    refuse(`cas : le skill vit dans le dépôt du dispositif (${framework}) — le dispositif se mesurerait lui-même ; rien ne s'écrit`);
+  }
+  if (dedans(framework, arbresEcrits(cases))) {
+    refuse(`cas : le skill vit dans un arbre que le run écrit (${framework}) — la session y écrirait, et le test se confondrait avec son terrain ; rien ne s'écrit`);
   }
   const terrainDonne = option(valeurs, "terrain", { defaut: null });
   let terrain = null;

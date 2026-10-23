@@ -3,6 +3,7 @@ name: Vision
 description: La raison d'être du dépôt en une page, à la manière d'un document-cadre stable
 type: vision
 status: done
+question: Pourquoi ce dispositif existe-t-il ?
 ---
 
 # VISION
@@ -39,8 +40,19 @@ qu'elle produit, de façon rejouable.
 - Le dispositif versionné dans son propre dépôt git ;
 - un terrain de consignation exemplaire : tout est tracé, noté, fondé et daté — la gestion
   documentaire ici pratique ce que le dispositif mesure ailleurs ;
-- un seul foyer documentaire : `docs/` (VISION, PFD, DECISIONS, DASHBOARD, TRACE, brainstorm,
-  tasks, archive).
+- un seul foyer documentaire : `docs/`, dont la carte est [INDEX](INDEX.md) ; aucune page n'est le
+  second foyer d'une autre.
+
+## Les trois phases
+
+| Phase | Contenu |
+| --- | --- |
+| 1 la gestion documentaire | la gestion comme terrain de consignation : la fondation, l'unité de travail, la clôture, le remote |
+| 2 le dispositif | les artefacts du v6 §10, les cas gelés, les runs rejouables, le protocole de test d'un skill |
+| 3 l'amélioration continue | la mesure des dérives de sa propre consignation, et les arbitrages |
+
+Aucune phase ne porte son avancement ici : ce qui reste ouvert est au [DASHBOARD](DASHBOARD.md), et ce
+qui est vrai aujourd'hui à l'[ARCHITECTURE](ARCHITECTURE.md).
 
 ## Ce que le dispositif n'est **PAS** (non-objectifs)
 

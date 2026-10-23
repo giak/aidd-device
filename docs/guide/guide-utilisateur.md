@@ -3,6 +3,7 @@ name: Guide utilisateur — faire tester un skill
 description: Tu arrives avec un skill et un dépôt, tu dis « test ça » à une session d'agent, l'agent conduit le test de bout en bout, tu confirmes ce qu'il a lu de ton skill, tu fais les trois gestes que personne ne peut faire à ta place, et tu lis un verdict avec la phrase qui dit ce qu'il atteste
 type: guide
 status: in-progress
+question: Comment une personne fait-elle tester un skill, sans taper une commande ?
 ---
 
 # Guide utilisateur — faire tester un skill
@@ -37,7 +38,7 @@ Donne aussi le dépôt à tester si ce n'est pas celui que l'agent te propose. P
 `test ça : ~/projets/mon-framework/skills/revue-de-code/SKILL.md, sur ~/projets/mon-service`.
 
 C'est tout ce que tu as à décider pour démarrer. L'agent lit alors la page qui gouverne le geste
-([ORCHESTRATEUR.md](../device/ORCHESTRATEUR.md)) et suit ses étapes dans l'ordre.
+([PROTOCOLE.md](../PROTOCOLE.md)) et suit ses étapes dans l'ordre.
 
 **Ce que tu ne fais pas** : retaper une commande, remplir un JSON, choisir un identifiant de cas, geler
 quoi que ce soit. Si quelqu'un te demande ça dans une session qui a lu cette page, ce n'est pas le
@@ -163,5 +164,5 @@ Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin
 Le client se choisit à cette étape : `suite` sans `--client` reconnaît Freebuff ou opencode, et
 te demande `--client` si les deux connaissent le même fil. Les commandes exactes, leurs options et leurs
 refus sont dans
-[ORCHESTRATEUR.md](../device/ORCHESTRATEUR.md). Ce que chaque pièce atteste, et comment les vérifier à la
+[PROTOCOLE.md](../PROTOCOLE.md). Ce que chaque pièce atteste, et comment les vérifier à la
 main, est dans [le guide du test](guide-du-test-de-bout-en-bout.md).

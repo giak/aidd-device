@@ -1,71 +1,28 @@
 ---
 name: ARCHITECTURE — le protocole de test, de bout en bout
-description: "L'architecture détaillée du dispositif : les acteurs et leur séparation de contexte, les deux modes de run et le déroulé guidé, les arbres gelés, les deux couches de commandes (orchestrateur et harnais) avec ce que chacune dérive, écrit et refuse, la vie des artefacts, les seize mesures du reçu et le plafond du verdict, en schémas et en tables"
+description: "L'architecture du dispositif : les acteurs et leur séparation de contexte, les quatre arbres et leurs preuves d'intégrité, les deux couches d'exécution, ce qui part et ce qui revient, la vie des artefacts, les seize mesures du reçu et le plafond du verdict, en schémas et en tables"
 type: architecture
 status: in-progress
+question: Comment le dispositif est-il fait aujourd'hui ?
 ---
 
 # ARCHITECTURE — le protocole de test, de bout en bout
 
-> **V0.2 — 2026-10-22 (Séance 111).** Page relue contre ses pièces, après un frontmatter qu'un outil
-> refusait et six jours de dérive. Elle décrit désormais **les deux couches** (huit commandes
-> d'orchestration au-dessus des six du harnais, `tracer` depuis l'ADR-076), les **seize mesures** que le reçu calcule, et
-> les pièces nées depuis (porte, faits, rapport, page utilisateur). Elle n'invente aucun chiffre : chaque
-> valeur vient d'une pièce du dépôt, nommée sur sa ligne, et les cinq schémas ont été re-rendus le
-> 2026-10-22 par mermaid-cli, libellés relus dans le SVG produit (un `exit 0` ne prouve pas un rendu, le
-> [bilan du premier run](brainstorm/2026-10-15-201458-bilan-premier-run.md) §9 l'a mesuré).
->
-> **Rectifications datées.**
-> - **2026-10-16 (Séance 16)** : le gabarit du nom d'un run portait un `@` que le seul nom réel n'a pas ;
->   le marqueur `.freebuff/project-id` que le client écrit dans l'arbre ouvert entre au tableau des
->   arbres ; ce que la sonde du client a mesuré (lectures hors racine libres, mode worktree à refuser)
->   entre aux limites.
-> - **2026-10-16 (Séance 17)** : le banc du harnais ([BANC](device/BANC.md), [ADR-022](DECISIONS.md))
->   n'était nommé nulle part ; `last-message.md` était rangé un cran au-dessus de son foyer, que la
->   [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §4 place
->   sous `raw/<cas>/` ; `produit.absent` était attribué à `output.json`, qui ne le porte pas, le reçu le
->   porte.
-> - **2026-10-20 (Séance 74)** : `run.mjs` passe à **2 023 lignes**, `clients.mjs` devient la frontière
->   des deux clients, `opencode` entre aux outils hors de Node, `tableau.index` entre dans le reçu, et le
->   premier run réel du cas jouet est nommé au §5.
-> - **2026-10-22 (Séance 108)** : la page utilisateur entre au tableau des acteurs
->   ([ADR-061](DECISIONS.md)), et les comptes du harnais (2 869 lignes), du rapport (527) et du banc
->   (236) sont remis sur leur mesure.
-> - **2026-10-22 (Séance 111)** : frontmatter cité, donc lisible par un outil ; « cinq positions »
->   devient **sept** ; l'orchestrateur entre au §4 ; cinq pièces entrent au §5 ; `ECART.md` est rendu à
->   son état ; les références sont **par cas** (11 pour `spike-annees`) ; les **quatorze** falsificateurs
->   du reçu remplacent « les neuf » ; `run.mjs` n'ouvre aucune session, `ouvrir` si.
-> - **2026-10-22 (Séance 116)** : le `temoignage` de `faits.json` cède la place à la **conduite déclarée**,
->   `{mode: agent|humain, qui, quand}`, recopiée par le reçu avec sa limite ([ADR-071](DECISIONS.md)) ;
->   les comptes du harnais (3 156 lignes), de l'orchestrateur (1 359) et du rapport (562) sont remis sur
->   leur mesure.
->
-> - **2026-10-22 (Séance 122)** : le raisonnement n'est jugé que sur ses **traces vérifiables**
->   ([ADR-073](DECISIONS.md)), et le test d'un skill peut se jouer dans la **conversation courante**,
->   sans headless ([ADR-074](DECISIONS.md)) ; le §2 dit ce que ce mode coûte, le §7.3 ce qu'il juge, et
->   le §8 ce qu'il ne prouve pas.
-> - **2026-10-22 (Séance 123)** : les traces vérifiables se lisent dans `lecture.json`, pas dans un
->   troisième bloc ([ADR-075](DECISIONS.md)) ; `resultat.mjs` lit les textes et les commandes, et le banc
->   passe à **262** contrôles (259 à 262).
-> - **2026-10-23 (Séance 126)** : le run guidé s'ouvre par une **présentation de l'épreuve** en six champs,
->   validée avant l'écriture de la demande
->   ([spec](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)) ; le
->   déroulé guidé tient en quatre étapes validées, plus un retour d'expérience hors gabarit, et il a son
->   schéma (§4.1).
-> - **2026-10-23 (Séance 127)** : la Task sortie du run guidé a été **implémentée et éprouvée** dans le
->   clone du terrain : refus sans configuration `exit 1` et aucun port ouvert, service et `GET /ping`
->   `200` avec configuration, suite à **373 passed**. Les comptes sont remis sur leur mesure : harnais
->   **3 169** lignes, orchestrateur **1 562**, banc **268/268** ; le dépôt porte **cinq** cas gelés,
->   **vingt-neuf** dossiers de run et **dix-neuf** reçus. Les sept schémas sont re-rendus le 2026-10-23.
->
-> **Ce que cette page possède** : les acteurs et leur séparation de contexte, le trajet des fichiers,
-> les deux couches de commandes et leurs entrées et sorties, les falsificateurs, le plafond du verdict.
-> **Ce que possèdent les autres pages** : [DEVICE](device/DEVICE.md) dit ce qu'il fait, ne fait pas, et
-> comment le lancer ; [BOUNDARY](device/BOUNDARY.md) tient les quatre arbres et les preuves
-> d'intégrité ; [REPLAY](device/REPLAY.md) rejoue le gel depuis un clone neuf ; la
+> **Ce que cette page possède** : ce que le dispositif fait et ne fait pas, les acteurs et leur séparation
+> de contexte, les quatre arbres et les preuves qu'aucun fichier ne fuit, le trajet des fichiers, les deux
+> couches d'exécution, les falsificateurs, le plafond du verdict, et les limites structurelles.
+> **Ce que possèdent les autres pages** : [PROTOCOLE](PROTOCOLE.md) dit comment conduire un test, dans
+> quel ordre, avec quels refus ; [BANC](BANC.md) dit quels contrôles éprouvent le harnais ;
+> [REPLAY](REPLAY.md) rejoue le gel depuis un clone neuf ; la
 > [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) porte les
 > exigences, la [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md)
-> l'ordre exact du run, et [EXPLICATION](EXPLICATION.md) raconte le même projet sans jargon.
+> l'ordre exact du run, et le [guide](guide/explication.md) raconte le même projet sans jargon.
+> L'historique des rectifications et les comptes datés vivent dans [trace.md](trace.md) : cette page
+> décrit le présent, elle ne le raconte pas.
+
+**En une phrase.** Le dispositif fait exécuter une modification du framework par une session ouverte par
+l'opérateur, et nomme l'écart entre ce qu'elle annonce et ce qu'elle produit, en gardant de quoi refaire le
+départ, jamais la réponse.
 
 ## 1. Le problème, et la seule ruse de l'architecture
 
@@ -80,9 +37,8 @@ relisible par quelqu'un qui n'a pas assisté au run ([spec](tasks/2026_10/2026-1
 
 ## 2. Les acteurs, et la séparation de contexte
 
-Sept positions, définies par ce qu'elles ne doivent pas voir ([DEVICE](device/DEVICE.md),
-[EXPLICATION](EXPLICATION.md) §4). Le mode guidé en fait tenir deux par le même agent, et paie ce prix
-([ADR-074](DECISIONS.md)).
+Sept positions, définies par ce qu'elles ne doivent pas voir (ce tableau, et le [guide](guide/explication.md)
+§4). Le mode guidé en fait tenir deux par le même agent, et paie ce prix ([ADR-074](DECISIONS.md)).
 
 | Position | Qui la tient | Ce qu'elle fait | Ce qu'elle ne voit jamais |
 | --- | --- | --- | --- |
@@ -96,7 +52,7 @@ Sept positions, définies par ce qu'elles ne doivent pas voir ([DEVICE](device/D
 
 L'orchestrateur n'est pas une position de plus : c'est la **main de l'opérateur**, un exécutable qui
 appelle le harnais et recopie ses refus. Il ne voit ni l'attendu, ni la session, et n'écrit que les pièces
-qu'on lui nomme (le §4, et [ORCHESTRATEUR](device/ORCHESTRATEUR.md)).
+qu'on lui nomme (§4, et [PROTOCOLE](PROTOCOLE.md)).
 
 La séparation est **de contexte, pas de personne** : relecteur, opérateur et juge peuvent être la même
 main, mais chacune travaille sur des pièces différentes. C'est ce qui rend la question 4 du v6 §11
@@ -130,7 +86,8 @@ sequenceDiagram
 ## 3. Les arbres, et qui écrit où
 
 **Attention, deux ensembles portent le nom « les quatre arbres »**, et les confondre fait perdre le fil :
-[BOUNDARY](device/BOUNDARY.md) §1 liste ce que le dispositif sépare, le gel enregistre quatre **labels**
+la [skill `03-boundaries`](../.agents/skills/03-boundaries/SKILL.md) liste ce que le dispositif sépare, le
+gel enregistre quatre **labels**
 (`arbres[]`). Pour le cas `2026-10-22-092005-spike-annees` (gel `0052c168`, lu le 2026-10-22) :
 `framework-origin` `fe48de12`, `terrain` `416ec1f`, `revision-sous-test` `fe48de12`, `travail`
 `416ec1f`. Chaque cas a son instantané : `revision-sous-test` suit la révision du skill sous test, ce
@@ -146,7 +103,7 @@ n'est pas une tête fixe.
 
 `<racine>` est `racine_espace_de_travail`, déclarée **une seule fois** au gel : c'est un fait de la
 machine, pas une propriété du cas. Un déplacement, ou une autre machine, redéclarent la racine au lieu
-de réécrire un cas gelé ([ADR-019](DECISIONS.md), [REPLAY](device/REPLAY.md) §5).
+de réécrire un cas gelé ([ADR-019](DECISIONS.md), [REPLAY](REPLAY.md) §5).
 
 ```mermaid
 graph TD
@@ -157,69 +114,65 @@ graph TD
   DEV -.->|"controle l'etat gele"| TRA
 ```
 
-## 4. Deux couches de commandes, et le cycle d'un run
+### 3.1 Ce que la frontière prouve
 
-Deux exécutables, deux responsabilités. L'**orchestrateur** (`harness/orchestrer.mjs`, **1 562 lignes**)
-dit ce qui se dit et dans quel ordre : il n'ouvre aucun contrôle, appelle le harnais et recopie son refus
-tel quel ([ADR-038](DECISIONS.md)). Le **harnais** (`harness/run.mjs`, **3 169 lignes**) mesure et écrit
-les pièces. Une étape qui refuse arrête l'orchestrateur, et la commande qui a refusé n'est pas relancée.
+Deux relevés identiques, **avant et après** chaque run, sont la preuve que l'origine n'a pas bougé :
 
-| Commande de l'orchestrateur | Ce qu'elle dérive, jamais de la personne | Ce qu'elle écrit |
-| --- | --- | --- |
-| `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | deux pièces et le gel sous `CASES/`, `<racine>/<cas>/` |
-| `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans le dossier du run |
-| `ouvrir` | le fil de la session opencode, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil ([ADR-059](DECISIONS.md)) |
-| `suite` | les faits, l'export de la trace par l'adaptateur du client, la copie du produit, et l'annexe du scratch déclaré | `faits.json`, `trace/`, `raw/<cas>/`, `annexe/<cas>/` |
-| `fin` | le verdict que la preuve autorise, l'output du juge, le rapport, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, `RESULTAT.md` |
-| `rapport` | le rapport d'un run clos, depuis le reçu, l'output et la trace | `RAPPORT.md`, et `RESULTAT.md` avec `--remplacer` |
-| `lire` | rien : elle relit | rien |
-| `tracer` | le client du fil, la session normalisée, le compte des lignes et le `sha256` de l'export ([ADR-076](DECISIONS.md)) | `trace/echange.jsonl`, `trace/fil.json` |
-
-`ouvrir` est la seule commande qui parle à un client au lieu de lire ses pièces : `opencode serve` sur
-`127.0.0.1`, mot de passe lu dans sa sortie, session créée dans l'arbre `travail`, texte envoyé verbatim
-après vérification du `sha256` de `gate.json`. C'est donc le seul endroit du dispositif qui ouvre une
-session, et le seul qui parle par le réseau, en local. Les quatre blocs de narration, les refus et ce que
-ces huit commandes n'attestent pas vivent dans [ORCHESTRATEUR](device/ORCHESTRATEUR.md).
-
-En **mode guidé** ([ADR-074](DECISIONS.md)), `ouvrir` n'est pas appelée : la session est déjà ouverte, le
-texte est remis dans la conversation, et `tracer` exporte le fil dans `trace/echange.jsonl` avec son
-`sha256` ([ADR-076](DECISIONS.md)). Quand le client ne rend pas la trace, la conversation et les pièces
-produites sont tout ce qui reste, le §5 bis du gabarit dit `absente`, et la page le dit `non observé` au
-lieu de le supposer.
-
-### 4.1 Les deux modes, et le déroulé guidé
-
-Le run indépendant suit le cycle ci-dessus : gel, porte, session ouverte, collecte, reçu à chaud,
-comparaison. Le run guidé n'a ni gel, ni porte, ni reçu : il tient sa preuve de la conversation et d'un
-journal, et il paie son indépendance ([ADR-074](DECISIONS.md)). Depuis la Séance 126, il s'ouvre par une
-**présentation de l'épreuve** en six champs, validée avant l'écriture de la demande
-([spec](tasks/2026_10/2026-10-23-034641-presentation-de-l-epreuve/2026-10-23-034641-spec.md)).
-
-| Étape du run guidé | Ce qui est produit | Ce qui la clôt |
-| --- | --- | --- |
-| 1 choisir le skill | le skill lu dans la révision sous test, ses actions et ses références | la lecture est faite, pas annoncée |
-| 2 présenter l'épreuve | ce qui est testé, pourquoi, comment, le but, ce qui sera observé, ce qui ne sera pas prouvé | la personne valide, sinon l'étape reste ouverte |
-| 3 écrire le produit attendu | le chemin, la forme, le contenu et les exclusions | la personne valide |
-| 4 jouer le run | le brouillon montré, l'accord, une seule écriture, la grille de traces | le journal `type: run-guide` est écrit |
-| 5 retour d'expérience, hors gabarit | l'implémentation du produit et ses preuves | la Task est éprouvée, ou la forme est dite non tenue |
-
-L'étape 5 n'est pas une clause du gabarit : la Séance 127 l'a jouée après coup, sur la Task du run guidé,
-et rien ne l'exige aujourd'hui. Le journal du déroulé vit sous
-`docs/tasks/<année_mois>/<date_slug>/<date_slug>-run-guide.md`
-([spec du run guidé](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md) §3).
-
-```mermaid
-flowchart TD
-  A["1 choisir le skill<br/>lu dans la revision sous test"] --> B["2 presenter l epreuve<br/>six champs, aucune demande ecrite"]
-  B --> C{"la personne valide ?"}
-  C -->|"non"| B
-  C -->|"oui"| D["3 ecrire le produit attendu<br/>chemin, forme, exclusions"]
-  D --> E{"la personne valide ?"}
-  E -->|"non"| D
-  E -->|"oui"| F["4 jouer le run<br/>brouillon, accord, une ecriture"]
-  F --> G["journal du deroule<br/>type run-guide, grille de traces"]
-  G -.->|"hors gabarit, seance 127"| H["5 implementer et eprouver<br/>Done When, preuves, suite verte"]
+```text
+git -C /home/giak/projects/framework rev-parse --short HEAD
+git -C /home/giak/projects/framework status --porcelain
 ```
+
+Depuis l'[ADR-021](DECISIONS.md) (variante A), la même paire se relève **en clôture de toute séance
+capable d'écrire**, et son écart va au `Vérifié` de la séance : c'est le seul contrôle qui attrape une
+dérive née hors run. Il constate, il ne prévient pas : une dérive réparée avant le relevé ne laisse rien à
+lire.
+
+**Aucun fichier du dispositif n'appartient au framework.** La clause se mesure en **paires chemin +
+contenu** ([ADR-014](DECISIONS.md)), ni par le chemin seul, ni par le contenu seul : deux dépôts portent
+chacun un `AGENTS.md` et un `README.md` par convention, et l'intersection des seuls chemins n'est jamais
+vide. La commande qui décide :
+
+```text
+cd /tmp
+git -C <origine>    ls-files -s | awk -F'\t' '{split($1,a," "); print a[2]"\t"$2}' | LC_ALL=C sort > f.pairs
+git -C <dispositif> ls-files -s | awk -F'\t' '{split($1,a," "); print a[2]"\t"$2}' | LC_ALL=C sort > d.pairs
+LC_ALL=C comm -12 f.pairs d.pairs | wc -l        → 0
+```
+
+Les relevés datés, les trois tentatives qui l'ont fait trancher et les arbres publiés sont au
+[journal](trace.md), Séances 2, 10 et 131. Un même contenu n'est pas le même fichier, et un même chemin non
+plus : seule la paire tranche.
+
+La variante qui hashe l'**arbre de travail** entier ne décide pas : elle ramasse ce que le client dépose
+lui-même (`.freebuff/.gitignore`), et l'intersection cesse d'être vide sans qu'un fichier du dispositif
+appartienne au framework. La mesure qui tranche lit l'**index** (`git ls-files -s`).
+
+**Ce que la paire ne prouve pas** : elle porte sur les fichiers **suivis**, pas sur les artefacts non
+commités ; l'intégrité **pendant** un run n'est établie que par la paire relevée à ce moment-là ; et un
+artefact peut atterrir dans l'arbre de l'origine sans que le dispositif l'ait écrit là, quand un outil du
+client résout un **chemin relatif** contre la racine du projet ouvert. La parade tenue est d'écrire en
+chemin absolu ; la dérive est lue, jamais empêchée.
+
+## 4. Deux couches d'exécution, et le cycle d'un run
+
+Deux exécutables, deux responsabilités. L'**orchestrateur** (`harness/orchestrer.mjs`) dit ce qui se dit
+et dans quel ordre : il n'ouvre aucun contrôle, appelle le harnais et recopie son refus tel quel
+([ADR-038](DECISIONS.md)). Le **harnais** (`harness/run.mjs`) mesure et écrit les pièces. Une étape qui
+refuse arrête l'orchestrateur, et la commande qui a refusé n'est pas relancée. L'orchestrateur est aussi
+le seul endroit du dispositif qui ouvre une session et parle par le réseau, en local (`ouvrir`,
+[ADR-059](DECISIONS.md)).
+
+Les huit commandes de l'orchestrateur, leurs options, leurs refus et les quatre blocs qu'elles impriment
+sont au [PROTOCOLE](PROTOCOLE.md) §2 à §5 : cette page dit de quoi les deux couches sont faites, pas
+comment on s'en sert.
+
+### 4.1 Les deux modes, et ce qui les distingue
+
+Le run indépendant suit le cycle complet : gel, porte, session ouverte, collecte, reçu à chaud,
+comparaison. Le run guidé n'a ni gel, ni porte, ni reçu, et il paie son indépendance
+([ADR-074](DECISIONS.md)) : sa conduite, sa présentation en six champs et son gabarit sont au
+[PROTOCOLE](PROTOCOLE.md) §1.
 
 Les deux modes ne laissent pas les mêmes pièces :
 
@@ -239,10 +192,10 @@ flowchart LR
   B4 --> C2["forme tenue ou non tenue<br/>independance non observee"]
 ```
 
-Sous elle, `run.mjs` est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
+Le harnais est l'instrument du run, pas un contrôle mécanique du dépôt : aucune dépendance, aucun hook,
 aucun CI ([ADR-004](DECISIONS.md)). Ses refus et ses acceptations sont éprouvés par un banc qui vit dans
-le dépôt, `docs/device/harness/banc-harnais.sh` : 268 contrôles, sans ouvrir de session ni écrire dans le dépôt
-([BANC](device/BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
+le dépôt, `docs/device/harness/banc-harnais.sh` : ses contrôles, sans ouvrir de session ni écrire dans le dépôt
+([BANC](BANC.md), [ADR-022](DECISIONS.md)). À côté de lui, `liens.mjs` éprouve les liens des documents :
 compte strict hors code, compte naïf imprimé à côté, refus d'un lien mort en prose ([ADR-027](DECISIONS.md)). Ses outils hors de Node — `git`, `date` GNU,
 `sqlite3` pour la base Freebuff, `opencode` pour l'export de l'autre client — sont déclarés au `--help` et
 sondés au démarrage, avec un refus qui nomme l'outil, la commande, l'usage et le remède ([ADR-026](DECISIONS.md)). Le banc n'est pas un automatisme pour autant : rien ne
@@ -317,6 +270,15 @@ flowchart LR
 Le schéma suit la chaîne du cas au produit ; les pièces d'exécution nées depuis (porte, faits, rapport,
 page utilisateur, lecture) sont dans la table qui suit.
 
+**Ce qui part, et ce qui ne part jamais.** La demande (`CASES/<cas>.request.md`) porte huit champs :
+identifiant ; révision du framework sous test et commande d'installation en répertoire jetable ; révision
+du terrain et commande de copie de travail ; chemin du répertoire de travail, situé par la racine déclarée
+au gel (`$RACINE/<cas>/`, [ADR-019](DECISIONS.md)) ; **le texte remis, verbatim, entre deux lignes de
+garde** ; ce que la session doit produire, chemin et nom exacts ; les interdits (écrire dans
+`framework-origin`, écrire dans le terrain, lire `CASES/`, sortir du répertoire de travail) ; le budget
+d'échanges. Seul son §5 part, substitué, et `preflight` le re-hache contre la porte. L'attendu ne part
+**jamais** : relayé, il se lit dans le reçu (`attendu_vu: oui`).
+
 | Pièce | Écrite par | Lue par | Où | Durée de vie |
 | --- | --- | --- | --- | --- |
 | `CASES/<cas>.request.md` | l'auteur de l'attendu | la porte et le reçu (re-hachage) ; son §5 part substitué | `docs/device/CASES/` | versionnée, rectifiée par note datée, jamais en silence |
@@ -359,14 +321,13 @@ produit.
 | Le gel porte | Ce qu'il établit | Qui le relit |
 | --- | --- | --- |
 | `fichiers[]` (rôle, chemin relatif, `sha256`) | les deux fichiers du cas, tels qu'ils étaient **avant** l'ouverture | le reçu et le juge, qui re-hachent sur disque |
-| `references[]` (arbre, chemin, `sha256`) | les fichiers de la révision sous test dont l'attendu dépend (**11** pour `spike-annees` ; le nombre est celui du cas) | le rejeu tiers ([REPLAY](device/REPLAY.md) §1) |
+| `references[]` (arbre, chemin, `sha256`) | les fichiers de la révision sous test dont l'attendu dépend (**11** pour `spike-annees` ; le nombre est celui du cas) | le rejeu tiers ([REPLAY](REPLAY.md) §1) |
 | `empreinte` | une ligne par fichier et référence, hachée globalement | `REPLAY` §2, et `run.mjs` |
 | `arbres[]` : `head`, `head_complet`, `porcelain`, `remotes`, `refs_distants` | l'état des quatre arbres avant le run | `preflight` (état `travail`), `receipt` (avant et après) |
 | `racine_espace_de_travail` | la racine des espaces de travail, une fois pour toutes machines | la dérivation des deux copies |
 | `gele_le`, `gele_le_epoch` | l'instant du scellé, **déclaré** | personne ne peut l'opposer : un tiers borne par la date d'entrée au dépôt |
 
-Ce qu'aucun gel ne peut sceller, et qu'il faut donc dire à chaque fois ([REPLAY](device/REPLAY.md) §5,
-[BOUNDARY](device/BOUNDARY.md) §8) : le `porcelain` liste des fichiers non suivis que git ne transporte
+Ce qu'aucun gel ne peut sceller, et qu'il faut donc dire à chaque fois ([REPLAY](REPLAY.md) §5, §3.1) : le `porcelain` liste des fichiers non suivis que git ne transporte
 pas ; la **date de naissance** d'un fichier ne voyage pas, donc la condition 1 ne se vérifie que sur la
 machine qui a produit ; `gele_le` est déclaré par le gel lui-même.
 
@@ -449,7 +410,7 @@ Un run qui n'a rien produit n'est pas un échec de la mesure : avec `collect --s
 manifeste, un reçu où `produit.absent: true` dit ce qui manque, et un `output.json` dont `produit_brut`
 nomme le dossier `raw/<cas>/`, vide ; le verdict tombe à `non concluant` ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §9, [bilan](brainstorm/2026-10-15-201458-bilan-premier-run.md) §6.2).
 
-### 7.3 Les traces vérifiables, seul objet jugeable du raisonnement (décidé et lu le 2026-10-22)
+### 7.3 Les traces vérifiables, seul objet jugeable du raisonnement
 
 Un cas ne juge pas ce que la session a pensé : il juge ce qu'elle a laissé ([ADR-073](DECISIONS.md)). Le
 raisonnement caché n'est ni lisible ni falsifiable ; une trace absente ne prouve pas une pensée absente,
@@ -472,12 +433,12 @@ absente, ou sans partie examinable, rend `non observé` ; une partie examinable 
 une partie qui satisfait rend `tenu`, jamais sans preuve citée. La page cite le tour et la valeur bornée.
 Une part `reasoning` n'est jamais lue : une décision doit être énoncée en texte.
 
-**État au 2026-10-23** : la lecture est **mesurée** dans `RESULTAT.md` pour les cas qui déclarent une
+**Aujourd'hui**, la lecture est **mesurée** dans `RESULTAT.md` pour les cas qui déclarent une
 `lecture.json` ; le reçu et l'output ne changent pas, et un run sans lecture reste sans page. La grille du
-run guidé (ADR-074) se remplit à la main, avec la même règle de trois états, dans le gabarit de la spec
+run guidé ([ADR-074](DECISIONS.md)) se remplit à la main, avec la même règle de trois états, dans le
+gabarit de la spec
 [`2026-10-22-221207-spec-run-guide.md`](tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
-§3 ; le run guidé s'ouvre désormais par une présentation validée (§4.1), et le run de la Séance 126 y a
-mesuré **12** gestes, **11** tenus et **1** limite, la trace machine absente. Le harnais ne juge pas le
+§3 ; sa conduite et sa présentation sont au [PROTOCOLE](PROTOCOLE.md) §1. Le harnais ne juge pas le
 raisonnement, et cette page ne doit pas le laisser croire.
 
 ## 8. Ce qui est structurellement vrai, et ce qui reste une limite
@@ -528,7 +489,7 @@ raisonnement, et cette page ne doit pas le laisser croire.
 - **Limites nommées, non corrigées** : rien ne force l'opérateur à passer `--texte` (le contrôle du
   texte n'existe que si on lui donne) ; un manifeste recollé à la main après coup reste indiscernable
   d'un manifeste né ainsi ; un artefact peut atterrir dans l'arbre de l'origine par la résolution d'un
-  chemin relatif côté client ([BOUNDARY](device/BOUNDARY.md) §8).
+  chemin relatif côté client (§3.1).
 - **Le client, mesuré le 2026-10-16** ([conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) §1.7) : ses
   **lectures** ne sont pas cloisonnées à l'arbre ouvert (un `..` qui en sort résout, un chemin absolu
   aussi), donc la prémisse du cas (aller lire la révision sous test) tient ; ses **écritures** hors
@@ -543,14 +504,13 @@ raisonnement, et cette page ne doit pas le laisser croire.
 
 | Question | Page |
 | --- | --- |
-| ce que le dispositif fait, ne fait pas, et comment le lancer | [DEVICE](device/DEVICE.md) |
-| les quatre arbres, et la preuve que le framework est intact | [BOUNDARY](device/BOUNDARY.md) |
-| rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](device/REPLAY.md) |
-| le banc qui éprouve le harnais, ses 268 contrôles, ce qu'il ne prouve pas | [BANC](device/BANC.md) |
+| comment conduire un test, dans quel ordre, avec quels refus | [PROTOCOLE](PROTOCOLE.md) |
+| récupérer le dépôt et lancer le harnais | [README](../README.md) |
+| rejouer le gel depuis un clone neuf, sans réécrire un chemin | [REPLAY](REPLAY.md) |
+| le banc qui éprouve le harnais, ses contrôles, ce qu'il ne prouve pas | [BANC](BANC.md) |
 | l'ordre exact à suivre pour un run, ce qui se remet mot pour mot, et ce que le client écrit (§1.7) | [conduite](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) |
 | les exigences, et le critère qui les rendrait fausses | [spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) |
-| le même projet raconté sans jargon | [EXPLICATION](EXPLICATION.md) |
-| dire « test ça », et suivre les huit commandes dans l'ordre | [ORCHESTRATEUR](device/ORCHESTRATEUR.md) |
+| le même projet raconté sans jargon | [guide](guide/explication.md) |
 | prendre en main sans taper une commande | [guide utilisateur](guide/guide-utilisateur.md) |
 | le même test, chapitre par chapitre, sorties observées | [guide du test](guide/guide-du-test-de-bout-en-bout.md) |
 | ce qui a eu lieu, et ce qu'un run a laissé | `docs/device/runs/`, son `PV.md` |

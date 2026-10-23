@@ -3,6 +3,7 @@ name: Journal des séances
 description: Ce qui ne touche pas au besoin du projet (conventions, méthode, outillage du dépôt, maintenance), séance par séance, une entrée auditable par séance
 type: journal
 status: in-progress
+question: Que s'est-il passé, et quand ?
 ---
 
 # Journal des séances
@@ -7164,3 +7165,295 @@ commit si elle doit vivre. Rien n'est commité ici.
 
 **Mémoires.** `c219b668-5374-4e42-9b15-d4c72ed4637f` : le changement, les deux lancements, les 373 tests
 et les limites du terrain.
+
+## Séance 128 — 2026-10-23 (remettre à plat la documentation : la règle, la carte, deux pages allégées)
+
+**Objectif.** Répondre au constat de dispersion : douze pages de doctrine, une même réponse dans quatre
+à huit foyers, `ARCHITECTURE` ouverte sur soixante lignes datées, `DASHBOARD` à 80 128 octets.
+
+**Fait.** [Brainstorm mesuré](brainstorm/2026-10-23-083410-remettre-a-plat-la-documentation.md) : inventaire,
+diagnostic des trois natures, principe, carte cible, trois options. Décision : l'option B en deux
+tranches, la règle écrite une seule fois dans `~/.AGENTS.md`.
+
+- `~/.AGENTS.md` reçoit « une réponse, un foyer » : une page, une question ; un lien, jamais une copie ;
+  trois natures, trois formats ; les en-têtes comme index. `AGENTS.md` la cite en une ligne, sans la
+  recopier, et nomme `docs/INDEX.md`.
+- [INDEX](INDEX.md) créé : vingt-deux foyers, leur question, leur nature, leur statut ; `tranche 2`
+  marque les six absorptions décidées.
+- `ARCHITECTURE` perd le bloc `V0.2` et ses rectifications datées (561 → 510 lignes) ; une phrase renvoie
+  l'historique au journal, et le frontmatter porte `question:`.
+- `DASHBOARD` passe de 130 lignes et 80 128 octets à une table de dix points ouverts, chacun avec ce qui
+  le fermerait et son foyer ; l'inventaire des documents et la table des commits partent, `INDEX` et
+  `git log` les portent. Le nom reste : 47 fichiers le citent.
+- `question:` entre au frontmatter de `VISION` et `DECISIONS`.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **268/268 PASS**, `exit 0`.
+`node docs/device/harness/liens.mjs` → 206 fichiers, 1 258 liens, 0 mort. `git diff --check` → `exit 0`.
+`git diff --stat` : les cinq pages de doctrine font +30/−171, et ce journal reçoit la séance. Rien
+n'est commité.
+
+**Dérives signalées, non corrigées.** Le constat « l'architecture n'est pas mise à jour » est faux :
+`ARCHITECTURE` citait déjà `tracer`, l'ADR-076, la Séance 127 et `268/268`. Le défaut mesuré est la
+structure, pas la fraîcheur. Le renommage `DASHBOARD` → `ETAT` est abandonné (47 références).
+
+**Mémoires.** `1fc8fa9a-8f33-4e8f-9504-d5f5775343f7` : la règle, la tranche 1 et ses preuves, relue
+après écriture.
+
+**Prochaines étapes.** Tranche 2 : `PROTOCOLE`, absorbé depuis `ORCHESTRATEUR`, le §4.1 d'`ARCHITECTURE`,
+les ADR-074, 076 et 077 et la présentation de l'épreuve ; puis `DEVICE`, `BOUNDARY`, `PFD`, `NEGATIVE`,
+`EXPLICATION`. Le contrôle **153** du banc lit en dur `docs/device/ORCHESTRATEUR.md` (l. 1107) et devra
+suivre le chemin du runbook.
+
+## Séance 129 — 2026-10-23 (tranche 2 : PROTOCOLE, et six foyers absorbés)
+
+**Objectif.** Terminer la remise à plat documentaire décidée en Séance 128 : créer `PROTOCOLE`, absorber
+`ORCHESTRATEUR`, `DEVICE`, `BOUNDARY`, `PFD`, `NEGATIVE`, et déplacer `EXPLICATION` sous `guide/`, sans
+perdre une mesure, un refus ni un falsificateur.
+
+**Fait.** [PROTOCOLE](PROTOCOLE.md), 258 lignes : les deux modes et le déroulé guidé (repris du §4.1), les
+huit commandes dans l'ordre, les quatre blocs, qui décide, les refus, et ce que le protocole n'atteste pas.
+L'[ARCHITECTURE](ARCHITECTURE.md) absorbe `DEVICE` (ce qu'il fait et ne fait pas, la demande et ses huit
+champs) et `BOUNDARY` : son §3 tient les quatre arbres et qui écrit où, son §3.1 les preuves d'intégrité
+(paire de `porcelain`, paires chemin + contenu) et ce qu'elles ne prouvent pas. Elle perd la table des huit
+commandes et le §4.1 avec son diagramme, et garde les deux couches, la table des six commandes du harnais et
+la frontière des clients.
+
+`VISION` reçoit les trois phases, sans avancement ; `DASHBOARD` porte trois points neufs (BANC et REPLAY
+sous `device/`, la chronologie du README, les relevés d'intégrité non refaits) et renvoie le contrôle négatif
+au journal. `NEGATIVE` tient à la Séance 29, qui porte déjà ses commandes et sa sortie brute. `EXPLICATION`
+devient [guide/explication.md](guide/explication.md) : ses liens gagnent un niveau, sa section d'état datée
+tombe (elle doublait le `DASHBOARD`), et le récit garde ses échecs. Les six anciennes pages restent comme
+**notes** datées, listées à l'[INDEX](INDEX.md) §1 bis.
+
+L'[ADR-079](DECISIONS.md) consigne la règle et les absorptions, et supersède l'ADR-013 pour les trois noms
+absorbés. Le contrôle **153** lit désormais `docs/PROTOCOLE.md` ; ses confrontations n'ont pas bougé : huit
+commandes, leurs options, douze refus.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **268/268 PASS**, `exit 0`.
+`node docs/device/harness/liens.mjs` → **208 fichiers, 0 mort**, `exit 0`. `git diff --check` → `exit 0`.
+Les pages de doctrine, du runbook et de l'explication pour le profane passent de **1 741** à **1 260**
+lignes (`wc -l` sur les six pages absorbées, `PROTOCOLE`, `ARCHITECTURE` et la nouvelle explication), soit
+**−481** ; aucune mesure, aucun falsificateur, aucun refus n'est supprimé, et les relevés datés restent au
+journal, Séances 2, 10 et 29.
+
+**Dérives signalées, non corrigées.** Le [README](../README.md) garde sa chronologie datée du 15 au
+23 octobre (`DASHBOARD` point 11). `BANC` et `REPLAY` restent sous `docs/device/` (point 10). Les relevés de
+la frontière ne sont pas refaits depuis le second run (point 12). La valeur de la réorganisation n'est pas
+mesurée : aucune dérive n'a encore été observée après coup.
+
+**Rectifications de ses propres affirmations.** Le compte de liens de la Séance 128 (1 258) n'est plus
+comparable : deux fichiers sont nés, `PROTOCOLE` et la note qui remplace `EXPLICATION`. Le chiffre cité ici
+est celui de la mesure de cette séance, pas une soustraction.
+
+**Prochaines étapes.** Déplacer `BANC` et `REPLAY` sous `docs/` ; réduire le `README` à une entrée sans
+chronologie ; refaire les relevés de la frontière.
+
+**Mémoires.** `5ef74e62-fe94-47c2-b9d6-00cc232d8cf6` : la décision, les six absorptions, le banc et les
+liens, écrite puis relue.
+
+## Séance 130 — 2026-10-23 (les manuels remontent, le README redevient une entrée)
+
+**Objectif.** Fermer les points 10 et 11 du tableau de bord : `BANC` et `REPLAY` vivaient sous
+`docs/device/` alors que la carte veut les manuels sous `docs/`, et le `README` portait une chronologie
+datée du 15 au 23 octobre, second récit du journal.
+
+**Fait.** `git mv docs/device/BANC.md docs/BANC.md`, puis `REPLAY` de même. Leurs liens perdent un niveau
+(`DECISIONS.md`), et `REPLAY` gagne `device/` sur ses chemins de runs. Deux **notes** datées remplacent les
+anciens chemins et sont listées à l'[INDEX](INDEX.md) §1 bis : le journal et les ADR les citent encore.
+`docs/device/` ne garde que les preuves et les outils : `CASES/`, `runs/`, `harness/`.
+
+Le [README](../README.md) passe de 132 à 45 lignes : ce qu'est le dispositif, par où entrer, comment
+cloner, et la phrase qui dit qu'aucune commande unique ne lance un run, parce qu'un run inclut un geste
+humain. La chronologie part ; ses cinq comptes (50/50, 153/153, 193/193, 223/223, 268/268) sont au journal,
+une à sept occurrences chacun (`grep -c`), donc rien de mesuré n'est perdu.
+
+**Rectifications de ses propres affirmations.** L'[ADR-079](DECISIONS.md) disait que `BANC` et `REPLAY`
+restaient sous `docs/device/` et que leur déplacement était ouvert : la phrase devient fausse dans la même
+séance. Elle est corrigée sur place, l'ADR n'étant pas encore un enregistrement commité, et la correction
+est dite ici plutôt que silencieuse.
+
+**Vérifié.** `node docs/device/harness/liens.mjs` → **210 fichiers, 1 241 liens hors code, 0 mort**,
+`exit 0`. `bash docs/device/harness/banc-harnais.sh` → **268/268 PASS**, `exit 0`, dont
+`PASS 153 guide et runbook contre le code`. `git diff --check` → `exit 0`. `wc -l README.md` → **45**.
+
+**Dérives signalées, non corrigées.** Les ADR qui citent les anciens chemins de `BANC` et `REPLAY` restent
+tels quels : c'est leur nature, et les notes tiennent les liens. La numérotation du `DASHBOARD` laisse les
+numéros 10 et 11 libres, par décision dite en tête de table : un point fermé sort de la table. Le README ne porte plus aucun compte ; si un compte devient
+nécessaire à l'entrée, il faudra d'abord lui choisir un foyer.
+
+**Prochaines étapes.** Point 12 : refaire les relevés d'intégrité de la frontière. Point 9 : corriger le
+refus du `cas` sur un skill du framework.
+
+**Mémoires.** `5ef74e62-fe94-47c2-b9d6-00cc232d8cf6`, mise à jour : les deux manuels sont remontés, le
+README est une entrée, et les points ouverts sont 9 et 12.
+
+## Séance 131 — 2026-10-23 (les relevés d'intégrité de la frontière, refaits)
+
+**Objectif.** Fermer le point 12 : les relevés de la frontière, paires chemin + contenu et porcelain avant
+et après, n'avaient pas été refaits depuis le second run.
+
+**Fait.** Mesures prises sans écrire dans l'origine ni dans le terrain. La mesure qui tranche lit l'index :
+
+```text
+cd /tmp
+git -C .../framework      ls-files -s | awk -F'\t' '{split($1,a," "); print a[2]"\t"$2}' | LC_ALL=C sort > f.pairs
+git -C .../aidd-device    ls-files -s | awk -F'\t' '{split($1,a," "); print a[2]"\t"$2}' | LC_ALL=C sort > d.pairs
+LC_ALL=C comm -12 f.pairs d.pairs | wc -l        → 0
+```
+
+**2 599** paires côté framework, **414** côté dispositif, **0 commune**. Le compte du dispositif passe de
+42 (Séance 10) à 414 : les commits du 22 et du 23 octobre ont fait entrer le journal, les brainstorm, les
+tasks et les runs.
+
+La variante qui hashe l'**arbre de travail** rend un résultat qui ne décide pas : framework 26 447 fichiers
+(les `node_modules` imbriqués comptent), dispositif 426, **1 commune**, `.freebuff/.gitignore`, empreinte
+`a3d153f6…` des deux côtés, et son contenu dit « do not edit or commit it ». C'est un fichier du client,
+ignoré par les deux dépôts, pas un fichier du dispositif.
+
+**Porcelain.** Deux relevés par arbre, identiques à l'octet (`cmp`, `exit 0`) :
+
+| Arbre | Tête | Porcelain | Lignes |
+| --- | --- | --- | --- |
+| framework-origin | `fe48de12` | `?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md` | 1 |
+| terrain | `416ec1f` | `?? .freebuff/` | 1 |
+| dispositif | `81f97a4` | 27 entrées, celles de cette session, dans son propre arbre | 27 |
+
+**Vérifié.** `cmp p1.txt p2.txt` → `exit 0`, idem pour le terrain ; `LC_ALL=C comm -12 f.pairs d.pairs`
+rend **0** ligne ; les deux `git ls-files -s` et les `find` sortent `exit 0`. Les fichiers de mesure vivent
+sous `/tmp` et ne sont pas commités.
+
+**Dérives signalées, non corrigées.** Le porcelain de l'origine ne porte plus la ligne `?? .freebuff/` que
+relevait la Séance 10 : le dossier porte désormais un `.gitignore` qui l'ignore lui-même, donc git ne le
+liste plus. La date d'apparition de ce fichier n'est pas connue, et rien ne l'attribue au dispositif. Le
+terrain porte toujours `?? .freebuff/`. Le relevé de clôture de la Séance 10 comptait 2 lignes côté
+origine ; il y en a une.
+
+**Prochaines étapes.** Point 9 : corriger le refus du `cas` sur un skill du framework. Le prochain run
+prendra sa propre paire de porcelain avant et après, et c'est elle qui vaudra pour ce run.
+
+**Mémoires.** `23cee005-66c2-41ff-bcc2-2e64722abad3` : les paires de l'index, la variante arbre de travail
+et son unique commune, le porcelain et l'écart avec la Séance 10, écrites puis relues.
+
+## Séance 132 — 2026-10-23 (le refus du `cas` vise la destination du skill, ADR-080)
+
+**Objectif.** Fermer le premier volet du point 9 : `cas` refusait tout skill d'un arbre gelé, donc aucun cas
+n'était fabricable pour un skill AIDD, alors que les cinq cas existants en testent.
+
+**Fait.**
+- `orchestrer.mjs` : `arbresEcrits(cases)` rend les chemins de label `travail` ; `commandeCas` refuse le
+  dépôt du dispositif, puis un arbre que le run écrit. `arbresGeles` reste pour le contrôle du terrain, et
+  `dedans` ne change pas.
+- La spec de l'orchestrateur, §7 condition 2, est réécrite : « un arbre que le run écrit, ou le dépôt du
+  dispositif ».
+- Banc : 145 change de fixture et refuse un skill sous l'arbre `travail` du cas de banc ; 269 accepte
+  `$OSKILL`, qui vit dans `framework-origin`, et fabrique le cas ; 270 refuse un skill du dépôt. Aucun
+  contrôle existant n'est renuméroté, et le banc passe à **270**.
+- [ADR-080](DECISIONS.md). Le compte des contrôles quitte `ARCHITECTURE` et les deux guides, qui renvoient
+  au banc : un chiffre, un foyer.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **270/270 PASS**, `exit 0` ; les lignes
+`PASS 145 refus 2, skill dans un arbre que le run ecrit exit=0`, `PASS 269 skill du framework, cas fabrique`
+et `PASS 270 refus 2, skill dans le depot du dispositif` sont dans la sortie. `node --check
+docs/device/harness/orchestrer.mjs` → ok.
+
+Sur le vrai framework, `cas` rend encore le refus du **dépôt sale** (`?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`),
+ce qui est le comportement attendu : l'acceptation d'un skill du framework est prouvée par le contrôle 269
+sur une fixture propre, pas par le framework réel, qui demande `--tel-quel`.
+
+**Rectifications de ses propres affirmations.** La première écriture passait `DEPOT`, une chaîne, à `dedans`,
+qui attend un tableau : le banc l'a vu (`TypeError: racines.some is not a function`, `orchestrer.mjs:388`) et
+`node --check` ne pouvait pas le voir. Corrigé en `[DEPOT]`, puis banc vert.
+
+**Dérives signalées, non corrigées.** Le cas `03-shadow-areas` n'est pas fabriqué : le point 9 reste ouvert
+pour ce volet. Le texte du refus du dépôt dit « le test lirait le harnais qui le mesure » ; c'est vrai de ce
+dépôt-ci, où `docs/` porte le harnais, et faux d'un dépôt du dispositif qui n'en porterait pas.
+
+**Prochaines étapes.** Fabriquer le cas `03-shadow-areas` selon la spec §4, le faire confirmer, le geler,
+puis le jouer.
+
+**Mémoires.** `1d50c783-b591-4567-903d-7072f44964fa` : la règle, les deux refus, les trois contrôles et
+la limite du framework réel, écrite puis relue.
+
+## Séance 133 — 2026-10-23 (double vérification : ce que mes chiffres ne prouvaient pas)
+
+**Objectif.** Éprouver les Séances 129 à 132 par mutation et re-mesure, pas par relecture : chaque
+affirmation chiffrée, chaque refus, chaque phrase citée du code.
+
+**Fait.** Mutation du refus, sur une fixture hors banc (`/tmp/audit-aidd` : un dépôt `fixture` portant
+`skills/x`, un `travail` imbriqué, un terrain propre, un gel minimal qui nomme `fixture`).
+
+- Code de `HEAD`, `--tel-quel` : `REFUS — cas : le skill vit dans un des quatre arbres déjà gelés
+  (/tmp/audit-aidd/fixture)`, `exit 1`.
+- Code courant, mêmes arguments : `▸ FIN — cas new gelé`, `exit 0`, `request.md`, `expected.json` et
+  `freeze.json` dans `cases/`, `framework-origin` sous `r-new/new`. **269 et 270 ne sont donc pas la
+  seule preuve** : la règle tient hors du banc, et l'ancien code refuse la même fixture.
+- Sans `--tel-quel`, le code courant s'arrête au dépôt sale (`?? travail/`), preuve que le contrôle de
+  saleté vient après celui de destination et n'a pas bougé.
+- Skill dans `travail` : `REFUS — … arbre que le run écrit …`, `exit 1` ; skill dans le dépôt du
+  dispositif : `REFUS … le dispositif se mesurerait lui-même`, `exit 1`, aucune pièce.
+
+La garde de 270 vérifie désormais l'absence de pièce, et elle est éprouvée dans les deux sens : avec un
+dossier `refus-depot` présent, la commande rend `0` (le contrôle échouerait) ; sans, elle rend `1` (le
+refus est constaté). La phrase du refus du dépôt, signalée en Séance 132 comme fausse hors de ce dépôt,
+est réparée dans le code et dans la spec. Le `270/270 PASS` de [guide/explication.md](guide/explication.md)
+ligne 305 datait une phrase du 2026-10-16 : compte anachronique et second foyer, retiré.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **270/270 PASS**, `exit 0`, lancé après les
+trois éditions. `node docs/device/harness/liens.mjs` → **210 fichiers, 1 245 liens, 0 mort**, `exit 0` (mesure
+après l'ajout de cette séance).
+`git diff --check` → `exit 0` ; `node --check docs/device/harness/orchestrer.mjs` et
+`bash -n docs/device/harness/banc-harnais.sh` → ok. `git show HEAD:README.md | wc -l` → **133**, dernier
+octet un saut de ligne ; `wc -l README.md` → **45**. Les copies du cas accepté sont aux révisions
+sources : `git -C r-new/new/framework-origin rev-parse HEAD` → `332b8707…`, identique à `fixture` ;
+`…/terrain` → `978192b9…`, identique au terrain ; le gel les enregistre.
+
+**Rectifications de ses propres affirmations.**
+
+1. Séance 129 : « 1 741 → 1 260, −481 » compare deux ensembles. Le 1 260 comptait `PROTOCOLE`
+   (**258** lignes) du seul côté d'après ; la mesure cohérente, sur les sept pages présentes avant et
+   après, donne **1 741 → 994**, soit **−747** (−42,9 %). L'après se rejoue ; l'avant repose sur la
+   mesure de la Séance 129 : 1 229 lignes se lisent dans `HEAD` (130, 217, 259, 57, 122, 444), et les
+   512 de `ARCHITECTURE` venaient d'une édition non commitée (`HEAD` en donne 560). Huit lignes de
+   l'ancien chiffre restent inexpliquées.
+2. Séance 131 : les **372** fichiers entrés depuis `64901e3` ne viennent pas tous des 22 et 23 octobre.
+   `git log --format='%cI' --name-status 64901e3..HEAD --diff-filter=A`, compté par date de commit :
+   **30** les 17 et 18 octobre, **342** les 22 et 23.
+3. Séance 130 : « le README de 132 lignes » ne se reproduit pas ; `HEAD` en donne **133**, saut de
+   ligne final compris. Le **45** d'après se mesure.
+4. Séance 132 : le refus du dépôt disait « le test lirait le harnais qui le mesure » ; le code dit
+   « le dispositif se mesurerait lui-même », la spec est alignée, et le banc l'éprouve sans changer de
+   numéro.
+
+**Dérives signalées, non corrigées.** Le cas `03-shadow-areas` n'est toujours ni fabriqué ni joué
+(point 9 du tableau de bord). Sur le vrai framework, `cas` rend le refus du dépôt sale sans `--tel-quel`.
+
+**Prochaines étapes.** Fabriquer et jouer `03-shadow-areas` selon la spec du 08:22. Rien n'est commité.
+
+**Mémoires.** `30863b4e-3fe8-40ca-9e6a-1e54b6a5d2d2` : la règle, la mutation hors banc, la garde de
+270 et la mesure corrigée, écrite puis relue.
+
+## Séance 134 — 2026-10-23 (le gel et ses copies se comparent au banc)
+
+**Objectif.** Transformer en contrôle la vérification faite à la main en Séance 133 : les révisions des
+copies `framework-origin` et `terrain` doivent être celles que le gel enregistre.
+
+**Fait.** Contrôle **271** ajouté après 270 dans [banc-harnais.sh](device/harness/banc-harnais.sh), sans
+renuméroter. Il relit `$O/cases/accepte-origine.freeze.json`, le cas que 269 vient de fabriquer, prend les
+entrées `framework-origin` et `terrain`, lit `git -C <chemin> rev-parse HEAD`, le compare à `head_complet`,
+et écrit le couple rompu dans `$DETAIL` : le banc imprime `terrain : copie … != gel …` sous le FAIL.
+[BANC](BANC.md) passe à **271** (V0.42, description, phrase de tête, lanceur, ligne du tableau) ; le
+compte vit là et nulle part ailleurs.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` → **271/271 PASS**, `exit 0`, avec
+`PASS 270 refus 2, skill dans le depot du dispositif, sans rien ecrire` et
+`PASS 271 framework-origin et terrain a la revision gelee`. Sensibilité prouvée hors banc, sur le même
+corps : gel sain de `/tmp/audit-aidd` → `exit 0` ; `head_complet` du terrain remplacé par quarante zéros
+→ `exit 1`, détail `terrain : copie 978192b9… != gel 000…`. `bash -n banc-harnais.sh` → ok.
+
+**Dérives signalées, non corrigées.** La spec du 08:22 prédisait « le banc finit à 270 » ; c'était vrai
+avant ce contrôle. Elle reste datée, et le chiffre vivant est dans `BANC`.
+
+**Prochaines étapes.** Fabriquer et jouer `03-shadow-areas` selon la spec du 08:22.
+
+**Mémoires.** `739e7745-cb5b-4173-a629-ac0fdaec2c4a` : le contrôle 271, sa preuve de sensibilité et le
+compte, écrite puis relue.

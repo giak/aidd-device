@@ -13,7 +13,7 @@
 #
 # Usage: bash docs/device/harness/banc-harnais.sh [<cas>]
 #        → "<n>/<m> PASS", exit 0 if everything passes, 1 otherwise.
-#        The manual: docs/device/BANC.md
+#        The manual: docs/BANC.md
 #
 # It refuses to run rather than lie: a missing freeze, a freeze without a declared root, or a
 # workspace that is not there stops it before the first control, because a bench whose fixture
@@ -1046,7 +1046,11 @@ else {
 if(r.length){fs.writeFileSync(process.env.DETAIL,r.join('\\n')+'\\n');process.exit(1)}"
 
 controle "144 refus 12, lire sans recu" 0 refus-nomme 1 "absent" node "$ORCH" lire --cas cas-test --run "$O/runsansporte"
-controle "145 refus 2, skill dans un arbre gele" 0 refus-nomme 1 "quatre arbres" bash -c "node '$ORCH' cas --skill '$O/cas-test/origine/framework/PLAYBOOK.md' --terrain '$OTERRAIN' --id refus2 --racine '$O' --cases '$O/cases' </dev/null"
+# 145 change de fixture : le refus vise la destination du skill, jamais sa source (ADR-080). Un skill
+# dans un arbre que le run ecrit est refuse ; un skill dans framework-origin ne l'est plus (269).
+mkdir -p "$O/cas-test/terrain/skill-terrain"
+printf '# skill du terrain\n' > "$O/cas-test/terrain/skill-terrain/SKILL.md"
+controle "145 refus 2, skill dans un arbre que le run ecrit" 0 refus-nomme 1 "arbre que le run" bash -c "node '$ORCH' cas --skill '$O/cas-test/terrain/skill-terrain/SKILL.md' --terrain '$OTERRAIN' --id refus2 --racine '$O' --cases '$O/cases' </dev/null"
 controle "146 refus 3, terrain = un arbre gele" 0 refus-nomme 1 "quatre arbres" bash -c "node '$ORCH' cas --skill '$OSKILL' --terrain '$O/cas-test/origine/terrain' --id refus3 --racine '$O' --cases '$O/cases' </dev/null"
 controle "147 refus 5, aucune racine possible" 0 refus-nomme 1 "racine" bash -c "unset HOME; node '$ORCH' cas --skill '$OSKILL' --terrain '$OTERRAIN' --id refus5 --cases '$O/cases' </dev/null"
 controle "148 chaque bloc de narration fait six lignes au plus" 0 node -e "
@@ -1085,8 +1089,38 @@ git -C "$B/sale-terrain" add -A
 git -C "$B/sale-terrain" -c user.name=banc -c user.email=banc@invalid -c commit.gpgsign=false commit -q -m banc
 printf '\n// non commite\n' >> "$B/sale-terrain/README.md"
 controle "152 refus 13, terrain sale" 0 refus-nomme 1 "le terrain" bash -c "node '$ORCH' cas --skill '$OSKILL' --terrain '$B/sale-terrain' --id sale2 --racine '$O' --cases '$O/cases-sale' </dev/null"
+# Un skill du framework est un cas possible : le refus vise la destination du skill, jamais sa source
+# (ADR-080). 269 l'accepte et fabrique le cas ; 270 refuse un skill du depot du dispositif.
+rm -rf "$B/terrain-accepte" "$O/accepte-origine" "$O/cases/accepte-origine.freeze.json"
+mkdir -p "$B/terrain-accepte"
+printf '# terrain d acceptation\n' > "$B/terrain-accepte/README.md"
+git -c init.defaultBranch=main -C "$B/terrain-accepte" init -q
+git -C "$B/terrain-accepte" add -A
+git -C "$B/terrain-accepte" -c user.name=banc -c user.email=banc@invalid -c commit.gpgsign=false commit -q -m banc
+controle "269 skill du framework, cas fabrique" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+execFileSync('node',['$ORCH','cas','--skill','$OSKILL','--terrain','$B/terrain-accepte','--id','accepte-origine','--racine','$O','--cases','$O/cases'],{stdio:'ignore',input:'',encoding:'utf8'});
+process.exit(['request.md','expected.json','freeze.json'].every(p=>fs.existsSync('$O/cases/accepte-origine.'+p))?0:1)"
+# 270 verifie aussi l'absence d'ecriture : un refus qui laisserait une piece derriere lui mentirait sur son nom.
+rm -rf "$O/refus-depot" "$O/cases/refus-depot.freeze.json"
+controle "270 refus 2, skill dans le depot du dispositif, sans rien ecrire" 0 refus-nomme 1 "dépôt du dispositif" bash -c "node '$ORCH' cas --skill '$REPO/README.md' --terrain '$B/terrain-accepte' --id refus-depot --racine '$O' --cases '$O/cases' </dev/null; code=\$?; if [ -e '$O/refus-depot' ] || [ -e '$O/cases/refus-depot.freeze.json' ]; then exit 0; fi; exit \$code"
+# 271 : le gel enregistre la revision que les copies portent. Un gel qui nommerait une autre revision
+# que son arbre ferait relire au rejeu un autre code que celui qui a ete joue.
+DETAIL="$B/271-detail"
+controle "271 framework-origin et terrain a la revision gelee" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+const g=JSON.parse(fs.readFileSync('$O/cases/accepte-origine.freeze.json','utf8'));
+const tete=(p)=>execFileSync('git',['-C',p,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const r=[];
+for(const l of ['framework-origin','terrain']){
+  const a=(g.arbres||[]).find((x)=>x.label===l);
+  if(!a){r.push(l+' : absent du gel');continue}
+  const vu=tete(a.chemin);
+  if(vu!==a.head_complet) r.push(l+' : copie '+vu+' != gel '+a.head_complet);
+}
+if(r.length){fs.writeFileSync(process.env.DETAIL,r.join('\n')+'\n');process.exit(1)}"
 # Les deux pages qui parlent des commandes sont confrontees au code : l'annexe du guide et le runbook
-# d'ORCHESTRATEUR.md. Chaque option nommee doit exister dans l'usage reel, toutes les commandes
+# de PROTOCOLE.md. Chaque option nommee doit exister dans l'usage reel, toutes les commandes
 # offertes doivent y etre nommees, et les douze refus du runbook doivent etre ceux du §7 de la spec, chacun
 # eprouve par un controle du banc dont le texte attendu vit dans le code. Un renommage cote code, et
 # aucune des deux pages ne peut plus mentir en silence (drift : le guide a omis `--tel-quel`).
@@ -1104,7 +1138,7 @@ const inconnues=options.filter(o=>!usage.includes(o));
 const offertes=[...new Set(usage.split('\n').map(l=>(l.match(/^  ([a-z][a-z-]*) +--/)||[])[1]).filter(Boolean))];
 const nonNommees=offertes.filter(c=>!annexe.includes('| '+q+c+q+' |'));
 const sections={};let cur=null;for(const l of usage.split('\n')){const m=l.match(/^  ([a-z][a-z-]*) +--/);if(m){cur=m[1];sections[cur]=l;}else if(cur&&l.startsWith('       '))sections[cur]+='\n'+l;}
-const runbook=fs.readFileSync('$REPO/docs/device/ORCHESTRATEUR.md','utf8');
+const runbook=fs.readFileSync('$REPO/docs/PROTOCOLE.md','utf8');
 const lignes=[...runbook.matchAll(/^node docs\/device\/harness\/orchestrer\.mjs (\S+) (.*)$/gm)].map(m=>({cmd:m[1],opts:[...m[2].matchAll(/--[a-z][a-z-]*/g)].map(x=>x[0])}));
 const nommees=new Set(lignes.map(l=>l.cmd));
 const toutes=[...nommees].every(c=>sections[c])&&offertes.every(c=>nommees.has(c))&&lignes.every(l=>l.opts.every(o=>(sections[l.cmd]||'').includes(o)));

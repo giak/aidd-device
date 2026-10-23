@@ -3,6 +3,7 @@ name: Guide du test de bout en bout — la version minimale
 description: Les cinq premiers chapitres du guide, chacun avec son geste copiable, la sortie observée, un refus provoqué et le mot qu'il installe : lire un reçu, rejouer un gel, provoquer trois refus, lire un tableau et le faire manquer, lire le cas jouet jusqu'aux refus F2 et F1
 type: guide
 status: in-progress
+question: Comment apprendre le protocole par les gestes, sorties observées ?
 ---
 
 # Guide du test de bout en bout — la version minimale
@@ -18,7 +19,7 @@ status: in-progress
 > les chapitres 1 et 4 sur le harnais de H6 (`dbd85ba`), le chapitre 5 sur l'arbre de travail au-dessus de
 > `df59482`, où le cas jouet et les contrôles 119 à 130 ne sont pas encore commités. Les blocs sont
 > recopiés de la console, jamais retapés. La mise à jour du **2026-10-20** ajoute le premier reçu d'un run
-> réel et les 236 contrôles ; elle ne réécrit pas les sorties datées du 2026-10-18.
+> réel et les contrôles du banc ; elle ne réécrit pas les sorties datées du 2026-10-18.
 >
 > Deux avertissements, avant le premier geste. **Le chapitre 1 lit un reçu de banc**, et sa session est
 > une **fixture** (`identifiant: "banc"`, `modele: "aucun"`) : un premier reçu de run opencode réel
@@ -29,7 +30,7 @@ status: in-progress
 > le chapitre 4 n'écrit rien : il relit le dossier du chapitre 1 et y demande un refus, qui n'écrit pas, et
 > le chapitre 5 écrit deux arbres jetables sous `/tmp` avec le script du cas jouet, ses deux refus
 > n'écrivant rien ; le banc crée puis supprime **un lien symbolique** dans l'espace de travail du cas, son contrôle 41
-> échouant si l'espace n'est pas rendu propre ([BANC.md](../device/BANC.md), §3). Si un de ces gestes écrit
+> échouant si l'espace n'est pas rendu propre ([BANC.md](../BANC.md), §3). Si un de ces gestes écrit
 > ailleurs, il a été mal copié.
 
 ## 0. Trois chemins, lus au gel, avant d'ouvrir un chapitre
@@ -81,7 +82,7 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `268/268 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+**La sortie attendue.** Le banc finit par `PASS` partout, son compte et `exit 0` (il en comptait `118/118` le 2026-10-18
 au matin, puis `130/130` l'après-midi, `149/149` après l'orchestrateur, `153/153` avant les contrôles
 des deux clients, `171/171` avant l'ADR-047, `193/193` avant les effets hors cadre, `258/258` avant
 l'ADR-075, puis `262/262` avant les trois correctifs du 2026-10-23) ; les sept
@@ -144,7 +145,7 @@ export RACINE_FRAMEWORK="$FRAMEWORK"       # le checkout de la révision sous te
 # colle ici le bloc `python3 - <<'PY' … PY` du §1.1, tel quel, puis lance-le
 ```
 
-Un lecteur qui n'a ni la machine ni les chemins suit plutôt la [recette de REPLAY](../device/REPLAY.md), §2 :
+Un lecteur qui n'a ni la machine ni les chemins suit plutôt la [recette de REPLAY](../REPLAY.md), §2 :
 même formule, mais elle prend le cas dans un clone neuf et ne réécrit aucun chemin.
 
 **La sortie attendue.** Observée le 2026-10-18, `exit 0` :
@@ -515,9 +516,9 @@ session a travaillé.
 | Ce que tu viens de faire | Où c'est écrit | Ce qui y est plus complet |
 | --- | --- | --- |
 | lire un reçu | [ARCHITECTURE.md](../ARCHITECTURE.md), § vie des artefacts | le rôle de chaque pièce dans la chaîne de preuve |
-| provoquer un refus | [BANC.md](../device/BANC.md) | les 236 contrôles, leurs noms, et ce qu'ils ne prouvent pas |
+| provoquer un refus | [BANC.md](../BANC.md) | les contrôles, leurs noms, et ce qu'ils ne prouvent pas |
 | lire un tableau | [ADR-035](../DECISIONS.md), [spec H6](../tasks/2026_10/2026-10-17-140536-durcissement-du-recu/2026-10-18-071627-spec-h6.md) | la forme retenue, la base mesurée de l'acte d'écriture, et ce que H6 ne mesure pas |
-| rejouer un gel | [REPLAY.md](../device/REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
+| rejouer un gel | [REPLAY.md](../REPLAY.md) | la recette depuis un clone neuf, et ses quatre limites |
 | mener un run | [la conduite](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-154303-run.md) | les six gestes, dans l'ordre, avec leurs valeurs attendues |
 | écrire un cas | [la spec du run](../tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) | la demande, l'attendu, le gel, les falsificateurs |
 | lire le cas jouet | [la demande](../device/CASES/2026-10-18-085308-cas-jouet.request.md), [l'attendu](../device/CASES/2026-10-18-085308-cas-jouet.expected.json), [son script](../device/CASES/2026-10-18-085308-cas-jouet-arbres.sh) | les deux arbres reconstruits à l'identique, les cinq falsificateurs, le budget de deux échanges, et ce que le cas écarte |

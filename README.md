@@ -118,14 +118,15 @@ dans la seconde de naissance ne le fait pas mordre (ADR-055). Le banc
 passe à **223/223** ; une commande dynamique refuse `conforme` et le dit, elle n'est jamais supposée sans
 effet, et une substitution de commande bornée est lue, sa valeur restant inconnue (ADR-056).
 
-**Au 2026-10-22.** Le dépôt compte **treize `receipt.json`** sur quatre cas gelés (le jouet, la promesse
-mémoire, `plan-simple`, et `spike-annees` depuis le matin) : **8 `non concluant`, 3 `conforme`, 2 `ecart`**.
+**Au 2026-10-23.** Le dépôt compte **dix-neuf `receipt.json`** et **cinq cas gelés** (le jouet, la promesse
+mémoire, `plan-simple`, `spike-annees` et `task-config-manquante`) : **14 `non concluant`, 3 `conforme`,
+2 `ecart`**.
 `plan-simple` a rendu un `conforme` avec une vraie pause (question, réponse figée, écriture), et le cas
 jouet un `ecart` dont la différence repose sur des appels que le reçu ne mesure pas. `fin` et `rapport`
 écrivent désormais un [`RESULTAT.md`](docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/RESULTAT.md) à
 côté du rapport technique : huit sections, un tableau geste par geste, trois états (tenu, violé, non
 observé), et une lecture déclarée par le cas ([ADR-061](docs/DECISIONS.md)) ; une lecture mal formée est
-refusée avant toute écriture. Le banc passe à **268/268**, et le contrôle de liens ne rend **aucun mort** ; le 2026-10-23, `tracer` attache la trace d'un run guidé ([ADR-076](docs/DECISIONS.md)),
+refusée avant toute écriture. Le banc passe à **268/268**, et le contrôle de liens ne rend **aucun mort** ; `tracer` attache désormais la trace d'un run guidé ([ADR-076](docs/DECISIONS.md)),
 `ouvrir` refuse une session arrêtée sans question ([ADR-077](docs/DECISIONS.md)) et la pause porte son
 intervalle ([ADR-078](docs/DECISIONS.md)). Le quatrième cas, `spike-annees` (skill `aidd-pm/05-spike`, gel `0052c168`, 11
 références), a sa porte passée (`ae54c1a3`, 748 octets) et **aucune session ouverte** : le prochain geste

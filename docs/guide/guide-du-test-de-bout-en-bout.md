@@ -81,9 +81,10 @@ l("produit.absent", r.produit.absent);
 ' "$B"
 ```
 
-**La sortie attendue.** Le banc finit par `258/258 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
+**La sortie attendue.** Le banc finit par `268/268 PASS`, `exit 0` (il en comptait `118/118` le 2026-10-18
 au matin, puis `130/130` l'après-midi, `149/149` après l'orchestrateur, `153/153` avant les contrôles
-des deux clients, `171/171` avant l'ADR-047, puis `193/193` avant les effets hors cadre) ; les sept
+des deux clients, `171/171` avant l'ADR-047, `193/193` avant les effets hors cadre, `258/258` avant
+l'ADR-075, puis `262/262` avant les trois correctifs du 2026-10-23) ; les sept
 champs, observés le 2026-10-18 sur
 `B=/tmp/banc-harnais.icCmQG`, avant l'élargissement de H6 :
 

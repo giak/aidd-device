@@ -17,6 +17,13 @@ status: in-progress
 > **Ce que tu obtiens** : un reçu et un verdict, et la phrase qui dit ce que ce verdict atteste. Un
 > verdict `non concluant` est un résultat normal : le dispositif refuse de conclure sur une preuve
 > incomplète, ce n'est pas ton skill qui a échoué.
+>
+> **Depuis le 2026-10-22**, le mode par défaut est le **run guidé** dans la conversation courante
+> ([ADR-074](../DECISIONS.md)) : pas de headless, pas de fil séparé, pas de reçu. Sa grille de traces est
+> une **lecture de la conversation**, remplie dans le gabarit de la [spec du 22:12](../tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+> §3 ; depuis le 2026-10-23, elle est adossée à la **trace machine** du fil quand le client la rend lisible :
+> `tracer` l'exporte dans le dossier du run guidé, et les preuves citent un `seq` ([ADR-076](../DECISIONS.md)).
+> Ce guide décrit le **run indépendant** ; il reste valable quand tu le demandes explicitement.
 
 ## 1. Ce que tu dis
 
@@ -30,7 +37,7 @@ Donne aussi le dépôt à tester si ce n'est pas celui que l'agent te propose. P
 `test ça : ~/projets/mon-framework/skills/revue-de-code/SKILL.md, sur ~/projets/mon-service`.
 
 C'est tout ce que tu as à décider pour démarrer. L'agent lit alors la page qui gouverne le geste
-([ORCHESTRATEUR.md](../device/ORCHESTRATEUR.md)) et suit ses cinq étapes dans l'ordre.
+([ORCHESTRATEUR.md](../device/ORCHESTRATEUR.md)) et suit ses étapes dans l'ordre.
 
 **Ce que tu ne fais pas** : retaper une commande, remplir un JSON, choisir un identifiant de cas, geler
 quoi que ce soit. Si quelqu'un te demande ça dans une session qui a lu cette page, ce n'est pas le
@@ -137,7 +144,7 @@ ce qu'il empêche, puis reprend là où le parcours s'est arrêté.
   client, pas par une personne devant l'interface. Le guide décrit le parcours à tenir ; ce run ne le
   prouve pas au sens littéral.
 
-## Annexe — les sept étapes que l'agent conduit
+## Annexe — les huit commandes que l'agent conduit
 
 Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin de les taper.
 
@@ -148,6 +155,7 @@ Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin
 | `porte` | écrit le texte à coller et autorise l'ouverture dans la copie du dépôt | `gate.json`, `texte-a-remettre.txt` |
 | `ouvrir` | ouvre la session opencode par l'API de son serveur, envoie le texte de la porte, attend la question et envoie la réponse figée du cas puis l'option marquée Recommandé (`ADR-059`) | rien : elle imprime le fil, que `suite` reçoit |
 | `suite` | dérive les faits du fil ou de la session opencode, exporte la trace par l'adaptateur du client, copie le produit | `faits.json`, `trace/`, `raw/<cas>/` |
+| `tracer` | exporte la trace d'un run guidé, sans reçu ni verdict ; `--liste --depuis` nomme les fils récents du projet, sans leur contenu (`ADR-076`) | `trace/echange.jsonl`, `trace/fil.json` |
 | `fin` | demande à blanc le verdict que la preuve impose, puis écrit le reçu, l'output et le rapport utilisateur | `receipt.json`, `output.json`, `RAPPORT.md` |
 | `rapport` | reconstruit le rapport d'un run déjà clos, sans toucher au reçu ni à l'output | `RAPPORT.md` seulement, avec `--remplacer` |
 | `lire` | relit le verdict, sans rien écrire | rien |

@@ -7,7 +7,8 @@ status: done
 
 # VISION
 
-> Version 0.1 — 2026-10-15. Document-cadre : se change rarement, par décision d'ADR.
+> Version 0.2 — 2026-10-22 (le raisonnement ne se juge que sur ses traces vérifiables,
+> [ADR-073](DECISIONS.md)). Document-cadre : se change rarement, par décision d'ADR.
 
 ## Le projet en une phrase
 
@@ -45,5 +46,8 @@ qu'elle produit, de façon rejouable.
 
 - ❌ Pas une refonte du framework : il l'appelle comme objet sous test et n'exige aucune
   modification de lui (v6 §5).
+- ❌ Pas un lecteur de pensées : il ne juge jamais le raisonnement caché, seulement les **traces
+  vérifiables** qu'il laisse — une question, une décision motivée, une source citée, une commande, un
+  fichier écrit ([ADR-073](DECISIONS.md)).
 - ❌ Pas un harnais de régression classique : il rejoue un départ, jamais une réponse (v6 §8).
 - ❌ Pas un runner garanti : précondition constatée, jamais supposée (v6 §7).

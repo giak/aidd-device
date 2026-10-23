@@ -9,9 +9,11 @@ Rules unique to this repository live in its skills, one per nature: `01-consign`
 frontmatter, drift; `02-memory`: Mnemolite; `03-boundaries`: the four trees; read them before writing
 here, consigning or touching a repository.
 
-Operator says `test ça` (a skill exercised end to end)|names a skill to test→READ
-`docs/device/ORCHESTRATEUR.md` BEFORE any gesture & FOLLOW it: that page owns the order & what is said;
-`docs/device/harness/orchestrer.mjs` computes, & a refusal is quoted, never rewritten.
+Operator says `test ça` (a skill exercised end to end)|names a skill to test→IF the test runs in this
+conversation, the default since 2026-10-22: READ `docs/DECISIONS.md` ADR-073 & ADR-074 BEFORE any
+gesture; no `ouvrir`, no headless. ELSE, an independent run: READ `docs/device/ORCHESTRATEUR.md` BEFORE
+any gesture & FOLLOW it: that page owns the order & what is said; `docs/device/harness/orchestrer.mjs`
+computes, & a refusal is quoted, never rewritten.
 
 This repository is the device: remote `origin` is
 `https://github.com/giak/aidd-device.git`, branch `main` (`git remote -v`, `git ls-remote origin main`).

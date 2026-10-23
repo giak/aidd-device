@@ -19,12 +19,15 @@ session ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et 
   lus, et la preuve que le framework est intact et qu'aucun fichier du dispositif ne lui appartient.
 - [docs/device/REPLAY.md](docs/device/REPLAY.md) — la recette qu'un inconnu suit pour rejouer le gel
   depuis un clone neuf : le bloc exact, la sortie observée, et les limites qu'elle ne franchit pas.
-- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 258 contrôles qui éprouvent ses
+- [docs/device/BANC.md](docs/device/BANC.md) — le banc du harnais : les 268 contrôles qui éprouvent ses
   refus et ses acceptations, comment les lancer, et ce qu'ils ne prouvent pas.
 - [docs/guide/guide-utilisateur.md](docs/guide/guide-utilisateur.md) — **le guide utilisateur** : tu
   arrives avec un skill à tester, tu dis « test ça » dans une session d'agent, l'agent conduit, tu confirmes
   ce qu'il a lu de ton skill, tu fais trois gestes, et tu lis le verdict avec la phrase qui dit ce qu'il
-  atteste. Les commandes ne sont qu'en annexe (ADR-041).
+  atteste. Les commandes ne sont qu'en annexe (ADR-041). Depuis le 2026-10-22, le mode par défaut est le
+  **run guidé** dans la conversation courante ([ADR-074](docs/DECISIONS.md)), consigné dans le gabarit de
+  la [spec du 22:12](docs/tasks/2026_10/2026-10-22-221207-traces-et-run-guide/2026-10-22-221207-spec-run-guide.md)
+  §3 et sans reçu ; ce guide et l'orchestrateur décrivent le **run indépendant**.
 - [docs/guide/guide-du-test-de-bout-en-bout.md](docs/guide/guide-du-test-de-bout-en-bout.md) — le guide
   pédagogique : lire un reçu, rejouer un gel, provoquer trois refus, lire un tableau, lire le cas
   jouet ; chaque sortie a été observée, et chaque chapitre se termine par un refus provoqué.
@@ -68,7 +71,7 @@ produit d'écart : aucun `output.json` n'existe, `NEGATIVE.md` (casser quelque c
 signalé) et `ECART.md` (le compte-rendu rendu au framework) restent à écrire.
 
 **Au 2026-10-18.** Le dispositif a sa face interactive : [ORCHESTRATEUR.md](docs/device/ORCHESTRATEUR.md)
-et `harness/orchestrer.mjs` (1 248 lignes, sept commandes — `cas` fabrique et gèle un cas, `porte` écrit le
+et `harness/orchestrer.mjs` (1 562 lignes, huit commandes — `cas` fabrique et gèle un cas, `porte` écrit le
 texte et autorise l'ouverture, `ouvrir` ouvre la session opencode par l'API et joue la pause du cas
 (ADR-059), `suite` dérive faits, trace et copie, `fin` demande le verdict imposé puis écrit le reçu,
 l'output et le rapport, `rapport` reconstruit le rapport d'un run clos, `lire` relit sans écrire —), la ligne d'`AGENTS.md` qui route « test ça » vers cette page, et
@@ -122,7 +125,8 @@ jouet un `ecart` dont la différence repose sur des appels que le reçu ne mesur
 écrivent désormais un [`RESULTAT.md`](docs/device/runs/2026-10-22-070952-27fb38ab-3f0cf9d/RESULTAT.md) à
 côté du rapport technique : huit sections, un tableau geste par geste, trois états (tenu, violé, non
 observé), et une lecture déclarée par le cas ([ADR-061](docs/DECISIONS.md)) ; une lecture mal formée est
-refusée avant toute écriture. Le banc passe à **258/258**, et le contrôle de liens rend **1 148 liens sur 179
-fichiers, 0 mort**. Le quatrième cas, `spike-annees` (skill `aidd-pm/05-spike`, gel `0052c168`, 11
+refusée avant toute écriture. Le banc passe à **268/268**, et le contrôle de liens ne rend **aucun mort** ; le 2026-10-23, `tracer` attache la trace d'un run guidé ([ADR-076](docs/DECISIONS.md)),
+`ouvrir` refuse une session arrêtée sans question ([ADR-077](docs/DECISIONS.md)) et la pause porte son
+intervalle ([ADR-078](docs/DECISIONS.md)). Le quatrième cas, `spike-annees` (skill `aidd-pm/05-spike`, gel `0052c168`, 11
 références), a sa porte passée (`ae54c1a3`, 748 octets) et **aucune session ouverte** : le prochain geste
 est de le jouer.

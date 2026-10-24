@@ -1,0 +1,107 @@
+{
+  "cas": "2026-10-24-172034-defect-slugify",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-24T17:22:33+02:00",
+    "preuve": "choix « Confirmer et geler » dans la conversation du 2026-10-24, cas proposé par l'agent"
+  },
+  "racine_espace_de_travail": "/home/giak/aidd-device-work-2026-10-24",
+  "gele_le": "2026-10-24T17:22:33.978282117+0200",
+  "gele_le_epoch": 1792855353,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-24-172034-defect-slugify --cases docs/device/CASES --racine /home/giak/aidd-device-work-2026-10-24 --arbre framework-origin=/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/origine/framework --arbre terrain=/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/origine/terrain --ref slugify.py --ref-root /home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/origine/terrain --refreeze --confirme-par giak --confirme-preuve \"choix « Confirmer et geler » dans la conversation du 2026-10-24, cas proposé par l'agent\"",
+  "empreinte": "a48d85170d5e346cfa45be718bad3c198cfdeaa081c9c962f03960adfc24b2d4",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-24-172034-defect-slugify.expected.json",
+      "sha256": "290848772fc7e913c41e4f4003b0b477a2cfe5eee3c7543ba927414c82324c32",
+      "taille": 8665,
+      "birth": "2026-10-24 17:20:44.680045220 +0200",
+      "birth_epoch": 1792855244
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-24-172034-defect-slugify.request.md",
+      "sha256": "2bd12df1afae029e2c17a6f7f4b3b308b493e3fc8ec7c673e786583f3ebb2ea7",
+      "taille": 4400,
+      "birth": "2026-10-24 17:20:44.678045136 +0200",
+      "birth_epoch": 1792855244
+    }
+  ],
+  "references": [
+    {
+      "arbre": "terrain",
+      "chemin": "slugify.py",
+      "sha256": "10cfeccf59e36531bd5bcd97647a845beff6eeca7bbb5ea46f4be84081da099a",
+      "taille": 259,
+      "birth": "2026-10-24 17:20:41.748105483 +0200",
+      "birth_epoch": 1792855241
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/origine/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    }
+  ]
+}

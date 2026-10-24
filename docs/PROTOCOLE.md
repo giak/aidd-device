@@ -80,7 +80,7 @@ l'orchestrateur (`exit 1`), une commande mal formée sort en `2` sans rien écri
 node docs/device/harness/orchestrer.mjs cas --skill <chemin-du-skill> [--terrain <dépôt>] [--id <slug>]
 node docs/device/harness/orchestrer.mjs porte --cas <id> --run <dossier>
 node docs/device/harness/orchestrer.mjs ouvrir --cas <id> --run <dossier> [--cases <dir>] [--api <url>] [--modele <fournisseur/modèle>] [--delai <minutes>]
-node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] --par <qui> --conduite agent|humain --produit <chemin> | --sans-produit
+node docs/device/harness/orchestrer.mjs suite --cas <id> --fil <id> [--client auto|freebuff|opencode] [--store <dir>] --par <qui> --conduite agent|humain --produit <chemin> | --sans-produit [--reprendre]
 node docs/device/harness/orchestrer.mjs fin --cas <id> --run <dossier> --difference <texte> --phrase <texte> [--verdict <v>]
 node docs/device/harness/orchestrer.mjs rapport --cas <id> --run <dossier> [--remplacer] [--cases <dir>]
 node docs/device/harness/orchestrer.mjs lire --cas <id> --run <dossier>
@@ -93,7 +93,7 @@ node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis 
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | `--cases` (deux pièces et le gel), `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
-| `suite` | les faits, l'export de la trace par l'adaptateur du client, le dernier message haché, la copie du produit, et l'annexe du scratch quand le cas le déclare et que le dossier porte un fichier | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json`, `annexe/<cas>/` |
+| `suite` | les faits, l'export de la trace par l'adaptateur du client, le dernier message haché, la copie du produit, et l'annexe du scratch quand le cas le déclare et que le dossier porte un fichier ; avec `--reprendre`, rien de l'étape 1 n'est refait : les faits et la trace sont relus, et seule l'étape 3 s'écrit | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json`, `annexe/<cas>/` |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture ; quand l'attendu déclare `verification`, elle fait jouer `verifier` avant le reçu | `verification.json` (par `verifier`), `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
@@ -129,6 +129,12 @@ elle refuse sans conclure. Elle n'écrit **rien** dans le dossier du run : le fi
 `faits.json` : `suite` exige `--conduite agent|humain` et `--par`, et le reçu recopie ce bloc avec la
 limite qui dit qu'il est déclaré, jamais vérifié ([ADR-071](DECISIONS.md)). Une personne qui a conduit le
 run écrit `humain` ; `ouvrir` a conduit, donc `agent`.
+
+`suite --reprendre` ([ADR-097](DECISIONS.md)) reprend à l'étape 3 une `suite` arrêtée après ses faits et
+sa trace, par exemple sur un produit nommé et absent : elle ne réexporte ni ne redérive rien, refuse un run
+guidé, un dernier message déjà écrit, un produit ou une annexe déjà collectés, et n'écrit que le dernier
+message, son attestation dans `faits.json` et la copie déclarée. Sans `--reprendre`, une `suite` qui trouve
+ses pièces refuse toujours, et le refus renvoie au drapeau.
 
 `tracer` est la commande du run guidé ([ADR-076](DECISIONS.md)) : elle exporte le fil et écrit
 `trace/echange.jsonl` plus `trace/fil.json`, sans reçu ni verdict. Elle refuse un dossier dont `run.json`

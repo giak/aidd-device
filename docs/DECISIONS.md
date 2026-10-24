@@ -2983,3 +2983,31 @@ sous `raw/cas-oc/`.
 
 **Falsificateur** : un `suite` qui laisse l'annexe non collectée alors que le scratch porte un fichier ; un
 `suite` qui sort en `0` après un `collect --annexe` refusé.
+
+## ADR-097 — Une `suite` arrêtée après ses faits se reprend, sans réexporter (2026-10-24)
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : le run `2026-10-24-172243-a48d8517` (cas
+`2026-10-24-172034-defect-slugify`, skill `09-defect`). La session a écrit son Defect hors de l'arbre
+`terrain` ; `suite` s'est arrêtée sur « le produit nommé ne s'est pas matérialisé », après avoir écrit
+`faits.json` et sa trace. `fin` exige `raw/<cas>/last-message.md`, que seule l'étape 3 de `suite` écrit, et
+une seconde `suite` refusait sur ses propres pièces : le run ne pouvait plus produire de reçu, alors que sa
+trace était complète et que le refus était déjà mesuré.
+
+**Décision.** `suite --reprendre` part de l'étape 3. Il exige `faits.json` et `trace/echange.jsonl` ; il
+refuse un `trace/fil.json` (run guidé), un `raw/<cas>/last-message.md` déjà écrit, un `raw/<cas>` ou
+`annexe/<cas>` déjà collectés. Il n'appelle ni l'export ni `faits` : il relit, puis exécute la copie du
+produit (ou `--sans-produit`), l'annexe, le dernier message et son attestation. Sans le drapeau, les refus
+existants sont inchangés, et le refus sur `faits.json` renvoie à `--reprendre`.
+
+**Conséquences.** Contrôles **312** et **313** du banc, qui passe de **304** à **306** contrôles. **312**
+arrête une `suite` sur un produit absent, reprend, exige le dernier message et son `sha256` dans
+`faits.json`, le manifeste sans produit, puis refuse une seconde reprise ; **313** exige le refus d'une
+reprise sans `faits.json`. Morsure prouvée par mutation : la constante qui lit le drapeau forcée à `false`
+fait sortir **312** en `1`. Le run repris a reçu son reçu : `non concluant`, plafonné par
+`ecriture_hors_dossier`, 14 limites.
+
+**Ce que ce n'est pas** : la preuve qu'un run arrêté mérite un reçu, ni que son produit existe. La reprise
+ne recollecte pas une copie existante, ne réécrit ni les faits ni la trace, et ne change pas le verdict.
+
+**Falsificateur** : une `--reprendre` qui réexporte la trace ou redérive les faits ; une reprise acceptée
+sans `faits.json` ; une reprise acceptée sur un dernier message déjà écrit ; une seconde reprise acceptée.

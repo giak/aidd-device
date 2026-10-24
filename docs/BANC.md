@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 304 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 306 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -125,6 +125,15 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > `code_hors_dossier` et la limite `ADR-088`, et `RAPPORT.md` nomme la morsure. Le terrain du jouet n'est
 > pas retouché ; le faux binaire ne quitte pas le bac.
 > Aucun contrôle existant n'est renuméroté.
+
+> V0.61 — 2026-10-24 : **306** contrôles ; **312** et **313** éprouvent `suite --reprendre` (ADR-097).
+> **312** arrête d'abord une `suite` sur un produit nommé et absent, ce qui laisse `faits.json` et la trace
+> sans dernier message ; la reprise doit sortir en `0`, écrire `raw/<cas>/last-message.md`, l'attester par
+> son `sha256` dans `faits.json`, collecter le run sans produit, puis refuser une seconde reprise en nommant
+> l'étape 3 déjà écrite. **313** exige le refus d'une reprise sans `faits.json`, nommant `--reprendre sans`.
+> Morsure prouvée par mutation : quand la constante qui lit le drapeau est forcée à `false`, **312** sort
+> `1` et nomme « suite --reprendre refuse ». Témoin sur l'orchestrateur réel : `exit 0`, `last-message.md` et
+> `manifest.json` sous `raw/cas-oc/`. Aucun contrôle existant n'est renuméroté.
 
 > V0.60 — 2026-10-24 : **304** contrôles ; **310** et **311** éprouvent l'autre moitié de la condition du
 > **309**, celle que son falsificateur nommait sans la mesurer. **310** : le scratch porte un fichier,
@@ -328,7 +337,7 @@ discriminant par un message unique fait tomber l'un des deux. Une trace recopié
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 304 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 306 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;

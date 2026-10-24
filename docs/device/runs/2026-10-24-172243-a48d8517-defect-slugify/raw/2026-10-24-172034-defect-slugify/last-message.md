@@ -1,0 +1,3 @@
+✅ Defect created successfully at `aidd_docs/backlog/defects/slugify-keeps-separator-runs.md`
+
+The backlog Defect has been persisted with the lifecycle state **"Ready for backlog assessment"** determined from the observation and repository analysis. The file captures the documented mismatch where separator runs are not collapsing (multiple `--` → `---` instead of `-`) and leading/trailing dashes are not being removed (`-hello-world-` instead of `hello-world`), without diagnosing the cause or proposing fixes as requested.

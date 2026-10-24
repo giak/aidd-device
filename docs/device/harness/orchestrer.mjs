@@ -50,13 +50,14 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          suite reçoit ensuite ; elle n'atteste aucun geste humain
   suite  --cas <id> --fil <id> [--run <dir>] [--client auto|freebuff|opencode]
          [--store <racine opencode>] [--par <qui>] --conduite agent|humain
-         [--produit <chemin>] [--sans-produit] [--cases <dir>]
+         [--produit <chemin>] [--sans-produit] [--cases <dir>] [--reprendre]
          exporte la trace du fil par l'adaptateur du client, écrit faits.json, écrit
          raw/<cas>/last-message.md depuis le dernier texte d'assistant de la trace et
          l'atteste dans faits.json, collecte le produit sous raw/<cas>/ — ou constate son
          absence avec --sans-produit — puis s'arrête. --client auto (défaut) essaie
          Freebuff puis opencode ; les deux ou aucun sont des refus qui nomment --client.
-         Aucune session n'est ouverte : le fil doit exister déjà
+         Aucune session n'est ouverte : le fil doit exister déjà. --reprendre reprend à l'étape 3
+         une suite arrêtée après ses faits, sans réexporter la trace
   fin    --cas <id> [--run <dir>] --difference <texte> --phrase <texte>
          [--verdict conforme|ecart|non concluant] [--limites <texte>]
          [--juge <qui> --rubrique <texte>] [--cases <dir>]
@@ -1126,7 +1127,7 @@ function runExiste(cas, valeurs, { requis = true } = {}) {
 function commandeSuite(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", conduite: "valeur",
-    produit: "valeur", "sans-produit": "drapeau", cases: "valeur", client: "valeur", store: "valeur",
+    produit: "valeur", "sans-produit": "drapeau", reprendre: "drapeau", cases: "valeur", client: "valeur", store: "valeur",
   });
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
@@ -1141,18 +1142,44 @@ function commandeSuite(argv) {
   // Ce refus se lève avant tout appel client et avant toute écriture : un dossier qui porte déjà des faits
   // n'a rien à exporter, et le dire ne doit rien y ajouter.
   const faits = join(run, "faits.json");
-  if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent`);
-  // Une trace déjà écrite est une pièce : `suite` ne la remplace pas, comme `tracer` (ADR-083). Le refus
-  // nomme son auteur, dérivé des seules pièces présentes et d'aucun fichier neuf : `tracer` est le seul à
-  // écrire `trace/fil.json`, et `suite` écrit ses faits juste après sa trace. Une trace qui porte un
-  // `fil.json` vient donc de `tracer` ; sans lui, c'est la trace d'un `suite` arrêté entre les deux. Ce
-  // refus se lève avant tout appel client et avant toute écriture.
   const traceDeja = join(run, "trace", "echange.jsonl");
   const filDeja = join(run, "trace", "fil.json");
-  if (existsSync(traceDeja)) {
-    refuse(existsSync(filDeja)
-      ? `suite : ${traceDeja} existe déjà — c'est une trace de run guidé, écrite par \`tracer\` (${filDeja} est là) ; une trace ne se réécrit pas, elle se relit`
-      : `suite : ${traceDeja} existe déjà — aucun ${filDeja} : c'est la trace d'un \`suite\` arrêté avant ses faits ; la déplacer, puis relancer`);
+  const dernierDeja = join(run, "raw", cas, "last-message.md");
+  // ADR-097 : une `suite` qui s'arrête après ses faits et sa trace — produit absent, annexe refusée —
+  // laissait un run sans reçu possible : `fin` exige `raw/<cas>/last-message.md`, que seule l'étape 3
+  // écrit, et une seconde `suite` refusait sur ses propres pièces. `--reprendre` part de l'étape 3 : il
+  // ne réexporte ni ne redérive rien, il refuse tout ce qui est déjà collecté, et n'écrit que le manquant.
+  const reprendre = valeurs.reprendre === true;
+  if (reprendre) {
+    if (!existsSync(faits)) {
+      refuse(`suite : --reprendre sans ${faits} — rien n'a été dérivé, donc il n'y a rien à reprendre ; lancer suite sans --reprendre`);
+    }
+    if (!existsSync(traceDeja)) {
+      refuse(`suite : --reprendre sans ${traceDeja} — la pièce de l'étape 1 manque, et une reprise ne rejoue pas l'export`);
+    }
+    if (existsSync(filDeja)) {
+      refuse(`suite : --reprendre sur un run guidé (${filDeja} est là) — \`tracer\` a écrit cette trace, et une reprise n'y touche pas`);
+    }
+    if (existsSync(dernierDeja)) {
+      refuse(`suite : --reprendre alors que ${dernierDeja} existe — l'étape 3 est déjà écrite, et un dernier message ne se réécrit pas`);
+    }
+    for (const [piece, chemin] of [["le produit", join(run, "raw", cas)], ["l'annexe", join(run, "annexe", cas)]]) {
+      if (existsSync(chemin)) {
+        refuse(`suite : --reprendre alors que ${piece} est déjà collecté (${chemin}) — une reprise ne recollecte pas une copie existante`);
+      }
+    }
+  } else {
+    if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent ; --reprendre reprend à l'étape 3`);
+    // Une trace déjà écrite est une pièce : `suite` ne la remplace pas, comme `tracer` (ADR-083). Le refus
+    // nomme son auteur, dérivé des seules pièces présentes et d'aucun fichier neuf : `tracer` est le seul à
+    // écrire `trace/fil.json`, et `suite` écrit ses faits juste après sa trace. Une trace qui porte un
+    // `fil.json` vient donc de `tracer` ; sans lui, c'est la trace d'un `suite` arrêté entre les deux. Ce
+    // refus se lève avant tout appel client et avant toute écriture.
+    if (existsSync(traceDeja)) {
+      refuse(existsSync(filDeja)
+        ? `suite : ${traceDeja} existe déjà — c'est une trace de run guidé, écrite par \`tracer\` (${filDeja} est là) ; une trace ne se réécrit pas, elle se relit`
+        : `suite : ${traceDeja} existe déjà — aucun ${filDeja} : c'est la trace d'un \`suite\` arrêté avant ses faits ; la déplacer, puis relancer`);
+    }
   }
   const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
   if (clientVoulu === "freebuff" && valeurs.store !== undefined) {
@@ -1209,50 +1236,61 @@ function commandeSuite(argv) {
       }
     }
   };
-  let exp;
-  try {
-    exp = exporterTraceClient(client, fil, client === "freebuff"
-      ? { base, dest: traceTravail }
-      : { store, cwd: travail, dest: traceTravail, brut: brutTravail });
-    const contenu = readFileSync(traceTravail, "utf8");
-    const lignes = contenu.split("\n").filter((l) => l.trim() !== "");
-    if (!lignes.length) throw new Error(`suite : l'export de ${fil} est vide — une trace vide ne se cite pas`);
-    lignes.forEach((l, i) => {
-      try {
-        JSON.parse(l);
-      } catch {
-        throw new Error(`suite : la ligne ${i + 1} de l'export n'est pas du JSON — la trace ne se cite pas`);
-      }
+  if (reprendre) {
+    blocEtape({
+      rang: 1, total: 3, titre: "la trace",
+      fait: "reprendre les pièces du run, sans réexporter ni redériver",
+      commande: `suite --reprendre --cas ${cas} --run ${relative(process.cwd(), run)} …`,
+      attendu: "faits.json et trace/ déjà là, intacts",
+      obtenu: `${relative(process.cwd(), faits)} et ${relative(process.cwd(), traceDeja)} relus, aucune écriture`,
+      lit: "une reprise n'ajoute que l'étape 3 : un refus antérieur n'a rien laissé à refaire",
     });
-  } catch (e) {
+  } else {
+    let exp;
+    try {
+      exp = exporterTraceClient(client, fil, client === "freebuff"
+        ? { base, dest: traceTravail }
+        : { store, cwd: travail, dest: traceTravail, brut: brutTravail });
+      const contenu = readFileSync(traceTravail, "utf8");
+      const lignes = contenu.split("\n").filter((l) => l.trim() !== "");
+      if (!lignes.length) throw new Error(`suite : l'export de ${fil} est vide — une trace vide ne se cite pas`);
+      lignes.forEach((l, i) => {
+        try {
+          JSON.parse(l);
+        } catch {
+          throw new Error(`suite : la ligne ${i + 1} de l'export n'est pas du JSON — la trace ne se cite pas`);
+        }
+      });
+    } catch (e) {
+      nettoyerTravail();
+      blocRefus({ texte: e.message, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
+      process.exit(1);
+    }
+    mkdirSync(dossierTrace, { recursive: true });
+    renameSync(traceTravail, trace);
+    const brutFinal = join(dossierTrace, "export-brut.json");
+    if (existsSync(brutTravail)) renameSync(brutTravail, brutFinal);
     nettoyerTravail();
-    blocRefus({ texte: e.message, empeche: "la trace lue par le reçu serait vide, et une trace vide ne mesure rien", geste: "rien : cette étape s'arrête ici" });
-    process.exit(1);
-  }
-  mkdirSync(dossierTrace, { recursive: true });
-  renameSync(traceTravail, trace);
-  const brutFinal = join(dossierTrace, "export-brut.json");
-  if (existsSync(brutTravail)) renameSync(brutTravail, brutFinal);
-  nettoyerTravail();
-  // La commande consignée rejoue l'export vers la pièce définitive, jamais vers le fichier de travail.
-  exp.commande = String(exp.commande).split(traceTravail).join(trace).split(brutTravail).join(brutFinal);
+    // La commande consignée rejoue l'export vers la pièce définitive, jamais vers le fichier de travail.
+    exp.commande = String(exp.commande).split(traceTravail).join(trace).split(brutTravail).join(brutFinal);
 
-  const argsFaits = ["faits", "--case", cas, "--cases", cases, "--client", client];
-  if (client === "freebuff") argsFaits.push("--base", base);
-  else argsFaits.push("--store", store);
-  argsFaits.push("--fil", fil, "--trace", trace, "--out", faits, "--par", par, "--fin", dateIso(), "--conduite", conduite);
-  const sortieFaits = harnaisOuRefus(
-    argsFaits,
-    "les faits sont ce que le reçu lira : un fait absent n'est pas un fait à remplir plus tard",
-  );
-  blocEtape({
-    rang: 1, total: 3, titre: "la trace",
-    fait: `dériver les faits du fil (${client}), puis exporter la trace par l'adaptateur du client`,
-    commande: exp.commande,
-    attendu: "un faits.json et un export non vides, dans le dossier du run",
-    obtenu: sortieFaits,
-    lit: "le reçu rejouera cet export par le même adaptateur : la pièce doit être exactement ce que le client rend",
-  });
+    const argsFaits = ["faits", "--case", cas, "--cases", cases, "--client", client];
+    if (client === "freebuff") argsFaits.push("--base", base);
+    else argsFaits.push("--store", store);
+    argsFaits.push("--fil", fil, "--trace", trace, "--out", faits, "--par", par, "--fin", dateIso(), "--conduite", conduite);
+    const sortieFaits = harnaisOuRefus(
+      argsFaits,
+      "les faits sont ce que le reçu lira : un fait absent n'est pas un fait à remplir plus tard",
+    );
+    blocEtape({
+      rang: 1, total: 3, titre: "la trace",
+      fait: `dériver les faits du fil (${client}), puis exporter la trace par l'adaptateur du client`,
+      commande: exp.commande,
+      attendu: "un faits.json et un export non vides, dans le dossier du run",
+      obtenu: sortieFaits,
+      lit: "le reçu rejouera cet export par le même adaptateur : la pièce doit être exactement ce que le client rend",
+    });
+  }
 
   const produit = option(valeurs, "produit", { defaut: null });
   let collecte;

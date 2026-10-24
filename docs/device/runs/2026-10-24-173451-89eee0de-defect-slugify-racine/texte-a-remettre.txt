@@ -1,0 +1,10 @@
+Read the skill at /home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/framework-origin/plugins/aidd-pm/skills/09-defect/SKILL.md and use it on the repository whose root is the `terrain/` directory you work from.
+
+`terrain/` is `slugify-cli`, a small text utility the newsletter importer uses to build article URLs; every path below is relative to `terrain/`. The QA observation `observations/2026-10-24-qa-run.md` records two calls whose output differs from what `README.md` and `tests/test_slugify.py` promise.
+
+Turn that observed mismatch into one backlog Defect. The target is explicit and relative to `terrain/`: `aidd_docs/backlog/defects/slugify-keeps-separator-runs.md`.
+
+Work from inside `terrain/`, and read only under `terrain/` and `framework-origin/`.
+Show one Markdown table first: what you qualify this mismatch as, the lifecycle state you find it deserves, and where you will write it. Write no file before that table, and wait for my agreement.
+Once I agree, you have my authority to create that one Defect; do not ask a second question.
+Do not modify any existing file, and do not diagnose the cause or propose the fix.

@@ -1,0 +1,26 @@
+{
+  "type": "gate",
+  "cas": "2026-10-24-173346-defect-slugify-racine",
+  "passe_le": "2026-10-24T17:34:51.551763692+0200",
+  "passe_le_epoch": 1792856091,
+  "repertoire": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-24-173346-defect-slugify-racine.freeze.json",
+    "empreinte": "89eee0dec898115baa83c15c93b734f6a52726190d8393b46318d9fb3421d801",
+    "gele_le_epoch": 1792856079
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/terrain",
+    "head": "6c42d4d",
+    "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+    "porcelain": [],
+    "remotes": [],
+    "refs_distants": []
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-24-173451-89eee0de-defect-slugify-racine/texte-a-remettre.txt",
+    "sha256": "24ccd652c3da3f10b6c54fb2ca5120d62ff879e253ba91a970007a9161134ed8",
+    "octets": 1163
+  }
+}

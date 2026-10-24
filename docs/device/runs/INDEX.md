@@ -1,6 +1,6 @@
 <!-- généré par runs.mjs — ne pas éditer -->
 
-43 runs : 25 indépendants, 5 guidés, 11 avortés, 2 manuels.
+46 runs : 28 indépendants, 5 guidés, 11 avortés, 2 manuels.
 
 | Run | Date | Mode | Cas / skill | Statut ou verdict | Limites | Pièces |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -47,3 +47,6 @@
 | 2026-10-24-112620-85d12f10-9fc5285 | 2026-10-24 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
 | 2026-10-24-113143-868436ae-576c360 | 2026-10-24 | indépendant | 2026-10-24-055310-shadow-areas-design | ecart | 14, reçu | RAPPORT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
 | 2026-10-24-120532-5b1e2724-6b24ca8 | 2026-10-24 | indépendant | 2026-10-24-055310-shadow-areas-design | conforme | 15, reçu | RAPPORT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
+| 2026-10-24-172243-a48d8517-defect-slugify | 2026-10-24 | indépendant | 2026-10-24-172034-defect-slugify | non concluant | 14, reçu | RAPPORT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
+| 2026-10-24-173451-89eee0de-defect-slugify-racine | 2026-10-24 | indépendant | 2026-10-24-173346-defect-slugify-racine | non concluant | 15, reçu | RAPPORT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
+| 2026-10-24-175711-44f3a93c-82b7fac | 2026-10-24 | indépendant | 2026-10-24-175334-defect-racine-terrain | non concluant | 13, reçu | RAPPORT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |

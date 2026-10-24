@@ -1,0 +1,107 @@
+{
+  "cas": "2026-10-24-173346-defect-slugify-racine",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-24T17:34:39+02:00",
+    "preuve": "consigne de l'opérateur dans la conversation du 2026-10-24 : rejouer le cas 09-defect sur un nouveau gel dont le texte nomme terrain/ comme racine du dépôt"
+  },
+  "racine_espace_de_travail": "/home/giak/aidd-device-work-2026-10-24",
+  "gele_le": "2026-10-24T17:34:39.408202265+0200",
+  "gele_le_epoch": 1792856079,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-24-173346-defect-slugify-racine --cases docs/device/CASES --racine /home/giak/aidd-device-work-2026-10-24 --arbre framework-origin=/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/origine/framework --arbre terrain=/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/origine/terrain --ref slugify.py --ref-root /home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/origine/terrain --refreeze --confirme-par giak --confirme-preuve \"consigne de l'opérateur dans la conversation du 2026-10-24 : rejouer le cas 09-defect sur un nouveau gel dont le texte nomme terrain/ comme racine du dépôt\"",
+  "empreinte": "89eee0dec898115baa83c15c93b734f6a52726190d8393b46318d9fb3421d801",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-24-173346-defect-slugify-racine.expected.json",
+      "sha256": "ec840a590f0dd7bfee825df7f0ac2ab298e96010af353b6d84b550835a5ffcf2",
+      "taille": 8871,
+      "birth": "2026-10-24 17:33:54.782633753 +0200",
+      "birth_epoch": 1792856034
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-24-173346-defect-slugify-racine.request.md",
+      "sha256": "13013bebc064332a8e5f98b7285a55cb9768bfb0ebce32bf47df45a3b52ceb4d",
+      "taille": 4551,
+      "birth": "2026-10-24 17:33:54.779633660 +0200",
+      "birth_epoch": 1792856034
+    }
+  ],
+  "references": [
+    {
+      "arbre": "terrain",
+      "chemin": "slugify.py",
+      "sha256": "10cfeccf59e36531bd5bcd97647a845beff6eeca7bbb5ea46f4be84081da099a",
+      "taille": 259,
+      "birth": "2026-10-24 17:33:50.453190294 +0200",
+      "birth_epoch": 1792856030
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/origine/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-173346-defect-slugify-racine/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    }
+  ]
+}

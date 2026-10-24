@@ -1,0 +1,26 @@
+{
+  "type": "gate",
+  "cas": "2026-10-24-172034-defect-slugify",
+  "passe_le": "2026-10-24T17:22:43.820829332+0200",
+  "passe_le_epoch": 1792855363,
+  "repertoire": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-24-172034-defect-slugify.freeze.json",
+    "empreinte": "a48d85170d5e346cfa45be718bad3c198cfdeaa081c9c962f03960adfc24b2d4",
+    "gele_le_epoch": 1792855353
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/terrain",
+    "head": "6c42d4d",
+    "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+    "porcelain": [],
+    "remotes": [],
+    "refs_distants": []
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-24-172243-a48d8517-defect-slugify/texte-a-remettre.txt",
+    "sha256": "5b4078eb4c8e5990bf8fec725066af7213a78026ca035039f5fd0c3af5d2013b",
+    "octets": 1038
+  }
+}

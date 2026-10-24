@@ -4589,6 +4589,67 @@ controle "310 suite, un scratch non vide se collecte en annexe" 0 node "$O/suite
 copie-porte-oc "$O/oc-run-c311"
 controle "311 suite, un collect d'annexe refuse et arrete le run" 0 node "$O/suite-scratch-jumeau.mjs" lien "$ORCH" "$O/cases" "$O/oc-run-c311" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
 
+# 312-313 : `suite --reprendre` (ADR-097). Un run dont `suite` s'arrête après ses faits et sa trace
+# (produit absent, annexe refusée) n'avait plus de reçu possible : `fin` exige le dernier message, que
+# seule l'étape 3 écrit, et une seconde `suite` refusait sur ses propres pièces. 312 reprend ce run-là
+# et exige le dernier message attesté sans nouvel export ; 313 exige le refus d'une reprise sans rien
+# à reprendre.
+cat > "$O/suite-reprendre.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [mode, orch, cases, run, travail, home, bin, fixtures, store] = process.argv.slice(2);
+const raisons = [];
+const env = { ...process.env, HOME: home, PATH: bin + ":" + process.env.PATH, OPENCODE_FIXTURE_DIR: fixtures };
+const suite = (args) => {
+  try {
+    const out = execFileSync(process.execPath,
+      [orch, "suite", "--cas", "cas-oc", "--cases", cases, "--run", run, "--client", "opencode",
+        "--fil", "banc-opencode-ok", "--store", store, "--conduite", "humain", ...args],
+      { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { code: 0, out: String(out) };
+  } catch (e) {
+    return { code: e.status ?? 1, out: String(e.stdout || "") + String(e.stderr || "") };
+  }
+};
+const ligne = (o) => o.out.split("\n").find((l) => l.trim()) || "(aucune sortie)";
+if (mode === "reprend") {
+  // Un produit nommé et absent arrête `suite` après l'étape 1 : faits et trace sont écrits, rien d'autre.
+  const premier = suite(["--produit", "aidd_docs/absent"]);
+  if (premier.code === 0) raisons.push("suite accepte un produit absent : exit 0");
+  if (!existsSync(join(run, "faits.json")) || !existsSync(join(run, "trace", "echange.jsonl"))) {
+    raisons.push("le refus du produit n'a pas laissé faits et trace : la reprise n'aurait rien à relire");
+  }
+  if (existsSync(join(run, "raw", "cas-oc"))) raisons.push("un produit a été collecté malgré le refus");
+  const reprise = suite(["--reprendre", "--sans-produit"]);
+  if (reprise.code !== 0) raisons.push("suite --reprendre refuse : exit " + reprise.code + " : " + ligne(reprise));
+  const dernier = join(run, "raw", "cas-oc", "last-message.md");
+  if (!existsSync(dernier)) raisons.push("la reprise n'écrit pas le dernier message");
+  const faits = existsSync(join(run, "faits.json")) ? JSON.parse(readFileSync(join(run, "faits.json"), "utf8")) : null;
+  if (!faits || !faits.dernier_message || typeof faits.dernier_message.sha256 !== "string") {
+    raisons.push("la reprise n'atteste pas le dernier message dans faits.json");
+  } else if (existsSync(dernier) && faits.dernier_message.sha256 !== createHash("sha256").update(readFileSync(dernier)).digest("hex")) {
+    raisons.push("l'empreinte attestée n'est pas celle du fichier écrit");
+  }
+  const manifeste = join(run, "raw", "cas-oc", "manifest.json");
+  if (!existsSync(manifeste)) raisons.push("la reprise n'a pas collecté le run sans produit");
+  else if (JSON.parse(readFileSync(manifeste, "utf8")).produit_absent !== true) raisons.push("le manifeste de la reprise ne dit pas l'absence de produit");
+  const seconde = suite(["--reprendre", "--sans-produit"]);
+  if (seconde.code === 0) raisons.push("une seconde reprise accepte un run déjà repris : exit 0");
+  else if (!seconde.out.includes("déjà écrite")) raisons.push("le second refus ne nomme pas le dernier message déjà écrit : " + ligne(seconde));
+} else {
+  const sansFaits = suite(["--reprendre", "--sans-produit"]);
+  if (sansFaits.code === 0) raisons.push("suite --reprendre accepte un run sans faits : exit 0");
+  else if (!sansFaits.out.includes("--reprendre sans")) raisons.push("le refus ne nomme pas la pièce manquante : " + ligne(sansFaits));
+}
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+copie-porte-oc "$O/oc-run-c312"
+controle "312 suite --reprendre ecrit le dernier message sans reexporter" 0 node "$O/suite-reprendre.mjs" reprend "$ORCH" "$O/cases" "$O/oc-run-c312" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
+copie-porte-oc "$O/oc-run-c313"
+controle "313 suite --reprendre refuse sans rien a reprendre" 0 node "$O/suite-reprendre.mjs" refus "$ORCH" "$O/cases" "$O/oc-run-c313" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
+
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 
 echo

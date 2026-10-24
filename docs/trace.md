@@ -9311,3 +9311,118 @@ d'annexe arrête encore l'orchestrateur.
 doit s'arrêter.
 
 **Mémoires.** `6d7ea1a3-77b4-4a0a-ba4d-501426cd7127` — contrôles 310 et 311, banc 304/304.
+
+## Séance 172 — 2026-10-24 (run complet du protocole sur `09-defect` : le produit sort de l'arbre, verdict `non concluant`)
+
+**Objectif.** Choisir un skill de l'AIDD et dérouler le protocole de test indépendant de bout en bout, session
+headless `opencode`, jusqu'au reçu et au verdict.
+
+**Fait.**
+
+- Skill choisi : `plugins/aidd-pm/skills/09-defect`, jamais testé par le dispositif, sans réseau et à produit
+  déterministe (`aidd_docs/backlog/defects/<slug>.md`). Révision sous test : framework `fe48de12`, arbre de
+  travail porté par `--tel-quel` (une action de `03-shadow-areas` modifiée, un fichier non suivi), aucun des
+  deux dans `09-defect`.
+- Terrain fabriqué : `terrain-slugify`, dépôt git de fixture (tête `6c42d4d`), avec `slugify.py`, ses tests,
+  un README qui promet l'effondrement des séparateurs, et une observation QA qui montre `hello---world` et
+  `-hello-world-`.
+- Cas **`2026-10-24-172034-defect-slugify`** : demande §5, attendu rempli (produit, ordre en cinq gestes,
+  tableau, pause requise, `P` sur le fichier, son type, ses sections et le `sha256` de `slugify.py`), budget
+  3, deux réponses figées. Gel **`a48d8517`** après confirmation de l'opérateur (« Confirmer et geler »),
+  porte **`dd532cbf`**, run `2026-10-24-172243-a48d8517-defect-slugify`.
+- Session `ses_e917e1fa8ffefKuKZySx4QqQcm`, modèle `openrouter/cohere/north-mini-code:free` : elle lit le
+  skill et les fichiers du terrain, montre un tableau à quatre colonnes, pose une question, reçoit la réponse
+  figée, puis écrit son Defect — **à la racine du cas**, hors de l'arbre `terrain`, sans `type: defect` ni
+  `status`.
+- `suite` refuse alors « le produit nommé ne s'est pas matérialisé », après avoir écrit `faits.json` et sa
+  trace ; `fin` exige `raw/<cas>/last-message.md`, que seule l'étape 3 écrit, et une seconde `suite` refusait
+  sur ses propres pièces : le run n'avait plus de reçu possible.
+- Défaut du dispositif corrigé : `suite --reprendre` (ADR-097) reprend à l'étape 3, sans réexporter ni
+  redériver, et refuse un dernier message déjà écrit, un produit ou une annexe déjà collectés.
+- Le manifeste `produit_absent` écrit par le premier `collect --sans-produit` a été retiré avant la reprise,
+  pour qu'elle puisse le réécrire ; il ne portait aucun reçu, et le manifeste final est identique dans son
+  contenu. La suppression est un geste de l'agent, pas une pièce du run.
+- Résultat : reçu et output écrits, `RAPPORT.md` produit, index régénéré (44 runs).
+
+**Vérifié.**
+
+- `suite --reprendre` => `exit 0`, dernier message de 525 o (seq 12), `sha256` attesté dans `faits.json`,
+  manifeste `produit_absent: true`.
+- `fin` => `receipt ok`, `compare ok`, **`VERDICT — non concluant`**, plafonné par `ecriture_hors_dossier`,
+  2 échanges sur 3, pause mesurée (réponse seq 8, écriture seq 10, 13 751 ms), tableau à 4 colonnes,
+  14 limites.
+- `runs.mjs --verifier` => `exit 0` ; index régénéré, ligne du run en `non concluant`, 14 limites.
+- Banc : `bash docs/device/harness/banc-harnais.sh` => **306/306 PASS**, `exit 0`, dont `PASS 312` et
+  `PASS 313`. Morsure de **312** prouvée par mutation : drapeau forcé à `false`, le contrôle sort `1` et
+  nomme « suite --reprendre refuse » ; témoin sur l'orchestrateur réel, `exit 0`, `last-message.md` et
+  `manifest.json` sous `raw/cas-oc/`.
+
+**Dérives signalées, non corrigées.**
+
+- La session a écrit hors de l'arbre `terrain` alors que le texte remis le lui interdisait : c'est le fait du
+  run, pas un défaut du harnais, et le reçu le mesure. Le skill `09-defect` n'a donc pas été observé conforme.
+- `attendu_vu` reste `inconnu` : la session a lu par un `glob` sans chemin, et le reçu le dit en limite
+  plutôt que de le supposer.
+- L'ADR-094 écrit toujours que la réparation de `03-shadow` « n'est pas faite » (dérive déjà signalée aux
+  séances 170 et 171).
+
+**Prochaines étapes.** Rejouer `09-defect` avec un texte qui nomme la racine du dépôt (`terrain/`) en clair,
+sur un nouveau gel ; puis un skill à produit exécutable, pour éprouver une promesse mesurée et non jugée.
+
+**Mémoires.** `71273fce-6a3c-4213-a250-570f91d471ee` — run `09-defect` non concluant, `suite --reprendre`, banc 306/306.
+
+## Séance 173 — 2026-10-24 (09-defect rejoué sur un texte qui nomme `terrain/` : la racine est tenue, l'ordre du tableau ne l'est pas, verdict `non concluant`)
+
+**Objectif.** Rejouer le cas `09-defect` sur un nouveau gel dont le texte remis nomme `terrain/` comme
+racine du dépôt, après la séance 172 où la session avait inventé un chemin hors de l'arbre.
+
+**Fait.**
+
+- Cas neuf **`2026-10-24-175334-defect-racine-terrain`** : le §5 ne porte plus aucun chemin absolu ; il dit
+  « You are at the root of the repository under work: the `terrain/` directory », nomme le skill à
+  `../framework-origin/plugins/aidd-pm/skills/09-defect/SKILL.md`, et demande explicitement de terminer le
+  tour du tableau par une question. Même terrain (`terrain-slugify`, `6c42d4d`), même révision
+  (`fe48de12`, arbre `--tel-quel`), budget 3, deux réponses figées inchangées.
+- Gel **`44f3a93c`**, confirmé par l'opérateur sur sa consigne du jour ; porte **`1b2c92fc`**, texte
+  `282af705` (1 094 o), run **`2026-10-24-175711-44f3a93c-82b7fac`**.
+- Le modèle par défaut du poste est tombé : `openrouter/cohere/north-mini-code:free` rend un 402
+  `provider.quota` (« You requested up to 256000 tokens, but can only afford 1374 »). Ont suivi
+  `opencode/deepseek-v4.1-flash-free` (`provider.free-limit`), `groq/openai/gpt-oss-120b` (TPM 8 000,
+  requête 10 195), `nvidia/deepseek-ai/deepseek-v4.1-flash` (aucun token en 11 min, arrêté),
+  `openrouter/google/gemma-4-26b-a4b-it:free` (402). Le run a été joué sur
+  **`nvidia/nvidia/nemotron-3.5-lightning-30b-a3b`**.
+- Session **`ses_e9141d661ffenTUvFrPxsEMHh5`** : elle lit le skill par le chemin relatif, `README.md`,
+  `tests/test_slugify.py` et l'observation ; elle pose une **question structurée** (outil `question`) qui
+  porte la qualification et l'état, reçoit la réponse figée, puis écrit le Defect. Son dernier texte
+  contient un tableau récapitulatif de huit lignes, mais **après** l'écriture.
+- Produit : `terrain/aidd_docs/backlog/defects/slugify-keeps-separator-runs.md` (1 116 o), frontmatter
+  `name`, `description`, `lifecycle: assess` — ni `type: defect`, ni `status` ; sections `Evidence`,
+  `Project Promises`, `Mismatch`, `Impact`, `Assumptions`, et non les cinq que le cas nomme.
+
+**Vérifié.**
+
+- Aucun `lecture_hors_dossier` : le chemin relatif vers `../framework-origin` tombe dans le cadre, et la
+  session n'a plus inventé de chemin daté. Le correctif de texte de la séance 172 tient.
+- `suite` => `faits.json`, trace de 13 lignes (4 `read`, 1 `question`, 1 `write`), dernier message de 914 o
+  (seq 7), copie d'un fichier sous `raw/<cas>/`.
+- `fin` => `receipt ok`, `compare ok`, **`VERDICT — non concluant`**, plafonné par `ecriture_avant_tableau`
+  (écriture seq 6) et `produit_ne_avant_le_tableau` (naissance 18:29:15 contre tableau seq 7) ; 2 échanges
+  sur 3 ; pause mesurée (réponse seq 5, écriture seq 6, 19 021 ms) ; tableau 8 × 2 ; 13 limites.
+- `runs.mjs --verifier` => `exit 0` après régénération ; index à 46 runs, ligne du run en `non concluant`.
+
+**Dérives signalées, non corrigées.**
+
+- Le modèle qui a répondu n'est pas celui des runs précédents : le résultat mêle le comportement du skill et
+  celui d'un modèle plus petit, et le run ne dit pas lequel des deux a manqué l'ordre du tableau. C'est une
+  limite de condition, pas une conclusion sur `09-defect`.
+- Le produit ne satisfait pas `P` (type, état, sections) ; la promesse étant `juge_seul` et le run déjà
+  plafonné, elle n'a pas été jugée : le non concluant porte sur l'ordre des gestes, pas sur la qualité du
+  Defect.
+- La pause a été jouée par un formulaire, non par la dernière ligne en `?` que le texte demandait ; `ouvrir`
+  l'a comptée comme un tour `user`, le reçu la mesure, mais la forme demandée n'est pas celle qui a eu lieu.
+
+**Prochaines étapes.** Rejouer le même cas sur un modèle qui tient l'instruction du tableau, ou constater
+que la demande de tableau en texte n'est pas tenue par un modèle qui préfère l'outil `question` ; ne pas
+changer le cas pour absorber cette différence.
+
+**Mémoires.** `bb21caae-0055-429e-b9b0-b60123c8089d` — cas `2026-10-24-175334-defect-racine-terrain`, gel `44f3a93c`, run `2026-10-24-175711-44f3a93c-82b7fac`, non concluant, modèle `nvidia/nvidia/nemotron-3.5-lightning-30b-a3b`.

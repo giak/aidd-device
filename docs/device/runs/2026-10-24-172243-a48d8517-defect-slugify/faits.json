@@ -1,0 +1,36 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e917e1fa8ffefKuKZySx4QqQcm",
+    "modele": "openrouter/cohere/north-mini-code:free",
+    "ouverte_par": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "ouverte_le": "2026-10-24T17:22:47+02:00"
+  },
+  "horodatage_debut": "2026-10-24T17:22:49+02:00",
+  "horodatage_fin": "2026-10-24T17:23:33+02:00",
+  "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-172034-defect-slugify/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-172243-a48d8517-defect-slugify/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-172243-a48d8517-defect-slugify/trace/export-brut.json",
+    "commande": "opencode session export ses_e917e1fa8ffefKuKZySx4QqQcm"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "quand": "2026-10-24T17:23:33+02:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-172243-a48d8517-defect-slugify/raw/2026-10-24-172034-defect-slugify/last-message.md",
+    "sha256": "46fbfda815a6a03d7dfd6637b09368e015bed87d49933e668f2806d3ea14a1b7",
+    "seq": 12,
+    "ts": 1792855397639
+  }
+}

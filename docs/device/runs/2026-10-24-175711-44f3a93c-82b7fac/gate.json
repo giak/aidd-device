@@ -1,0 +1,26 @@
+{
+  "type": "gate",
+  "cas": "2026-10-24-175334-defect-racine-terrain",
+  "passe_le": "2026-10-24T17:57:11.630494930+0200",
+  "passe_le_epoch": 1792857431,
+  "repertoire": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-175334-defect-racine-terrain/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-24-175334-defect-racine-terrain.freeze.json",
+    "empreinte": "44f3a93c0f557089c09bbacfebc3d87e54cd6c1bf75c87b1999e54c04810acfe",
+    "gele_le_epoch": 1792857389
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-175334-defect-racine-terrain/terrain",
+    "head": "6c42d4d",
+    "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+    "porcelain": [],
+    "remotes": [],
+    "refs_distants": []
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-24-175711-44f3a93c-82b7fac/texte-a-remettre.txt",
+    "sha256": "282af705fb814065345c4fed28426f2274284eec66871aa03c44873666fd5231",
+    "octets": 1094
+  }
+}

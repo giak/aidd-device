@@ -58,10 +58,12 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          Freebuff puis opencode ; les deux ou aucun sont des refus qui nomment --client.
          Aucune session n'est ouverte : le fil doit exister déjà
   fin    --cas <id> [--run <dir>] --difference <texte> --phrase <texte>
-         [--verdict conforme|ecart|non concluant] [--limites <texte>] [--cases <dir>]
+         [--verdict conforme|ecart|non concluant] [--limites <texte>]
+         [--juge <qui> --rubrique <texte>] [--cases <dir>]
          demande au reçu le verdict que les falsificateurs imposent (--sans-ecrire), le
          laisse trancher si --verdict est absent, sinon écrit receipt.json, puis
-         output.json (compare), RAPPORT.md, et RESULTAT.md quand CASES/<cas>.lecture.json
+         output.json (compare) en exigeant --juge et --rubrique pour « conforme » (D3),
+         RAPPORT.md, et RESULTAT.md quand CASES/<cas>.lecture.json
          déclare la lecture qui apparie chaque geste attendu à une mesure (ADR-061), puis
          réimprime le bloc de verdict. Quand l'attendu déclare un bloc verification, joue
          d'abord verifier : un mutant survivant interdit conforme, sans empêcher un ecart
@@ -89,6 +91,16 @@ commande qui a refusé n'est pas relancée.`;
 
 // ---------------------------------------------------------------------------------------------
 // Sorties : refus, usage, et les quatre blocs de narration (spec §5, six lignes au plus chacun).
+
+// Un dossier de scratch ne se collecte que s'il porte au moins un fichier, à quelque profondeur :
+// `collect` refuse un dossier vide, et un sous-dossier vide ne vaut pas mieux qu'un dossier vide.
+function contientUnFichier(dossier) {
+  for (const entree of readdirSync(dossier, { withFileTypes: true })) {
+    if (entree.isFile()) return true;
+    if (entree.isDirectory() && contientUnFichier(join(dossier, entree.name))) return true;
+  }
+  return false;
+}
 
 function refuse(message) {
   console.error("REFUS — " + message);
@@ -908,6 +920,11 @@ async function commandeOuvrir(argv) {
   const run = runExiste(cas, valeurs);
   const attendu = expectedDe(cas, cases);
   const reponses = ((attendu.demande || {}).reponses_figees || []).filter((r) => typeof r === "string" && r.trim());
+  // D5 de l'audit du 2026-10-24 : la règle d'ADR-077 protège une pause qui existe. Un cas qui déclare
+  // `pause.requis: false` ne pause pas : zéro question est sa clôture normale, et une question qu'il
+  // n'attend pas se refuse. Un cas antérieur, sans ce bloc, garde le comportement d'avant (requis).
+  const pauseDeclaree = (attendu.attendu_details || {}).pause;
+  const pauseRequise = !(pauseDeclaree && typeof pauseDeclaree === "object" && pauseDeclaree.requis === false);
 
   let code = 0;
   let serveur = null;
@@ -928,7 +945,7 @@ async function commandeOuvrir(argv) {
     if (!geleTravail) throw new Refus(`le gel de ${cas} ne nomme aucun arbre « travail » — la session n'a pas de dépôt où écrire`);
     const travail = resolve(geleTravail.chemin);
     if (!existsSync(travail)) throw new Refus(`l'arbre travail ${travail} n'existe pas — le gel le nomme, il ne le crée pas`);
-    if (!reponses.length) {
+    if (pauseRequise && !reponses.length) {
       throw new Refus(`l'attendu de ${cas} ne fige aucune réponse (demande.reponses_figees) — sans elles, la pause se jouerait à la main, et c'est ce que cette commande retire`);
     }
 
@@ -973,6 +990,9 @@ async function commandeOuvrir(argv) {
       }
       const formulaire = attente.json.data[0];
       if (formulaire) {
+        if (!pauseRequise) {
+          throw new Refus(`la session a posé une question (formulaire ${formulaire.id}) alors que ${cas} déclare pause.requis: false — le cas n'en attend aucune`);
+        }
         if (jouees.length >= reponses.length) {
           throw new Refus(`la session a posé ${jouees.length + 1} question(s) et ${cas} n'en fige que ${reponses.length} — la suivante se fige dans l'attendu, jamais à la volée`);
         }
@@ -1000,8 +1020,12 @@ async function commandeOuvrir(argv) {
           // ADR-089 : après une réponse jouée, la session a passé la question et peut légitimement
           // finir sur son dernier message ; exiger la seconde réponse figée refusait une clôture
           // normale. Le texte n'est donc plus un refus dès la première réponse jouée.
-          if (jouees.length > 0) break;
+          // ADR-093 : un cas qui ne déclare aucune pause se clôt sans question, même après zéro réponse.
+          if (!pauseRequise || jouees.length > 0) break;
           throw new Refus(`la session ${fil} s'est arrêtée sans question après ${jouees.length} réponse(s) jouée(s) : dernière ligne « ${uneLigne(texte.ligne).slice(0, 80)} » — réponds à la main, puis « suite --fil ${fil} » ; le run n'est pas un succès à zéro question`);
+        }
+        if (!pauseRequise) {
+          throw new Refus(`la session a posé une question « ${uneLigne(texte.ligne).slice(0, 80)} » alors que ${cas} déclare pause.requis: false — le cas n'en attend aucune`);
         }
         if (jouees.length >= reponses.length) {
           throw new Refus(`la session a posé ${jouees.length + 1} question(s) et ${cas} n'en fige que ${reponses.length} — la suivante se fige dans l'attendu, jamais à la volée`);
@@ -1022,7 +1046,9 @@ async function commandeOuvrir(argv) {
       rang: 1, total: 1, titre: "la session",
       fait: `ouvrir la session opencode dans ${travail}, envoyer le texte de la porte, jouer la pause`,
       commande: serveur ? `opencode serve --hostname 127.0.0.1 --port ${String(serveur.url).split(":").pop()}` : `--api ${api}`,
-      attendu: `un fil, ${jouees.length} question(s) jouée(s), et une session inactive`,
+      attendu: pauseRequise
+        ? `un fil, ${jouees.length} question(s) jouée(s), et une session inactive`
+        : "un fil, 0 question attendue, et une session inactive",
       obtenu: `${fil} ; ${jouees.length} question(s) ; modèle ${modeleReel} ; inactive`,
       lit: "chaque réponse envoyée vient du cas : la pause n'a plus de geste à la main, et la trace la portera",
     });
@@ -1034,7 +1060,9 @@ async function commandeOuvrir(argv) {
       "",
     ]);
     blocFin({
-      etat: `session ${fil} inactive après ${jouees.length} question(s) — le run s'arrête là, et rien n'est encore mesuré`,
+      etat: pauseRequise
+        ? `session ${fil} inactive après ${jouees.length} question(s) — le run s'arrête là, et rien n'est encore mesuré`
+        : `session ${fil} inactive après 0 question attendue — le cas ne déclare aucune pause, et rien n'est encore mesuré`,
       pieces: `aucune : ouvrir n'écrit rien ; le run tient à ${join(run, "gate.json")}`,
       ensuite: `orchestrer.mjs suite --cas ${cas} --run ${run} --fil ${fil} --par « qui a réellement conduit le run » --conduite agent`,
     });
@@ -1271,7 +1299,10 @@ function commandeSuite(argv) {
       if (!sourceAnnexe.startsWith(resolve(travail))) {
         refuse(`suite : le scratch ${scratch} sort de l'arbre travail — il ne se collecte pas (ADR-067)`);
       }
-      if (existsSync(sourceAnnexe)) {
+      // Un scratch vide n'est pas une preuve : `collect --annexe` refuse « rien à collecter », et le
+      // run perdait alors la collecte de son produit pour un dossier que la session a créé sans y
+      // écrire. Le dossier vide se saute, et le reçu dit qu'aucune annexe n'a été collectée.
+      if (existsSync(sourceAnnexe) && contientUnFichier(sourceAnnexe)) {
         annexeCollecte = harnaisOuRefus(
           ["collect", "--run", run, "--case", cas, "--cases", cases, "--annexe", sourceAnnexe],
           "le scratch déclaré se collecte sous annexe/<cas>/ : sans lui, la preuve citée par le produit n'est pas dans le reçu (ADR-067)",
@@ -1338,7 +1369,7 @@ function commandeSuite(argv) {
 function commandeFin(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", run: "valeur", difference: "valeur", phrase: "valeur", verdict: "valeur",
-    limites: "valeur", cases: "valeur",
+    limites: "valeur", juge: "valeur", rubrique: "valeur", cases: "valeur",
   });
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
@@ -1355,6 +1386,13 @@ function commandeFin(argv) {
   const phrase = option(valeurs, "phrase", { requis: true, question: "la phrase qui résume le run" });
   const limites = option(valeurs, "limites", { defaut: "non évaluable", domaine: ["mord", "ne mord pas", "non évaluable"] });
   const verdictDemande = option(valeurs, "verdict", { defaut: null, domaine: ["conforme", "ecart", "non concluant"] });
+  const juge = option(valeurs, "juge", { defaut: null });
+  const rubrique = option(valeurs, "rubrique", { defaut: null });
+  // Le reçu s'écrit une fois : nommer le juge après coup n'est plus possible une fois `receipt.json`
+  // posé. Un `conforme` sans juge est donc refusé ici, avant la première pièce (D3).
+  if (verdictDemande === "conforme" && (!juge || !rubrique)) {
+    refuse(`fin : verdict « conforme » refusé — --juge et --rubrique sont requis avant que le reçu s'écrive : le reçu dit ce que la promesse est, pas qui l'a jugée (D3)`);
+  }
   const attendu = expectedDe(cas, cases);
   const verifDeclaree = attendu.verification !== undefined || attendu.mutations !== undefined;
   const totalFin = verifDeclaree ? 3 : 2;
@@ -1406,7 +1444,9 @@ function commandeFin(argv) {
     blocFin({
       etat: `aucun verdict écrit — la personne tranche`,
       pieces: `à blanc, rien n'est écrit`,
-      ensuite: `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict ${propose}`,
+      ensuite: propose === "conforme"
+        ? `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict conforme --juge « … » --rubrique « P »`
+        : `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict ${propose}`,
     });
     process.exit(0);
   }
@@ -1438,7 +1478,8 @@ function commandeFin(argv) {
     lit: "le reçu relie la porte, la trace, la copie et le budget : c'est la pièce qu'on relit après",
   });
   const sortieCompare = harnais(["compare", "--run", run, "--case", cas, "--cases", cases,
-    "--difference", difference, "--phrase", phrase, "--verdict", recu.verdict, "--limites", limites]);
+    "--difference", difference, "--phrase", phrase, "--verdict", recu.verdict, "--limites", limites,
+    ...(juge ? ["--juge", juge] : []), ...(rubrique ? ["--rubrique", rubrique] : [])]);
   if (sortieCompare.code !== 0) {
     blocRefus({
       texte: sortieCompare.err,
@@ -1450,7 +1491,8 @@ function commandeFin(argv) {
   blocEtape({
     rang: totalFin, total: totalFin, titre: "l'output",
     fait: "écrire ce que le juge retient du run, à côté du reçu",
-    commande: commandeHarnais(["compare", "--run", run, "--case", cas, "--difference", "…", "--phrase", "…", "--verdict", recu.verdict, "--limites", limites]),
+    commande: commandeHarnais(["compare", "--run", run, "--case", cas, "--difference", "…", "--phrase", "…", "--verdict", recu.verdict, "--limites", limites,
+      ...(juge ? ["--juge", juge] : []), ...(rubrique ? ["--rubrique", rubrique] : [])]),
     attendu: "un output.json qui cite le reçu",
     obtenu: sortieCompare.out,
     lit: "l'output reprend le verdict du reçu : deux pièces, une seule décision",

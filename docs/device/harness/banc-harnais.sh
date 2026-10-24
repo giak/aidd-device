@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 285 controls, no session opened, nothing
-# written in the repository or in the four trees.
+# the link check beside it (liens.mjs), replayed dry. The count lives in docs/BANC.md, no session
+# opened, nothing written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
 # from the case's freeze, never from a constant: a bench with a machine path baked in stops
@@ -194,17 +194,22 @@ cp "$GEL" "$B/cases-lint/$CAS.freeze.json"
 cp "$B/cases-lint/$CAS.request.md" "$B/cases-lint/$CAS.request.md.bak"
 printf '\nracine en clair : %s\n' "$RACINE" >> "$B/cases-lint/$CAS.request.md"
 controle "21 freeze refus, cas qui nomme la racine" 1 node "$H" freeze --case "$CAS" --cases "$B/cases-lint" --refreeze \
-  --racine "$RACINE" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN"
+  --racine "$RACINE" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
+  --confirme-par banc --confirme-preuve banc
 mv "$B/cases-lint/$CAS.request.md.bak" "$B/cases-lint/$CAS.request.md"
 controle "22 freeze refus, --arbre sur un label dérivé" 1 node "$H" freeze --case "$CAS" --cases "$B/cases-lint" --refreeze \
-  --racine "$RACINE" --arbre travail="$RACINE/$CAS/terrain" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN"
+  --racine "$RACINE" --arbre travail="$RACINE/$CAS/terrain" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
+  --confirme-par banc --confirme-preuve banc
 controle "23 freeze refus, racine dans le dépôt" 1 node "$H" freeze --case "$CAS" --cases "$B/cases-lint" --refreeze \
-  --racine "$REPO/docs" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN"
+  --racine "$REPO/docs" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
+  --confirme-par banc --confirme-preuve banc
 controle "24 freeze refus, racine inexistante" 1 node "$H" freeze --case "$CAS" --cases "$B/cases-lint" --refreeze \
-  --racine "$B/racine-absente" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN"
+  --racine "$B/racine-absente" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
+  --confirme-par banc --confirme-preuve banc
 controle "25 freeze ok, deux arbres dérivés" 0 node "$H" freeze --case "$CAS" --cases "$B/cases-lint" --refreeze \
   --racine "$RACINE" --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
-  --ref-root "$RACINE/$CAS/framework-origin" --ref plugins/aidd-context/skills/02-project-memory/SKILL.md
+  --ref-root "$RACINE/$CAS/framework-origin" --ref plugins/aidd-context/skills/02-project-memory/SKILL.md \
+  --confirme-par banc --confirme-preuve banc
 controle "26 le gel porte la racine et les arbres dérivés" 0 node -e "
 const g=require('$B/cases-lint/$CAS.freeze.json'); const ok=g.racine_espace_de_travail==='$RACINE'
   && g.arbres.length===4
@@ -380,7 +385,7 @@ controle "66 receipt, échange dans la fenêtre"      0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','receipt','--run','$B/r66','--case','$CAS','--faits','$B/f66.json'],{stdio:'ignore'});
 const r=JSON.parse(fs.readFileSync('$B/r66/receipt.json','utf8'));
-process.exit(r.trace_lue.echanges_dans_la_fenetre>=1 && r.falsificateurs.trace_sans_echange_dans_la_fenetre===false ?0:1)"
+process.exit(r.trace_lue.lignes_dans_la_fenetre>=1 && r.falsificateurs.trace_sans_echange_dans_la_fenetre===false ?0:1)"
 controle "67 receipt, trace hors fenêtre = cond. 2"  0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','receipt','--run','$B/r67','--case','$CAS','--faits','$B/f67.json'],{stdio:'ignore'});
@@ -587,15 +592,20 @@ try{execFileSync('node',['$H','receipt','--run','$B/r99','--case','$CAS','--fait
 catch(e){err=String(e.stderr);process.exit(e.status===1 && err.includes('porte 4 messages utilisateur, le cas en autorise 3') && err.includes('seq 4') && !fs.existsSync('$B/r99/receipt.json') ?0:1)}"
 controle "100 dépassement, non concluant compris" 0 refus-nomme 1 "un run qui dépasse le budget d'échanges" node "$H" receipt --run "$B/r100" --case "$CAS" --faits "$B/f100.json" --verdict "non concluant"
 
-cas-budget() { # nom, retouche de l'attendu — un cas recopié, modifié, re-gelé (le motif des contrôles 21-26)
+cas-budget() { # nom, retouche de l'attendu, [retouche de la demande] — un cas recopié, modifié, re-gelé
   mkdir -p "$B/$1"
   cp "$REPO/docs/device/CASES/$CAS.request.md" "$B/$1/"
   node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/$CAS.expected.json','utf8'));$2;fs.writeFileSync('$B/$1/$CAS.expected.json',JSON.stringify(a,null,2)+'\n')"
+  [ -z "${3:-}" ] || sed -i "$3" "$B/$1/$CAS.request.md"
   node "$H" freeze --case "$CAS" --cases "$B/$1" --refreeze --racine "$RACINE" \
-    --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" >/dev/null || { echo "ARRET — le re-gel de $1 ne s'écrit pas"; exit 2; }
+    --arbre framework-origin="$FRAMEWORK" --arbre terrain="$TERRAIN" \
+    --confirme-par banc --confirme-preuve banc >/dev/null || { echo "ARRET — le re-gel de $1 ne s'écrit pas"; exit 2; }
 }
 cas-budget cases-sans-budget "delete a.demande.budget_echanges"
-cas-budget cases-budget-zero "a.demande.budget_echanges=0"
+# ADR-094 : un budget nul avec des réponses figées ne se gèle plus ; la fixture n'a pas besoin d'elles
+# pour éprouver le refus du reçu.
+# Le gel confronte les réponses du §8 à celles de l'attendu : la fixture vide les deux côtés.
+cas-budget cases-budget-zero "a.demande.budget_echanges=0; a.demande.reponses_figees=[]" '/^<<<REPONSE_/,/^>>>REPONSE_/d'
 vide r101 "$B/cases-sans-budget"
 vide r102 "$B/cases-budget-zero"
 controle "101 receipt refus, attendu sans budget"  0 refus-nomme 1 "ne déclare aucun budget" node "$H" receipt --run "$B/r101" --case "$CAS" --cases "$B/cases-sans-budget" --faits "$B/f97.json"
@@ -796,7 +806,8 @@ cp "$REPO/docs/device/CASES/$JOUET.request.md" "$REPO/docs/device/CASES/$JOUET.e
 controle "121 freeze du jouet, empreinte committée, refs vides" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','freeze','--case','$JOUET','--cases','$B/jouet/cases','--racine','$JB',
-  '--arbre','framework-origin=$JROOT/origine/framework','--arbre','terrain=$JROOT/origine/terrain'],{stdio:'ignore'});
+  '--arbre','framework-origin=$JROOT/origine/framework','--arbre','terrain=$JROOT/origine/terrain',
+  '--confirme-par','banc','--confirme-preuve','banc'],{stdio:'ignore'});
 const g=JSON.parse(fs.readFileSync('$B/jouet/cases/$JOUET.freeze.json','utf8'));
 const com=JSON.parse(fs.readFileSync('$JGEL','utf8'));
 const declarees=g.arbres.filter(a=>a.label==='framework-origin'||a.label==='terrain');
@@ -901,7 +912,7 @@ controle "128 receipt refus, produit né avant le tableau (F1)" 0 refus-nomme 1 
 
 controle "129 compare du jouet, output écrit" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
-execFileSync('node',['$H','compare','--run','$B/jouet/r124','--case','$JOUET','--cases','$B/jouet/cases','--difference','aucune : le produit porte l unique chemin du §6','--phrase','banc : la chaîne traverse le cas jouet entier.','--verdict','conforme','--limites','ne mord pas'],{stdio:'ignore'});
+execFileSync('node',['$H','compare','--run','$B/jouet/r124','--case','$JOUET','--cases','$B/jouet/cases','--difference','aucune : le produit porte l unique chemin du §6','--phrase','banc : la chaîne traverse le cas jouet entier.','--verdict','conforme','--limites','ne mord pas','--juge','banc','--rubrique','attendu'],{stdio:'ignore'});
 const o=JSON.parse(fs.readFileSync('$B/jouet/r124/output.json','utf8'));
 process.exit(o.verdict==='conforme' ?0:1)"
 controle "130 les deux pièces du jouet tiennent sur une page" 0 node -e "
@@ -1010,7 +1021,7 @@ cp "$O/run/raw/cas-test/last-message.md" "$B/last-message-140.md"
 rm -f "$O/run/raw/cas-test/last-message.md"
 controle "141 refus 9, fin sans last-message" 0 refus-nomme 1 "last-message.md" node "$ORCH" fin --cas cas-test --cases "$O/cases" --run "$O/run" --difference "aucune" --phrase "banc"
 cp "$B/last-message-140.md" "$O/run/raw/cas-test/last-message.md"
-controle "142 refus 10, verdict interdit par la preuve" 0 refus-nomme 1 "attendu_incomplet" node "$ORCH" fin --cas cas-test --cases "$O/cases" --run "$O/run" --difference "aucune" --phrase "banc" --verdict conforme
+controle "142 refus 10, verdict interdit par la preuve" 0 refus-nomme 1 "attendu_incomplet" node "$ORCH" fin --cas cas-test --cases "$O/cases" --run "$O/run" --difference "aucune" --phrase "banc" --verdict conforme --juge banc --rubrique P
 controle "143 fin, recu et output du cas fabrique" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$ORCH','fin','--cas','cas-test','--cases','$O/cases','--run','$O/run','--difference','aucune : le produit porte le chemin nomme','--phrase','banc : la chaine traverse un cas fabrique','--verdict','non concluant','--limites','ne mord pas'],{stdio:'ignore'});
@@ -1174,6 +1185,43 @@ fs.appendFileSync(i,'x\n');
 const b=run(['--verifier','--runs',r]); if(b.c!==1 || !b.o.includes('diverge')) process.exit(1);
 const c=run(['--index','--runs',r]); if(c.c!==0) process.exit(1);
 const d=run(['--verifier','--runs',r]); if(d.c!==0) process.exit(1);
+process.exit(0)"
+# 297-299 : la correction d'un verdict (P0 D4 du 2026-10-24). Une note corrige un recu sans le reecrire :
+# l'index montre le verdict du recu, le verdict retenu et le lien vers la note ; une correction sans note,
+# ou qui ne corrige rien, est refusee.
+rm -rf "$O/runs-297"
+mkdir -p "$O/runs-297/2026-10-24-090909-recu"
+printf '{"verdict":"conforme","cas":"banc","limites":[]}\n' > "$O/runs-297/2026-10-24-090909-recu/receipt.json"
+printf '# note du banc\n' > "$O/runs-297/2026-10-24-090909-recu/note.md"
+printf '{"type":"correction","note":"note.md","verdict_retenu":"non concluant","preuve":"trace seq 1"}\n' > "$O/runs-297/2026-10-24-090909-recu/correction.json"
+controle "297 runs affiche la correction et la lie au verdict" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),path=require('path');
+const r='$O/runs-297', i=path.join(r,'INDEX.md');
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const a=run(['--index','--runs',r]); if(a.c!==0) process.exit(1);
+const t=fs.readFileSync(i,'utf8');
+if(!t.includes('conforme (corrigé non concluant, [note](2026-10-24-090909-recu/note.md))')) process.exit(1);
+const b=run(['--verifier','--runs',r]); if(b.c!==0) process.exit(1);
+process.exit(0)"
+rm -rf "$O/runs-298"
+mkdir -p "$O/runs-298/a" "$O/runs-298/b"
+printf '{"verdict":"conforme","cas":"banc","limites":[]}\n' > "$O/runs-298/a/receipt.json"
+printf '{"type":"correction","note":"absente.md","verdict_retenu":"non concluant","preuve":"trace seq 1"}\n' > "$O/runs-298/a/correction.json"
+printf '{"verdict":"conforme","cas":"banc","limites":[]}\n' > "$O/runs-298/b/receipt.json"
+printf '# note\n' > "$O/runs-298/b/note.md"
+printf '{"type":"correction","note":"note.md","verdict_retenu":"conforme","preuve":"trace seq 1"}\n' > "$O/runs-298/b/correction.json"
+controle "298 runs refuse une correction sans note ou sans effet" 0 node -e "
+const {execFileSync}=require('child_process');
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const a=run(['--index','--runs','$O/runs-298']);
+if(a.c!==1 || !a.o.includes('absente du dossier')) process.exit(1);
+process.exit(0)"
+controle "299 runs refuse une correction qui ne corrige rien" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs');
+fs.rmSync('$O/runs-298/a',{recursive:true,force:true});
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const a=run(['--index','--runs','$O/runs-298']);
+if(a.c!==1 || !a.o.includes('une correction corrige')) process.exit(1);
 process.exit(0)"
 # Les deux pages qui parlent des commandes sont confrontees au code : l'annexe du guide et le runbook
 # de PROTOCOLE.md. Chaque option nommee doit exister dans l'usage reel, toutes les commandes
@@ -1395,7 +1443,7 @@ controle "168 receipt opencode, premier message démenti" 0 refus-nomme 1 "débu
 copie-porte-jouet "$O/oc-order"
 suite-jouet-oc "$O/oc-order" banc-jouet-ordre >/dev/null 2>&1 || { echo "ARRET — la suite de 169 ne s'écrit pas"; exit 2; }
 # ADR-065 : `suite` a écrit `$O/oc-order/raw/$JOUET/last-message.md` et l'a attesté ; le retaper romprait l'empreinte.
-controle "169 écriture avant tableau, conforme refusé" 0 refus-nomme 1 "écriture précède le tableau" env PATH="$OCBIN:$PATH" OPENCODE_FIXTURE_DIR="$OCFIX" node "$ORCH" fin --cas "$JOUET" --cases "$B/jouet/cases" --run "$O/oc-order" --difference aucune --phrase banc --verdict conforme
+controle "169 écriture avant tableau, conforme refusé" 0 refus-nomme 1 "écriture précède le tableau" env PATH="$OCBIN:$PATH" OPENCODE_FIXTURE_DIR="$OCFIX" node "$ORCH" fin --cas "$JOUET" --cases "$B/jouet/cases" --run "$O/oc-order" --difference aucune --phrase banc --verdict conforme --juge banc --rubrique attendu
 copie-porte-jouet "$O/oc-order2"
 suite-jouet-oc "$O/oc-order2" banc-jouet-ordre >/dev/null 2>&1 || { echo "ARRET — la suite de 170 ne s'écrit pas"; exit 2; }
 # ADR-065 : `suite` a écrit `$O/oc-order2/raw/$JOUET/last-message.md` et l'a attesté ; le retaper romprait l'empreinte.
@@ -1409,7 +1457,7 @@ suite-jouet-oc "$O/oc-apres" banc-jouet-apres >/dev/null 2>&1 || { echo "ARRET �
 # ADR-065 : `suite` a écrit `$O/oc-apres/raw/$JOUET/last-message.md` et l'a attesté ; le retaper romprait l'empreinte.
 controle "171 écriture après tableau, conforme accepté" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
-execFileSync('node',['$ORCH','fin','--cas','$JOUET','--cases','$B/jouet/cases','--run','$O/oc-apres','--difference','aucune','--phrase','banc','--verdict','conforme'],{stdio:'ignore',env:{...process.env,PATH:'$OCBIN:'+process.env.PATH,OPENCODE_FIXTURE_DIR:'$OCFIX'}});
+execFileSync('node',['$ORCH','fin','--cas','$JOUET','--cases','$B/jouet/cases','--run','$O/oc-apres','--difference','aucune','--phrase','banc','--verdict','conforme','--juge','banc','--rubrique','attendu'],{stdio:'ignore',env:{...process.env,PATH:'$OCBIN:'+process.env.PATH,OPENCODE_FIXTURE_DIR:'$OCFIX'}});
 const r=JSON.parse(fs.readFileSync('$O/oc-apres/receipt.json','utf8'));
 process.exit(r.verdict==='conforme' && r.falsificateurs.ecriture_avant_tableau.length===0 ?0:1)"
 
@@ -1534,7 +1582,7 @@ suite-jouet-oc "$O/oc-fin" banc-jouet-apres >/dev/null 2>&1 || { echo "ARRET —
 controle "184 fin écrit RAPPORT.md automatiquement" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 const env={...process.env,PATH:'$OCBIN:'+process.env.PATH,OPENCODE_FIXTURE_DIR:'$OCFIX'};
-const args=['$ORCH','fin','--cas','$JOUET','--cases','$B/jouet/cases','--run','$O/oc-fin','--difference','aucune','--phrase','banc','--verdict','conforme'];
+const args=['$ORCH','fin','--cas','$JOUET','--cases','$B/jouet/cases','--run','$O/oc-fin','--difference','aucune','--phrase','banc','--verdict','conforme','--juge','banc','--rubrique','attendu'];
 execFileSync('node',args,{stdio:'ignore',env});
 const r=JSON.parse(fs.readFileSync('$O/oc-fin/receipt.json','utf8'));
 const t=fs.readFileSync('$O/oc-fin/RAPPORT.md','utf8');
@@ -2414,7 +2462,7 @@ const serveur = http.createServer((req, res) => {
       if (mode === "accepter" || mode === "exces") {
         if (n === 1) { posees = 1; formPending = true; }
         idleAt = 0;
-      } else if (mode === "texte") {
+      } else if (mode === "texte" || mode === "question-pause-false") {
         if (n === 1) poserTexte(questionTexte);
         else idleAt = tick();
       } else if (mode === "texte-formulaire") {
@@ -2430,7 +2478,7 @@ const serveur = http.createServer((req, res) => {
         poserTexte("Question " + n + " ?");
       } else if (mode === "texte-bloc") {
         if (n === 1) poserTexte(texteBloc);
-      } else if (mode === "texte-sans-question") {
+      } else if (mode === "texte-sans-question" || mode === "texte-pause-false") {
         if (n === 1) poserTexte("Le brouillon complet :\n\n- Outcome : écrire le contrôle\n- Scope : le démarrage");
       } else if (mode === "texte-rappel") {
         if (n === 1) poserTexte("<system-reminder>\nContinuer ?\n</system-reminder>?");
@@ -2544,6 +2592,22 @@ if (mode === "accepter") {
   if (!sortie.includes("sans question")) raisons.push("le refus ne dit pas la session arrêtée sans question");
   if (!sortie.includes("suite --fil ses_banc")) raisons.push("le refus ne dit pas comment reprendre : " + sortie.split("\n")[0]);
   if (!sortie.includes("Scope : le démarrage")) raisons.push("le refus ne cite pas la dernière ligne");
+} else if (mode === "texte-pause-false") {
+  // ADR-093 : le cas ne declare aucune pause ; une session qui s'arrete sur un texte sans question
+  // est sa cloture normale, zero question jouee, et le bloc le dit.
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("0 question attendue")) raisons.push("le bloc ne dit pas 0 question attendue");
+  if (!sortie.includes("inactive")) raisons.push("le bloc ne dit pas la session inactive");
+  if (sortie.includes("sans question")) raisons.push("une clôture sans pause est refusée");
+} else if (mode === "question-pause-false") {
+  // ADR-093 : une question que le cas n'attend pas se refuse, sans jouer de reponse figee.
+  if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
+  if (!sortie.includes("pause.requis: false")) raisons.push("le refus ne nomme pas pause.requis: false");
+  if (!sortie.includes("n'en attend aucune")) raisons.push("le refus ne dit pas que le cas n'attend aucune question");
+  if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
 } else if (mode === "texte-rappel") {
   if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
   if (prompts.length !== 1) raisons.push(prompts.length + " message(s) envoyé(s), 1 attendu");
@@ -2570,6 +2634,18 @@ controle "257 refus, ? dans un bloc et texte sans question" 0 node "$O/faux-serv
 controle "258 rappel système, jamais une question" 0 node "$O/faux-serveur.mjs" "$B/detail.258" texte-rappel "$O/run" cas-test "$O/cases" "$ORCH"
 controle "266 refus, session arrêtée sur un texte sans question" 0 node "$O/faux-serveur.mjs" "$B/detail.266" texte-sans-question "$O/run" cas-test "$O/cases" "$ORCH"
 controle "291 ouvrir, clôture après une réponse jouée" 0 node "$O/faux-serveur.mjs" "$B/detail.291" texte-apres-une "$O/run" cas-test "$O/cases" "$ORCH"
+# 293-294 : un cas qui declare `pause.requis: false` (D5 de l'audit du 2026-10-24). Meme porte, meme
+# texte, meme serveur factice ; seule l'attente change. 293 : la session s'arrete sur un texte sans
+# question, `ouvrir` sort en 0 et dit « 0 question attendue » ; 294 : elle pose une question que le cas
+# n'attend pas, `ouvrir` refuse sans jouer de reponse figee. Tout vit sous $B ; `$O/run` et `$O/cases`
+# ne sont pas retouches.
+rm -rf "$B/pause293"
+mkdir -p "$B/pause293"
+cp -a "$O/cases" "$B/pause293/cases"
+cp -a "$O/run" "$B/pause293/run"
+node -e "const fs=require('fs');const p='$B/pause293/cases/cas-test.expected.json';const a=JSON.parse(fs.readFileSync(p,'utf8'));a.attendu_details.pause={requis:false};fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n')"
+controle "293 ouvrir, cas sans pause, zéro question" 0 node "$O/faux-serveur.mjs" "$B/detail.293" texte-pause-false "$B/pause293/run" cas-test "$B/pause293/cases" "$ORCH"
+controle "294 refus, question sur un cas sans pause" 0 node "$O/faux-serveur.mjs" "$B/detail.294" question-pause-false "$B/pause293/run" cas-test "$B/pause293/cases" "$ORCH"
 cat > "$O/delai.mjs" <<'JS'
 // ADR-077 : le refus de delai nomme le fil, sinon la reprise n'a pas d'identifiant. Le banc lit le
 // texte du code plutot que d'attendre une minute : le controle 266 eprouve le comportement voisin.
@@ -3361,10 +3437,12 @@ cp "$REPO/docs/device/CASES/$JOUET.request.md" "$JR/cases237/"
 cp "$REPO/docs/device/CASES/$JOUET.request.md" "$JR/cases238/"
 node -e "
 const fs=require('fs');
+const prod={cases237:'aidd_docs/backlog/spikes/x.md',cases238:'aidd_docs/backlog/y.md'};
 for(const d of ['cases237','cases238']){
   const a=JSON.parse(fs.readFileSync('$REPO/docs/device/CASES/$JOUET.expected.json','utf8'));
   a.attendu_details.produit.racine='terrain/aidd_docs/backlog/';
-  a.attendu_details.produit.regle='un seul fichier, aidd_docs/backlog/spikes/x.md';
+  a.attendu_details.produit.arbre_attendu=[prod[d]];
+  a.attendu_details.produit.regle='un seul fichier, '+prod[d];
   fs.writeFileSync('$JR/'+d+'/$JOUET.expected.json',JSON.stringify(a,null,2)+'\n');
 }"
 produit-bac() { # nom [geste-avant-le-gel] — un bac jouet neuf, son gel, et son fil dans la base du banc
@@ -3372,7 +3450,8 @@ produit-bac() { # nom [geste-avant-le-gel] — un bac jouet neuf, son gel, et so
   bash "$JS" "$bac" >/dev/null || { echo "ARRET — le bac $nom ne s'écrit pas"; exit 2; }
   eval "${2:-true}" || { echo "ARRET — le geste d'avant le gel de $nom échoue"; exit 2; }
   node "$H" freeze --case "$JOUET" --cases "$JR/cases$nom" --racine "$bac" \
-    --arbre framework-origin="$racine/origine/framework" --arbre terrain="$racine/origine/terrain" >/dev/null \
+    --arbre framework-origin="$racine/origine/framework" --arbre terrain="$racine/origine/terrain" \
+    --confirme-par banc --confirme-preuve banc >/dev/null \
     || { echo "ARRET — le gel de $nom ne s'écrit pas"; exit 2; }
   node "$H" preflight --run "$JR/r$nom" --case "$JOUET" --cases "$JR/cases$nom" --repertoire "$racine/terrain" >/dev/null \
     || { echo "ARRET — la porte de $nom ne s'écrit pas"; exit 2; }
@@ -3403,6 +3482,7 @@ if(!r.length){
   if((x.falsificateurs.hors_produit||[]).length) r.push('hors_produit : '+JSON.stringify(x.falsificateurs.hors_produit));
   if((x.falsificateurs.ecriture_hors_dossier||[]).length) r.push('ecriture_hors_dossier : '+JSON.stringify(x.falsificateurs.ecriture_hors_dossier));
   if(x.verdict!=='conforme') r.push('verdict '+x.verdict);
+  if(!x.promesse||x.promesse.mode!=='juge_seul') r.push('promesse '+JSON.stringify(x.promesse));
 }
 if(r.length){fs.writeFileSync(process.env.DETAIL,r.join('\n')+'\n');process.exit(1)}"
 
@@ -3496,6 +3576,7 @@ if(!r.length){
   if((x.falsificateurs.ecriture_hors_dossier||[]).length) r.push('ecriture_hors_dossier mord : '+JSON.stringify(x.falsificateurs.ecriture_hors_dossier));
   if(!x.limites.some((l)=>String(l).includes('write_todos'))) r.push('la limite ne nomme pas write_todos');
   if(x.verdict!=='conforme') r.push('verdict '+x.verdict);
+  if(!x.promesse||x.promesse.mode!=='juge_seul') r.push('promesse '+JSON.stringify(x.promesse));
 }
 if(r.length){fs.writeFileSync(process.env.DETAIL,r.join('\n')+'\n');process.exit(1)}"
 controle "241 reçu, racine du cas lue, parent mordu, relecture propre" 0 node -e "
@@ -3528,7 +3609,8 @@ p1-cas() { # nom — une copie du cas et de son espace, gelee sous $B/<nom>
   cp "$O/cases/cas-test.request.md" "$r/cases/"
   cp "$O/cases/cas-test.expected.json" "$r/cases/"
   node "$H" freeze --case cas-test --cases "$r/cases" --racine "$r" \
-    --arbre framework-origin="$r/cas-test/framework-origin" --arbre terrain="$r/cas-test/terrain" >/dev/null 2>&1
+    --arbre framework-origin="$r/cas-test/framework-origin" --arbre terrain="$r/cas-test/terrain" \
+    --confirme-par banc --confirme-preuve banc >/dev/null 2>&1
 }
 p1-fil() { # fil, terrain, mode, chemin-ecrit
   sqlite3 "$DBF" "insert into threads values('$1','$2','local','','','codebuff','aucun',$D0);"
@@ -3589,7 +3671,7 @@ controle "245 annexe retouchee, recu refuse" 0 refus-nomme 1 "ne rend plus l'emp
 p1-cas p1-246
 # le champ tableau est retire de l'attendu : le defaut (vrai) doit mordre sans que le cas le declare
 node -e "const fs=require('fs');const p='$B/p1-246/cases/cas-test.expected.json';const a=JSON.parse(fs.readFileSync(p,'utf8'));delete a.attendu_details.tableau;fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n')"
-node "$H" freeze --case cas-test --cases "$B/p1-246/cases" --refreeze --racine "$B/p1-246" --arbre framework-origin="$B/p1-246/cas-test/framework-origin" --arbre terrain="$B/p1-246/cas-test/terrain" >/dev/null 2>&1 || { echo "ARRET — le re-gel de 246"; exit 2; }
+node "$H" freeze --case cas-test --cases "$B/p1-246/cases" --refreeze --racine "$B/p1-246" --arbre framework-origin="$B/p1-246/cas-test/framework-origin" --arbre terrain="$B/p1-246/cas-test/terrain" --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || { echo "ARRET — le re-gel de 246"; exit 2; }
 mkdir -p "$B/p1-246/cas-test/terrain/aidd_docs"
 node "$H" preflight --run "$B/p1-246/run" --case cas-test --cases "$B/p1-246/cases" --repertoire "$B/p1-246/cas-test/terrain" >/dev/null 2>&1 || { echo "ARRET — la porte de 246"; exit 2; }
 printf 'produit\n' > "$B/p1-246/cas-test/terrain/aidd_docs/P2.md"
@@ -3608,7 +3690,7 @@ if(raisons.length){fs.writeFileSync(process.env.DETAIL,raisons.join('\n')+'\n');
 
 p1-cas p1-247
 node -e "const fs=require('fs');const p='$B/p1-247/cases/cas-test.expected.json';const a=JSON.parse(fs.readFileSync(p,'utf8'));a.attendu_details.tableau={requis:false};fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n')"
-node "$H" freeze --case cas-test --cases "$B/p1-247/cases" --refreeze --racine "$B/p1-247" --arbre framework-origin="$B/p1-247/cas-test/framework-origin" --arbre terrain="$B/p1-247/cas-test/terrain" >/dev/null 2>&1 || { echo "ARRET — le re-gel de 247"; exit 2; }
+node "$H" freeze --case cas-test --cases "$B/p1-247/cases" --refreeze --racine "$B/p1-247" --arbre framework-origin="$B/p1-247/cas-test/framework-origin" --arbre terrain="$B/p1-247/cas-test/terrain" --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || { echo "ARRET — le re-gel de 247"; exit 2; }
 mkdir -p "$B/p1-247/cas-test/terrain/aidd_docs"
 node "$H" preflight --run "$B/p1-247/run" --case cas-test --cases "$B/p1-247/cases" --repertoire "$B/p1-247/cas-test/terrain" >/dev/null 2>&1 || { echo "ARRET — la porte de 247"; exit 2; }
 printf 'produit\n' > "$B/p1-247/cas-test/terrain/aidd_docs/P3.md"
@@ -3765,7 +3847,7 @@ else {
   if(!r.pause||r.pause.attente_ms!==10000) raisons.push('attente_ms : '+JSON.stringify(r.pause));
   if(r.pause&&r.pause.mesuree!==true) raisons.push('pause non mesuree');
   if(!r.limites.some((x)=>String(x).includes('sa durée est l\'intervalle')&&String(x).includes('ADR-078'))) raisons.push('la limite ne dit pas ce que la duree mesure');
-  if(r.limites.some((x)=>String(x).includes('pas mesurée'))) raisons.push('l ancienne limite subsiste');
+  if(r.limites.some((x)=>String(x).includes('la pause')&&String(x).includes('pas mesurée'))) raisons.push('l ancienne limite subsiste');
   if(r.limites.some((x)=>String(x).includes('200 ms'))) raisons.push('une limite courte sur une pause de 10 s');
 }
 const code2=appel('$JEU/r268b','$JEU/r268b/faits.json');
@@ -3875,7 +3957,8 @@ fs.writeFileSync(p,JSON.stringify(e,null,2)+"\n");
 printf '#!/bin/sh\nexit 0\n' > "$JROOT/terrain/test-verif.sh"
 chmod +x "$JROOT/terrain/test-verif.sh"
 node "$H" freeze --case "$CAS" --cases "$VC/cases" --racine "$JB" \
-  --arbre "framework-origin=$JB/$CAS/origine/framework" --arbre "terrain=$JB/$CAS/origine/terrain" >/dev/null 2>&1 || ajout "freeze de la fixture"
+  --arbre "framework-origin=$JB/$CAS/origine/framework" --arbre "terrain=$JB/$CAS/origine/terrain" \
+  --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || ajout "freeze de la fixture"
 node "$H" preflight --case "$CAS" --cases "$VC/cases" --run "$VC/run" --repertoire "$JROOT/terrain" >/dev/null 2>&1 || ajout "preflight de la fixture"
 sleep 1
 mkdir -p "$JROOT/terrain/verif_docs"
@@ -3967,7 +4050,8 @@ sed -i "s|$JOUET|$CAS|g; s|aidd_docs|ecart_docs|g" "$VC/cases/$CAS.request.md" "
 node -e 'const e=require(process.argv[1]); if(e.verification||e.mutations) process.exit(2)' "$VC/cases/$CAS.expected.json" || ajout "la fixture déclare une vérification ou des mutations"
 cp -a "$JB/$JOUET" "$WS" || ajout "copie de l'espace du jouet"
 node "$H" freeze --case "$CAS" --cases "$VC/cases" --racine "$JB" \
-  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TERRAIN" >/dev/null 2>&1 || ajout "freeze de la fixture"
+  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TERRAIN" \
+  --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || ajout "freeze de la fixture"
 node "$H" preflight --case "$CAS" --cases "$VC/cases" --run "$VC/run" --repertoire "$TERRAIN" >/dev/null 2>&1 || ajout "preflight de la fixture"
 sleep 1
 mkdir -p "$TERRAIN/ecart_docs"
@@ -4007,7 +4091,7 @@ controle "290 reçu refuse un écart sans falsificateur" 0 bash "$B/ecart-290.sh
 cat > "$B/code-292.sh" <<'SH'
 #!/usr/bin/env bash
 set -u
-H="$1"; JEU="$2"; JB="$3"
+H="$1"; JEU="$2"; JB="$3"; MODE="${4:-}"
 ORCH="$(dirname "$H")/orchestrer.mjs"
 CAS=code-292
 JOUET=2026-10-18-085308-cas-jouet
@@ -4026,7 +4110,8 @@ cp "$JEU/cases/$JOUET.expected.json" "$V/cases/$CAS.expected.json" || ajout "cop
 sed -i "s|$JOUET|$CAS|g" "$V/cases/$CAS.request.md" "$V/cases/$CAS.expected.json"
 cp -a "$JB/$JOUET" "$WS" || ajout "copie de l'espace du jouet"
 node "$H" freeze --case "$CAS" --cases "$V/cases" --racine "$JB" \
-  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TER" >/dev/null 2>&1 || ajout "freeze de la fixture"
+  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TER" \
+  --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || ajout "freeze de la fixture"
 node "$H" preflight --case "$CAS" --cases "$V/cases" --run "$V/run" --repertoire "$TER" >/dev/null 2>&1 || ajout "preflight de la fixture"
 sleep 1
 mkdir -p "$TER/aidd_docs"
@@ -4042,22 +4127,29 @@ chmod +x "$FAKE/opencode"
 NOW=$(date +%s%3N)
 T1=$((NOW-40000))
 T2=$((NOW-20000))
+LECTURE=""
+[ "$MODE" = "conflit" ] && LECTURE="$V/cases/$CAS.expected.json"
+GLOB=""
+[ "$MODE" = "inconnu" ] && GLOB=1
 TABLE='| fichier | objet |
 | --- | --- |
 | README.md | le terrain du jouet |
 | app.py | une ligne |'
-node - "$TER" "$T1" "$T2" "$TABLE" "$V/raw.json" <<'NODE' || ajout "export brut de la fixture"
+node - "$TER" "$T1" "$T2" "$TABLE" "$V/raw.json" "$LECTURE" "$GLOB" <<'NODE' || ajout "export brut de la fixture"
 const fs = require("fs");
-const [ter, t1, t2, table, out] = process.argv.slice(2);
+const [ter, t1, t2, table, out, lecture, glob] = process.argv.slice(2);
+const parts = [
+  { type: "text", text: table },
+  { type: "tool", id: "call_w1", name: "write", state: { status: "completed", input: { path: ter + "/aidd_docs/NOTES.md" } } },
+  { type: "tool", id: "call_c1", name: "execute", state: { status: "completed", input: { code: 'const fs = require("fs");\nconst p = ' + JSON.stringify(ter + "/aidd_docs/NOTES.md") + ';\nconsole.log(p);\nfs.writeFileSync("/tmp/opencode/f5.txt", "banc");' } } }
+];
+if (lecture) parts.push({ type: "tool", id: "call_r1", name: "read", state: { status: "completed", input: { path: lecture } } });
+if (glob) parts.push({ type: "tool", id: "call_g1", name: "glob", state: { status: "completed", input: { pattern: "**/*.md" } } });
 const brut = {
   info: { id: "ses_code292", agent: "build", model: { providerID: "banc", id: "faux" }, time: { created: Number(t1) }, location: { directory: ter } },
   messages: [
     { id: "msg_u1", time: { created: Number(t1) + 1000 }, type: "user", text: "banc, la demande" },
-    { id: "msg_a1", time: { created: Number(t2) }, type: "assistant", content: [
-      { type: "text", text: table },
-      { type: "tool", id: "call_w1", name: "write", state: { status: "completed", input: { path: ter + "/aidd_docs/NOTES.md" } } },
-      { type: "tool", id: "call_c1", name: "execute", state: { status: "completed", input: { code: 'const fs = require("fs");\nconst p = ' + JSON.stringify(ter + "/aidd_docs/NOTES.md") + ';\nconsole.log(p);\nfs.writeFileSync("/tmp/opencode/f5.txt", "banc");' } } }
-    ] }
+    { id: "msg_a1", time: { created: Number(t2) }, type: "assistant", content: parts }
   ]
 };
 fs.writeFileSync(out, JSON.stringify(brut, null, 2) + "\n");
@@ -4091,15 +4183,21 @@ const faits = {
 writeFileSync(out, JSON.stringify(faits, null, 2) + "\n");
 NODE
 node "$H" collect --run "$V/run" --case "$CAS" --cases "$V/cases" --from "$TER/aidd_docs/NOTES.md" >/dev/null 2>&1 || ajout "collect de la fixture"
+if [ "$MODE" = "conflit" ]; then
+  S=$(node "$H" receipt --run "$V/run" --case "$CAS" --cases "$V/cases" --faits "$V/run/faits.json" --verdict "non concluant" 2>&1); RC=$?
+  if [ "$RC" != "1" ]; then ajout "receipt sur lecture de CASES : exit $RC au lieu de 1"; fi
+  case "$S" in *"se contredisent"*) ;; *) ajout "le refus ne nomme pas la contradiction : $(printf '%s' "$S" | head -n 1)";; esac
+  if [ -f "$V/run/receipt.json" ]; then ajout "un reçu a été écrit malgré la contradiction"; fi
+else
 S=$(node "$H" receipt --run "$V/run" --case "$CAS" --cases "$V/cases" --faits "$V/run/faits.json" --verdict conforme 2>&1); RC=$?
 if [ "$RC" != "1" ]; then ajout "receipt conforme : exit $RC au lieu de 1"; fi
 case "$S" in *"code d'un outil"*) ;; *) ajout "le refus ne nomme pas le code : $(printf '%s' "$S" | head -n 1)";; esac
 S2=$(node "$H" receipt --run "$V/run" --case "$CAS" --cases "$V/cases" --faits "$V/run/faits.json" --verdict "non concluant" 2>&1); RC2=$?
 if [ "$RC2" != "0" ]; then ajout "receipt non concluant : exit $RC2 : $(printf '%s' "$S2" | head -n 1)"; fi
 if [ -f "$V/run/receipt.json" ]; then
-  node - "$V/run/receipt.json" "/tmp/opencode/f5.txt" <<'NODE' || ajout "lecture du reçu de la fixture"
+  node - "$V/run/receipt.json" "/tmp/opencode/f5.txt" "$MODE" <<'NODE' || ajout "lecture du reçu de la fixture"
 const fs = require("fs");
-const [, , recu, chemin] = process.argv;
+const [, , recu, chemin, mode] = process.argv;
 const r = JSON.parse(fs.readFileSync(recu, "utf8"));
 const raisons = [];
 if (r.verdict !== "non concluant") raisons.push("verdict " + r.verdict);
@@ -4107,17 +4205,389 @@ const l = r.falsificateurs.code_hors_dossier || [];
 if (!l.some((e) => e.chemin === chemin)) raisons.push("chemin absent du falsificateur : " + JSON.stringify(l));
 if (l.length !== 1) raisons.push("le chemin dans le cadre est compté : " + JSON.stringify(l));
 if (!r.limites.some((x) => String(x).includes("export brut") && String(x).includes("ADR-088"))) raisons.push("la limite du code manque");
+const m = r.cloisonnement && r.cloisonnement.attendu_vu_mesure;
+const attendu = mode === "inconnu" ? "inconnu" : "non";
+if (!m || m.etat !== attendu) raisons.push("attendu_vu_mesure : " + JSON.stringify(m));
+if (mode === "inconnu" && m && m.etat === "inconnu" && !r.limites.some((x) => String(x).includes("reste une déclaration"))) {
+  raisons.push("la limite de l'attendu non mesuré manque");
+}
 if (raisons.length) { fs.writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
 NODE
   node "$ORCH" rapport --cas "$CAS" --cases "$V/cases" --run "$V/run" >/dev/null 2>&1 || ajout "rapport de la fixture"
   if [ -f "$V/run/RAPPORT.md" ]; then
     grep -q "code_hors_dossier" "$V/run/RAPPORT.md" || ajout "RAPPORT ne nomme pas la morsure du code"
+    grep -q "Attendu vu" "$V/run/RAPPORT.md" || ajout "RAPPORT ne porte pas la ligne attendu vu"
+    if [ "$MODE" = "inconnu" ]; then grep -q "mesure inconnu" "$V/run/RAPPORT.md" || ajout "RAPPORT ne dit pas la mesure inconnue"; fi
   else ajout "RAPPORT absent"; fi
 else ajout "aucun reçu écrit pour non concluant"; fi
+fi
 if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
 exit 0
 SH
 controle "292 reçu, chemin du code hors cadre" 0 bash "$B/code-292.sh" "$H" "$JEU" "$JB"
+# 300 : `attendu_vu` est mesuré, pas cru (ADR-092). Le même montage, avec une lecture du fichier
+# attendu dans la trace et un faits qui déclare `non` : le reçu refuse, nomme la contradiction et
+# n'écrit aucune pièce. Le cas reste gelé ; rien ne touche les cas du dépôt.
+controle "300 reçu, attendu vu contredit la déclaration" 0 bash "$B/code-292.sh" "$H" "$JEU" "$JB" conflit
+# 301 : une lecture sans chemin (glob, grep) laisse la mesure inconnue. Le reçu écrit
+# `attendu_vu_mesure.etat: inconnu`, nomme la limite qui le dit, et le rapport le reprend.
+controle "301 reçu, attendu vu inconnu faute de chemin" 0 bash "$B/code-292.sh" "$H" "$JEU" "$JB" inconnu
+
+# 295 : le reçu nomme la promesse du cas, et refuse `conforme` quand elle n'est pas nommée (audit du
+# 2026-10-24, D2). Deux gels du même cas jouet, dans deux dossiers de cas : l'un garde le falsificateur
+# `P` et rend `juge_seul` ; l'autre le perd et refuse `conforme` en nommant `non_mesuree`, puis accepte
+# `non concluant`. Le terrain du jouet n'est pas retouché : tout vit sous $B.
+cat > "$B/promesse-295.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JB="$3"; DBF="$4"
+CAS=promesse-295
+JOUET=2026-10-18-085308-cas-jouet
+B=$(dirname "$JEU")
+V="$B/promesse-295"
+WS="$JB/$CAS"
+TER="$WS/terrain"
+PROD="$TER/promesse_docs/NOTES.md"
+R=()
+ajout() { R+=("$1"); }
+rm -rf "$V" "$WS"
+mkdir -p "$V/avec/cases" "$V/avec/run" "$V/sans/cases" "$V/sans/run"
+cp -a "$JB/$JOUET" "$WS" || ajout "copie de l'espace du jouet"
+for d in avec sans; do
+  cp "$JEU/cases/$JOUET.request.md" "$V/$d/cases/$CAS.request.md" || ajout "copie de la demande ($d)"
+  cp "$JEU/cases/$JOUET.expected.json" "$V/$d/cases/$CAS.expected.json" || ajout "copie de l'attendu ($d)"
+  sed -i "s|$JOUET|$CAS|g; s|aidd_docs|promesse_docs|g" "$V/$d/cases/$CAS.request.md" "$V/$d/cases/$CAS.expected.json"
+done
+node -e 'const fs=require("fs");const [, avec, sans]=process.argv;
+const a=JSON.parse(fs.readFileSync(avec,"utf8"));
+a.falsificateurs_du_run=[...(a.falsificateurs_du_run||[]).filter((f)=>f.id!=="P"),{id:"P",condition:"le produit nommé par la demande est absent, ou un fichier existant du terrain a été modifié",tue:"la promesse du cas : un fichier neuf, au chemin nommé, sans toucher à l existant",mesure:"le produit collecté, lu par le juge, et les sha256 de ses fichiers"}];
+fs.writeFileSync(avec,JSON.stringify(a,null,2)+"\n");
+const b=JSON.parse(fs.readFileSync(sans,"utf8"));
+b.falsificateurs_du_run=(b.falsificateurs_du_run||[]).filter((f)=>f.id!=="P");
+delete b.attendu;
+fs.writeFileSync(sans,JSON.stringify(b,null,2)+"\n")' "$V/avec/cases/$CAS.expected.json" "$V/sans/cases/$CAS.expected.json" || ajout "P ajouté ou retiré"
+for d in avec sans; do
+  node "$H" freeze --case "$CAS" --cases "$V/$d/cases" --racine "$JB" \
+    --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TER" \
+    --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || ajout "freeze ($d)"
+  node "$H" preflight --case "$CAS" --cases "$V/$d/cases" --run "$V/$d/run" --repertoire "$TER" >/dev/null 2>&1 || ajout "preflight ($d)"
+done
+sleep 1
+mkdir -p "$TER/promesse_docs"
+printf 'Read the repository before writing anything.\nShow what you read as a table, one row per file, and wait for the operator.\nWrite one file only, where the operator asked, after the table is confirmed.\nBanc de la promesse.\n' > "$PROD"
+P=$(stat -c %Y "$PROD")
+TXT=$(sed -n '/^<<<DEMANDE$/,/^>>>DEMANDE$/p' "$V/avec/cases/$CAS.request.md" | sed '1d;$d' | sed "s|\$RACINE|$JB|g")
+TABLE=$'| fichier | objet |\n| --- | --- |\n| README.md | le terrain du jouet |\n| app.py | une ligne |'
+: > "$V/avec/trace.jsonl"
+: > "$V/sans/trace.jsonl"
+sqlite3 "$DBF" <<SQL || ajout "fil de la fixture"
+delete from messages where thread_id='$CAS';
+delete from threads where id='$CAS';
+insert into threads values('$CAS','$TER','local','','','codebuff','aucun',$P);
+insert into messages values('$CAS',1,'user',$(($P-40000)),json_array(json_object('kind','text','text',json_quote('$TXT'))));
+insert into messages values('$CAS',2,'assistant',$(($P-20000)),json_array(json_object('kind','text','text',json_quote('banc, le tableau :'||char(10)||char(10)||'$TABLE'))));
+insert into messages values('$CAS',3,'user',$(($P-15000)),json_array(json_object('kind','text','text','oui')));
+insert into messages values('$CAS',4,'assistant',$(($P-10000)),json_array(json_object('kind','tool','toolName','write_file','input',json_object('path','$PROD'),'status','success')));
+SQL
+for d in avec sans; do
+  node "$H" collect --run "$V/$d/run" --case "$CAS" --cases "$V/$d/cases" --from "$PROD" >/dev/null 2>&1 || ajout "collect ($d)"
+  node "$H" faits --case "$CAS" --cases "$V/$d/cases" --base "$DBF" --fil "$CAS" --trace "$V/$d/trace.jsonl" --out "$V/$d/run/faits.json" --par banc --fin "$(date -Is)" --conduite humain >/dev/null 2>&1 || ajout "faits ($d)"
+  E=$(node -e "process.stdout.write(require('$V/$d/run/faits.json').trace.commande)" 2>/dev/null)
+  [ -n "$E" ] && bash -c "$E" >/dev/null 2>&1 || ajout "export ($d)"
+done
+S=$(node "$H" receipt --run "$V/avec/run" --case "$CAS" --cases "$V/avec/cases" --faits "$V/avec/run/faits.json" --verdict conforme 2>&1); RC=$?
+if [ "$RC" != "0" ]; then ajout "receipt conforme avec P : exit $RC : $(printf '%s' "$S" | head -n 1)"; fi
+if [ -f "$V/avec/run/receipt.json" ]; then
+  node - "$V/avec/run/receipt.json" <<'NODE' || ajout "lecture du reçu avec P"
+const fs = require("fs");
+const r = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const raisons = [];
+const p = r.promesse;
+if (!p) raisons.push("le reçu ne porte pas promesse");
+else {
+  if (p.mode !== "juge_seul") raisons.push("mode " + JSON.stringify(p.mode));
+  if (p.juge !== null) raisons.push("juge " + JSON.stringify(p.juge));
+  if (p.declaree_par !== "falsificateurs_du_run.P") raisons.push("declaree_par " + JSON.stringify(p.declaree_par));
+  if (typeof p.condition !== "string" || p.condition.trim() === "") raisons.push("condition absente");
+}
+if (!r.limites.some((x) => String(x).includes("juge") && String(x).includes("D2"))) raisons.push("la limite du juge manque");
+if (r.trace_lue.lignes_dans_la_fenetre === undefined) raisons.push("trace_lue ne porte pas lignes_dans_la_fenetre");
+if (raisons.length) { fs.writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+NODE
+else ajout "aucun reçu écrit pour le cas avec P"; fi
+S=$(node "$H" receipt --run "$V/sans/run" --case "$CAS" --cases "$V/sans/cases" --faits "$V/sans/run/faits.json" --verdict conforme 2>&1); RC=$?
+if [ "$RC" != "1" ]; then ajout "receipt conforme sans P : exit $RC au lieu de 1"; fi
+case "$S" in *"promesse du cas n'est pas nommée"*) ;; *) ajout "le refus ne nomme pas la promesse : $(printf '%s' "$S" | head -n 1)";; esac
+case "$S" in *"non_mesuree"*) ;; *) ajout "le refus ne nomme pas non_mesuree : $(printf '%s' "$S" | head -n 1)";; esac
+if [ -f "$V/sans/run/receipt.json" ]; then ajout "un reçu a été écrit pour un conforme refusé"; fi
+S2=$(node "$H" receipt --run "$V/sans/run" --case "$CAS" --cases "$V/sans/cases" --faits "$V/sans/run/faits.json" --verdict "non concluant" 2>&1); RC2=$?
+if [ "$RC2" != "0" ]; then ajout "receipt non concluant sans P : exit $RC2 : $(printf '%s' "$S2" | head -n 1)"; fi
+if [ -f "$V/sans/run/receipt.json" ]; then
+  node - "$V/sans/run/receipt.json" <<'NODE' || ajout "lecture du reçu sans P"
+const fs = require("fs");
+const r = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const raisons = [];
+if (!r.promesse || r.promesse.mode !== "non_mesuree") raisons.push("promesse " + JSON.stringify(r.promesse));
+if (!r.limites.some((x) => String(x).includes("promesse_non_mesuree"))) raisons.push("la limite promesse_non_mesuree manque");
+if (raisons.length) { fs.writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+NODE
+else ajout "aucun reçu écrit pour le cas sans P"; fi
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "295 reçu, promesse nommée ou refusée" 0 bash "$B/promesse-295.sh" "$H" "$JEU" "$JB" "$DBF"
+
+# 296 : le juge se nomme, et un `conforme` sans nom est refusé (audit du 2026-10-24, D3). Trois reçus
+# minimaux relus par `compare` : l'un nomme `juge_seul`, le second `non_mesuree`, le troisième est
+# antérieur au bloc. Le gel est pris dans le bac : ses chemins restent ceux du bac.
+cat > "$B/juge-296.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JB="$3"; JROOT="$4"
+CAS=2026-10-18-085308-cas-jouet
+B=$(dirname "$JEU")
+V="$B/juge-296"
+R=()
+ajout() { R+=("$1"); }
+rm -rf "$V"
+mkdir -p "$V/cases" "$V/avec" "$V/sans" "$V/avant"
+cp "$JEU/cases/$CAS.request.md" "$JEU/cases/$CAS.expected.json" "$V/cases/" || ajout "copie des fichiers du cas"
+node "$H" freeze --case "$CAS" --cases "$V/cases" --racine "$JB" \
+  --arbre "framework-origin=$JROOT/origine/framework" --arbre "terrain=$JROOT/origine/terrain" \
+  --confirme-par banc --confirme-preuve banc >/dev/null 2>&1 || ajout "freeze de la fixture"
+EMP=$(node -e 'process.stdout.write(require(process.argv[1]).empreinte)' "$V/cases/$CAS.freeze.json" 2>/dev/null)
+recu() { # dossier, bloc promesse ou vide
+  node - "$V/$1/receipt.json" "$CAS" "$EMP" "$2" <<'NODE'
+const fs = require("fs");
+const [, , out, cas, emp, bloc] = process.argv;
+const r = { cas, verdict: "conforme", demande: { empreinte_gel: emp }, limites: [] };
+if (bloc !== "") r.promesse = { mode: bloc, condition: "banc", mesure: null, juge: null, raison: "banc" };
+fs.writeFileSync(out, JSON.stringify(r, null, 2) + "\n");
+NODE
+}
+recu avec juge_seul
+recu sans non_mesuree
+recu avant ""
+S=$(node "$H" compare --run "$V/avec" --case "$CAS" --cases "$V/cases" --difference "banc" --phrase "banc" --verdict conforme 2>&1); RC=$?
+if [ "$RC" != "1" ]; then ajout "compare conforme sans juge : exit $RC au lieu de 1"; fi
+case "$S" in *"--juge et --rubrique"*) ;; *) ajout "le refus ne nomme pas --juge et --rubrique : $(printf '%s' "$S" | head -n 1)";; esac
+if [ -f "$V/avec/output.json" ]; then ajout "un output a été écrit pour un conforme sans juge"; fi
+S2=$(node "$H" compare --run "$V/avec" --case "$CAS" --cases "$V/cases" --difference "banc" --phrase "banc" --verdict conforme --juge banc --rubrique P 2>&1); RC2=$?
+if [ "$RC2" != "0" ]; then ajout "compare conforme avec juge : exit $RC2 : $(printf '%s' "$S2" | head -n 1)"; fi
+if [ -f "$V/avec/output.json" ]; then
+  node - "$V/avec/output.json" <<'NODE' || ajout "lecture de l'output nommé"
+const fs = require("fs");
+const o = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const raisons = [];
+if (!o.promesse || o.promesse.juge !== "banc" || o.promesse.rubrique !== "P") raisons.push("promesse " + JSON.stringify(o.promesse));
+if (!o.promesse || o.promesse.mode !== "juge_seul") raisons.push("mode " + JSON.stringify(o.promesse && o.promesse.mode));
+if (raisons.length) { fs.writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+NODE
+else ajout "aucun output écrit pour le conforme nommé"; fi
+S3=$(node "$H" compare --run "$V/sans" --case "$CAS" --cases "$V/cases" --difference "banc" --phrase "banc" --verdict conforme --juge banc --rubrique P 2>&1); RC3=$?
+if [ "$RC3" != "1" ]; then ajout "compare conforme sur non_mesuree : exit $RC3 au lieu de 1"; fi
+case "$S3" in *"promesse du cas n'est pas nommée"*) ;; *) ajout "le refus ne nomme pas la promesse non mesurée : $(printf '%s' "$S3" | head -n 1)";; esac
+S4=$(node "$H" compare --run "$V/avant" --case "$CAS" --cases "$V/cases" --difference "banc" --phrase "banc" --verdict conforme --juge banc --rubrique P 2>&1); RC4=$?
+if [ "$RC4" != "1" ]; then ajout "compare conforme sur un reçu sans promesse : exit $RC4 au lieu de 1"; fi
+case "$S4" in *"ne porte pas de bloc"*) ;; *) ajout "le refus ne nomme pas le bloc absent : $(printf '%s' "$S4" | head -n 1)";; esac
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "296 juge, conforme refusé sans nom" 0 bash "$B/juge-296.sh" "$H" "$JEU" "$JB" "$JROOT"
+
+# 302-308 : le gel refuse ce qu'un cas ne peut pas jouer (audit du 2026-10-24, D6-D8, §5.5). Sept
+# fixtures, un seul script à mode : un budget que la porte épuise, des réponses que la demande et l'attendu
+# ne comptent pas pareil, un arbre attendu qui omet son produit, un P qui mesure un sha256 absent du gel, et
+# trois états de la confirmation de la personne.
+cat > "$B/gel-302.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JB="$3"; MODE="$4"
+CAS=2026-10-18-085308-cas-jouet
+REPO=$(cd "$(dirname "$H")/../../.." && pwd)
+V=$(dirname "$JEU")/gel-302/$MODE
+R=()
+ajout() { R+=("$1"); }
+rm -rf "$V"
+mkdir -p "$V"
+cp "$REPO/docs/device/CASES/$CAS.request.md" "$REPO/docs/device/CASES/$CAS.expected.json" "$V/" || ajout "copie des fichiers du cas"
+attendu() { # expression JS sur a (l'attendu)
+  node - "$V/$CAS.expected.json" "$1" <<'NODE' || ajout "retouche de l'attendu"
+const fs = require("fs");
+const [, , p, code] = process.argv;
+const a = JSON.parse(fs.readFileSync(p, "utf8"));
+new Function("a", code)(a);
+fs.writeFileSync(p, JSON.stringify(a, null, 2) + "\n");
+NODE
+}
+gel() { # options supplémentaires
+  node "$H" freeze --case "$CAS" --cases "$V" --racine "$JB" \
+    --arbre "framework-origin=$JB/$CAS/origine/framework" --arbre "terrain=$JB/$CAS/origine/terrain" "$@" 2>&1
+}
+conf=(--confirme-par banc --confirme-preuve "fixture du banc")
+
+case "$MODE" in
+  budget) # 302 : la porte consomme le seul échange, les réponses figées ne se jouent jamais.
+    attendu 'a.demande.budget_echanges = 1;'
+    S=$(gel "${conf[@]}"); C=$?
+    [ "$C" = "1" ] || ajout "budget 1 avec réponses : exit $C au lieu de 1"
+    case "$S" in *"budget"*) ;; *) ajout "le refus ne nomme pas le budget : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  reponses) # 303 : la demande fige deux réponses, l'attendu n'en recopie qu'une.
+    node - "$V/$CAS.request.md" <<'NODE' || ajout "retrait d'une réponse figée"
+const fs = require("fs");
+const p = process.argv[2];
+const t = fs.readFileSync(p, "utf8").replace(/^<<<REPONSE_AUTRE$[\s\S]*?^>>>REPONSE_AUTRE$\n?/m, "");
+fs.writeFileSync(p, t);
+NODE
+    S=$(gel "${conf[@]}"); C=$?
+    [ "$C" = "1" ] || ajout "deux réponses au §8, une à l'attendu : exit $C au lieu de 1"
+    case "$S" in *"recopie"*) ;; *) ajout "le refus ne nomme pas la recopie : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  arbre) # 304 : l'arbre attendu ne contient pas le fichier que produit.racine nomme.
+    attendu 'a.attendu_details.produit.racine = "terrain/aidd_docs/NOTES.md"; a.attendu_details.produit.arbre_attendu = ["aidd_docs/AUTRE.md"];'
+    S=$(gel "${conf[@]}"); C=$?
+    [ "$C" = "1" ] || ajout "arbre attendu sans son produit : exit $C au lieu de 1"
+    case "$S" in *"arbre_attendu"*) ;; *) ajout "le refus ne nomme pas l'arbre attendu : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  p) # 305 : le P mesure un sha256 contre le gel, et le gel n'a haché aucun des chemins qu'il cite.
+    attendu 'a.falsificateurs_du_run.push({ id: "P", condition: "la source `terrain/aidd_docs/README.md` ne porte plus le sha256 du gel", tue: "banc", mesure: "banc" });'
+    S=$(gel "${conf[@]}"); C=$?
+    [ "$C" = "1" ] || ajout "P contre un gel sans référence : exit $C au lieu de 1"
+    case "$S" in *"--ref"*) ;; *) ajout "le refus ne nomme pas --ref : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  confirmation) # 306 : un cas complet sans confirmation, ni en flags ni dans l'attendu.
+    S=$(gel); C=$?
+    [ "$C" = "1" ] || ajout "cas complet sans confirmation : exit $C au lieu de 1"
+    case "$S" in *"confirmation"*) ;; *) ajout "le refus ne nomme pas la confirmation : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  confirmation-invalide) # 307 : une confirmation sans date ISO ne date rien.
+    attendu 'a.confirmation = { par: "banc", le: "hier", preuve: "banc" };'
+    S=$(gel); C=$?
+    [ "$C" = "1" ] || ajout "confirmation datée « hier » : exit $C au lieu de 1"
+    case "$S" in *"ISO 8601"*) ;; *) ajout "le refus ne nomme pas ISO 8601 : $(printf '%s' "$S" | head -n 1)";; esac
+    ;;
+  confirmation-datee) # 308 : une confirmation datée dans l'attendu passe le gel sans flags, et y est recopiée.
+    attendu 'a.confirmation = { par: "banc", le: "2026-10-24T08:00:00+02:00", preuve: "fixture du banc" };'
+    S=$(gel); C=$?
+    [ "$C" = "0" ] || ajout "confirmation dans l'attendu : exit $C : $(printf '%s' "$S" | head -n 1)"
+    if [ -f "$V/$CAS.freeze.json" ]; then
+      node - "$V/$CAS.freeze.json" <<'NODE' || ajout "lecture du gel confirmé"
+const fs = require("fs");
+const g = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const c = g.confirmation;
+if (!c || c.par !== "banc" || c.le !== "2026-10-24T08:00:00+02:00" || c.preuve !== "fixture du banc") {
+  fs.writeFileSync(process.env.DETAIL, "confirmation portée : " + JSON.stringify(c) + "\n");
+  process.exit(1);
+}
+NODE
+    else ajout "aucun gel écrit pour une confirmation valide"; fi
+    ;;
+  *) ajout "mode inconnu : $MODE" ;;
+esac
+
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "302 gel refus, budget que la porte épuise"      0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" budget
+controle "303 gel refus, réponses du §8 et de l'attendu"  0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" reponses
+controle "304 gel refus, arbre attendu sans son produit"  0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" arbre
+controle "305 gel refus, P sans référence sur son sha256" 0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" p
+controle "306 gel refus, cas complet sans confirmation"   0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" confirmation
+controle "307 gel refus, confirmation sans date ISO"      0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" confirmation-invalide
+controle "308 gel, confirmation datée recopiée"           0 bash "$B/gel-302.sh" "$H" "$JEU" "$JB" confirmation-datee
+
+# 309 : un scratch vide ne fait plus tomber la collecte. La session crée `.scratch` sans y écrire ;
+# `collect --annexe` refuse un dossier vide, et `suite` perdait alors un produit pourtant collecté.
+# Le contrôle exige exit 0, le produit sous raw/, et aucune annexe pour un dossier vide.
+cat > "$O/suite-scratch-vide.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, rmdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [orch, cases, run, travail, home, bin, fixtures, store] = process.argv.slice(2);
+const raisons = [];
+const scratch = join(travail, ".scratch");
+mkdirSync(scratch, { recursive: true });
+let code = 0;
+let sortie = "";
+try {
+  sortie = execFileSync(process.execPath,
+    [orch, "suite", "--cas", "cas-oc", "--cases", cases, "--run", run, "--client", "opencode",
+      "--fil", "banc-opencode-ok", "--store", store, "--produit", "aidd_docs", "--conduite", "humain"],
+    { env: { ...process.env, HOME: home, PATH: bin + ":" + process.env.PATH, OPENCODE_FIXTURE_DIR: fixtures },
+      encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+} catch (e) {
+  code = e.status ?? 1;
+  sortie = String(e.stdout || "") + String(e.stderr || "");
+}
+if (code !== 0) {
+  const ligne = sortie.split("\n").find((l) => l.trim()) || "(aucune sortie)";
+  raisons.push("suite refuse un scratch vide : exit " + code + " : " + ligne);
+}
+if (!existsSync(join(run, "raw", "cas-oc", "NOTES.md"))) raisons.push("le produit n'est pas collecté");
+if (existsSync(join(run, "annexe"))) raisons.push("une annexe a été collectée pour un scratch vide");
+try { rmdirSync(scratch); } catch { raisons.push("le scratch de fixture n'a pas pu être retiré"); }
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+copie-porte-oc "$O/oc-run-c309"
+controle "309 suite, un scratch vide ne fait pas échouer la collecte" 0 node "$O/suite-scratch-vide.mjs" "$ORCH" "$O/cases" "$O/oc-run-c309" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
+
+# 310-311 : le jumeau du 309. Sauter un scratch vide ne doit pas sauter un scratch plein : 310 exige que
+# le fichier du scratch se retrouve verbatim sous annexe/<cas>/, jamais sous raw/. 311 vérifie l'autre
+# moitié de la condition : quand la copie de l'annexe refuse (ici un lien symbolique vers l'extérieur),
+# `suite` s'arrête au lieu de poursuivre — un produit déjà copié ne fait pas un run.
+cat > "$O/suite-scratch-jumeau.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [mode, orch, cases, run, travail, home, bin, fixtures, store] = process.argv.slice(2);
+const raisons = [];
+const texte = "le scratch est une preuve, pas un produit\n";
+const scratch = join(travail, ".scratch");
+rmSync(scratch, { recursive: true, force: true });
+mkdirSync(scratch, { recursive: true });
+writeFileSync(join(scratch, "preuve.md"), texte);
+if (mode === "lien") symlinkSync("../../ailleurs", join(scratch, "sortie"));
+let code = 0;
+let sortie = "";
+try {
+  sortie = execFileSync(process.execPath,
+    [orch, "suite", "--cas", "cas-oc", "--cases", cases, "--run", run, "--client", "opencode",
+      "--fil", "banc-opencode-ok", "--store", store, "--produit", "aidd_docs", "--conduite", "humain"],
+    { env: { ...process.env, HOME: home, PATH: bin + ":" + process.env.PATH, OPENCODE_FIXTURE_DIR: fixtures },
+      encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+} catch (e) {
+  code = e.status ?? 1;
+  sortie = String(e.stdout || "") + String(e.stderr || "");
+}
+const ligne = sortie.split("\n").find((l) => l.trim()) || "(aucune sortie)";
+if (mode === "plein") {
+  if (code !== 0) raisons.push("suite refuse un scratch qui porte un fichier : exit " + code + " : " + ligne);
+  if (!existsSync(join(run, "raw", "cas-oc", "NOTES.md"))) raisons.push("le produit n'est pas collecté");
+  const copie = join(run, "annexe", "cas-oc", "preuve.md");
+  if (!existsSync(copie)) raisons.push("le scratch non vide n'est pas collecté sous annexe/cas-oc/");
+  else if (readFileSync(copie, "utf8") !== texte) raisons.push("le scratch collecté n'est pas verbatim");
+  const manifeste = join(run, "annexe", "cas-oc", "manifest.json");
+  if (!existsSync(manifeste)) raisons.push("l'annexe n'a pas de manifeste");
+  else if (JSON.parse(readFileSync(manifeste, "utf8")).role !== "annexe") raisons.push("le manifeste de l'annexe ne dit pas son rôle");
+  if (existsSync(join(run, "raw", "cas-oc", "preuve.md"))) raisons.push("le scratch est compté comme produit");
+} else {
+  if (code === 0) raisons.push("suite accepte un scratch dont la collecte refuse : exit 0");
+  if (!sortie.includes("lien symbolique")) raisons.push("le refus de collecte n'est pas nommé : " + ligne);
+  if (!sortie.includes("annexe/<cas>")) raisons.push("le refus ne dit pas ce qu'il empêche : " + ligne);
+  // Les faits s'écrivent avant l'annexe (étape 1) : leur présence ne dirait rien du refus. Ce qui suit
+  // l'annexe, c'est le dernier message ; son absence prouve que `suite` s'est arrêté là — même si le
+  // produit, collecté plus tôt, est déjà sous raw/.
+  if (!existsSync(join(run, "raw", "cas-oc", "NOTES.md"))) raisons.push("le produit n'était pas copié avant le refus : le contrôle ne prouve pas que la copie seule ne fait pas un run");
+  if (existsSync(join(run, "raw", "cas-oc", "last-message.md"))) raisons.push("le run poursuit après un refus de collecte");
+}
+rmSync(scratch, { recursive: true, force: true });
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+copie-porte-oc "$O/oc-run-c310"
+controle "310 suite, un scratch non vide se collecte en annexe" 0 node "$O/suite-scratch-jumeau.mjs" plein "$ORCH" "$O/cases" "$O/oc-run-c310" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
+copie-porte-oc "$O/oc-run-c311"
+controle "311 suite, un collect d'annexe refuse et arrete le run" 0 node "$O/suite-scratch-jumeau.mjs" lien "$ORCH" "$O/cases" "$O/oc-run-c311" "$O/cas-oc/terrain" "$OCB/home" "$OCBIN" "$OCFIX" "$OCB/home/.local/share/opencode"
 
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 

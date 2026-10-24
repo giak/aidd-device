@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // runs — un run, un dossier : classification et index (spec du 2026-10-23 08:22).
 // Aucun réseau, aucune session : il lit un dossier de runs et écrit son INDEX.md.
+// Un `correction.json` dans un dossier de reçu lie la note qui corrige le verdict ; l'index montre le
+// verdict du reçu et le verdict retenu, et le reçu n'est jamais réécrit.
 // `--runs` lit un autre dossier que docs/device/runs/, pour le banc.
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -12,6 +14,8 @@ const DEFAUT = join(DEPOT, "docs/device/runs");
 const ENTETE = "<!-- généré par runs.mjs — ne pas éditer -->";
 const MODES = ["guide", "manuel"];
 const STATUTS = ["forme tenue", "forme non tenue", "non observé"];
+const VERDICTS = ["conforme", "ecart", "non concluant"];
+const CORRECTION = "correction.json";
 const CODES = new Set([
   "session_non_independante", "trace_absente", "terrain_non_propre", "attendu_non_gele",
   "revision_non_consignee", "run_non_observe", "protocole_anterieur",
@@ -140,6 +144,31 @@ function ficheRun(nom, r) {
   };
 }
 
+// Une correction dit ce qu'un reçu a manqué, sans le réécrire : elle nomme la note qui l'établit, le
+// verdict retenu et la preuve qui le porte. Le reçu garde son verdict, l'index montre les deux.
+function lireCorrection(nom, dir, verdict) {
+  const chemin = join(dir, CORRECTION);
+  if (!existsSync(chemin)) return null;
+  let c;
+  try {
+    c = JSON.parse(readFileSync(chemin, "utf8"));
+  } catch {
+    refuse(`${nom} : ${CORRECTION} illisible — une correction se lit ou se refuse`);
+  }
+  if (!c || typeof c !== "object" || Array.isArray(c)) refuse(`${nom} : ${CORRECTION} n'est pas un objet`);
+  if (!piecePropre(c.note) || !existsSync(join(dir, c.note))) {
+    refuse(`${nom} : note « ${c.note} » absente du dossier — une correction cite sa note, la note existe`);
+  }
+  if (!VERDICTS.includes(c.verdict_retenu)) {
+    refuse(`${nom} : verdict_retenu « ${c.verdict_retenu} » hors domaine — ${VERDICTS.join(", ")}`);
+  }
+  if (c.verdict_retenu === verdict) {
+    refuse(`${nom} : correction.json retient « ${verdict} », le reçu le dit déjà — une correction corrige`);
+  }
+  if (!texte(c.preuve)) refuse(`${nom} : correction.json sans preuve — une correction se démontre`);
+  return { note: c.note, verdict_retenu: c.verdict_retenu, preuve: c.preuve };
+}
+
 function ficheRecu(nom, dir) {
   let r;
   try {
@@ -148,13 +177,16 @@ function ficheRecu(nom, dir) {
     refuse(`${nom} : receipt.json illisible — un reçu se lit ou se refuse`);
   }
   if (!texte(r.verdict)) refuse(`${nom} est un reçu sans verdict lisible`);
+  const correction = lireCorrection(nom, dir, r.verdict);
   const limites = Array.isArray(r.limites) && r.limites.length ? `${r.limites.length}, reçu` : "0, aucune";
   return {
     nom,
     date: nom.slice(0, 10),
     mode: "indépendant",
     cas: texte(r.cas) ? r.cas : "inconnu",
-    statut: r.verdict,
+    statut: correction
+      ? `${r.verdict} (corrigé ${correction.verdict_retenu}, [note](${nom}/${correction.note}))`
+      : r.verdict,
     limites,
     pieces: piecesDossier(dir),
   };
@@ -186,6 +218,7 @@ function classer(nom) {
       if (recep) refuse(`${nom} est guidé et porte receipt.json — un guidé n'atteste pas ce qu'il n'a pas`);
       if (gate) refuse(`${nom} est guidé et porte gate.json`);
       if (out) refuse(`${nom} est guidé et porte output.json`);
+      if (a(CORRECTION)) refuse(`${nom} est guidé et porte ${CORRECTION} — il n'a pas de verdict à corriger`);
     }
     validerRun(nom, r, dir);
     return ficheRun(nom, r);

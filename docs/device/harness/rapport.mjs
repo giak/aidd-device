@@ -63,11 +63,13 @@ function lireJson(chemin) {
 }
 
 function lireTrace(chemin) {
-  if (!existsSync(chemin)) return { present: false, lignes: 0, illisibles: 0, outils: {} };
+  if (!existsSync(chemin)) return { present: false, lignes: 0, illisibles: 0, outils: {}, debut: null, fin: null };
   const contenu = readFileSync(chemin, "utf8");
   const outils = {};
   let lignes = 0;
   let illisibles = 0;
+  let debut = null;
+  let fin = null;
   for (const ligne of contenu.split(/\r?\n/)) {
     if (!ligne.trim()) continue;
     lignes += 1;
@@ -81,8 +83,22 @@ function lireTrace(chemin) {
     if (part && part.kind === "tool" && typeof part.outil === "string" && part.outil) {
       outils[part.outil] = (outils[part.outil] || 0) + 1;
     }
+    // D1 de l'audit du 2026-10-24 : la durée d'un run se lit du premier au dernier message de la
+    // trace, pas jusqu'à l'heure de `suite`. Les deux bornes viennent de la même pièce.
+    const ts = Number(part?.ts);
+    if (Number.isFinite(ts)) {
+      if (debut === null || ts < debut) debut = ts;
+      if (fin === null || ts > fin) fin = ts;
+    }
   }
-  return { present: true, lignes, illisibles, outils };
+  return { present: true, lignes, illisibles, outils, debut, fin };
+}
+
+function isoLocal(ms) {
+  const d = new Date(ms);
+  const p = (n) => String(n).padStart(2, "0");
+  const offset = -d.getTimezoneOffset();
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}${offset >= 0 ? "+" : "-"}${p(Math.floor(Math.abs(offset) / 60))}:${p(Math.abs(offset) % 60)}`;
 }
 
 function morsuresDe(recu) {
@@ -111,6 +127,9 @@ function limitesDe(recu, { output, trace, gate, faits, champLecturePresent, lect
     ajouter("le champ `lecture_hors_dossier` du reçu n'est pas une liste : les lectures ne sont pas classées");
   }
   if (!output) ajouter("l'output.json du juge est absent : la phrase du juge n'est pas disponible");
+  if (!recu.promesse || typeof recu.promesse !== "object") {
+    ajouter("le reçu ne porte pas `promesse` : écrit avant ce champ, il ne dit pas ce que son verdict couvre de la promesse du cas");
+  }
   if (!trace.present) ajouter("la trace normalisée est absente : les outils et leurs chemins ne sont pas comptés");
   if (trace.illisibles) ajouter(`${trace.illisibles} ligne(s) de la trace sont illisibles : elles ne comptent pas`);
   if (!gate) ajouter("gate.json est absent : la porte n'est pas relue par le rapport");
@@ -136,15 +155,35 @@ function sectionReponse(recu, sortie, morsures, limites) {
     : verdict === "ecart"
       ? `Le reçu conclut \`ecart\`${details.length ? ` ; ${details.join(" ; ")}` : ""}.`
       : `Le reçu conclut \`non concluant\`${details.length ? ` ; ${details.join(" ; ")}` : ""}.`;
+  // D1 (audit du 2026-10-24) : la phrase ne dit que ce qu'un champ mesure. L'ordre des gestes du
+  // skill n'est mesuré par aucun champ ; l'ancienne phrase l'affirmait pourtant. La promesse est
+  // dite à part, avec son mode, parce qu'un `conforme` ne la couvre pas de lui-même.
   const milieu = verdict === "conforme"
-    ? "Cela atteste la chaîne, la porte, la trace et l'ordre des gestes, pas la qualité du skill ni la justesse du produit."
+    ? "Cela atteste la chaîne, la porte, la trace et les pièces du run ; l'ordre des gestes du skill, la qualité du skill et la justesse du produit ne sont pas mesurés."
     : verdict === "ecart"
       ? "L'écart est nommé ; il ne dit pas s'il vient du skill ou de la session."
       : "Un non concluant n'est pas une défaillance du dispositif : il dit ce que la preuve ne permet pas de conclure.";
+  const promesse = sortie && sortie.promesse && typeof sortie.promesse === "object"
+    ? sortie.promesse
+    : null;
+  const duRecu = recu.promesse && typeof recu.promesse === "object" ? recu.promesse : null;
+  let milieuPromesse;
+  if (!duRecu) {
+    milieuPromesse = "Ce reçu ne porte pas de bloc `promesse` : il précède ce champ, et le rapport ne peut pas dire ce que le verdict couvre de la promesse du cas.";
+  } else if (duRecu.mode === "mesure") {
+    milieuPromesse = "La promesse du cas est mesurée : la commande de vérification du cas a mordu sur chaque mutation déclarée.";
+  } else if (duRecu.mode === "juge_seul") {
+    const nomme = promesse && typeof promesse.juge === "string" && promesse.juge.trim() !== "";
+    milieuPromesse = nomme
+      ? `La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge nommé (${texte(promesse.juge)}${promesse.rubrique ? `, rubrique ${texte(promesse.rubrique)}` : ""}), et le rapport ne vérifie ni son identité ni sa lecture.`
+      : "La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, et aucun juge n'est nommé dans l'output.";
+  } else {
+    milieuPromesse = "La promesse du cas n'est pas nommée (`non_mesuree`) : le verdict ne parle que de la chaîne, pas du skill.";
+  }
   const phrase = sortie && typeof sortie.phrase === "string" && sortie.phrase.trim()
     ? `> « ${sortie.phrase.trim()} » — \`output.json\``
     : "Aucune phrase du juge n'est disponible : `output.json` est absent.";
-  return ["## 1. La réponse", "", debut, "", milieu, "", phrase];
+  return ["## 1. La réponse", "", debut, "", milieu, "", milieuPromesse, "", phrase];
 }
 
 function sectionTeste(recu, trace) {
@@ -167,6 +206,26 @@ function sectionTeste(recu, trace) {
   const tableauTexte = tableau.present
     ? `présent, ${texte(tableau.lignes)} ligne(s) × ${texte(tableau.colonnes)} colonne(s), seq ${texte(tableau.seq)}`
     : "absent";
+  // D1 : la durée se lit des messages ; l'heure de `suite` n'est pas la fin du run.
+  const debutTrace = trace.present && trace.debut !== null ? isoLocal(trace.debut) : null;
+  const finTrace = trace.present && trace.fin !== null ? isoLocal(trace.fin) : null;
+  const duree = debutTrace && finTrace
+    ? `de ${debutTrace} à ${finTrace} (premier et dernier message de la trace)`
+    : `de ${texte(recu.horodatage_debut)} à ${texte(recu.horodatage_fin)} (horodatages déclarés par le reçu)`;
+  const fenetre = debutTrace && (debutTrace !== recu.horodatage_debut || finTrace !== recu.horodatage_fin)
+    ? `déclarée de ${texte(recu.horodatage_debut)} à ${texte(recu.horodatage_fin)}`
+    : null;
+  // D3 : la déclaration et sa mesure sont dites ensemble ; un reçu antérieur n'a que la déclaration.
+  const cloisonnement = recu.cloisonnement && typeof recu.cloisonnement === "object" ? recu.cloisonnement : {};
+  const mesureAttendu = cloisonnement.attendu_vu_mesure;
+  const attenduTexte = cloisonnement.attendu_vu === undefined
+    ? "non déclaré"
+    : `déclaré ${texte(cloisonnement.attendu_vu)}` +
+      (mesureAttendu && typeof mesureAttendu === "object"
+        ? ` ; mesure ${texte(mesureAttendu.etat)}` +
+          (mesureAttendu.etat === "oui" ? ` (${inline(mesureAttendu.chemin)}, seq ${texte(mesureAttendu.seq)})` : "") +
+          (mesureAttendu.etat === "inconnu" && mesureAttendu.motif ? ` (${texte(mesureAttendu.motif)})` : "")
+        : " ; mesure absente du reçu (antérieur à l'ADR-092)");
   return [
     "## 2. Ce qui a été testé",
     "",
@@ -175,15 +234,17 @@ function sectionTeste(recu, trace) {
       ["Session", `${texte(session.outil)} ; modèle ${inline(session.modele)} ; fil ${inline(session.identifiant)} ; ouverte par ${texte(session.ouverte_par)} le ${texte(session.ouverte_le)}`],
       ["Budget", budget],
       ["Tableau", tableauTexte],
+      ["Attendu vu", attenduTexte],
       ["Produit", produitTexte],
       ["Révisions", `framework ${inline(recu.framework_rev)} ; terrain ${inline(recu.terrain_rev)}`],
-      ["Durée", `de ${texte(recu.horodatage_debut)} à ${texte(recu.horodatage_fin)}`],
+      ["Durée", duree],
+      ...(fenetre ? [["Fenêtre du reçu", fenetre]] : []),
       ["Trace", trace.present ? `${trace.lignes} ligne(s) lue(s)${outils ? ` ; outils : ${outils}` : " ; aucun outil nommé"}` : "absente"],
     ]),
   ];
 }
 
-function sectionEtablit(recu) {
+function sectionEtablit(recu, sortie) {
   const gel = recu.gel_verifie || {};
   const porte = recu.porte || {};
   const trace = recu.trace_lue || {};
@@ -199,8 +260,12 @@ function sectionEtablit(recu) {
   lignes.push(porte.sha256
     ? `- la porte est citée : ${inline(porte.sha256)}, cas ${inline(porte.cas)}, gel ${inline(porte.gel_empreinte)} (\`porte\`).`
     : "- la porte n'est pas citée par le reçu (`porte` absent).");
+  // D1 : le reçu comptait des lignes de trace et le rapport les appelait « échanges ». Le nom du
+  // champ actuel dit ce qui est compté ; un reçu antérieur garde son ancien nom, et le rapport le lit
+  // sans le renommer.
+  const fenetre = trace.lignes_dans_la_fenetre ?? trace.echanges_dans_la_fenetre;
   lignes.push(trace.sha256
-    ? `- la trace a été lue et rejouée : ${texte(trace.lignes)} ligne(s), ${texte(trace.echanges_dans_la_fenetre)} échange(s) dans la fenêtre, sha256 ${inline(trace.sha256)} (\`trace_lue\`), ${inline(verifiee.rejoue_le)} (\`trace_verifiee\`).`
+    ? `- la trace a été lue et rejouée : ${texte(trace.lignes)} ligne(s), dont ${texte(fenetre)} dans la fenêtre du run, sha256 ${inline(trace.sha256)} (\`trace_lue\`), ${inline(verifiee.rejoue_le)} (\`trace_verifiee\`).`
     : "- la trace n'a pas été lue par le reçu (`trace_lue` absent).");
   lignes.push(copie.fichiers !== undefined
     ? `- la copie sous \`raw/\` a été re-hachée : ${texte(copie.fichiers)} fichier(s), manifeste ${inline(copie.manifeste_sha256)} (\`produit.verifie\`).`
@@ -216,6 +281,16 @@ function sectionEtablit(recu) {
   lignes.push(tableau.present !== undefined
     ? `- la forme du tableau a été lue : ${tableau.present ? `${texte(tableau.lignes)} ligne(s) × ${texte(tableau.colonnes)} colonne(s), seq ${texte(tableau.seq)}` : "aucun tableau"} (\`tableau\`).`
     : "- la forme du tableau n'est pas décrite par le reçu (`tableau` absent).");
+  const promesse = recu.promesse && typeof recu.promesse === "object" ? recu.promesse : null;
+  if (!promesse) {
+    lignes.push("- le reçu ne porte pas de bloc `promesse` : il ne dit pas ce que son verdict couvre de la promesse du cas.");
+  } else {
+    lignes.push(`- la promesse du cas est \`${texte(promesse.mode)}\` : ${texte(promesse.raison, "raison non écrite")} (\`promesse\`).`);
+    const juge = sortie && sortie.promesse && typeof sortie.promesse === "object" ? sortie.promesse : null;
+    if (juge && typeof juge.juge === "string" && juge.juge.trim() !== "") {
+      lignes.push(`- le juge est nommé par l'output : ${texte(juge.juge)}${juge.rubrique ? `, rubrique ${texte(juge.rubrique)}` : ""} (\`output.promesse\`).`);
+    }
+  }
   return ["## 3. Ce que le reçu établit", "", ...lignes];
 }
 
@@ -224,6 +299,7 @@ function sectionNEtablitPas(sortie) {
   const lignes = [
     "- la qualité du skill, la justesse du produit et la reproductibilité ;",
     "- la conduite (agent ou humain), qui est déclarée par l'opérateur et jamais vérifiée ;",
+    "- l'identité du juge, sa rubrique et la fidélité de sa lecture ;",
     "- le contenu d'une commande `shell` construite dynamiquement, que le reçu ne sait pas lire (ADR-051) ;",
     "- les limites du reçu, détaillées au §5.",
   ];
@@ -376,6 +452,9 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   if (limitesTexte.includes("attendu_incomplet")) {
     ajouter("Remplir le falsificateur de promesse, faire confirmer la promesse, puis re-geler le cas.");
   }
+  if (recu.promesse && recu.promesse.mode === "non_mesuree") {
+    ajouter("Nommer la promesse du cas par un falsificateur `P`, puis rejouer : le reçu ne couvre pas ce qu'il n'a pas nommé.");
+  }
   if (cles.has("tableau_absent") || cles.has("ecriture_avant_tableau")) {
     ajouter("Vérifier que la session rend un tableau avant d'écrire, puis rejouer.");
   }
@@ -427,7 +506,7 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   }
   for (const limite of limites) {
     if (String(limite).includes("lecture_hors_dossier")) continue;
-    if (/tableau|produit|output|trace|attendu_incomplet|shell|réseau|porcelain|contexte|écriture/i.test(String(limite))) continue;
+    if (/tableau|produit|output|trace|attendu_incomplet|shell|réseau|porcelain|contexte|écriture|promesse|juge/i.test(String(limite))) continue;
     const deja = pistes.some((p) => p.includes(limite));
     if (!deja) ajouter(`Relire la limite « ${limite} » et corriger la pièce qu'elle nomme.`);
   }
@@ -481,7 +560,7 @@ function rapportTexte({ runDir, recu, sortie, trace, gate, faits, falsificateurs
     "",
     ...sectionTeste(recu, trace),
     "",
-    ...sectionEtablit(recu),
+    ...sectionEtablit(recu, sortie),
     "",
     ...sectionNEtablitPas(sortie),
     "",

@@ -80,6 +80,9 @@ const USAGE = `usage: run.mjs <commande> [options]
 
   freeze   --case <id> --racine <chemin> --arbre <label>=<chemin> [--arbre ...]
            [--cases <dir>] [--ref <chemin-relatif> ...] [--ref-root <chemin>] [--refreeze]
+           [--confirme-par <qui> --confirme-preuve <texte>] — un cas complet (sans marque
+           a_remplir) exige la confirmation d'une personne, en flags ou dans un bloc
+           confirmation{par, le, preuve} de l'attendu ; le gel la porte (ADR-094)
            --racine est la racine des espaces de travail, déclarée une seule fois : le gel
            l'enregistre (racine_espace_de_travail) et en dérive les deux copies du cas,
            <racine>/<cas>/framework-origin et <racine>/<cas>/terrain ; les deux autres arbres
@@ -192,12 +195,14 @@ const USAGE = `usage: run.mjs <commande> [options]
            chemin_outil) et F1 (naissance d'un produit contre l'instant du tableau).
   compare  --run <dir> --case <id> --difference <texte> --phrase <texte>
            --verdict conforme|ecart|non concluant [--limites mord|ne mord pas|non évaluable]
-           [--cases <dir>]
+           [--juge <qui>] [--rubrique <texte>] [--cases <dir>]
            refuse de juger un cas dont les fichiers ne concordent plus avec le gel, ou
            dont le reçu cite une empreinte que le gel sur disque ne porte plus, ou dont
            la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032), ou dont
            la porte citée ne rend plus le sien (ADR-034) ; il refuse aussi une phrase qui
-           nomme un nombre de colonnes différent de receipt.tableau.colonnes (ADR-048)
+           nomme un nombre de colonnes différent de receipt.tableau.colonnes (ADR-048).
+           Un verdict « conforme » exige --juge et --rubrique : le reçu dit ce que la
+           promesse du cas est, pas qui l'a jugée (audit du 2026-10-24, D3)
   verifier --run <dir> --case <id> [--cases <dir>]
            lit le bloc verification du cas, copie le terrain et le produit collecté sous
            $TMPDIR, y lance la commande déclarée, puis la rejoue sur une copie neuve par
@@ -231,7 +236,7 @@ const USAGE = `usage: run.mjs <commande> [options]
     cloisonnement.lecture.autorisees, et code_hors_dossier nomme un chemin absolu littéral
     du code d'un outil, lu dans l'export brut (ADR-088)),
     trace_lue
-    (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
+    (lignes, lignes dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
     fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
     (budget du cas, messages user du fil, et l'échange qui a épuisé le budget ;
     un dépassement refuse au lieu de s'écrire), porte (le gate.json lu, son sha256,
@@ -239,15 +244,20 @@ const USAGE = `usage: run.mjs <commande> [options]
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
     re-hachés avant de s'écrire), verification{chemin, sha256, manifeste_sha256,
     baseline, mutations, mord, mutants_survivants, mutants_non_evalues} quand le cas
-    la déclare, cloisonnement{attendu_vu, lecture{autorisees,
-    resolues}, ecriture{autorisees, resolues}, reseau, fichiers_de_contexte}.
+    la déclare, promesse{mode: mesure|juge_seul|non_mesuree, declaree_par, condition,
+    mesure, juge, raison} — le troisième étage, distinct de la chaîne et du jugement —,
+    cloisonnement{attendu_vu, attendu_vu_mesure{etat: oui|non|inconnu, seq,
+    chemin, motif}, lecture{autorisees, resolues}, ecriture{autorisees,
+    resolues}, reseau, fichiers_de_contexte} — la mesure lit les chemins touchés
+    sous le dossier des cas, jamais la déclaration (ADR-092).
     produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
     repris sous arbres.avant, remesurés sous arbres.apres ; les labels framework-origin
     et terrain alimentent en plus framework_rev et terrain_rev.
   output.json (spec §8) : cas, attendu, produit_brut, difference, verdict, limites,
-    ecarte_comme_non_testable, verification (recopiée du reçu ou null), phrase, et
-    gel_verifie — le même re-hachage, refait avant que le juge tranche.`;
+    ecarte_comme_non_testable, verification (recopiée du reçu ou null),
+    promesse{mode, juge, rubrique} (le juge nommé, quand le verdict est conforme),
+    phrase, et gel_verifie — le même re-hachage, refait avant que le juge tranche.`;
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CASES_DEFAULT = join(REPO, "docs", "device", "CASES");
@@ -645,6 +655,94 @@ function cmdFreeze(a) {
         `« écrit avant d'avoir vu le produit » (v6 §10) : il gèlerait un cas incomplet`,
     );
   }
+  // ADR-094 : le gel vérifie ce que l'attendu promet aux outils. D6 refuse des réponses figées qu'aucune
+  // question ne pourrait jouer ; D8 refuse un cas complet sans confirmation datée. Un squelette (`a_remplir`)
+  // en est dispensé : il n'est pas encore le cas que la personne confirme (ADR-041).
+  const attenduJson = lireJson(join(casesDir, attendu), "freeze");
+  // `one` rend `undefined` pour un flag absent ; le contrat s'écrit avec `null`, et sans ce repli un
+  // gel sans confirmation passerait par la branche des flags avec des valeurs indéfinies.
+  const confirmePar = a.one("confirme-par") ?? null;
+  const confirmePreuve = a.one("confirme-preuve") ?? null;
+  if ((confirmePar === null) !== (confirmePreuve === null)) {
+    refuse("freeze : --confirme-par et --confirme-preuve vont ensemble — une confirmation nomme qui a confirmé, et sur quelle preuve");
+  }
+  if (confirmePar !== null && (!String(confirmePar).trim() || !String(confirmePreuve).trim())) {
+    refuse("freeze : --confirme-par et --confirme-preuve ne peuvent pas être vides — une confirmation muette ne confirme rien");
+  }
+  const demandeJson = attenduJson?.demande ?? {};
+  const reponses = Array.isArray(demandeJson.reponses_figees)
+    ? demandeJson.reponses_figees.filter((r) => typeof r === "string" && r.trim() !== "")
+    : [];
+  const pauseAttendu = attenduJson?.attendu_details?.pause ?? {};
+  const budget = Number(demandeJson.budget_echanges);
+  if (pauseAttendu.requis === false && reponses.length) {
+    refuse(
+      `freeze : ${cas} déclare pause.requis: false et fige ${reponses.length} réponse(s) — aucune question ne sera jouée, ` +
+        `donc ces réponses ne sont jamais jouables ; les retirer, ou déclarer la pause requise (ADR-094)`,
+    );
+  }
+  // D6 : la demande fige ses réponses au §8, l'attendu les recopie ; deux comptes qui divergent font un cas
+  // qui ne dit pas la même chose à la porte et au juge (§5.5-4 de l'audit du 2026-10-24).
+  const texteDemande = readFileSync(join(casesDir, demande), "utf8");
+  const reponsesDemande = [...texteDemande.matchAll(/^<<<REPONSE_([A-Z0-9_]+)$\n([\s\S]*?)\n?^>>>REPONSE_\1$/gm)]
+    .map((m) => m[2].trim())
+    .filter((t) => t !== "");
+  if (reponsesDemande.length !== reponses.length) {
+    refuse(
+      `freeze : ${demande} fige ${reponsesDemande.length} réponse(s) au §8 et ${cas}.expected.json en recopie ` +
+        `${reponses.length} — un cas dont la porte et le juge ne lisent pas le même nombre de réponses n'est pas ` +
+        `rejouable (ADR-094)`,
+    );
+  }
+  // Une réponse figée se joue au moins une fois : le message de la porte consomme un échange, et `ouvrir`
+  // présente les réponses comme un menu, pas comme une file — deux réponses restent deux variantes de la
+  // même pause, jamais deux échanges. La borne est donc « la porte plus une réponse », pas « la porte plus
+  // chaque réponse » : la seconde formule refuserait le cas jouet (2 réponses, 2 échanges), qui est sain.
+  if (Number.isFinite(budget) && budget < 2 && reponses.length) {
+    refuse(
+      `freeze : le budget de ${cas} est ${budget} échange(s) et ${reponses.length} réponse(s) sont figées — le message ` +
+        `de la porte consomme le seul échange, et aucune réponse ne serait jouable ; monter le budget, ou retirer les réponses (ADR-094)`,
+    );
+  }
+  // D7 : un arbre_attendu non vide promet la liste des fichiers produits. Un arbre qui omet le fichier que
+  // produit.racine nomme ne confronte rien (§5.5-5) ; une racine de répertoire ne nomme aucun fichier, et
+  // l'arbre reste alors la seule liste.
+  const produitRacine = attenduJson?.attendu_details?.produit?.racine;
+  const arbreAttendu = attenduJson?.attendu_details?.produit?.arbre_attendu;
+  if (typeof produitRacine === "string" && !produitRacine.endsWith("/") && Array.isArray(arbreAttendu) && arbreAttendu.length) {
+    const fichier = produitRacine.replace(/^[^/]+\//, "");
+    if (!arbreAttendu.includes(fichier)) {
+      refuse(
+        `freeze : l'arbre_attendu de ${cas} porte ${arbreAttendu.length} entrée(s) et n'inclut pas le fichier produit ` +
+          `${fichier} que produit.racine nomme — un arbre annoncé sans son produit ne mesure rien (ADR-094)`,
+      );
+    }
+  }
+  const squelette = (attenduJson?.falsificateurs_du_run ?? []).some((f) => f && f.a_remplir === true);
+  let confirmationAttendu = null;
+  if (attenduJson?.confirmation !== undefined) {
+    const c = attenduJson.confirmation;
+    if (!c || typeof c !== "object" || Array.isArray(c)) {
+      refuse(`freeze : ${cas}.expected.json porte une confirmation qui n'est pas un objet — {par, le, preuve} (ADR-094)`);
+    }
+    if (typeof c.par !== "string" || c.par.trim() === "" || typeof c.preuve !== "string" || c.preuve.trim() === "") {
+      refuse(`freeze : la confirmation de ${cas} sans par ni preuve ne confirme rien — {par, le, preuve} (ADR-094)`);
+    }
+    if (typeof c.le !== "string" || !Number.isFinite(Date.parse(c.le))) {
+      refuse(`freeze : la confirmation de ${cas} porte un « le » qui n'est pas ISO 8601 — la date fait la pièce (ADR-094)`);
+    }
+    confirmationAttendu = { par: c.par.trim(), le: c.le, preuve: c.preuve.trim() };
+  }
+  if (!squelette && confirmePar === null && confirmationAttendu === null) {
+    refuse(
+      `freeze : ${cas} n'est pas un squelette et ne porte aucune confirmation — une personne confirme l'attendu avant ` +
+        `qu'il soit gelé (ADR-041) : --confirme-par <qui> --confirme-preuve <texte>, ou un bloc confirmation{par, le, preuve} ` +
+        `dans l'attendu (ADR-094)`,
+    );
+  }
+  const confirmation = confirmePar !== null
+    ? { par: String(confirmePar).trim(), le: localIso(), preuve: String(confirmePreuve).trim() }
+    : confirmationAttendu;
   if (existsSync(gel) && !a.has("refreeze")) {
     refuse(`freeze : ${display(gel)} existe déjà — --refreeze pour le refaire, le gel précédent est alors perdu`);
   }
@@ -684,9 +782,27 @@ function cmdFreeze(a) {
     references.push({ arbre: arbre.label, chemin: relative(racine, abs), ...empreinteDe(abs) });
   }
 
+  // ADR-094 : un P qui mesure un sha256 contre le gel exige que le gel hache ce qu'il cite ; sans
+  // référence, le champ qu'il nomme n'existe dans aucune pièce. Le refus renvoie à --ref, jamais à
+  // une réécriture silencieuse du cas.
+  const falsifP = (attenduJson?.falsificateurs_du_run ?? []).find((f) => f && f.id === "P");
+  if (falsifP && falsifP.a_remplir !== true) {
+    const texteP = `${falsifP.condition ?? ""} ${falsifP.mesure ?? ""}`;
+    if (/(sha256|md5)/i.test(texteP) && /(gel|freeze)/i.test(texteP)) {
+      const cites = [...texteP.matchAll(/`([^`]+)`/g)].map((m) => m[1].trim()).filter((t) => t.includes("/"));
+      const couverts = cites.filter((t) => references.some((r) => r.chemin === t || t.endsWith("/" + r.chemin) || r.chemin.endsWith("/" + t)));
+      if (!couverts.length) {
+        refuse(
+          `freeze : le P de ${cas} mesure un sha256 contre le gel, et le gel ne hache aucun fichier qu'il cite ` +
+            `(${cites.join(", ") || "aucun chemin nommé"}) — ajouter --ref <chemin> --ref-root <arbre>, ou corriger le P (ADR-094)`,
+        );
+      }
+    }
+  }
   const empreinte = empreinteDeGel(fichiers, references);
   const objet = {
     cas,
+    ...(confirmation === null ? {} : { confirmation }),
     // Declared once, and recorded here like the trees' paths: where this machine keeps the
     // workspaces of its cases is a fact, not a parameter — but a fact said once.
     racine_espace_de_travail: racineEspace,
@@ -908,6 +1024,45 @@ function cmdCollect(a) {
     copier(from, join(dest, basename(from)));
   }
   if (fichiers.length === 0) refuse(`collect : rien à collecter sous ${from}`);
+
+  // ADR-094, D7 de l'audit du 2026-10-24 : `arbre_attendu` n'était lu par aucun code. Le produit
+  // collecté est situé sous l'arbre travail du gel et comparé à la liste : un fichier déclaré et
+  // absent refuse la collecte. Une entrée qui contient un espace ou un `<` est une règle de prose
+  // (`<bank>`, « un fichier par ligne »), pas un chemin, et n'entre pas dans la comparaison.
+  if (!annexe) {
+    const attenduJson = lireJson(join(casesDir, `${cas}.expected.json`), "collect");
+    const produitAttendu = attenduJson?.attendu_details?.produit ?? {};
+    const arbreAttendu = produitAttendu.arbre_attendu;
+    // Le contrat ne porte que sur le produit que le cas déclare : une collecte d'un fichier hors de
+    // `produit.racine` (un README, une pièce de diagnostic) n'est pas ce produit, et l'arbre attendu
+    // ne la juge pas. Un `--from` au-dessus de la racine la contient, et la juge.
+    const racineCas = gel.racine_espace_de_travail
+      ? resolu(resolve(gel.racine_espace_de_travail, cas)) ?? resolve(gel.racine_espace_de_travail, cas)
+      : resolve(racineTravail, "..");
+    const racineProduitAttendu = typeof produitAttendu.racine === "string" && produitAttendu.racine.trim() !== ""
+      ? resolve(racineCas, produitAttendu.racine)
+      : null;
+    const jugeArbre = racineProduitAttendu !== null
+      && (estDans(fromResolu, racineProduitAttendu) || estDans(racineProduitAttendu, fromResolu));
+    if (Array.isArray(arbreAttendu) && arbreAttendu.length && jugeArbre) {
+      const produites = new Set(
+        fichiers.map((f) => {
+          const abs = resolu(f.source) ?? resolve(f.source);
+          return relative(racineTravail, abs).split(sep).join("/");
+        }),
+      );
+      const attendues = arbreAttendu
+        .filter((p) => typeof p === "string" && p.trim() !== "" && !/\s/.test(p) && !p.includes("<"))
+        .map((p) => p.replace(/^\.\//, "").replace(/\/+$/, ""));
+      const manquantes = attendues.filter((p) => !produites.has(p));
+      if (manquantes.length) {
+        refuse(
+          `collect : l'arbre produit ne porte pas ${manquantes.join(", ")} — attendu_details.produit.arbre_attendu ` +
+            `du cas le déclare, et un arbre incomplet n'est pas le produit du cas (ADR-094)`,
+        );
+      }
+    }
+  }
 
   // Where the copy came from, said against the tree the freeze names: the receipt can then re-read
   // the origin without asking collect what it did.
@@ -2311,6 +2466,10 @@ function cmdReceipt(a) {
     if (Array.isArray(v)) return v.some(cherche);
     return v.a_remplir === true || Object.values(v).some(cherche);
   })(attendu);
+  // D2 et D3 (audit du 2026-10-24) : la promesse est le troisième étage, entre la chaîne que le reçu
+  // mesure et le jugement que `compare` écrit. Le reçu dit ce que le cas en déclare et si une commande
+  // l'a éprouvée ; il ne prétend jamais que `conforme` couvre une promesse qu'il n'a pas nommée.
+  const promesse = lirePromesse(attendu, verification, "receipt");
   // One query: how many `user` messages the thread carries, and the message of rank `budget`, which is
   // the exchange that exhausts the budget when there is one. Null when the rank does not exist.
   let mesuresBudget;
@@ -2352,9 +2511,12 @@ function cmdReceipt(a) {
     );
   }
   const partiesLues = [];
+  // Un compteur de lignes, pas d'échanges : une part de trace est un morceau de message, et confondre
+  // les deux faisait dire au rapport « 34 échange(s) » là où le fil portait un seul message utilisateur
+  // (audit du 2026-10-24, D1). Le nom dit ce qui est compté.
   const traceLue = {
     lignes: 0,
-    echanges_dans_la_fenetre: 0,
+    lignes_dans_la_fenetre: 0,
     sans_horodatage: 0,
     illisibles: 0,
     sha256: traceRejouee?.sha256 ?? null,
@@ -2387,7 +2549,7 @@ function cmdReceipt(a) {
         traceLue.sans_horodatage++;
         continue;
       }
-      if (ts >= debutMs && ts <= finMs) traceLue.echanges_dans_la_fenetre++;
+      if (ts >= debutMs && ts <= finMs) traceLue.lignes_dans_la_fenetre++;
     }
   }
 
@@ -2723,6 +2885,37 @@ function cmdReceipt(a) {
     if (cadre.reseau === "interdit") for (const motif of effets.reseaux) appelsReseau.push({ ...entree, motif });
   }
 
+  // ADR-092, D3 de l'audit du 2026-10-24 : `attendu_vu` était une déclaration que rien ne confrontait.
+  // La trace dit si la session a touché un chemin sous le dossier des cas — l'attendu, sa demande ou le
+  // kit d'un autre cas ; toute lecture y est déjà hors cadre, et un `non` déclaré qui contredit cette
+  // mesure refuse le reçu. Une lecture sans chemin (glob, grep) ou une commande shell non interprétable
+  // laisse la mesure inconnue : la déclaration reste alors une déclaration, dite en limite.
+  const racineCases = resolu(casesDir) ?? resolve(casesDir);
+  const lecturesDuKit = [...lecturesFaites.entries()]
+    .filter(([chemin]) => estDans(chemin, racineCases))
+    .sort((a, b) => Number(a[1].seq) - Number(b[1].seq));
+  let attenduVuMesure;
+  if (lecturesDuKit.length) {
+    const [chemin, vu] = lecturesDuKit[0];
+    attenduVuMesure = { etat: "oui", seq: vu.seq, chemin: relative(racineCases, chemin).split(sep).join("/"), motif: null };
+  } else if (outilsLectureSansChemin.size || shellNonInterpretable.length) {
+    const sansChemin = [...outilsLectureSansChemin].sort().join(", ");
+    const motif = [
+      sansChemin ? `lecture sans chemin (${sansChemin})` : null,
+      shellNonInterpretable.length ? `${shellNonInterpretable.length} commande(s) shell non interprétable(s)` : null,
+    ].filter(Boolean).join(" ; ");
+    attenduVuMesure = { etat: "inconnu", seq: null, chemin: null, motif };
+  } else {
+    attenduVuMesure = { etat: "non", seq: null, chemin: null, motif: null };
+  }
+  if (attenduVu === "non" && attenduVuMesure.etat === "oui") {
+    refuse(
+      `receipt : faits.json déclare cloisonnement.attendu_vu « non », mais la trace touche ` +
+        `${display(attenduVuMesure.chemin)} sous ${display(racineCases)} (seq ${attenduVuMesure.seq}) — ` +
+        "la déclaration et la mesure se contredisent (ADR-092)",
+    );
+  }
+
   // ADR-062 : the gate's porcelain folds an untracked directory into one entry, so a product root below
   // that directory (`terrain/aidd_docs/backlog` under `terrain/aidd_docs`) looked like a file outside the
   // product. The after-run side is measured again with `--untracked-files=all`, file by file; the gate,
@@ -2817,7 +3010,7 @@ function cmdReceipt(a) {
         .map((f) => ({ chemin: f.chemin, source: "gel", sha256: f.sha256 })),
       ...copiesDuneLecture,
     ],
-    trace_sans_echange_dans_la_fenetre: traceLue.echanges_dans_la_fenetre === 0,
+    trace_sans_echange_dans_la_fenetre: traceLue.lignes_dans_la_fenetre === 0,
     tableau_absent: tableauRequis && !tableau.present,
     ecriture_avant_tableau: tableauRequis ? ecrituresAvant : [],
     produit_ne_avant_le_tableau: tableauRequis ? produitsNeAvant : [],
@@ -2945,6 +3138,15 @@ function cmdReceipt(a) {
         `un mutant survit, donc le produit ne prouve pas ce qu'il prétend, et un écart reste jugeable (C7)`,
     );
   }
+  // D2 : vient après la morsure mesurée, parce qu'un mutant survivant est une preuve nommée et que le
+  // refus doit citer la preuve la plus précise. Vient avant l'écriture du reçu, parce qu'un conforme qui
+  // ne dit pas ce qu'il couvre ne se prononce pas.
+  if (verdict === "conforme" && promesse.mode === "non_mesuree") {
+    refuse(
+      `receipt : verdict « conforme » refusé — la promesse du cas n'est pas nommée (promesse.mode « non_mesuree ») : ` +
+        `${promesse.raison} ; un conforme qui ne dit pas ce qu'il couvre se dit « non concluant » (audit du 2026-10-24, D2)`,
+    );
+  }
 
   const limites = [...a.all("limite")];
   // ADR-071 : what the declaration is worth is said once, on every receipt.
@@ -3012,6 +3214,16 @@ function cmdReceipt(a) {
   }
   if (aRemplir) {
     limites.push("l'attendu n'a pas de falsificateur de promesse : le jugement ne peut pas dire conforme (attendu_incomplet)");
+  }
+  // D2 : le reçu dit toujours ce que son verdict ne couvre pas de la promesse. Un `mesure` renvoie à
+  // la limite de `verification` déjà écrite ; les deux autres modes ont besoin de la leur.
+  if (promesse.mode === "juge_seul") {
+    limites.push(
+      "la promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, que `compare` doit nommer avec sa rubrique pour `conforme` — le reçu ne vérifie ni l'identité du juge ni sa lecture (audit du 2026-10-24, D2, D3)",
+    );
+  }
+  if (promesse.mode === "non_mesuree") {
+    limites.push(`promesse_non_mesuree : ${promesse.raison} — le verdict ne couvre pas la promesse du skill (audit du 2026-10-24, D2)`);
   }
   if (verification !== null) {
     limites.push(
@@ -3101,6 +3313,12 @@ function cmdReceipt(a) {
       "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
     );
   }
+  if (attenduVuMesure.etat === "inconnu") {
+    limites.push(
+      `attendu_vu : la trace ne permet pas de mesurer une lecture sous ${display(racineCases)} ` +
+        `(${attenduVuMesure.motif}) — la déclaration « ${attenduVu} » reste une déclaration (ADR-092)`,
+    );
+  }
   if (frontieresDuneLecture.length) {
     limites.push(
       `lecture dans la seconde de naissance du produit (résolution du birth) : ${frontieresDuneLecture
@@ -3167,10 +3385,11 @@ function cmdReceipt(a) {
       manifeste_sha256: annexeVerifiee.manifeste_sha256,
       verifie: annexeVerifiee,
     },
-    cloisonnement: { attendu_vu: attenduVu, ...cadre },
+    cloisonnement: { attendu_vu: attenduVu, attendu_vu_mesure: attenduVuMesure, ...cadre },
     conduite,
     ...(temoignage === null ? {} : { temoignage }),
     ...(verification === null ? {} : { verification }),
+    promesse,
     falsificateurs,
     verdict,
     limites,
@@ -3216,6 +3435,83 @@ function cmdTexte(a) {
   // the gate refused it (256 read against 255 expected on another root). The redirect writes the
   // bytes as they are, and the gate is the judge of whether they are the case's.
   process.stdout.write(derive.texte);
+}
+
+// ---------------------------------------------------------------------------
+// promesse — ce que le cas dit du skill, et ce que le reçu en mesure
+// ---------------------------------------------------------------------------
+// D2 de l'audit du 2026-10-24 : `P` était un texte que rien ne lisait, et `conforme` pouvait être rendu
+// sans qu'aucune commande n'ait éprouvé la promesse du skill. Le reçu nomme donc ce qu'il en sait, en
+// trois modes. `mesure` exige un bloc `verification` qui a mordu : la commande du cas a exercé le
+// produit. `juge_seul` dit que la promesse est énoncée, par `P` ou à défaut par `attendu`, et qu'un juge
+// devra la lire ; `compare` le nomme alors, et refuse `conforme` sans nom (D3). `non_mesuree` dit que le
+// cas n'énonce ni l'un ni l'autre, et `conforme` est refusé : un verdict qui ne dit pas ce qu'il couvre
+// ne se prononce pas.
+const MODES_PROMESSE = new Set(["mesure", "juge_seul"]);
+
+function lirePromesse(attendu, verification, ou) {
+  const bloc = attendu?.promesse;
+  if (bloc !== undefined && (bloc === null || typeof bloc !== "object" || Array.isArray(bloc))) {
+    refuse(`${ou} : promesse porte ${JSON.stringify(bloc)}, attendu un objet {mode} — le bloc se lit, il ne se devine pas (D2)`);
+  }
+  if (bloc && bloc.mode !== undefined && !MODES_PROMESSE.has(bloc.mode)) {
+    refuse(`${ou} : promesse.mode vaut ${JSON.stringify(bloc.mode)}, attendu mesure | juge_seul (D2)`);
+  }
+  const P = (Array.isArray(attendu?.falsificateurs_du_run) ? attendu.falsificateurs_du_run : []).find((f) => f && f.id === "P") ?? null;
+  // Le cas nomme sa promesse par `attendu` (la prose gelée) ; `P` en est le falsificateur, quand il existe.
+  // Un cas qui n'a ni l'un ni l'autre ne dit pas ce qu'il attend, et son verdict ne peut rien couvrir.
+  const promesseTexte = typeof attendu?.attendu === "string" && attendu.attendu.trim() !== "" ? attendu.attendu.trim() : null;
+  const condition = typeof P?.condition === "string" ? P.condition : promesseTexte;
+  const declaree = bloc?.mode ?? (condition ? "juge_seul" : "non_mesuree");
+  if (declaree === "mesure") {
+    if (!condition) {
+      return { mode: "non_mesuree", declaree_par: "attendu.promesse", condition: null, mesure: null, juge: null, raison: "le cas demande une promesse mesurée, mais n'énonce ni attendu ni falsificateur P" };
+    }
+    if (!verification) {
+      return { mode: "juge_seul", declaree_par: "attendu.promesse", condition, mesure: null, juge: null, raison: "le cas demande une promesse mesurée, mais aucun bloc verification n'est déclaré : la promesse relève du juge" };
+    }
+    if (verification.mord !== true) {
+      return {
+        mode: "juge_seul",
+        declaree_par: "attendu.promesse",
+        condition,
+        mesure: null,
+        juge: null,
+        raison: verification.mord === false
+          ? `la vérification ne mord pas (${verification.mutants_survivants.join(", ") || verification.mutants_non_evalues.join(", ")}) : la mesure ne prouve rien, et la promesse relève du juge`
+          : "la vérification ne déclare aucune mutation : le produit est exécuté, pas éprouvé, et la promesse relève du juge",
+      };
+    }
+    return {
+      mode: "mesure",
+      declaree_par: "attendu.promesse",
+      condition,
+      mesure: { commande: verification.commande ?? null, mord: true },
+      juge: null,
+      raison: "la commande du cas a mordu sur chaque mutation déclarée, et la promesse est éprouvée par cette mesure",
+    };
+  }
+  if (declaree === "juge_seul") {
+    if (!condition) {
+      return { mode: "non_mesuree", declaree_par: "attendu.promesse", condition: null, mesure: null, juge: null, raison: "le cas demande un juge, mais n'énonce ni attendu ni falsificateur P : il n'y a rien à juger" };
+    }
+    return {
+      mode: "juge_seul",
+      declaree_par: bloc?.mode ? "attendu.promesse" : P ? "falsificateurs_du_run.P" : "attendu",
+      condition,
+      mesure: null,
+      juge: null,
+      raison: "la promesse est énoncée, mais aucune mesure ne l'éprouve : `compare` doit nommer le juge et sa rubrique",
+    };
+  }
+  return {
+    mode: "non_mesuree",
+    declaree_par: null,
+    condition: null,
+    mesure: null,
+    juge: null,
+    raison: "le cas n'énonce ni attendu ni falsificateur P : sa promesse n'est pas nommée",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -3520,6 +3816,8 @@ function cmdCompare(a) {
   const phrase = a.required("phrase");
   const verdict = a.required("verdict");
   if (!VERDICTS.has(verdict)) usage(`--verdict vaut « ${verdict} », attendu : conforme | ecart | non concluant`);
+  const juge = a.one("juge");
+  const rubrique = a.one("rubrique");
   const limites = a.one("limites") ?? "non évaluable";
   if (!LIMITES.has(limites)) usage(`--limites vaut « ${limites} », attendu : mord | ne mord pas | non évaluable`);
   const casesDir = casesDirOf(a);
@@ -3579,6 +3877,19 @@ function cmdCompare(a) {
   if (verdict !== "non concluant" && recu.verdict === "non concluant") {
     refuse(`compare : verdict « ${verdict} » refusé — le reçu conclut « non concluant » : ${recu.limites.join(" ; ")}`);
   }
+  // D3 (audit du 2026-10-24) : un `conforme` du juge nomme qui juge et sur quelle rubrique. Le reçu
+  // dit ce que la promesse est et si une mesure l'a éprouvée ; il ne peut pas signer à la place du juge.
+  if (verdict === "conforme") {
+    if (!recu.promesse || typeof recu.promesse !== "object") {
+      refuse("compare : verdict « conforme » refusé — le reçu ne porte pas de bloc `promesse` (il précède ce champ) : un conforme qui ne dit pas ce qu'il couvre ne se signe pas (D3)");
+    }
+    if (recu.promesse.mode === "non_mesuree") {
+      refuse(`compare : verdict « conforme » refusé — la promesse du cas n'est pas nommée : ${recu.promesse.raison} (D2)`);
+    }
+    if (typeof juge !== "string" || juge.trim() === "" || typeof rubrique !== "string" || rubrique.trim() === "") {
+      refuse("compare : verdict « conforme » refusé — --juge et --rubrique sont requis : le reçu dit ce que la promesse est, pas qui l'a jugée (D3)");
+    }
+  }
 
   verifierPhraseColonnes(phrase, recu);
 
@@ -3592,6 +3903,14 @@ function cmdCompare(a) {
     limites,
     ecarte_comme_non_testable: attendu.ecartes ?? [],
     verification: recu.verification ?? null,
+    promesse: recu.promesse && typeof recu.promesse === "object"
+      ? {
+          mode: recu.promesse.mode ?? null,
+          condition: recu.promesse.condition ?? null,
+          juge: typeof juge === "string" && juge.trim() !== "" ? juge : null,
+          rubrique: typeof rubrique === "string" && rubrique.trim() !== "" ? rubrique : null,
+        }
+      : null,
     phrase,
     gel_verifie: gelVerifie,
     juge_le: localIso(),

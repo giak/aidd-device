@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-23-202011-test-analyse",
+  "passe_le": "2026-10-23T20:23:44.141506026+0200",
+  "passe_le_epoch": 1792779824,
+  "repertoire": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-23-202011-test-analyse.freeze.json",
+    "empreinte": "32cfec453672966383459c28a519b848f78fe840044c8b2cefdb1980fa83fabc",
+    "gele_le_epoch": 1792779757
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+    "head": "416ec1f",
+    "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/test/aidd-installation"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-23-202344-32cfec45-e51e7a6/texte-a-remettre.txt",
+    "sha256": "2245649cf1a74db61130603ff81a2458233b45a5f3870fa2c8bdae098df9522c",
+    "octets": 818
+  }
+}

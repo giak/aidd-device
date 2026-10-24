@@ -1,0 +1,24 @@
+{
+  "cas": "2026-10-23-202011-test-analyse",
+  "attendu": "La session lit le skill 06-test de la révision sous test, liste les comportements non testés de `analysis.py` avec leur priorité, et attend l'accord sans écrire un seul fichier ; après la réponse figée, elle écrit l'unique fichier `terrain/test_skill_analysis.py`, au plus deux comportements les plus prioritaires, chacun couvert par au moins un test, sans modifier aucun fichier existant, et itère jusqu'à ce que `python3 -m pytest -q test_skill_analysis.py` passe.",
+  "produit_brut": "docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/raw/2026-10-23-202011-test-analyse",
+  "difference": "aucune : le produit est l'unique fichier neuf attendu, il couvre deux comportements et ses neuf tests passent ; la demande borne les comportements, pas le nombre de tests",
+  "verdict": "conforme",
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "verification": null,
+  "phrase": "Le skill 06-test a listé les comportements non testés, attendu l'accord, puis livré un fichier neuf de neuf tests verts couvrant deux comportements, sans toucher aux fichiers existants.",
+  "gel_verifie": {
+    "le": "2026-10-24T05:02:26+02:00",
+    "empreinte": "9c8fd81c0fe4ec9015720d832bd36b37a7e7ac1172de319cb3e47c72764157a1",
+    "fichiers": 2,
+    "references": 0
+  },
+  "juge_le": "2026-10-24T05:02:26+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/receipt.json"
+}

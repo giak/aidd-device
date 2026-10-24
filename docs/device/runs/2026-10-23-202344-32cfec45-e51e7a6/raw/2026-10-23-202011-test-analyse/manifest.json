@@ -1,0 +1,21 @@
+{
+  "cas": "2026-10-23-202011-test-analyse",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-23-202344-32cfec45-e51e7a6",
+  "role": "produit",
+  "source": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain/test_skill_analysis.py",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain"
+  },
+  "collecte_le": "2026-10-23T20:28:20+02:00",
+  "fichiers": [
+    {
+      "chemin": "test_skill_analysis.py",
+      "source": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain/test_skill_analysis.py",
+      "sha256": "3c01985e8214a9a474100d6831ae3466b47fc9d688f91626438bd4f4d78918f3",
+      "taille": 4134,
+      "birth": "2026-10-23 20:27:04.135909453 +0200",
+      "birth_epoch": 1792780024
+    }
+  ]
+}

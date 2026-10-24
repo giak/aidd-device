@@ -1,0 +1,4 @@
+Read the skill at /home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin/plugins/aidd-dev/skills/06-test/SKILL.md and use it on this repository.
+Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; la couverture à examiner est `analysis.py`, et les tests existants incluent `test_analysis.py` et `test_app.py`.
+Montre d'abord la liste minimale des comportements non testés que tu retiens, avec leur score, et attends mon accord sans avoir écrit un seul fichier.
+Après accord, écris les tests dans un fichier neuf `test_skill_analysis.py` à la racine du dépôt — ne modifie aucun fichier existant —, puis itère jusqu'à ce que `python3 -m pytest -q test_skill_analysis.py` passe. Traite au plus les deux comportements les plus prioritaires.

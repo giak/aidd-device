@@ -1,0 +1,36 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e942a1cb1ffeguu7GjkzlgzYDY",
+    "modele": "opencode/deepseek-v4.1-flash-free",
+    "ouverte_par": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "ouverte_le": "2026-10-24T04:55:41+02:00"
+  },
+  "horodatage_debut": "2026-10-24T04:55:43+02:00",
+  "horodatage_fin": "2026-10-24T05:02:03+02:00",
+  "repertoire_de_travail": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/trace/export-brut.json",
+    "commande": "opencode session export ses_e942a1cb1ffeguu7GjkzlgzYDY"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "quand": "2026-10-24T05:02:03+02:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/raw/2026-10-23-202011-test-analyse/last-message.md",
+    "sha256": "bbd9e2053bc84ae6eaafe977bb249c9b86b9659c573d5d6fe9102065199c1c10",
+    "seq": 30,
+    "ts": 1792810734404
+  }
+}

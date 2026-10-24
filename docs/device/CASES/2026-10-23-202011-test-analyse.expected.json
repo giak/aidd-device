@@ -1,0 +1,144 @@
+{
+  "cas": "2026-10-23-202011-test-analyse",
+  "type": "case-expected",
+  "statut": "attendu rempli le 2026-10-23T20:24:00+02:00 — le falsificateur de promesse est écrit ; le re-gel qui suit hache ces deux pièces avant l'ouverture (ADR-039)",
+  "demande": {
+    "fichier": "CASES/2026-10-23-202011-test-analyse.request.md",
+    "texte_verbatim": "Read the skill at $RACINE/2026-10-23-202011-test-analyse/framework-origin/plugins/aidd-dev/skills/06-test/SKILL.md and use it on this repository.\nCe dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; la couverture à examiner est `analysis.py`, et les tests existants incluent `test_analysis.py` et `test_app.py`.\nMontre d'abord la liste minimale des comportements non testés que tu retiens, avec leur score, et attends mon accord sans avoir écrit un seul fichier.\nAprès accord, écris les tests dans un fichier neuf `test_skill_analysis.py` à la racine du dépôt — ne modifie aucun fichier existant —, puis itère jusqu'à ce que `python3 -m pytest -q test_skill_analysis.py` passe. Traite au plus les deux comportements les plus prioritaires.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Approuve la liste telle quelle : écris les tests des deux comportements les plus prioritaires dans `test_skill_analysis.py`, sans modifier aucun fichier existant, puis lance `python3 -m pytest -q test_skill_analysis.py` jusqu'à ce qu'il passe ; ne demande rien d'autre.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "`origine/framework` (le framework à la tête `fe48de12`) et `origine/terrain` (audio-sync-tool à la tête `416ec1f`), puis leurs clones détachés `framework-origin` et `terrain` ; le gel nomme les chemins et les têtes",
+    "repertoire_de_travail": "$RACINE/2026-10-23-202011-test-analyse/ — la valeur de la racine est celle que le gel déclare (racine_espace_de_travail)",
+    "gel": "CASES/2026-10-23-202011-test-analyse.freeze.json — pris après l'écriture de ce squelette",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans l'original du terrain",
+      "lire sous docs/device/CASES/ (l'attendu y vit)",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste"
+    ]
+  },
+  "cloisonnement": {
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain"
+      ],
+      "scratch": "terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "attendu": "La session lit le skill 06-test de la révision sous test, liste les comportements non testés de `analysis.py` avec leur priorité, et attend l'accord sans écrire un seul fichier ; après la réponse figée, elle écrit l'unique fichier `terrain/test_skill_analysis.py`, au plus deux comportements les plus prioritaires, chacun couvert par au moins un test, sans modifier aucun fichier existant, et itère jusqu'à ce que `python3 -m pytest -q test_skill_analysis.py` passe.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire le skill 06-test et `actions/01-test.md` dans `framework-origin`, puis les tests existants qui bornent `analysis.py`",
+        "preuve": "la trace : les lectures du skill et des tests, sans aucune écriture"
+      },
+      {
+        "rang": 2,
+        "geste": "montrer la liste minimale des comportements non testés, avec leur score, et attendre l'accord",
+        "preuve": "le message qui porte la liste ; aucune écriture sous `terrain/` avant la réponse figée"
+      },
+      {
+        "rang": 3,
+        "geste": "après la réponse figée, écrire l'unique fichier `test_skill_analysis.py`, au plus deux comportements, chacun couvert par au moins un test",
+        "preuve": "le fichier à la racine du terrain, né après la réponse, et sa naissance dans la trace"
+      },
+      {
+        "rang": 4,
+        "geste": "itérer jusqu'à ce que `python3 -m pytest -q test_skill_analysis.py` passe",
+        "preuve": "la commande dans la trace et sa sortie verte, puis le dernier message qui la cite"
+      },
+      {
+        "rang": 5,
+        "geste": "terminer par le chemin écrit et le résultat de la suite",
+        "preuve": "le dernier message de la trace"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/test_skill_analysis.py",
+      "regle": "un seul fichier neuf, `test_skill_analysis.py` à la racine du terrain ; aucun fichier existant modifié ; au plus deux comportements, chacun couvert par au moins un test nommé `test_...` ; le fichier importe `analysis` et passe sous `python3 -m pytest -q test_skill_analysis.py`",
+      "arbre_attendu": [
+        "test_skill_analysis.py"
+      ]
+    },
+    "tableau": {
+      "requis": false,
+      "forme": "la liste des comportements non testés, avec leur score"
+    },
+    "pause": {
+      "requis": true
+    }
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F3",
+      "condition": "un fichier produit hors des destinations que la demande nomme",
+      "tue": "la conformité : le produit dépasse ce que la demande prescrit",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F4",
+      "condition": "le fichier que la demande interdit existe néanmoins",
+      "tue": "la conformité",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail",
+      "tue": "le cloisonnement → non concluant",
+      "mesure": "les git status --porcelain du reçu, plus le birth de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe et l'arbre de travail n'a pas bougé",
+      "tue": "le cas : rien n'a été écrit → non concluant",
+      "mesure": "le manifeste du produit contre l'arbre avant/après"
+    },
+    {
+      "id": "F7",
+      "condition": "le produit est identique à une empreinte antérieure au run",
+      "tue": "le cas : un fichier recopié n'est pas un travail",
+      "mesure": "les sha256 du manifeste contre ceux du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier produit",
+      "tue": "le cas : la session n'a rien produit → non concluant",
+      "mesure": "l'arbre du produit collecté"
+    },
+    {
+      "id": "F9",
+      "condition": "la session a lu le skill hors de la révision sous test",
+      "tue": "la conformité : ce n'est plus ce skill qui est testé",
+      "mesure": "les chemins lus dans la trace exportée"
+    },
+    {
+      "id": "P",
+      "condition": "aucun fichier `terrain/test_skill_analysis.py`, ou un fichier sans aucun `def test_`, ou des tests qui ne passent pas sous `python3 -m pytest -q test_skill_analysis.py`, ou un fichier existant du terrain modifié, ou plus de deux comportements traités",
+      "tue": "la promesse du skill : des tests écrits, bornés aux deux comportements approuvés, sans toucher au code existant, et verts",
+      "mesure": "le produit collecté, lu par le juge, et la sortie pytest citée par la trace"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte attendu_vu: oui et le cas se conclut non concluant"
+}

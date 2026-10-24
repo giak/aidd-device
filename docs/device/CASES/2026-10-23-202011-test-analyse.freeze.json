@@ -1,0 +1,93 @@
+{
+  "cas": "2026-10-23-202011-test-analyse",
+  "racine_espace_de_travail": "/home/giak/aidd-device-work",
+  "gele_le": "2026-10-24T04:55:29.782499268+0200",
+  "gele_le_epoch": 1792810529,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-23-202011-test-analyse --cases docs/device/CASES --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin --arbre terrain=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain --refreeze",
+  "empreinte": "9c8fd81c0fe4ec9015720d832bd36b37a7e7ac1172de319cb3e47c72764157a1",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-23-202011-test-analyse.expected.json",
+      "sha256": "10cd895b251d33effa24fced4ffa3e3cedc178a47f89db923bfdeec396ade243",
+      "taille": 7668,
+      "birth": "2026-10-23 20:20:12.116305313 +0200",
+      "birth_epoch": 1792779612
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-23-202011-test-analyse.request.md",
+      "sha256": "4bdd7452d3222904846d390a6f6b446173418b414ae07dc90490f1576cd68e30",
+      "taille": 3598,
+      "birth": "2026-10-23 20:20:12.113305192 +0200",
+      "birth_epoch": 1792779612
+    }
+  ],
+  "references": [],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/test/aidd-installation"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/test/aidd-installation"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 280 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 285 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -87,6 +87,51 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > née du reçu `conforme` du cas `plan-simple` de la Séance 102 : une question posée par l'outil déclaré et
 > suivie d'une écriture sans ligne `user` entre les deux mord et nomme les deux seq, la réponse entre les
 > deux laisse le reçu muet, et `conforme` passe.
+
+> V0.50 — 2026-10-23 : **282** contrôles ; 289 éprouve `verifier` (C7, [ADR-087](DECISIONS.md)) sur une fixture
+> hors dépôt : un test qui sort `0` quoi qu'il arrive laisse survivre la mutation, `verifier` rend `exit 1`,
+> écrit `verification.json` avec `mord: false` et `mutants_survivants: ["M1"]`, et le refus nomme `M1` ; le
+> même terrain avec un test qui lit la valeur mutée rend `exit 0` et `mord: true` ; une mutation dont le texte
+> cherché est absent est refusée avant la course, sans pièce. Le terrain de la première fixture n'est jamais
+> retouché : la copie vit sous `$TMPDIR` ; la seconde modifie le terrain du jouet sous `$B`, après les autres
+> contrôles. La seconde partie du même 289 joue le **reçu** : sur une fixture complète (gel, porte,
+> produit neuf, trace, faits), `verifier` écrit `mord: false`, `receipt --verdict conforme` refuse en nommant
+> la morsure, `receipt --verdict « non concluant »` écrit et porte `verification{sha256, manifeste_sha256,
+> mord: false, mutants_survivants: ["M1"]}` avec les deux limites. Ce que le contrôle ne prouve pas : que la
+> commande couvre le produit (les mutants sont déclarés à la main), ni que le réseau est coupé ; et le chemin
+> `fin` qui appelle `verifier` n'est pas joué par le banc. Aucun contrôle existant n'est renuméroté.
+
+> V0.51 — 2026-10-23 : **282** contrôles, sans renumérotation ; la **troisième partie** du 289 éprouve
+> que l'`ecart` n'est pas fermé par le refus D1 : sur une copie du run de la fixture (reçu retiré, chemins
+> de `faits.json` réécrits), `receipt --verdict ecart` accepte la pièce `verification.mord: false` et
+> écrit son reçu. Le refus d'un `ecart` sans falsificateur n'a pas de contrôle de banc dédié ; il a été
+> vérifié sur une copie du run `2026-10-23-202344`, cas ancien reconstruit jusqu'aux sha256 du gel, et
+> reste une preuve manuelle, pas une couverture du banc.
+
+> V0.52 — 2026-10-23 : **283** contrôles ; le **290** ferme le manque du V0.51. Une fixture hors dépôt
+> recopie le cas jouet sous `ecart-290`, sans `verification` ni `mutations`, copie ses deux arbres sous
+> `$JB/ecart-290`, écrit `ecart_docs/NOTES.md`, puis joue le reçu en `ecart` : `exit 1`, refus nommant
+> « aucun falsificateur ne mord », aucun `receipt.json`. Le terrain du jouet n'est pas retouché ; la
+> fixture vérifie elle-même que l'attendu ne déclare ni vérification ni mutation, sinon le refus ne
+> serait plus attribuable à D1. Aucun contrôle existant n'est renuméroté.
+
+> V0.53 — 2026-10-24 : **285** contrôles ; **291** éprouve la clôture d'`ouvrir` après une réponse jouée
+> (ADR-089), **292** le chemin hors cadre dans le code d'un outil (ADR-088). 291 ajoute un mode au faux
+> serveur : question en texte, première réponse figée, puis dernier message sans `?` ; `ouvrir` sort en
+> `0`, envoie deux messages et dit `1 question(s)` et la session inactive. 292 monte une fixture opencode
+> complète sous `$JB/code-292`, avec un faux binaire `opencode` dans le `PATH` : tableau, écriture dans
+> le produit, et un `execute` qui nomme dans son code `/tmp/opencode/f5.txt` et un chemin du produit :
+> le reçu refuse `conforme` en nommant le premier, ne retient que lui, accepte `non concluant`, porte
+> `code_hors_dossier` et la limite `ADR-088`, et `RAPPORT.md` nomme la morsure. Le terrain du jouet n'est
+> pas retouché ; le faux binaire ne quitte pas le bac.
+> Aucun contrôle existant n'est renuméroté.
+
+> V0.49 — 2026-10-23 : **281** contrôles ; 281 éprouve que le refus de `suite` sur une trace existante nomme
+> son auteur, sans fichier neuf : avec `trace/fil.json`, il dit que la trace vient de `tracer` ; sans lui, que
+> c'est celle d'un `suite` arrêté avant ses faits. Les deux dossiers restent intacts, et remplacer le
+discriminant par un message unique fait tomber l'un des deux. Une trace recopiée à la main sans `fil.json` est
+> nommée « suite arrêté », et c'est la limite de la dérivation, dite dans [ADR-083](DECISIONS.md). Aucun
+> contrôle existant n'est renuméroté.
 
 > V0.48 — 2026-10-23 : **280** contrôles ; 280 éprouve le refus de `suite` sur une trace déjà écrite : le
 > dossier porte `trace/echange.jsonl`, le fil nommé est introuvable, et le refus dit « existe déjà » — donc il
@@ -229,11 +274,11 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 280 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 283 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
-`orchestrer.mjs`, l'orchestrateur interactif (contrôles 131 à 153, puis 269 à 280, qui traversent un cas
+`orchestrer.mjs`, l'orchestrateur interactif (contrôles 131 à 153, puis 269 à 281, qui traversent un cas
 **fabriqué** par lui) ; `rapport.mjs`, la vue déterministe du reçu (contrôles 179 à 190). Il éprouve aussi l'adaptateur
 `clients.mjs` sous un faux `opencode` (contrôles 154 à 171), la lecture hors du **cadre déclaré**
 (contrôles 176 à 178), le bloc qui déclare ce cadre (contrôles 191 à 193), et les effets d'une
@@ -260,13 +305,13 @@ texte sans question, et la durée de la pause.
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 280/280 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 283/283 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `280/280 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `283/283 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 
@@ -352,6 +397,7 @@ une panne d'outil se voir dans un `FAIL`.
 | 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les cinq types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](DECISIONS.md) |
 | 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les seize clés que les reçus du dépôt portent, `pause_non_tenue` et `shell_invalide` comprises, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend dix-sept lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
 | 259 à 262 | **les traces de texte et de commande** (spec du 2026-10-22 22:12, ADR-075) : sur un reçu synthétique et une `lecture.json` de banc, `trace_texte` trouve une décision, cite le tour et la chaîne bornée, rend `violé` sur une chaîne absente ou une autre casse, et `non observé` sans texte assistant (259) ; `finit_par` rend `tenu` sur une question hors bloc, `violé` sur un `?` présent seulement dans un bloc, et `non observé` sur un rappel `<system-reminder>` seul (260) ; `commande_contient` rend `tenu` sur la commande attendue, avec `chemin_contient` quand les deux sont déclarés, `violé` sur une autre commande, et `non observé` sur une part `shell` sans commande (261) ; `verifierLecture` accepte `trace_texte` et `commande_contient`, refuse une assertion sans critère, avec les deux, un critère vide, un `role` hors domaine, un `a_partir_du_tour` nul ou fractionnaire, et le contrôle 233 inclut `trace_texte` (262). Le harnais ne valide pas le contenu d'un JSON, d'un code ou d'un rapport : c'est le travail du juge | ADR-075 |
+| 281 | **le refus de `suite` nomme l'auteur de la trace** (ADR-083, précision) : deux dossiers de run portent `gate.json` et `trace/echange.jsonl` ; l'un porte aussi `trace/fil.json`. Le refus du premier dit que la trace vient de `tracer`, celui du second qu'elle vient d'un `suite` arrêté avant ses faits — et jamais l'inverse. Les deux gardent `gate.json` + `trace`, leurs pièces et les octets de la trace, sans `.suite-<pid>`. Un message unique pour les deux cas fait tomber le contrôle ; retirer la lecture de `fil.json` aussi | ADR-083 |
 | 280 | **`suite` refuse une trace déjà écrite** (ADR-083, rectification) : le dossier du run porte `trace/echange.jsonl` et `gate.json`, et le fil nommé n'existe dans aucun client. Le refus rend `exit 1` et dit « existe déjà » — s'il venait du client, il dirait « n'existe dans aucune base » : c'est la preuve que la trace est refusée avant tout appel client, comme le 264 pour `tracer`. Le dossier reste `gate.json` + `trace/echange.jsonl`, la trace garde ses octets, et aucun fichier de travail `.suite-<pid>` ne reste. Déplacer ce refus après la sonde des clients fait tomber le contrôle par le message | ADR-083 |
 | 279 | **`suite` refuse avant toute écriture** (ADR-083, rectification) : un dossier de run qui porte déjà `faits.json` rend `exit 1`, nomme le fichier, et garde son dossier intact. Le message « existe déjà » prouve que ce refus précède l'appel client — la fixture n'a ni fil Freebuff ni store opencode, et un ordre inverse refuserait sur l'un des deux. Écrire `trace/` avant ce contrôle la laisse sur le disque, et le listing du dossier le dit | ADR-083 |
 | 278 | **un refus de `tracer` ne laisse aucune pièce** (ADR-083) : sur un fil de fixture, une fenêtre vide rend `exit 1`, et le dossier du run ne porte que `run.json` et `run-guide.md` — ni `trace/`, ni fichier de travail `.tracer-<pid>` ; le second appel, sans borne, réussit et écrit ses deux pièces. C'est le refus qui ne bloque plus le dossier. Retirer le renommage laisse `echange.jsonl` sur le disque ; retirer le nettoyage laisse le fichier de travail, et le contrôle le nomme | ADR-083 |

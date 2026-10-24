@@ -2648,3 +2648,111 @@ porte `gate.json` et `trace/echange.jsonl`, le fil nommé n'existe dans aucun cl
 déjà » — s'il venait de la sonde des clients, il dirait « n'existe dans aucune base » : c'est l'ordre qui est
 mesuré. La trace garde ses octets, et aucun `.suite-<pid>` ne reste. Effet de bord assumé : un `suite` qui
 échoue à l'étape des faits, après le renommage, laisse sa trace et devra la voir déplacée avant de repasser.
+
+**Précision (2026-10-23, troisième).** Ce refus ne dit plus seulement qu'une trace existe : il nomme son
+auteur, dérivé des pièces déjà là et d'aucun fichier neuf. `tracer` est le seul écrivain de `trace/fil.json`,
+jamais `suite` ; et `suite` écrit ses faits aussitôt sa trace renommée, le refus des faits précédant celui-ci.
+Une trace qui porte un `fil.json` vient donc de `tracer` ; sans lui, c'est la trace d'un `suite` arrêté entre
+la trace et les faits. Contrôle **281** sur deux dossiers : avec `fil.json`, le refus nomme `tracer` ; sans lui,
+il dit l'arrêt avant les faits ; un message unique pour les deux fait tomber le contrôle. Limites : une trace
+recopiée à la main sans `fil.json` est nommée « suite arrêté », faute de marqueur ; un `fil.json` seul, sans
+`echange.jsonl`, n'est pas refusé, et `suite` écrirait alors sa trace à côté d'une pièce étrangère.
+
+## ADR-087 — Le produit d'un test se vérifie par mutation, et un mutant survivant interdit `conforme` (2026-10-23)
+
+**Contexte.** Le run `06-test` du 2026-10-23 a rendu `9 passed`, `exit 0`, et le reçu ne portait aucune
+morsure : une suite verte prouve qu'elle s'exécute, pas qu'elle détecte. Le harnais n'avait aucune commande
+pour exécuter un produit hors du client, et le reçu n'avait aucun champ de vérification.
+
+**Options** : lire le code de sortie et s'en contenter (rejeté : c'est le défaut mesuré) · générer des mutants
+automatiquement (rejeté pour cette étape : coût, couverture et seuil à définir) · déclarer dans le cas une
+commande et deux ou trois mutations choisies, et refuser un mutant survivant (choisi).
+
+**Décision.** Un cas peut déclarer `verification{commande, attendu_code, delai_ms}` et `mutations[]`
+(`id`, `fichier`, `cherche`, `remplace`, `doit_echouer: true`). `verifier` copie le terrain et le produit
+collecté sous `$TMPDIR`, exécute la commande sur la référence, puis sur une copie neuve par mutation, et écrit
+`verification.json`. Un mutant dont le code reste `attendu_code` survit : `verifier` rend `exit 1` et nomme le
+mutant. `receipt` exige la pièce quand le cas la déclare, la hache, la rattache au `sha256` du manifeste du
+produit, et refuse `conforme` si `mord: false` ; `ecart` et `non concluant` restent jugeables. `fin` joue
+`verifier` avant le reçu.
+
+**Conséquences.** Contrôle **289** : un test qui sort `0` quoi qu'il arrive laisse survivre `M1`, `verifier`
+rend `1`, `verification.json` porte `mord: false` et `mutants_survivants: ["M1"]` ; le même terrain avec un
+test qui lit la valeur mutée rend `0` et `mord: true` ; une mutation dont le texte cherché manque est refusée
+sans pièce. Le même contrôle joue le **reçu** sur une fixture complète : `receipt --verdict conforme`
+refuse « le test ne mord pas sur M1 », `receipt --verdict « non concluant »` écrit et porte
+`verification{mord: false, mutants_survivants: ["M1"]}` avec les deux empreintes. Le banc passe à **282**.
+Le chemin `fin` qui appelle `verifier` avant le reçu n'est pas joué par le banc : c'est une limite de preuve,
+dite dans [BANC](BANC.md) et dans la spec.
+
+**Ce que ce n'est pas** : une preuve de couverture. Les mutants sont déclarés à la main, la commande peut
+utiliser le réseau (il n'est pas coupé), et la copie du terrain peut contenir des fichiers que le test lit.
+Tuer `M1` ne dit rien des fautes que personne n'a déclarées.
+
+**Falsificateur** : un `verification.json` écrit sans que la commande ait tourné ; un `receipt --verdict
+conforme` accepté avec `mord: false` ; un mutant survivant compté comme tué ; une pièce d'un autre produit
+acceptée par le reçu.
+
+## ADR-088 — Un chemin du code d'un outil se lit dans l'export brut, et F5 le tue en `non concluant` (2026-10-24)
+
+**Contexte.** Le rejeu du cas `06-test` du 2026-10-24 a rendu un reçu `conforme` alors que l'outil
+`execute` du mode code avait écrit dans `/tmp/opencode` : le reçu ne mesurait que les parts `write`/`edit`
+et les commandes `shell`, et un programme n'est ni l'un ni l'autre. Le §7 de la demande interdit de sortir
+du répertoire de travail ; `F5` impose `non concluant`. Le faux positif était mécanique, pas une lecture
+fautive du juge.
+
+**Options** : ajouter un champ `code` à la trace normalisée (rejeté : l'adaptateur changerait les octets
+rejoués de tous les runs antérieurs, et un reçu existant cesserait de se vérifier) · lire l'export brut
+d'opencode, déjà conservé sous `trace/export-brut.json` (choisi) · n'ajouter qu'une limite (rejeté : une
+limite ne tue pas `conforme`, et le run resterait faux positif).
+
+**Décision.** `receipt` relit l'export brut d'opencode, pour chaque part d'outil qui porte
+`state.input.code` ou `state.input.script`. Il extrait les littéraux de chemin absolu, ignore les racines
+système (`/usr`, `/bin`, `/etc`, `/proc`, `/sys`, `/run`) et `/dev/null`, développe `~`, résout les liens,
+et compare chaque chemin aux racines de lecture et d'écriture du bloc `cloisonnement`. Un chemin hors de
+ces racines remplit `falsificateurs.code_hors_dossier` et force `non concluant` : le reçu ne prétend pas
+savoir si le programme a lu ou écrit, un chemin hors cadre suffit à dire que le run est sorti du dossier.
+La limite dit ce qui reste non mesuré : chemins construits dynamiquement, relatifs ou hors littéral, et
+absence d'export brut (Freebuff). L'export instable n'est pas lu.
+
+**Conséquences.** Contrôle **292** : une fixture opencode complète, avec un faux binaire dans le `PATH`,
+un tableau, une écriture dans le produit et un `execute` qui écrit `/tmp/opencode/f5.txt` ; le reçu refuse
+`conforme` en nommant le chemin, accepte `non concluant`, et `RAPPORT.md` porte `code_hors_dossier`. Sur
+une copie du run réel `2026-10-24-045529`, le reçu refuse `conforme` et nomme `seq 10, /tmp/x.mp3` ; il
+relève 16 chemins, tous sous `/tmp`, et aucun faux positif (`/len`, `/e`, `/0.0015` sont écartés par la
+règle du segment unique). Les reçus déjà écrits ne sont pas réécrits ; ceux qui n'ont pas le champ sont
+dits antérieurs à cet ADR par `rapport.mjs`, sans être déclarés propres.
+
+**Ce que ce n'est pas** : une preuve d'écriture. Un chemin nommé peut n'être que lu, et un chemin construit
+par concaténation échappe au lecteur. Le client Freebuff n'a pas d'export brut : la limite le dit, et F5 y
+reste invisible au reçu.
+
+**Falsificateur** : un `conforme` accepté avec un chemin `/tmp` dans `input.code` ; un chemin dans le cadre
+compté comme morsure ; un reçu sans `code_hors_dossier` présenté comme mesuré.
+
+## ADR-089 — Une session qui a joué une réponse peut finir sans question (2026-10-24)
+
+**Contexte.** `ouvrir` a refusé une session inactive après une réponse figée jouée, parce qu'une seconde
+réponse restait disponible : le §7 d'ADR-077 interdisait de tenir pour fini un arrêt sur un texte sans
+`?` tant que des réponses restaient à jouer. La session avait passé la question, écrit son produit et
+fini son dernier message ; le refus était un faux refus, et `suite` a dû mesurer le fil après coup.
+
+**Options** : garder le refus (rejeté : il refuse une clôture normale) · accepter toute session inactive
+(rejeté : un run qui n'a jamais joué la pause redeviendrait un succès à zéro question) · refuser seulement
+quand aucune réponse n'a été jouée (choisi).
+
+**Décision.** Dans `ouvrir`, une session inactive sur un texte qui ne demande rien termine le run dès que
+`jouees.length > 0`. Avant la première réponse, le refus d'ADR-077 reste : la pause n'a pas eu lieu, et
+`suite --fil` est le chemin nommé. Les deux réponses figées ne sont pas exigées : la seconde peut rester
+inutilisée quand la session n'a plus de question.
+
+**Conséquences.** Contrôle **291** : le faux serveur pose une question en texte, reçoit la première
+réponse figée, puis rend un dernier message sans `?` ; `ouvrir` sort en `0`, envoie deux messages, compte
+`1 question(s)` et dit la session inactive. Les contrôles **257** et **266** ne changent pas : ils arrêtent
+la session avant toute réponse et exigent encore le refus.
+
+**Ce que ce n'est pas** : une preuve que la pause a été humaine. Le run guidé et le reçu gardent leurs
+limites ; `ouvrir` ne fait que ne plus confondre une clôture après réponse avec un succès à zéro question.
+
+**Falsificateur** : `ouvrir` acceptant une session arrêtée avant toute réponse ; `ouvrir` refusant encore
+une clôture après une réponse jouée.

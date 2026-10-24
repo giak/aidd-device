@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // run.mjs — the minimal harness of a run.
 //
-// It opens no session and decides nothing by itself. Six commands, one per moment
+// It opens no session and decides nothing by itself. Seven commands, one per moment
 // of the run, each carrying the spec paragraph that demands it
 // (docs/tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md):
 //
@@ -41,8 +41,11 @@
 //   compare  the judge — runs/<id>/output.json (§8, v6 §10) — reading the receipt for what
 //            happened (§8: never the session) and the freeze for the premise, which it
 //            re-hashes before judging
+//   verifier the case's verification command — run on a copy of the terrain and of the
+//            collected product, then on one mutant per declared mutation; a mutant that
+//            survives is refused (spec du 2026-10-23 21:18, C7)
 //
-// Usage: node docs/device/harness/run.mjs <freeze|collect|faits|receipt|compare> [options]
+// Usage: node docs/device/harness/run.mjs <freeze|collect|faits|receipt|compare|verifier> [options]
 //        node docs/device/harness/run.mjs --help
 //
 // Exit status: 0 done · 1 refusal (printed, never counted) · 2 usage.
@@ -58,9 +61,10 @@
 // judgment: the receipt's only proof of « écrit avant d'avoir vu le produit » is the
 // fingerprint §3 records, and a fingerprint whose files have moved on proves nothing.
 
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+import { homedir, tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -194,6 +198,14 @@ const USAGE = `usage: run.mjs <commande> [options]
            la trace citée ne rend plus le sha256 que le reçu a écrit (ADR-032), ou dont
            la porte citée ne rend plus le sien (ADR-034) ; il refuse aussi une phrase qui
            nomme un nombre de colonnes différent de receipt.tableau.colonnes (ADR-048)
+  verifier --run <dir> --case <id> [--cases <dir>]
+           lit le bloc verification du cas, copie le terrain et le produit collecté sous
+           $TMPDIR, y lance la commande déclarée, puis la rejoue sur une copie neuve par
+           mutation déclarée. Écrit <run>/verification.json et refuse (exit 1) une
+           référence rouge, un mutant survivant ou un mutant non évalué ; une mutation
+           dont le texte cherché manque ou n'est pas unique est refusée avant la course,
+           sans pièce. Un cas sans bloc verification est refusé : rien à vérifier
+           (spec du 2026-10-23 21:18, C7 ; ADR-087)
 
   prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
     git --version                  toutes les commandes — les quatre arbres, leur porcelain
@@ -201,6 +213,7 @@ const USAGE = `usage: run.mjs <commande> [options]
     date -d @<epoch>               faits et receipt — l'epoch du fil en date locale
     sqlite3 -version               faits et receipt, client Freebuff — la base, en -readonly
     opencode --version             faits et receipt, client opencode — l'export du CLI
+    bash --version                 verifier — la commande de vérification déclarée par le cas
 
   faits.json (receipt) : session{outil,application,identifiant,modele,ouverte_par,ouverte_le}
     horodatage_debut · horodatage_fin · repertoire_de_travail ·
@@ -214,8 +227,9 @@ const USAGE = `usage: run.mjs <commande> [options]
     dossier : la 2e lit l'export ligne à ligne, F2 y ajoute la présence du tableau
     et l'ordre des écritures, F1 y ajoute la naissance des produits contre l'instant
     du tableau, question_sans_reponse y ajoute la question que la première écriture
-    suit sans réponse (ADR-058), et lecture_hors_dossier nomme toute lecture hors des racines de
-    cloisonnement.lecture.autorisees),
+    suit sans réponse (ADR-058), lecture_hors_dossier nomme toute lecture hors des racines de
+    cloisonnement.lecture.autorisees, et code_hors_dossier nomme un chemin absolu littéral
+    du code d'un outil, lu dans l'export brut (ADR-088)),
     trace_lue
     (lignes, échanges dans la fenêtre, lignes sans horodatage, illisibles, sha256 du
     fichier exporté, heure du rejeu — nuls quand la trace est absente), echanges
@@ -223,15 +237,17 @@ const USAGE = `usage: run.mjs <commande> [options]
     un dépassement refuse au lieu de s'écrire), porte (le gate.json lu, son sha256,
     son instant, l'empreinte du gel et l'arbre qu'il dit avoir mesuré), recu_ecrit_le,
     demande.gel et gel_verifie (l'empreinte et le nombre de fichiers que le reçu a
-    re-hachés avant de s'écrire), cloisonnement{attendu_vu, lecture{autorisees,
+    re-hachés avant de s'écrire), verification{chemin, sha256, manifeste_sha256,
+    baseline, mutations, mord, mutants_survivants, mutants_non_evalues} quand le cas
+    la déclare, cloisonnement{attendu_vu, lecture{autorisees,
     resolues}, ecriture{autorisees, resolues}, reseau, fichiers_de_contexte}.
     produit.chemins donne les chemins bruts,
     produit.fichiers le sha256, la taille et le birth de chacun. Les arbres gelés sont
     repris sous arbres.avant, remesurés sous arbres.apres ; les labels framework-origin
     et terrain alimentent en plus framework_rev et terrain_rev.
   output.json (spec §8) : cas, attendu, produit_brut, difference, verdict, limites,
-    ecarte_comme_non_testable, phrase, et gel_verifie — le même re-hachage, refait
-    avant que le juge tranche.`;
+    ecarte_comme_non_testable, verification (recopiée du reçu ou null), phrase, et
+    gel_verifie — le même re-hachage, refait avant que le juge tranche.`;
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CASES_DEFAULT = join(REPO, "docs", "device", "CASES");
@@ -319,6 +335,13 @@ const PREREQUIS = [
     commandes: ["faits", "receipt"],
     client: "opencode",
     remede: "installer opencode",
+  },
+  {
+    outil: "bash",
+    sonde: ["--version"],
+    pour: "exécute la commande de vérification que le cas déclare",
+    commandes: ["verifier"],
+    remede: "installer bash",
   },
 ];
 function clientDemande(cmd, a) {
@@ -1295,6 +1318,35 @@ const MOTS_SHELL = /(shell|bash|terminal|command)/i;
 // Its family is declared here, like the three above, never read from a client's tool list: a question
 // asked through another name escapes the measure, and the limits say so.
 const MOTS_QUESTION = /(question|ask_user)/i;
+// ADR-088 : le mode code d'un client execute un programme, pas une commande shell ; son texte ne passe
+// donc ni par MOTS_SHELL ni par MOTS_ECRITURE, et ses chemins restaient invisibles. Le nom de la famille
+// est déclaré ici, comme les quatre autres, jamais lu dans une liste d'outils.
+const MOTS_CODE = /(execute|eval)/i;
+// Un chemin de programme nomme souvent un interpréteur ou une bibliothèque du système : ces racines ne
+// disent rien du cadre du run, et les compter ferait mordre chaque `python3` absolu. `/dev/null` est un
+// puits (ADR-053) ; `/dev/nullx` reste un chemin ordinaire, donc `/dev` n'est pas une racine système.
+const RACINES_SYSTEME = /^\/(usr|bin|sbin|lib|lib64|etc|proc|sys|run)(\/|$)/;
+const RACINES_ORDINAIRES = new Set(["/tmp", "/var/tmp", "/home", "/root", "/mnt", "/media", "/Volumes"]);
+function cheminsDuCode(code) {
+  const trouves = [];
+  // Les littéraux d'un programme : une chaîne entre quotes, et le chemin absolu qu'elle porte. Le motif
+  // s'arrête avant `:` (un `PATH` colle souvent au chemin) et avant les opérateurs du shell ; il ne suit
+  // pas une concaténation, et la limite du reçu le dit. Un segment unique (`/e`, `/len`, `/0.0015`) est
+  // une expression, pas un chemin : seules les racines ordinaires connues passent avec un seul segment.
+  const motif = /(?:^|[^A-Za-z0-9_./~-])((?:~\/|\/(?!\/))[^\s"'`;|&<>(){}\[\],$:]*)/g;
+  let m;
+  while ((m = motif.exec(code)) !== null) {
+    let chemin = m[1].replace(/[.:,]+$/, "");
+    if (!chemin || chemin === "/" || chemin.startsWith("//")) continue;
+    if (chemin === "/dev/null") continue;
+    if (RACINES_SYSTEME.test(chemin)) continue;
+    if (chemin.startsWith("~/")) chemin = join(homedir(), chemin.slice(2));
+    const segments = chemin.split("/").filter(Boolean);
+    if (segments.length < 2 && !RACINES_ORDINAIRES.has(chemin)) continue;
+    if (!trouves.includes(chemin)) trouves.push(chemin);
+  }
+  return trouves;
+}
 
 function cellulesDe(ligne) {
   const t = typeof ligne === "string" ? ligne.trim() : "";
@@ -2235,6 +2287,9 @@ function cmdReceipt(a) {
     ? resolu(resolve(gel.racine_espace_de_travail, cas)) ?? resolve(gel.racine_espace_de_travail, cas)
     : resolve(travail, "..");
   const cadre = lireCloisonnement(attendu, { cas, racineCas, ou: "receipt" });
+  // C7 : a case that declares a verification requires the piece verifier wrote. Read here, with the
+  // case's other blocks, so a missing piece refuses before the receipt consumes its single file.
+  const verification = lireVerificationDuRecu({ attendu, runDir, cas, ou: "receipt" });
   const budget = attendu.demande?.budget_echanges;
   if (budget === undefined) {
     refuse(
@@ -2541,6 +2596,52 @@ function cmdReceipt(a) {
   const dansCadreLecture = (chemin) =>
     chemin === cadre.lecture.racine_du_cas || dansScratch(chemin) || cadre.lecture.resolues.some((r) => estDans(chemin, r));
   const dansCadreEcriture = (chemin) => dansScratch(chemin) || cadre.ecriture.resolues.some((r) => estDans(chemin, r));
+  // ADR-088 : un outil de code exécute un programme dont les chemins littéraux ne sont ni une part
+  // `shell` ni un outil d'écriture. Le reçu relit l'export brut d'opencode — la pièce que la trace
+  // normalisée ne porte pas — et confronte chaque chemin absolu au cadre. Il ne prétend pas savoir si
+  // le programme a lu ou écrit : un chemin hors du cadre suffit à dire que le run est sorti du dossier,
+  // et F5 le tue en `non concluant`. Le client Freebuff n'a pas d'export brut : la limite le dit.
+  const codeHorsDossier = [];
+  const outilsCode = new Set(
+    partiesLues.filter((p) => p.kind === "tool" && p.outil !== null && MOTS_CODE.test(p.outil)).map((p) => p.outil),
+  );
+  const codeLu = { brut: false, outils: 0, chemins: 0, motif: null };
+  if (outil === "opencode" && traceRejouee !== null && existsSync(trace.export_brut) && !brutInstable) {
+    if (!statSync(trace.export_brut).isFile()) {
+      codeLu.motif = "l'export brut n'est pas un fichier";
+    } else {
+      try {
+        const brut = JSON.parse(readFileSync(trace.export_brut, "utf8"));
+        const messages = Array.isArray(brut.messages) ? brut.messages : [];
+        messages.forEach((message, i) => {
+          const seq = i + 1;
+          const ts = Number(message?.time?.created);
+          for (const part of Array.isArray(message?.content) ? message.content : []) {
+            if (!part || part.type !== "tool") continue;
+            const code = part.state?.input?.code ?? part.state?.input?.script ?? null;
+            if (typeof code !== "string") continue;
+            codeLu.outils++;
+            for (const chemin of cheminsDuCode(code)) {
+              const absolu = isAbsolute(chemin) ? resolve(chemin) : resolve(travail, chemin);
+              const resoluChemin = resolu(absolu) ?? absolu;
+              codeLu.chemins++;
+              if (dansCadreLecture(resoluChemin) || dansCadreEcriture(resoluChemin)) continue;
+              codeHorsDossier.push({ seq, ts: Number.isFinite(ts) ? ts : null, outil: part.name ?? "execute", chemin });
+            }
+          }
+        });
+        codeLu.brut = true;
+      } catch (e) {
+        codeLu.motif = `l'export brut ne se lit pas (${String(e.message).split("\n")[0]})`;
+      }
+    }
+  } else if (outil === "opencode" && traceRejouee === null) {
+    codeLu.motif = "la trace exportée n'a pas été rejouée";
+  } else if (outil === "opencode") {
+    codeLu.motif = brutInstable ? "l'export brut est instable" : "l'export brut est absent";
+  } else if (outilsCode.size) {
+    codeLu.motif = `le client ${outil} ne fournit pas d'export brut`;
+  }
   const lecturesHorsDossier = [];
   const lecturesPropres = [];
   const ecrituresHorsDossier = [];
@@ -2726,6 +2827,7 @@ function cmdReceipt(a) {
       : [],
     lecture_hors_dossier: lecturesHorsDossier,
     ecriture_hors_dossier: ecrituresHorsDossier,
+    code_hors_dossier: codeHorsDossier,
     shell_hors_dossier: shellHorsDossier,
     shell_ecriture_hors_produit: shellEcritureHorsProduit,
     shell_invalide: shellInvalide,
@@ -2738,8 +2840,10 @@ function cmdReceipt(a) {
   // of the product written outside the product's root is a deviation the session can be charged with, so
   // it allows `ecart`; a file of context, an unreadable command, network, a read outside the frame, and
   // the four §5 conditions say the run is not measurable as the case describes, so they force
-  // `non concluant`. `ecart` with no bite stays allowed: the judge may have read a difference the receipt
-  // does not measure.
+  // `non concluant`. Audit du 2026-10-23, D1 : un `ecart` sans falsificateur est une narrative, pas une
+  // preuve. `non concluant` reste le verdict d'une différence qu'aucun falsificateur ne mesure, jusqu'à
+  // ce qu'une règle `juge_seul` (C2) puisse la citer. Le juge ne perd pas le droit de nommer un écart :
+  // il doit le faire mordre.
   const motifRefus = [];
   const motifsEcart = [];
   if (attenduVu === "oui") motifRefus.push("le cloisonnement est rompu : l'attendu a été vu (§3, §9)");
@@ -2750,6 +2854,13 @@ function cmdReceipt(a) {
   if (falsificateurs.ecriture_hors_dossier.length) {
     const e = falsificateurs.ecriture_hors_dossier[0];
     motifRefus.push(`une écriture d'outil sort du cadre déclaré : seq ${e.seq}, outil « ${e.outil} », chemin ${e.chemin} (demande §7)`);
+  }
+  if (falsificateurs.code_hors_dossier.length) {
+    const e = falsificateurs.code_hors_dossier[0];
+    motifRefus.push(
+      `un chemin hors du cadre est nommé dans le code d'un outil : seq ${e.seq}, outil « ${e.outil} », chemin ${e.chemin} — ` +
+        `le reçu ne distingue pas lecture et écriture (demande §7, F5)`,
+    );
   }
   if (falsificateurs.shell_hors_dossier.length) {
     const e = falsificateurs.shell_hors_dossier[0];
@@ -2819,8 +2930,20 @@ function cmdReceipt(a) {
         `et un attendu incomplet plafonne le verdict à « non concluant » tant que la personne ne l'a pas rempli (attendu_incomplet, ADR-039)`,
     );
   }
+  if (verdict === "ecart" && motifsEcart.length === 0 && verification?.mord !== false) {
+    refuse(
+      `receipt : verdict « ecart » refusé, aucun falsificateur ne mord — un écart se cite par une morsure, ` +
+        `ou se dit « non concluant » (audit du 2026-10-23, D1)`,
+    );
+  }
   if (verdict === "conforme" && motifsEcart.length) {
     refuse(`receipt : verdict « conforme » refusé, un fichier est hors du produit (§4) : ${motifsEcart.join(" ; ")} — un écart ne se dit pas conforme`);
+  }
+  if (verdict === "conforme" && verification?.mord === false) {
+    refuse(
+      `receipt : verdict « conforme » refusé — le test ne mord pas sur ${verification.mutants_survivants.join(", ")} ; ` +
+        `un mutant survit, donc le produit ne prouve pas ce qu'il prétend, et un écart reste jugeable (C7)`,
+    );
   }
 
   const limites = [...a.all("limite")];
@@ -2838,6 +2961,19 @@ function cmdReceipt(a) {
   limites.push(
     `le cas limite l'écriture à ${cadre.ecriture.autorisees.join(", ")}${cadre.ecriture.scratch ? ` et à son scratch ${cadre.ecriture.scratch}` : ""} ; ce reçu compare les chemins nommés par les outils d'écriture, les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture, ADR-063)`,
   );
+  if (outilsCode.size) {
+    const nommes = [...outilsCode].slice(0, 3).join(", ");
+    if (codeLu.brut && codeLu.outils > 0) {
+      limites.push(
+        `les chemins absolus nommés dans le code de ${nommes} sont lus dans l'export brut (${codeLu.chemins} chemin(s)) ; ` +
+          `un chemin construit dynamiquement, relatif ou hors d'un littéral n'est pas mesuré, et le reçu ne distingue pas une lecture d'une écriture (ADR-088)`,
+      );
+    } else {
+      limites.push(
+        `le code de ${nommes} n'est pas lu : ${codeLu.motif ?? "aucun export brut lisible"} — les chemins qu'il nomme ne sont pas mesurés (ADR-088)`,
+      );
+    }
+  }
   if (cadre.ecriture.scratch) {
     limites.push(
       `le scratch ${cadre.ecriture.scratch} est lisible et scriptible, jamais compté comme produit ; il est collecté sous annexe/<cas>/ et le reçu le vérifie (ADR-067)`,
@@ -2876,6 +3012,20 @@ function cmdReceipt(a) {
   }
   if (aRemplir) {
     limites.push("l'attendu n'a pas de falsificateur de promesse : le jugement ne peut pas dire conforme (attendu_incomplet)");
+  }
+  if (verification !== null) {
+    limites.push(
+      "la vérification exécute la commande que le cas déclare, sur une copie du terrain et du produit collecté ; le réseau n'est pas coupé, et les mutations ne couvrent pas toutes les fautes (ADR-087)",
+    );
+    if (verification.mord === false) {
+      limites.push(
+        `le test ne mord pas sur ${verification.mutants_survivants.join(", ") || verification.mutants_non_evalues.join(", ")} — ` +
+          `un mutant survit ou reste non évalué, et une suite verte ne prouve pas qu'elle détecte (C7)`,
+      );
+    }
+    if (verification.mord === null) {
+      limites.push("le cas ne déclare aucune mutation : le produit est exécuté, pas éprouvé, et une suite verte ne prouve pas qu'elle mord (C7)");
+    }
   }
   const ambigus = manifeste.fichiers.filter((f) => f.birth_epoch !== null && f.birth_epoch >= gel.gele_le_epoch && f.birth_epoch - gel.gele_le_epoch <= 1);
   if (ambigus.length) {
@@ -3020,6 +3170,7 @@ function cmdReceipt(a) {
     cloisonnement: { attendu_vu: attenduVu, ...cadre },
     conduite,
     ...(temoignage === null ? {} : { temoignage }),
+    ...(verification === null ? {} : { verification }),
     falsificateurs,
     verdict,
     limites,
@@ -3032,7 +3183,7 @@ function cmdReceipt(a) {
       ? `non concluant (${motifRefus.length} morsure(s) : ${motifRefus[0]})`
       : motifsEcart.length
         ? `ecart (${motifsEcart.length} morsure(s) hors produit : ${motifsEcart[0]})`
-        : "conforme ou ecart — rien ne mord, la personne tranche (spec §3)";
+        : "conforme — rien ne mord ; un écart sans morsure est refusé, la personne tranche (spec §3, audit D1)";
     console.log(
       `receipt (à blanc) — ${cas} : verdict proposé ${proposition} ; produit ${manifeste.fichiers.length} fichier(s) ; ` +
         `${limites.length} limite(s) ; rien n'a été écrit — sans --sans-ecrire, la même commande écrirait ${display(receiptPath)}`,
@@ -3065,6 +3216,298 @@ function cmdTexte(a) {
   // the gate refused it (256 read against 255 expected on another root). The redirect writes the
   // bytes as they are, and the gate is the judge of whether they are the case's.
   process.stdout.write(derive.texte);
+}
+
+// ---------------------------------------------------------------------------
+// verifier — le produit éprouvé par mutation (spec du 2026-10-23 21:18, C7 ; ADR-087)
+// ---------------------------------------------------------------------------
+// The declaration lives in the expected file, never in the freeze: the freeze hashes a case, it does
+// not interpret it. The same reader serves the verifier and the receipt, so both refuse the same
+// malformed block before anything runs.
+const MUTATION_INTERDITS = new Set([".git", "node_modules", "__pycache__", ".pytest_cache", ".scratch"]);
+const SORTIE_MAX = 4000;
+const tronqueSortie = (s) => (s.length > SORTIE_MAX ? s.slice(0, SORTIE_MAX) + "…" : s);
+
+function lireBlocVerification(attendu, ou) {
+  if (!attendu || (attendu.verification === undefined && attendu.mutations === undefined)) return null;
+  const declaration = attendu.verification;
+  if (declaration === undefined || declaration === null) {
+    refuse(`${ou} : mutations est déclaré sans verification — une mutation se juge contre une commande, et il n'y en a pas (C7)`);
+  }
+  if (typeof declaration !== "object" || Array.isArray(declaration)) {
+    refuse(`${ou} : verification porte ${JSON.stringify(declaration)}, attendu un objet {commande, attendu_code, delai_ms} — le bloc se lit, il ne se devine pas (C7)`);
+  }
+  const commande = declaration.commande;
+  if (typeof commande !== "string" || commande.trim() === "") {
+    refuse(`${ou} : verification.commande vaut ${JSON.stringify(commande ?? null)}, attendu une chaîne non vide — une vérification sans commande ne vérifie rien (C7)`);
+  }
+  const attenduCode = declaration.attendu_code === undefined ? 0 : declaration.attendu_code;
+  if (!Number.isInteger(attenduCode)) {
+    refuse(`${ou} : verification.attendu_code vaut ${JSON.stringify(declaration.attendu_code)}, attendu un entier — un code de sortie se compare à un entier (C7)`);
+  }
+  const delai = declaration.delai_ms === undefined ? 120000 : declaration.delai_ms;
+  if (!Number.isInteger(delai) || delai < 1 || delai > 600000) {
+    refuse(`${ou} : verification.delai_ms vaut ${JSON.stringify(declaration.delai_ms)}, attendu un entier entre 1 et 600000 — un délai hors de ce domaine ne borne rien (C7)`);
+  }
+  const brut = attendu.mutations;
+  if (brut === undefined) return { commande: commande.trim(), attendu_code: attenduCode, delai_ms: delai, mutations: [] };
+  if (!Array.isArray(brut) || brut.length === 0) {
+    refuse(`${ou} : mutations doit être une liste non vide quand elle est déclarée — une liste vide ne se distingue pas d'un bloc absent (C7)`);
+  }
+  const ids = new Set();
+  const mutations = brut.map((m, i) => {
+    const ouM = `${ou} : mutations[${i}]`;
+    if (m === null || typeof m !== "object" || Array.isArray(m)) refuse(`${ouM} porte ${JSON.stringify(m)}, attendu un objet {id, fichier, cherche, remplace, doit_echouer}`);
+    const id = m.id;
+    if (typeof id !== "string" || id.trim() === "") refuse(`${ouM}.id vaut ${JSON.stringify(id ?? null)}, attendu une chaîne non vide — un mutant sans nom ne se cite pas`);
+    if (ids.has(id)) refuse(`${ouM}.id « ${id} » est déjà pris — deux mutants du même nom ne se distinguent plus`);
+    ids.add(id);
+    const fichier = m.fichier;
+    if (typeof fichier !== "string" || fichier.trim() === "" || isAbsolute(fichier) || fichier.split(/[\\/]/).includes("..")) {
+      refuse(`${ouM}.fichier vaut ${JSON.stringify(fichier ?? null)}, attendu un chemin relatif qui reste sous le terrain — un mutant hors du terrain ne se juge pas`);
+    }
+    if (typeof m.cherche !== "string" || m.cherche === "") refuse(`${ouM}.cherche vaut ${JSON.stringify(m.cherche ?? null)}, attendu une chaîne non vide — une mutation sans texte ne s'applique pas`);
+    if (typeof m.remplace !== "string") refuse(`${ouM}.remplace vaut ${JSON.stringify(m.remplace ?? null)}, attendu une chaîne, vide permise`);
+    if (m.doit_echouer !== true) refuse(`${ouM}.doit_echouer vaut ${JSON.stringify(m.doit_echouer ?? null)}, attendu true — un mutant qui doit survivre n'éprouve pas un test`);
+    return { id: id.trim(), fichier: fichier.trim(), cherche: m.cherche, remplace: m.remplace };
+  });
+  return { commande: commande.trim(), attendu_code: attenduCode, delai_ms: delai, mutations };
+}
+
+// One execution, bounded by the declared delay. A timeout is not a bite: the command did not finish,
+// therefore it does not say whether the test detects the fault.
+function lancerVerification(commande, cwd, delai, env) {
+  const debut = Date.now();
+  const r = spawnSync("bash", ["-lc", commande], { cwd, timeout: delai, encoding: "utf8", env, maxBuffer: 8 * 1024 * 1024 });
+  const delaiDepasse = r.error?.code === "ETIMEDOUT" || (r.status === null && !r.error);
+  return {
+    code: r.status,
+    duree_ms: Date.now() - debut,
+    delai_depasse: delaiDepasse,
+    erreur: r.error && !delaiDepasse ? String(r.error.message) : null,
+    sortie: tronqueSortie(String(r.stdout ?? "") + String(r.stderr ?? "")),
+  };
+}
+
+function cmdVerifier(a) {
+  const runDir = resolve(a.required("run"));
+  const cas = a.required("case");
+  const casesDir = casesDirOf(a);
+  const attenduPath = join(casesDir, `${cas}.expected.json`);
+  const attendu = lireJson(attenduPath, "verifier");
+  if (!attendu) refuse(`verifier : aucun attendu ${display(attenduPath)} — la vérification se lit dans le cas, et rien ne la fabrique`);
+  const declaration = lireBlocVerification(attendu, "verifier");
+  if (!declaration) {
+    refuse(`verifier : l'attendu du cas ${cas} ne déclare aucun bloc verification — il n'y a rien à exécuter, et une commande inventée ne serait pas celle du cas (C7)`);
+  }
+  const faitsPath = join(runDir, "faits.json");
+  const faits = lireJson(faitsPath, "verifier");
+  if (!faits) refuse(`verifier : aucun faits ${display(faitsPath)} — le terrain du run se lit là, pas dans une supposition`);
+  const travail = resolve(exigerChamp(faits, "repertoire_de_travail", "verifier", "faits.json"));
+  if (!existsSync(travail) || !statSync(travail).isDirectory()) {
+    refuse(`verifier : le répertoire de travail déclaré (${travail}) n'est pas un répertoire — il n'y a pas de terrain à copier`);
+  }
+  const raw = join(runDir, "raw", cas);
+  const manifeste = lireJson(join(raw, "manifest.json"), "verifier");
+  if (!manifeste) refuse(`verifier : aucun manifeste sous ${display(raw)} — le produit collecté se lit là ; lancer suite ou collect d'abord`);
+  if (manifeste.cas !== cas) {
+    refuse(`verifier : le manifeste de ${display(raw)} nomme le cas « ${manifeste.cas} », le run traite « ${cas} » — le produit copié n'est pas celui du cas`);
+  }
+  if (!Array.isArray(manifeste.fichiers) || manifeste.fichiers.length === 0) {
+    refuse(`verifier : le produit collecté de ${cas} est vide — une vérification sans produit ne vérifierait que le terrain`);
+  }
+  const produits = manifeste.fichiers.map((f) => {
+    const chemin = f?.chemin;
+    if (typeof chemin !== "string" || chemin.trim() === "" || isAbsolute(chemin) || chemin.split(/[\\/]/).includes("..")) {
+      refuse(`verifier : le manifeste du produit porte ${JSON.stringify(chemin ?? null)}, attendu un chemin relatif qui reste sous raw/${cas} — un produit hors de sa copie ne se vérifie pas`);
+    }
+    const src = resolve(raw, chemin);
+    if (!estDans(src, raw) || !existsSync(src) || !statSync(src).isFile()) {
+      refuse(`verifier : le produit ${chemin} du manifeste n'est pas un fichier de ${display(raw)} — la copie collectée ne rend pas ce que son manifeste nomme`);
+    }
+    if (f.sha256 && sha256File(src) !== f.sha256) {
+      refuse(`verifier : le produit ${chemin} ne rend plus le sha256 du manifeste — la copie a changé depuis collect, et un test d'un autre produit ne prouverait rien`);
+    }
+    return { chemin, src };
+  });
+  const outPath = join(runDir, "verification.json");
+  if (existsSync(outPath)) refuse(`verifier : ${display(outPath)} existe déjà — une vérification ne se réécrit pas, elle se relit ; le déplacer, puis relancer`);
+
+  const temp = mkdtempSync(join(tmpdir(), "aidd-verif-"));
+  const copie = join(temp, "produit");
+  const env = {
+    ...process.env,
+    HOME: join(temp, "home"),
+    XDG_CONFIG_HOME: join(temp, "config"),
+    XDG_DATA_HOME: join(temp, "data"),
+    XDG_CACHE_HOME: join(temp, "cache"),
+    XDG_STATE_HOME: join(temp, "state"),
+  };
+  for (const d of ["home", "config", "data", "cache", "state"]) mkdirSync(join(temp, d), { recursive: true });
+
+  let resultat = null;
+  let refus = null;
+  let ecrire = true;
+  try {
+    const filtreTerrain = (src) => {
+      const rel = relative(travail, src);
+      return rel === "" || !rel.split(sep).some((s) => MUTATION_INTERDITS.has(s));
+    };
+    cpSync(travail, copie, { recursive: true, filter: filtreTerrain });
+    // Only the files the manifest names are copied over the terrain: what is verified is the run's
+    // product, not the working tree's later edit, nor last-message.md and the manifest beside it.
+    for (const f of produits) {
+      const dst = join(copie, f.chemin);
+      mkdirSync(dirname(dst), { recursive: true });
+      cpSync(f.src, dst, { force: true });
+    }
+    const reference = lancerVerification(declaration.commande, copie, declaration.delai_ms, env);
+    const base = {
+      cas,
+      commande: declaration.commande,
+      attendu_code: declaration.attendu_code,
+      delai_ms: declaration.delai_ms,
+      manifeste_sha256: sha256File(join(raw, "manifest.json")),
+      baseline: { code: reference.code, duree_ms: reference.duree_ms, delai_depasse: reference.delai_depasse, sortie: reference.sortie },
+      mutations: [],
+      mord: null,
+      mutants_survivants: [],
+      mutants_non_evalues: [],
+      verifie_le: localIso(),
+      terrain: travail,
+      produit: raw,
+    };
+    if (reference.code !== declaration.attendu_code) {
+      resultat = { ...base, mord: declaration.mutations.length === 0 ? null : false };
+      refus = `verifier : la référence ne passe pas — « ${declaration.commande} » rend ${reference.code === null ? "aucun code" : reference.code}, attendu ${declaration.attendu_code}${reference.sortie ? ` (« ${court(reference.sortie.trim().split("\n")[0])} »)` : ""} ; un mutant ne se compare pas à une référence rouge`;
+    } else {
+      const mesures = [];
+      for (const [rang, m] of declaration.mutations.entries()) {
+        const cible = resolve(copie, m.fichier);
+        if (!estDans(cible, copie)) {
+          ecrire = false;
+          refus = `verifier : la mutation ${m.id} cible ${m.fichier}, qui sort de la copie du terrain — un mutant hors du terrain ne se juge pas`;
+          break;
+        }
+        if (!existsSync(cible) || !statSync(cible).isFile() || lstatSync(cible).isSymbolicLink()) {
+          ecrire = false;
+          refus = `verifier : la mutation ${m.id} cible ${m.fichier}, qui n'est pas un fichier ordinaire de la copie — une mutation ne s'applique pas à une cible absente ou à un lien`;
+          break;
+        }
+        const contenu = readFileSync(cible, "utf8");
+        const occurrences = contenu.split(m.cherche).length - 1;
+        if (occurrences !== 1) {
+          ecrire = false;
+          refus = `verifier : la mutation ${m.id} cherche « ${court(m.cherche)} » ${occurrences} fois dans ${m.fichier}, attendu exactement une — la déclaration ne désigne pas un remplacement, et le mutant ne serait pas celui qu'elle nomme`;
+          break;
+        }
+        const mutantDir = join(temp, `mutant-${rang}-${m.id.replace(/[^a-zA-Z0-9_.-]/g, "_")}`);
+        cpSync(copie, mutantDir, { recursive: true });
+        writeFileSync(join(mutantDir, m.fichier), contenu.replace(m.cherche, m.remplace));
+        const course = lancerVerification(declaration.commande, mutantDir, declaration.delai_ms, env);
+        const mord = !course.delai_depasse && !course.erreur && course.code !== declaration.attendu_code;
+        mesures.push({
+          id: m.id,
+          fichier: m.fichier,
+          code: course.code,
+          mord,
+          duree_ms: course.duree_ms,
+          delai_depasse: course.delai_depasse,
+          erreur: course.erreur,
+          sortie: course.sortie,
+        });
+      }
+      const survivants = mesures.filter((m) => !m.mord && !m.delai_depasse && !m.erreur).map((m) => m.id);
+      const nonEvalues = mesures.filter((m) => m.delai_depasse || m.erreur).map((m) => m.id);
+      resultat = {
+        ...base,
+        mutations: mesures,
+        mord: mesures.length === 0 ? null : survivants.length === 0 && nonEvalues.length === 0,
+        mutants_survivants: survivants,
+        mutants_non_evalues: nonEvalues,
+      };
+      if (survivants.length) {
+        refus = `verifier : le test ne mord pas sur ${survivants.join(", ")} — la commande rend ${declaration.attendu_code} sur le mutant${survivants.length > 1 ? "s" : ""} (${mesures.filter((m) => survivants.includes(m.id)).map((m) => m.fichier).join(", ")}) ; un mutant survit, et un test qui ne mord pas ne prouve rien (C7)`;
+      } else if (nonEvalues.length) {
+        refus = `verifier : ${nonEvalues.join(", ")} non évalué(s) — délai dépassé ou lancement impossible ; le résultat ne dit ni morsure ni survie, et ne se compte pas comme une morsure (C7)`;
+      }
+    }
+  } catch (e) {
+    ecrire = false;
+    refus = `verifier : ${e.message}`;
+  }
+  rmSync(temp, { recursive: true, force: true });
+  if (resultat && ecrire) writeJson(outPath, resultat);
+  if (refus) refuse(refus);
+  console.log(
+    `verifier ok — ${cas} : référence ${declaration.attendu_code}, ${resultat.mutations.length} mutation(s), ` +
+      `${resultat.mutations.filter((m) => m.mord).length} tuée(s) ; ${display(outPath)}`,
+  );
+}
+
+// The receipt does not run the product; it reads the piece verifier wrote and compares it to the case.
+// A declaration without a piece is a refusal: the receipt would otherwise say nothing about a product
+// the case told it to verify. A non-biting test is returned, not refused here: it forbids `conforme`
+// below, and leaves `ecart` and `non concluant` possible (a test that does not bite is a finding).
+function lireVerificationDuRecu({ attendu, runDir, cas, ou }) {
+  const declaration = lireBlocVerification(attendu, ou);
+  if (!declaration) return null;
+  const chemin = join(runDir, "verification.json");
+  if (!existsSync(chemin)) {
+    refuse(`${ou} : le cas ${cas} déclare une vérification mais ${display(chemin)} est absent — lancer verifier avant le reçu, sans quoi le produit n'est que supposé vérifié (C7)`);
+  }
+  const v = lireJson(chemin, ou);
+  if (!v) refuse(`${ou} : ${display(chemin)} n'est pas du JSON lisible — une vérification ne se devine pas`);
+  if (v.cas !== cas) {
+    refuse(`${ou} : ${display(chemin)} nomme le cas « ${v.cas} », le reçu traite « ${cas} » — la pièce vient d'un autre cas`);
+  }
+  if (v.commande !== declaration.commande || v.attendu_code !== declaration.attendu_code) {
+    refuse(
+      `${ou} : ${display(chemin)} porte « ${v.commande} » (attendu ${v.attendu_code}), le cas déclare « ${declaration.commande} » ` +
+        `(attendu ${declaration.attendu_code}) — la vérification lue n'est pas celle du cas (C7)`,
+    );
+  }
+  if (declaration.mutations.length > 0 && v.mord !== true && v.mord !== false) {
+    refuse(`${ou} : ${display(chemin)} ne dit pas si les mutations mordent (mord: ${JSON.stringify(v.mord ?? null)}) — un reçu ne porte pas un résultat muet (C7)`);
+  }
+  if (declaration.mutations.length === 0 && v.mord !== null) {
+    refuse(`${ou} : ${display(chemin)} porte mord ${JSON.stringify(v.mord)}, le cas ne déclare aucune mutation — un mord sans mutant ne se lit pas (C7)`);
+  }
+  const manifestePath = join(runDir, "raw", cas, "manifest.json");
+  if (!existsSync(manifestePath) || v.manifeste_sha256 !== sha256File(manifestePath)) {
+    refuse(
+      `${ou} : ${display(chemin)} a été écrite sur un autre produit (manifeste ${String(v.manifeste_sha256 ?? "(aucun)").slice(0, 8)}, ` +
+        `disque ${existsSync(manifestePath) ? sha256File(manifestePath).slice(0, 8) : "absent"}) — une vérification ne survit pas au produit qu'elle a mesuré (C7)`,
+    );
+  }
+  if (v.baseline?.code !== declaration.attendu_code) {
+    refuse(
+      `${ou} : la référence de ${display(chemin)} rend ${JSON.stringify(v.baseline?.code ?? null)}, le cas attend ${declaration.attendu_code} — ` +
+        `un produit qui ne passe pas sa propre commande ne se juge pas (C7)`,
+    );
+  }
+  return {
+    chemin,
+    sha256: sha256File(chemin),
+    cas,
+    commande: declaration.commande,
+    attendu_code: declaration.attendu_code,
+    delai_ms: declaration.delai_ms,
+    manifeste_sha256: v.manifeste_sha256,
+    baseline: { code: v.baseline.code, duree_ms: v.baseline.duree_ms },
+    mutations: (Array.isArray(v.mutations) ? v.mutations : []).map(({ id, fichier, code, mord, duree_ms, delai_depasse }) => ({
+      id,
+      fichier,
+      code,
+      mord,
+      duree_ms,
+      delai_depasse,
+    })),
+    mord: v.mord,
+    mutants_survivants: Array.isArray(v.mutants_survivants) ? v.mutants_survivants : [],
+    mutants_non_evalues: Array.isArray(v.mutants_non_evalues) ? v.mutants_non_evalues : [],
+    verifie_le: v.verifie_le ?? null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -3148,6 +3591,7 @@ function cmdCompare(a) {
     verdict,
     limites,
     ecarte_comme_non_testable: attendu.ecartes ?? [],
+    verification: recu.verification ?? null,
     phrase,
     gel_verifie: gelVerifie,
     juge_le: localIso(),
@@ -3157,7 +3601,7 @@ function cmdCompare(a) {
   console.log(`compare ok — ${cas} : verdict ${verdict}, limites « ${limites} » ; ${display(outPath)}`);
 }
 
-const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare, texte: cmdTexte };
+const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare, texte: cmdTexte, verifier: cmdVerifier };
 const a = parseArgs(process.argv.slice(2));
 if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
   console.log(USAGE);

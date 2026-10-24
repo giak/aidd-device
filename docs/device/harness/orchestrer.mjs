@@ -63,7 +63,8 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          laisse trancher si --verdict est absent, sinon écrit receipt.json, puis
          output.json (compare), RAPPORT.md, et RESULTAT.md quand CASES/<cas>.lecture.json
          déclare la lecture qui apparie chaque geste attendu à une mesure (ADR-061), puis
-         réimprime le bloc de verdict
+         réimprime le bloc de verdict. Quand l'attendu déclare un bloc verification, joue
+         d'abord verifier : un mutant survivant interdit conforme, sans empêcher un ecart
   lire   --cas <id> [--run <dir>]
          relit receipt.json et output.json et réimprime le bloc de verdict, sans rien
          écrire. Un reçu absent est refusé, son chemin nommé
@@ -995,8 +996,11 @@ async function commandeOuvrir(argv) {
         const question = texte.ligne.endsWith("?") ? texte : null;
         if (!question) {
           // ADR-077 : une session arrêtée sur un texte qui ne demande rien n'est pas un run fini.
-          // Tant qu'une réponse figée reste à jouer, la tenir pour un succès effacerait la pause.
-          if (jouees.length >= reponses.length) break;
+          // Tant qu'AUCUNE réponse figée n'a été jouée, la tenir pour un succès effacerait la pause.
+          // ADR-089 : après une réponse jouée, la session a passé la question et peut légitimement
+          // finir sur son dernier message ; exiger la seconde réponse figée refusait une clôture
+          // normale. Le texte n'est donc plus un refus dès la première réponse jouée.
+          if (jouees.length > 0) break;
           throw new Refus(`la session ${fil} s'est arrêtée sans question après ${jouees.length} réponse(s) jouée(s) : dernière ligne « ${uneLigne(texte.ligne).slice(0, 80)} » — réponds à la main, puis « suite --fil ${fil} » ; le run n'est pas un succès à zéro question`);
         }
         if (jouees.length >= reponses.length) {
@@ -1110,11 +1114,17 @@ function commandeSuite(argv) {
   // n'a rien à exporter, et le dire ne doit rien y ajouter.
   const faits = join(run, "faits.json");
   if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent`);
-  // Une trace déjà écrite est une pièce : `suite` ne la remplace pas, comme `tracer` (ADR-083). Ce refus se
-  // lève avant tout appel client et avant toute écriture : le dire ne doit rien ajouter au dossier.
+  // Une trace déjà écrite est une pièce : `suite` ne la remplace pas, comme `tracer` (ADR-083). Le refus
+  // nomme son auteur, dérivé des seules pièces présentes et d'aucun fichier neuf : `tracer` est le seul à
+  // écrire `trace/fil.json`, et `suite` écrit ses faits juste après sa trace. Une trace qui porte un
+  // `fil.json` vient donc de `tracer` ; sans lui, c'est la trace d'un `suite` arrêté entre les deux. Ce
+  // refus se lève avant tout appel client et avant toute écriture.
   const traceDeja = join(run, "trace", "echange.jsonl");
+  const filDeja = join(run, "trace", "fil.json");
   if (existsSync(traceDeja)) {
-    refuse(`suite : ${traceDeja} existe déjà — une trace ne se réécrit pas, elle se relit ; le déplacer, puis relancer`);
+    refuse(existsSync(filDeja)
+      ? `suite : ${traceDeja} existe déjà — c'est une trace de run guidé, écrite par \`tracer\` (${filDeja} est là) ; une trace ne se réécrit pas, elle se relit`
+      : `suite : ${traceDeja} existe déjà — aucun ${filDeja} : c'est la trace d'un \`suite\` arrêté avant ses faits ; la déplacer, puis relancer`);
   }
   const clientVoulu = option(valeurs, "client", { defaut: "auto", domaine: ["auto", "freebuff", "opencode"] });
   if (clientVoulu === "freebuff" && valeurs.store !== undefined) {
@@ -1345,12 +1355,47 @@ function commandeFin(argv) {
   const phrase = option(valeurs, "phrase", { requis: true, question: "la phrase qui résume le run" });
   const limites = option(valeurs, "limites", { defaut: "non évaluable", domaine: ["mord", "ne mord pas", "non évaluable"] });
   const verdictDemande = option(valeurs, "verdict", { defaut: null, domaine: ["conforme", "ecart", "non concluant"] });
+  const attendu = expectedDe(cas, cases);
+  const verifDeclaree = attendu.verification !== undefined || attendu.mutations !== undefined;
+  const totalFin = verifDeclaree ? 3 : 2;
+
+  // C7 : le cas déclare sa vérification, et `fin` la joue avant le reçu. Un refus du harnais qui a
+  // laissé verification.json n'arrête pas la clôture : un test qui ne mord pas est un écart à juger,
+  // pas un run à cacher. Un refus sans pièce arrête tout, parce qu'il n'y a alors rien à lire.
+  let verification = null;
+  if (verifDeclaree) {
+    const sortieVerif = harnais(["verifier", "--run", run, "--case", cas, "--cases", cases]);
+    const cheminVerif = join(run, "verification.json");
+    if (!existsSync(cheminVerif)) {
+      blocRefus({
+        texte: sortieVerif.err || `verifier a refusé (exit ${sortieVerif.code}) sans écrire verification.json`,
+        empeche: "le cas déclare une vérification, et aucune pièce ne dit ce que la commande a rendu : le reçu refuserait de conclure sur un produit supposé vérifié (C7)",
+        geste: "corriger la déclaration ou la commande, puis relancer fin",
+      });
+      process.exit(1);
+    }
+    try {
+      verification = JSON.parse(readFileSync(cheminVerif, "utf8"));
+    } catch (e) {
+      refuse(`fin : ${cheminVerif} n'est pas du JSON lisible (${e.message}) — la pièce de vérification ne se devine pas`);
+    }
+    blocEtape({
+      rang: 1, total: totalFin, titre: "la vérification du produit",
+      fait: "exécuter la commande du cas sur le produit collecté, puis sur chaque mutation déclarée",
+      commande: commandeHarnais(["verifier", "--run", run, "--case", cas, "--cases", cases]),
+      attendu: "une référence verte et aucun mutant survivant",
+      obtenu: sortieVerif.code === 0 ? sortieVerif.out : (sortieVerif.err || sortieVerif.out),
+      lit: verification.mord === true
+        ? "chaque mutation déclarée a été tuée : le test écrit par le produit détecte au moins ces fautes"
+        : "un mutant survit ou reste non évalué : le reçu refusera conforme, et l'écart reste jugeable",
+    });
+  }
 
   if (verdictDemande === null) {
     const aBlanc = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", "conforme", "--sans-ecrire"]);
     const propose = aBlanc.code === 0 ? "conforme" : "non concluant";
     const raison = aBlanc.code === 0
-      ? "aucun falsificateur ne mord : le verdict peut dire conforme ou ecart, et c'est la personne qui tranche"
+      ? "aucun falsificateur ne mord : le verdict peut dire conforme, et un écart sans morsure est refusé — la personne tranche"
       : uneLigne(aBlanc.err).replace(/^REFUS — /, "");
     ecrit([
       `▸ VERDICT PROPOSÉ — ${propose}`,
@@ -1385,7 +1430,7 @@ function commandeFin(argv) {
   }
   const recu = JSON.parse(readFileSync(join(run, "receipt.json"), "utf8"));
   blocEtape({
-    rang: 1, total: 2, titre: "le reçu",
+    rang: verifDeclaree ? 2 : 1, total: totalFin, titre: "le reçu",
     fait: "écrire le reçu unique du run, avec le verdict que la preuve autorise",
     commande: commandeHarnais(["receipt", "--run", run, "--case", cas, "--faits", faits, "--verdict", verdictDemande]),
     attendu: `un receipt.json de verdict « ${verdictDemande} », limites dites`,
@@ -1403,7 +1448,7 @@ function commandeFin(argv) {
     process.exit(1);
   }
   blocEtape({
-    rang: 2, total: 2, titre: "l'output",
+    rang: totalFin, total: totalFin, titre: "l'output",
     fait: "écrire ce que le juge retient du run, à côté du reçu",
     commande: commandeHarnais(["compare", "--run", run, "--case", cas, "--difference", "…", "--phrase", "…", "--verdict", recu.verdict, "--limites", limites]),
     attendu: "un output.json qui cite le reçu",

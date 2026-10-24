@@ -18,6 +18,7 @@ const ORDRE_FALSIFICATEURS = [
   "pause_non_tenue",
   "lecture_hors_dossier",
   "ecriture_hors_dossier",
+  "code_hors_dossier",
   "shell_hors_dossier",
   "shell_ecriture_hors_produit",
   "shell_invalide",
@@ -38,6 +39,7 @@ const PHRASES_FALSIFICATEUR = {
   pause_non_tenue: "la session a écrit sans laisser la personne répondre",
   lecture_hors_dossier: "une lecture est sortie du cadre déclaré",
   ecriture_hors_dossier: "une écriture d'outil est sortie du cadre déclaré",
+  code_hors_dossier: "un chemin nommé dans le code d'un outil est sorti du cadre déclaré",
   shell_hors_dossier: "une commande shell lit hors du cadre déclaré",
   shell_ecriture_hors_produit: "une commande shell écrit hors du produit",
   shell_invalide: "une commande shell est mal formée et le shell l'aurait refusée",
@@ -352,6 +354,15 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
   } else {
     lignes.push(...tableauEffets(["seq", "commande", "motif"], liste("shell_non_interpretable").map((e) => [e.seq, e.commande, e.motif]), "shell_non_interpretable"));
   }
+
+  lignes.push("### 6.9 Les chemins nommés dans le code des outils", "");
+  if (!a("code_hors_dossier")) {
+    lignes.push("Ce reçu ne porte pas `code_hors_dossier` : il a été écrit avant l'ADR-088, et les chemins du code d'un outil ne sont pas mesurés.", "");
+  } else if (!liste("code_hors_dossier").length) {
+    lignes.push("Le reçu ne nomme aucun chemin hors du cadre dans le code d'un outil.", "");
+  } else {
+    lignes.push(...tableauEffets(["seq", "outil", "chemin"], liste("code_hors_dossier").map((e) => [e.seq, e.outil, e.chemin]), "code_hors_dossier"));
+  }
   return lignes;
 }
 
@@ -376,6 +387,9 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   }
   if (cles.has("ecriture_hors_dossier")) {
     ajouter("Vérifier ce que la session a écrit avec un outil d'écriture hors du dossier autorisé, corriger le chemin, puis rejouer.");
+  }
+  if (cles.has("code_hors_dossier")) {
+    ajouter("Relire le code exécuté par la session : un chemin absolu y sort du dossier autorisé, et le programme doit rester dans le répertoire de travail.");
   }
   if (cles.has("shell_hors_dossier")) {
     ajouter("Rejouer dans un bac propre, sans accès aux autres cas, et vérifier les commandes shell de la trace avant de conclure.");

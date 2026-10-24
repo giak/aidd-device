@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # banc-harnais.sh — the bench of the harness: the refusals and the acceptances of run.mjs and of
-# the link check beside it (liens.mjs), replayed dry. 262 controls, no session opened, nothing
+# the link check beside it (liens.mjs), replayed dry. 285 controls, no session opened, nothing
 # written in the repository or in the four trees.
 #
 # Everything it needs about this machine — the workspace root and the four trees — it reads
@@ -2421,6 +2421,11 @@ const serveur = http.createServer((req, res) => {
         if (n === 1) { posees = 1; formPending = true; }
         else if (n === 2) idleAt = 0;
         else idleAt = tick();
+      } else if (mode === "texte-apres-une") {
+        // ADR-089 : une question en texte, une réponse figée jouée, puis un dernier message qui ne
+        // demande rien. La session a passé la pause ; exiger la seconde réponse refusait la clôture.
+        if (n === 1) poserTexte(questionTexte);
+        else if (n === 2) poserTexte("Le brouillon complet :\n\n- Outcome : écrire le contrôle\n- Scope : le démarrage");
       } else if (mode === "texte-exces") {
         poserTexte("Question " + n + " ?");
       } else if (mode === "texte-bloc") {
@@ -2508,6 +2513,17 @@ if (mode === "accepter") {
   }
   if (answers.length !== 1) raisons.push(answers.length + " réponse(s) au formulaire, 1 attendue");
   if (!sortie.includes("2 question(s)")) raisons.push("le bloc ne compte pas les deux questions jouées");
+} else if (mode === "texte-apres-une") {
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 2) raisons.push(prompts.length + " message(s) envoyé(s), 2 attendus");
+  else {
+    if (prompts[0] !== texte) raisons.push("le premier message n'est pas le texte de la porte");
+    if (prompts[1] !== figees[0]) raisons.push("la réponse figée ne part pas avant la clôture");
+  }
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("1 question(s)")) raisons.push("le bloc ne compte pas la question jouée");
+  if (!sortie.includes("inactive")) raisons.push("le bloc ne dit pas la session inactive");
+  if (sortie.includes("sans question")) raisons.push("une clôture après une réponse jouée est refusée");
 } else if (mode === "texte-exces") {
   if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
   if (!sortie.includes("n'en fige que 2")) raisons.push("le refus ne nomme pas les deux réponses figées : " + sortie.split("\n")[0]);
@@ -2553,6 +2569,7 @@ controle "256 refus, texte sans réponse figée" 0 node "$O/faux-serveur.mjs" "$
 controle "257 refus, ? dans un bloc et texte sans question" 0 node "$O/faux-serveur.mjs" "$B/detail.257" texte-bloc "$O/run" cas-test "$O/cases" "$ORCH"
 controle "258 rappel système, jamais une question" 0 node "$O/faux-serveur.mjs" "$B/detail.258" texte-rappel "$O/run" cas-test "$O/cases" "$ORCH"
 controle "266 refus, session arrêtée sur un texte sans question" 0 node "$O/faux-serveur.mjs" "$B/detail.266" texte-sans-question "$O/run" cas-test "$O/cases" "$ORCH"
+controle "291 ouvrir, clôture après une réponse jouée" 0 node "$O/faux-serveur.mjs" "$B/detail.291" texte-apres-une "$O/run" cas-test "$O/cases" "$ORCH"
 cat > "$O/delai.mjs" <<'JS'
 // ADR-077 : le refus de delai nomme le fil, sinon la reprise n'a pas d'identifiant. Le banc lit le
 // texte du code plutot que d'attendre une minute : le controle 266 eprouve le comportement voisin.
@@ -2759,6 +2776,72 @@ if (readFileSync(join(run, "trace", "echange.jsonl"), "utf8") !== avant) raisons
 if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
 JS
 controle "280 suite refuse une trace deja ecrite, avant tout appel client" 0 node "$O/suite-trace.mjs" "$ORCH" "$O/cases" "$O/suite-trace" "$O/home-vide"
+
+# 281 : le refus de `suite` nomme l'auteur de la trace, sans fichier neuf. `tracer` est le seul a ecrire
+# `trace/fil.json`, et `suite` ecrit ses faits juste apres sa trace : une trace avec fil.json vient de
+# `tracer` ; sans lui, d'un `suite` arrete entre la trace et les faits. Deux dossiers, deux messages.
+mkdir -p "$O/suite-trace-tracer/trace" "$O/suite-trace-suite/trace" "$O/home-vide"
+printf '%s\n' '{}' > "$O/suite-trace-tracer/gate.json"
+printf '%s\n' '{"type":"fil","identifiant":"fil-voisin"}' > "$O/suite-trace-tracer/trace/fil.json"
+printf '%s\n' '{"seq":1,"role":"user","kind":"text","text":"trace du run guide"}' > "$O/suite-trace-tracer/trace/echange.jsonl"
+printf '%s\n' '{}' > "$O/suite-trace-suite/gate.json"
+printf '%s\n' '{"seq":1,"role":"user","kind":"text","text":"trace laissee par un suite arrete"}' > "$O/suite-trace-suite/trace/echange.jsonl"
+cat > "$O/suite-trace-origine.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [orch, cases, runTracer, runSuite, home] = process.argv.slice(2);
+const raisons = [];
+const appel = (run) => {
+  let code = 0;
+  let sortie = "";
+  try {
+    sortie = execFileSync(process.execPath,
+      [orch, "suite", "--cas", "cas-test", "--cases", cases, "--run", run, "--fil", "fil-fantome", "--conduite", "humain", "--sans-produit"],
+      { env: { ...process.env, HOME: home }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } catch (e) {
+    code = e.status;
+    sortie = String(e.stdout || "") + String(e.stderr || "");
+  }
+  return { code, sortie };
+};
+const intact = (run) => {
+  let restes = "(dossier illisible)";
+  try {
+    restes = readdirSync(run).sort().join(",");
+  } catch {
+    /* un dossier absent est deja une raison */
+  }
+  if (restes !== "gate.json,trace") raisons.push(run + " : un refus a laisse " + restes);
+  let pieces = "(dossier illisible)";
+  try {
+    pieces = readdirSync(join(run, "trace")).sort().join(",");
+  } catch {
+    /* le dossier trace absent est deja une raison */
+  }
+  return pieces;
+};
+const avantT = readFileSync(join(runTracer, "trace", "echange.jsonl"), "utf8");
+const t = appel(runTracer);
+if (t.code !== 1) raisons.push("trace de tracer : exit " + t.code);
+if (!/existe déjà/.test(t.sortie)) raisons.push("trace de tracer : le refus ne dit pas que la trace existe deja : " + t.sortie.split("\n")[0]);
+if (!/écrite par `tracer`/.test(t.sortie)) raisons.push("trace de tracer : le refus ne nomme pas tracer : " + t.sortie.split("\n")[0]);
+if (/arrêté avant ses faits/.test(t.sortie)) raisons.push("trace de tracer : le refus dit qu'un suite s'est arrete");
+const pT = intact(runTracer);
+if (pT !== "echange.jsonl,fil.json") raisons.push("trace de tracer : trace/ porte " + pT);
+if (readFileSync(join(runTracer, "trace", "echange.jsonl"), "utf8") !== avantT) raisons.push("trace de tracer : la trace a change");
+const avantS = readFileSync(join(runSuite, "trace", "echange.jsonl"), "utf8");
+const s = appel(runSuite);
+if (s.code !== 1) raisons.push("trace de suite : exit " + s.code);
+if (!/existe déjà/.test(s.sortie)) raisons.push("trace de suite : le refus ne dit pas que la trace existe deja : " + s.sortie.split("\n")[0]);
+if (!/arrêté avant ses faits/.test(s.sortie)) raisons.push("trace de suite : le refus ne dit pas que le suite s'est arrete : " + s.sortie.split("\n")[0]);
+if (/écrite par `tracer`/.test(s.sortie)) raisons.push("trace de suite : le refus nomme tracer sur une trace de suite");
+const pS = intact(runSuite);
+if (pS !== "echange.jsonl") raisons.push("trace de suite : trace/ porte " + pS);
+if (readFileSync(join(runSuite, "trace", "echange.jsonl"), "utf8") !== avantS) raisons.push("trace de suite : la trace a change");
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+controle "281 suite nomme l'auteur de la trace existante" 0 node "$O/suite-trace-origine.mjs" "$ORCH" "$O/cases" "$O/suite-trace-tracer" "$O/suite-trace-suite" "$O/home-vide"
 controle "275 tracer lit run.json.pieces, une spec voisine ne gene pas" 0 node "$O/tracer-banc.mjs" "$ORCH" run-json "$O" "$O/home-trace" "$O/opencode-vide"
 
 # 276 : la liste des fils borne sur l'activite, jamais sur la creation (spec du 2026-10-23 14:43).
@@ -3694,6 +3777,347 @@ else {
 }
 try{execFileSync('node',['$ORCH','lire','--cas','2026-10-22-143219-0052c168-876b08f','--run','$REPO/docs/device/runs/2026-10-22-143219-0052c168-876b08f'],{stdio:'ignore'})}catch(e){raisons.push('un recu anterieur sans attente_ms est refuse : '+String(e.stderr||'').split('\n')[0])}
 if(raisons.length){fs.writeFileSync(process.env.DETAIL,raisons.join('\n')+'\n');process.exit(1)}"
+
+# 289 : verifier refuse un test qui ne mord pas (C7, ADR-087). Une fixture hors depot, trois cas :
+# un test qui sort 0 quoi qu'il arrive et laisse survivre la mutation, le meme terrain avec un test qui
+# lit la valeur mutee et la tue, et une mutation dont le texte cherche est absent. Le premier doit
+# refuser en nommant M1 et laisser une piece mord:false ; le second doit passer en mord:true ; le
+# troisieme doit refuser la declaration sans ecrire de piece. Le terrain n'est jamais retouche.
+V289="$B/verif-289"
+mkdir -p "$V289/terrain" "$V289/cases" "$V289/mort/raw/cas-mort" "$V289/vif/raw/cas-vif" "$V289/fantome/raw/cas-fantome"
+printf 'valeur = 1\n' > "$V289/terrain/source.py"
+printf '#!/bin/sh\nexit 0\n' > "$V289/terrain/test-faux.sh"
+printf '#!/bin/sh\ngrep -q "valeur = 1" source.py\n' > "$V289/terrain/test-vrai.sh"
+for c in mort vif fantome; do
+  printf 'produit du cas %s\n' "$c" > "$V289/$c/raw/cas-$c/PRODUIT.txt"
+  printf '{"cas":"cas-%s","fichiers":[{"chemin":"PRODUIT.txt"}]}\n' "$c" > "$V289/$c/raw/cas-$c/manifest.json"
+  printf '{"repertoire_de_travail":"%s"}\n' "$V289/terrain" > "$V289/$c/faits.json"
+done
+cat > "$V289/cases/cas-mort.expected.json" <<'JSON'
+{"verification":{"commande":"sh test-faux.sh","attendu_code":0,"delai_ms":5000},"mutations":[{"id":"M1","fichier":"source.py","cherche":"valeur = 1","remplace":"valeur = 2","doit_echouer":true}]}
+JSON
+cat > "$V289/cases/cas-vif.expected.json" <<'JSON'
+{"verification":{"commande":"sh test-vrai.sh","attendu_code":0,"delai_ms":5000},"mutations":[{"id":"M1","fichier":"source.py","cherche":"valeur = 1","remplace":"valeur = 2","doit_echouer":true}]}
+JSON
+cat > "$V289/cases/cas-fantome.expected.json" <<'JSON'
+{"verification":{"commande":"sh test-vrai.sh","attendu_code":0,"delai_ms":5000},"mutations":[{"id":"M1","fichier":"source.py","cherche":"inexistant","remplace":"x","doit_echouer":true}]}
+JSON
+cat > "$B/verif-289.mjs" <<'JS'
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const [H, V] = process.argv.slice(2);
+const raisons = [];
+const appel = (cas) => {
+  const run = join(V, cas === "cas-mort" ? "mort" : cas === "cas-vif" ? "vif" : "fantome");
+  try {
+    const sortie = execFileSync(process.execPath, [H, "verifier", "--run", run, "--case", cas, "--cases", join(V, "cases")], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { code: 0, sortie, run };
+  } catch (e) {
+    return { code: e.status, sortie: String(e.stdout || "") + String(e.stderr || ""), run };
+  }
+};
+const mort = appel("cas-mort");
+if (mort.code !== 1) raisons.push("survivant : exit " + mort.code + " au lieu de 1");
+const fMort = join(mort.run, "verification.json");
+if (!existsSync(fMort)) raisons.push("survivant : aucune verification.json — un refus mesure laisse sa piece");
+else {
+  const v = JSON.parse(readFileSync(fMort, "utf8"));
+  if (v.mord !== false) raisons.push("survivant : mord " + JSON.stringify(v.mord) + " au lieu de false");
+  if (JSON.stringify(v.mutants_survivants) !== '["M1"]') raisons.push("survivant : survivants " + JSON.stringify(v.mutants_survivants));
+  if (!Array.isArray(v.mutations) || v.mutations.length !== 1 || v.mutations[0].mord !== false) raisons.push("survivant : la mutation M1 n'est pas marquee survivante");
+}
+if (!/ne mord pas/.test(mort.sortie)) raisons.push("survivant : le refus ne dit pas que le test ne mord pas : " + mort.sortie.split("\n")[0]);
+if (!/M1/.test(mort.sortie)) raisons.push("survivant : le refus ne nomme pas M1");
+const vif = appel("cas-vif");
+if (vif.code !== 0) raisons.push("tue : exit " + vif.code + " au lieu de 0 : " + vif.sortie.split("\n")[0]);
+const fVif = join(vif.run, "verification.json");
+if (!existsSync(fVif)) raisons.push("tue : aucune verification.json");
+else {
+  const v = JSON.parse(readFileSync(fVif, "utf8"));
+  if (v.mord !== true) raisons.push("tue : mord " + JSON.stringify(v.mord) + " au lieu de true");
+  if (JSON.stringify(v.mutants_survivants) !== "[]") raisons.push("tue : survivants " + JSON.stringify(v.mutants_survivants));
+  if (!Array.isArray(v.mutations) || v.mutations.length !== 1 || v.mutations[0].mord !== true) raisons.push("tue : la mutation M1 n'est pas marquee tuee");
+}
+const fantome = appel("cas-fantome");
+if (fantome.code !== 1) raisons.push("fantome : exit " + fantome.code + " au lieu de 1");
+if (existsSync(join(fantome.run, "verification.json"))) raisons.push("fantome : une piece ecrite pour une declaration invalide");
+if (!/0 fois/.test(fantome.sortie) && !/exactement une/.test(fantome.sortie)) raisons.push("fantome : le refus ne dit pas que le texte cherche manque : " + fantome.sortie.split("\n")[0]);
+if (readFileSync(join(V, "terrain", "source.py"), "utf8") !== "valeur = 1\n") raisons.push("le terrain a ete retouche par la verification");
+if (raisons.length) { writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+JS
+# 289, seconde partie : le reçu refuse `conforme` sur la pièce que verifier vient d'écrire, et
+# l'accepte en `non concluant` avec la limite. Le produit est neuf et change le work tree, sinon la
+# condition 3 du §5 mordrait avant la vérification et le refus ne serait plus attribuable.
+cat > "$B/verif-289-receipt.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JROOT="$3"; JB="$4"; DBF="$5"
+CAS=2026-10-18-085308-cas-jouet
+B=$(dirname "$JEU")
+VC="$B/verif-289-receipt"
+rm -rf "$VC"
+mkdir -p "$VC/cases" "$VC/run"
+R=()
+ajout() { R+=("$1"); }
+cp "$JEU/cases/$CAS.request.md" "$VC/cases/$CAS.request.md" || ajout "copie de la demande"
+cp "$JEU/cases/$CAS.expected.json" "$VC/cases/$CAS.expected.json" || ajout "copie de l'attendu"
+node -e '
+const fs=require("fs"); const p=process.argv[1];
+const e=JSON.parse(fs.readFileSync(p,"utf8"));
+e.verification={commande:"sh test-verif.sh",attendu_code:0,delai_ms:5000};
+e.mutations=[{id:"M1",fichier:"verif_docs/NOTES.md",cherche:"Read the repository",remplace:"MUTE",doit_echouer:true}];
+e.cloisonnement.ecriture.autorisees=["terrain/verif_docs"];
+e.attendu_details.produit.racine="terrain/verif_docs/";
+e.attendu_details.produit.arbre_attendu=["verif_docs/NOTES.md"];
+fs.writeFileSync(p,JSON.stringify(e,null,2)+"\n");
+' "$VC/cases/$CAS.expected.json"
+printf '#!/bin/sh\nexit 0\n' > "$JROOT/terrain/test-verif.sh"
+chmod +x "$JROOT/terrain/test-verif.sh"
+node "$H" freeze --case "$CAS" --cases "$VC/cases" --racine "$JB" \
+  --arbre "framework-origin=$JB/$CAS/origine/framework" --arbre "terrain=$JB/$CAS/origine/terrain" >/dev/null 2>&1 || ajout "freeze de la fixture"
+node "$H" preflight --case "$CAS" --cases "$VC/cases" --run "$VC/run" --repertoire "$JROOT/terrain" >/dev/null 2>&1 || ajout "preflight de la fixture"
+sleep 1
+mkdir -p "$JROOT/terrain/verif_docs"
+printf 'Read the repository before writing anything.\nShow what you read as a table, one row per file, and wait for the operator.\nWrite one file only, where the operator asked, after the table is confirmed.\nBanc verification receipt.\n' > "$JROOT/terrain/verif_docs/NOTES.md"
+P=$(stat -c %Y "$JROOT/terrain/verif_docs/NOTES.md")
+TXT=$(sed -n '/^<<<DEMANDE$/,/^>>>DEMANDE$/p' "$VC/cases/$CAS.request.md" | sed '1d;$d' | sed "s|\$RACINE|$JB|g")
+TABLE=$'| fichier | objet |\n| --- | --- |\n| README.md | le terrain du jouet |\n| app.py | une ligne |'
+: > "$VC/trace.jsonl"
+sqlite3 "$DBF" <<SQL || ajout "fil de la fixture"
+delete from messages where thread_id='verif-receipt-289';
+delete from threads where id='verif-receipt-289';
+insert into threads values('verif-receipt-289','$JROOT/terrain','local','','','codebuff','aucun',$P);
+insert into messages values('verif-receipt-289',1,'user',$(($P-40000)),json_array(json_object('kind','text','text',json_quote('$TXT'))));
+insert into messages values('verif-receipt-289',2,'assistant',$(($P-20000)),json_array(json_object('kind','text','text',json_quote('banc, le tableau :'||char(10)||char(10)||'$TABLE'))));
+insert into messages values('verif-receipt-289',3,'user',$(($P-15000)),json_array(json_object('kind','text','text','oui')));
+insert into messages values('verif-receipt-289',4,'assistant',$(($P-10000)),json_array(json_object('kind','tool','toolName','write_file','input',json_object('path','$JROOT/terrain/verif_docs/NOTES.md'),'status','success')));
+SQL
+node "$H" collect --run "$VC/run" --case "$CAS" --cases "$VC/cases" --from "$JROOT/terrain/verif_docs/NOTES.md" >/dev/null 2>&1 || ajout "collect de la fixture"
+node "$H" faits --case "$CAS" --cases "$VC/cases" --base "$DBF" --fil verif-receipt-289 --trace "$VC/trace.jsonl" --out "$VC/run/faits.json" --par banc --fin "$(date -Is)" --conduite humain >/dev/null 2>&1 || ajout "faits de la fixture"
+E=$(node -e "process.stdout.write(require('$VC/run/faits.json').trace.commande)" 2>/dev/null)
+[ -n "$E" ] && bash -c "$E" >/dev/null 2>&1 || ajout "export de la fixture"
+SORTIE_V=$(node "$H" verifier --run "$VC/run" --case "$CAS" --cases "$VC/cases" 2>&1); RC_V=$?
+if [ "$RC_V" != "1" ]; then ajout "verifier de la fixture : exit $RC_V au lieu de 1"; fi
+case "$SORTIE_V" in *"ne mord pas"*M1*) ;; *) ajout "verifier de la fixture ne nomme pas M1 : $(printf '%s' "$SORTIE_V" | head -n 1)";; esac
+SORTIE_C=$(node "$H" receipt --run "$VC/run" --case "$CAS" --cases "$VC/cases" --faits "$VC/run/faits.json" --verdict conforme 2>&1); RC_C=$?
+if [ "$RC_C" != "1" ]; then ajout "receipt conforme : exit $RC_C au lieu de 1"; fi
+case "$SORTIE_C" in *"le test ne mord pas"*) ;; *) ajout "receipt conforme ne refuse pas la morsure : $(printf '%s' "$SORTIE_C" | head -n 1)";; esac
+SORTIE_N=$(node "$H" receipt --run "$VC/run" --case "$CAS" --cases "$VC/cases" --faits "$VC/run/faits.json" --verdict "non concluant" 2>&1); RC_N=$?
+if [ "$RC_N" != "0" ]; then ajout "receipt non concluant : exit $RC_N : $(printf '%s' "$SORTIE_N" | head -n 1)"; fi
+if [ -f "$VC/run/receipt.json" ]; then
+  node -e '
+const fs=require("fs"), path=require("path"), crypto=require("crypto");
+const run=path.dirname(process.argv[1]);
+const r=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+const v=r.verification;
+const h=(p)=>crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
+const raisons=[];
+if (r.verdict!=="non concluant") raisons.push("verdict "+r.verdict);
+if (!v) raisons.push("le reçu ne porte pas verification");
+else {
+  if (v.mord!==false) raisons.push("mord "+JSON.stringify(v.mord));
+  if (JSON.stringify(v.mutants_survivants)!==JSON.stringify(["M1"])) raisons.push("survivants "+JSON.stringify(v.mutants_survivants));
+  if (!Array.isArray(v.mutations)||v.mutations.length!==1||v.mutations[0].mord!==false) raisons.push("la mutation M1 n est pas survivante dans le reçu");
+  if (v.sha256!==h(path.join(run,"verification.json"))) raisons.push("le sha256 de verification.json ne concorde pas");
+  if (v.manifeste_sha256!==h(path.join(run,"raw",r.cas,"manifest.json"))) raisons.push("le manifeste_sha256 ne concorde pas");
+}
+if (!r.limites.some((x)=>String(x).includes("ne mord pas")&&String(x).includes("C7"))) raisons.push("la limite non mordante manque");
+if (!r.limites.some((x)=>String(x).includes("ADR-087"))) raisons.push("la limite de vérification manque");
+if (raisons.length) { fs.writeFileSync(process.env.DETAIL,raisons.join("\n")+"\n"); process.exit(1); }
+' "$VC/run/receipt.json" || ajout "lecture du reçu de la fixture"
+else ajout "aucun reçu écrit pour non concluant"; fi
+# 289, troisième partie : `ecart` reste possible quand une morsure le cite. La pièce de vérification
+# porte mord:false ; le reçu relit la même pièce et accepte un écart, sans quoi le refus de D1
+# fermerait aussi le verdict que C7 réserve au mutant survivant.
+cp -a "$VC/run" "$VC/ecart"
+rm -f "$VC/ecart/receipt.json"
+sed -i "s|$VC/run|$VC/ecart|g" "$VC/ecart/faits.json"
+SORTIE_E=$(node "$H" receipt --run "$VC/ecart" --case "$CAS" --cases "$VC/cases" --faits "$VC/ecart/faits.json" --verdict ecart 2>&1); RC_E=$?
+if [ "$RC_E" != "0" ]; then ajout "receipt ecart avec falsificateur : exit $RC_E : $(printf '%s' "$SORTIE_E" | head -n 1)"; fi
+if [ ! -f "$VC/ecart/receipt.json" ]; then ajout "receipt ecart avec falsificateur : aucun reçu écrit"; fi
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "289 verifier et reçu refusent un mutant survivant" 0 bash -c "node '$B/verif-289.mjs' '$H' '$V289' && bash '$B/verif-289-receipt.sh' '$H' '$JEU' '$JROOT' '$JB' '$DBF'"
+
+# 290 : le reçu refuse un écart sans falsificateur (audit du 2026-10-23, D1 ; P0 de la séance 157).
+# Une fixture hors dépôt, sans `verification` ni `mutations` : le cas jouet recopié sous le nom ecart-290,
+# ses deux arbres copiés sous $JB/ecart-290, un produit neuf `ecart_docs/NOTES.md`, une trace avec
+# tableau, pause et écriture. Le reçu doit refuser `ecart`, nommer l'absence de falsificateur, et
+# n'écrire aucun receipt.json. Le terrain du jouet n'est jamais retouché.
+cat > "$B/ecart-290.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JB="$3"; DBF="$4"
+CAS=ecart-290
+JOUET=2026-10-18-085308-cas-jouet
+B=$(dirname "$JEU")
+VC="$B/ecart-290"
+WS="$JB/$CAS"
+TERRAIN="$WS/terrain"
+PROD="$TERRAIN/ecart_docs/NOTES.md"
+R=()
+ajout() { R+=("$1"); }
+rm -rf "$VC" "$WS"
+mkdir -p "$VC/cases" "$VC/run"
+cp "$JEU/cases/$JOUET.request.md" "$VC/cases/$CAS.request.md" || ajout "copie de la demande"
+cp "$JEU/cases/$JOUET.expected.json" "$VC/cases/$CAS.expected.json" || ajout "copie de l'attendu"
+sed -i "s|$JOUET|$CAS|g; s|aidd_docs|ecart_docs|g" "$VC/cases/$CAS.request.md" "$VC/cases/$CAS.expected.json"
+node -e 'const e=require(process.argv[1]); if(e.verification||e.mutations) process.exit(2)' "$VC/cases/$CAS.expected.json" || ajout "la fixture déclare une vérification ou des mutations"
+cp -a "$JB/$JOUET" "$WS" || ajout "copie de l'espace du jouet"
+node "$H" freeze --case "$CAS" --cases "$VC/cases" --racine "$JB" \
+  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TERRAIN" >/dev/null 2>&1 || ajout "freeze de la fixture"
+node "$H" preflight --case "$CAS" --cases "$VC/cases" --run "$VC/run" --repertoire "$TERRAIN" >/dev/null 2>&1 || ajout "preflight de la fixture"
+sleep 1
+mkdir -p "$TERRAIN/ecart_docs"
+printf 'Read the repository before writing anything.\nShow what you read as a table, one row per file, and wait for the operator.\nWrite one file only, where the operator asked, after the table is confirmed.\nBanc ecart sans falsificateur.\n' > "$PROD"
+P=$(stat -c %Y "$PROD")
+TXT=$(sed -n '/^<<<DEMANDE$/,/^>>>DEMANDE$/p' "$VC/cases/$CAS.request.md" | sed '1d;$d' | sed "s|\$RACINE|$JB|g")
+TABLE=$'| fichier | objet |\n| --- | --- |\n| README.md | le terrain du jouet |\n| app.py | une ligne |'
+: > "$VC/trace.jsonl"
+sqlite3 "$DBF" <<SQL || ajout "fil de la fixture"
+delete from messages where thread_id='$CAS';
+delete from threads where id='$CAS';
+insert into threads values('$CAS','$TERRAIN','local','','','codebuff','aucun',$P);
+insert into messages values('$CAS',1,'user',$(($P-40000)),json_array(json_object('kind','text','text',json_quote('$TXT'))));
+insert into messages values('$CAS',2,'assistant',$(($P-20000)),json_array(json_object('kind','text','text',json_quote('banc, le tableau :'||char(10)||char(10)||'$TABLE'))));
+insert into messages values('$CAS',3,'user',$(($P-15000)),json_array(json_object('kind','text','text','oui')));
+insert into messages values('$CAS',4,'assistant',$(($P-10000)),json_array(json_object('kind','tool','toolName','write_file','input',json_object('path','$PROD'),'status','success')));
+SQL
+node "$H" collect --run "$VC/run" --case "$CAS" --cases "$VC/cases" --from "$PROD" >/dev/null 2>&1 || ajout "collect de la fixture"
+node "$H" faits --case "$CAS" --cases "$VC/cases" --base "$DBF" --fil "$CAS" --trace "$VC/trace.jsonl" --out "$VC/run/faits.json" --par banc --fin "$(date -Is)" --conduite humain >/dev/null 2>&1 || ajout "faits de la fixture"
+E=$(node -e "process.stdout.write(require('$VC/run/faits.json').trace.commande)" 2>/dev/null)
+[ -n "$E" ] && bash -c "$E" >/dev/null 2>&1 || ajout "export de la fixture"
+S=$(node "$H" receipt --run "$VC/run" --case "$CAS" --cases "$VC/cases" --faits "$VC/run/faits.json" --verdict ecart 2>&1); RC=$?
+if [ "$RC" != "1" ]; then ajout "receipt ecart sans falsificateur : exit $RC au lieu de 1"; fi
+case "$S" in *"aucun falsificateur ne mord"*) ;; *) ajout "le refus ne nomme pas le falsificateur absent : $(printf '%s' "$S" | head -n 1)";; esac
+case "$S" in *"verdict « ecart » refusé"*) ;; *) ajout "le refus ne nomme pas le verdict ecart : $(printf '%s' "$S" | head -n 1)";; esac
+if [ -f "$VC/run/receipt.json" ]; then ajout "un reçu a été écrit pour un écart refusé"; fi
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "290 reçu refuse un écart sans falsificateur" 0 bash "$B/ecart-290.sh" "$H" "$JEU" "$JB" "$DBF"
+
+# 292 : le code d'un outil n'est ni une commande shell ni une écriture nommée (ADR-088). Une fixture
+# opencode complète, avec un faux binaire dans le PATH : la trace normalisée porte un tableau, une
+# écriture dans le produit et un `execute` dont le code écrit sous /tmp. Le reçu relit l'export brut,
+# nomme le chemin hors cadre, refuse `conforme` et accepte `non concluant`. Le chemin dans le cadre
+# n'est pas nommé, et le terrain du jouet n'est pas retouché.
+cat > "$B/code-292.sh" <<'SH'
+#!/usr/bin/env bash
+set -u
+H="$1"; JEU="$2"; JB="$3"
+ORCH="$(dirname "$H")/orchestrer.mjs"
+CAS=code-292
+JOUET=2026-10-18-085308-cas-jouet
+B=$(dirname "$JEU")
+V="$B/code-292"
+WS="$JB/$CAS"
+TER="$WS/terrain"
+STORE="$V/store"
+FAKE="$V/bin"
+R=()
+ajout() { R+=("$1"); }
+rm -rf "$V" "$WS"
+mkdir -p "$V/cases" "$V/run/trace" "$FAKE" "$STORE"
+cp "$JEU/cases/$JOUET.request.md" "$V/cases/$CAS.request.md" || ajout "copie de la demande"
+cp "$JEU/cases/$JOUET.expected.json" "$V/cases/$CAS.expected.json" || ajout "copie de l'attendu"
+sed -i "s|$JOUET|$CAS|g" "$V/cases/$CAS.request.md" "$V/cases/$CAS.expected.json"
+cp -a "$JB/$JOUET" "$WS" || ajout "copie de l'espace du jouet"
+node "$H" freeze --case "$CAS" --cases "$V/cases" --racine "$JB" \
+  --arbre "framework-origin=$WS/framework-origin" --arbre "terrain=$TER" >/dev/null 2>&1 || ajout "freeze de la fixture"
+node "$H" preflight --case "$CAS" --cases "$V/cases" --run "$V/run" --repertoire "$TER" >/dev/null 2>&1 || ajout "preflight de la fixture"
+sleep 1
+mkdir -p "$TER/aidd_docs"
+printf 'Read the repository before writing anything.\nShow what you read as a table, one row per file, and wait for the operator.\nWrite one file only, where the operator asked, after the table is confirmed.\nBanc du code execute.\n' > "$TER/aidd_docs/NOTES.md"
+P=$(stat -c %Y "$TER/aidd_docs/NOTES.md")
+cat > "$FAKE/opencode" <<'EOF'
+#!/bin/sh
+if [ "$1" = "--version" ]; then echo 9.9.9; exit 0; fi
+if [ "$1" = "session" ] && [ "$2" = "export" ]; then cat "$FIXTURE"; exit 0; fi
+exit 1
+EOF
+chmod +x "$FAKE/opencode"
+NOW=$(date +%s%3N)
+T1=$((NOW-40000))
+T2=$((NOW-20000))
+TABLE='| fichier | objet |
+| --- | --- |
+| README.md | le terrain du jouet |
+| app.py | une ligne |'
+node - "$TER" "$T1" "$T2" "$TABLE" "$V/raw.json" <<'NODE' || ajout "export brut de la fixture"
+const fs = require("fs");
+const [ter, t1, t2, table, out] = process.argv.slice(2);
+const brut = {
+  info: { id: "ses_code292", agent: "build", model: { providerID: "banc", id: "faux" }, time: { created: Number(t1) }, location: { directory: ter } },
+  messages: [
+    { id: "msg_u1", time: { created: Number(t1) + 1000 }, type: "user", text: "banc, la demande" },
+    { id: "msg_a1", time: { created: Number(t2) }, type: "assistant", content: [
+      { type: "text", text: table },
+      { type: "tool", id: "call_w1", name: "write", state: { status: "completed", input: { path: ter + "/aidd_docs/NOTES.md" } } },
+      { type: "tool", id: "call_c1", name: "execute", state: { status: "completed", input: { code: 'const fs = require("fs");\nconst p = ' + JSON.stringify(ter + "/aidd_docs/NOTES.md") + ';\nconsole.log(p);\nfs.writeFileSync("/tmp/opencode/f5.txt", "banc");' } } }
+    ] }
+  ]
+};
+fs.writeFileSync(out, JSON.stringify(brut, null, 2) + "\n");
+NODE
+[ -f "$V/raw.json" ] || ajout "export brut absent"
+export FIXTURE="$V/raw.json"
+export PATH="$FAKE:$PATH"
+node --input-type=module - "$H" "$STORE" "$TER" "$V/run/trace/echange.jsonl" <<'NODE' || ajout "trace normalisée de la fixture"
+const [, , h, store, cwd, dest] = process.argv;
+const clients = h.replace(/\/run\.mjs$/, "/clients.mjs");
+const { exportTrace } = await import("file://" + clients);
+exportTrace("opencode", "ses_code292", { store, cwd, dest });
+NODE
+node --input-type=module - "$H" "$STORE" "$TER" "$V/run/trace/echange.jsonl" "$V/raw.json" "$V/run/faits.json" <<'NODE' || ajout "faits de la fixture"
+import { writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+const [, , h, store, terrain, trace, brut, out] = process.argv;
+const clients = h.replace(/\/run\.mjs$/, "/clients.mjs");
+const { session } = await import("file://" + clients);
+const s = session("opencode", "ses_code292", { store, cwd: terrain });
+const fin = execFileSync("date", ["-Is"], { encoding: "utf8" }).trim();
+const faits = {
+  session: { outil: "opencode", application: s.application, identifiant: s.identifiant, modele: s.modele, ouverte_par: "banc", ouverte_le: s.ouverte_le },
+  horodatage_debut: s.premier_message.ts,
+  horodatage_fin: fin,
+  repertoire_de_travail: s.repertoire_de_travail,
+  trace: { source: "opencode 9.9.9 (banc)", client: "opencode", store, cwd: terrain, chemin_exporte: trace, export_brut: brut, commande: "opencode session export ses_code292" },
+  cloisonnement: { attendu_vu: "non" },
+  conduite: { mode: "humain", qui: "banc", quand: fin }
+};
+writeFileSync(out, JSON.stringify(faits, null, 2) + "\n");
+NODE
+node "$H" collect --run "$V/run" --case "$CAS" --cases "$V/cases" --from "$TER/aidd_docs/NOTES.md" >/dev/null 2>&1 || ajout "collect de la fixture"
+S=$(node "$H" receipt --run "$V/run" --case "$CAS" --cases "$V/cases" --faits "$V/run/faits.json" --verdict conforme 2>&1); RC=$?
+if [ "$RC" != "1" ]; then ajout "receipt conforme : exit $RC au lieu de 1"; fi
+case "$S" in *"code d'un outil"*) ;; *) ajout "le refus ne nomme pas le code : $(printf '%s' "$S" | head -n 1)";; esac
+S2=$(node "$H" receipt --run "$V/run" --case "$CAS" --cases "$V/cases" --faits "$V/run/faits.json" --verdict "non concluant" 2>&1); RC2=$?
+if [ "$RC2" != "0" ]; then ajout "receipt non concluant : exit $RC2 : $(printf '%s' "$S2" | head -n 1)"; fi
+if [ -f "$V/run/receipt.json" ]; then
+  node - "$V/run/receipt.json" "/tmp/opencode/f5.txt" <<'NODE' || ajout "lecture du reçu de la fixture"
+const fs = require("fs");
+const [, , recu, chemin] = process.argv;
+const r = JSON.parse(fs.readFileSync(recu, "utf8"));
+const raisons = [];
+if (r.verdict !== "non concluant") raisons.push("verdict " + r.verdict);
+const l = r.falsificateurs.code_hors_dossier || [];
+if (!l.some((e) => e.chemin === chemin)) raisons.push("chemin absent du falsificateur : " + JSON.stringify(l));
+if (l.length !== 1) raisons.push("le chemin dans le cadre est compté : " + JSON.stringify(l));
+if (!r.limites.some((x) => String(x).includes("export brut") && String(x).includes("ADR-088"))) raisons.push("la limite du code manque");
+if (raisons.length) { fs.writeFileSync(process.env.DETAIL, raisons.join("\n") + "\n"); process.exit(1); }
+NODE
+  node "$ORCH" rapport --cas "$CAS" --cases "$V/cases" --run "$V/run" >/dev/null 2>&1 || ajout "rapport de la fixture"
+  if [ -f "$V/run/RAPPORT.md" ]; then
+    grep -q "code_hors_dossier" "$V/run/RAPPORT.md" || ajout "RAPPORT ne nomme pas la morsure du code"
+  else ajout "RAPPORT absent"; fi
+else ajout "aucun reçu écrit pour non concluant"; fi
+if [ ${#R[@]} -gt 0 ]; then printf '%s\n' "${R[@]}" >> "$DETAIL"; exit 1; fi
+exit 0
+SH
+controle "292 reçu, chemin du code hors cadre" 0 bash "$B/code-292.sh" "$H" "$JEU" "$JB"
 
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 

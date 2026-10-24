@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 285 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 304 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -125,6 +125,60 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > `code_hors_dossier` et la limite `ADR-088`, et `RAPPORT.md` nomme la morsure. Le terrain du jouet n'est
 > pas retouché ; le faux binaire ne quitte pas le bac.
 > Aucun contrôle existant n'est renuméroté.
+
+> V0.60 — 2026-10-24 : **304** contrôles ; **310** et **311** éprouvent l'autre moitié de la condition du
+> **309**, celle que son falsificateur nommait sans la mesurer. **310** : le scratch porte un fichier,
+> `suite` sort en `0`, le fichier se retrouve verbatim sous `annexe/<cas>/` avec un manifeste `role:
+> annexe`, et jamais sous `raw/<cas>/`. **311** : un lien symbolique vers l'extérieur dans le scratch fait
+> refuser la copie de l'annexe ; `suite` sort en `1`, nomme « lien symbolique » et ce qu'il empêche, et
+> n'écrit pas `raw/<cas>/last-message.md` bien que le produit soit déjà collecté : la copie seule ne fait
+> pas un run. Reprouvés par mutation : sans collecte d'annexe, **310** tombe ; quand `harnaisOuRefus`
+> n'arrête plus le processus, **311** tombe. Aucun contrôle existant n'est renuméroté.
+
+> V0.59 — 2026-10-24 : **302** contrôles ; le **309** éprouve qu'un `scratch` vide ne fait plus échouer
+> `suite` : la session crée `.scratch` sans y écrire, `collect --annexe` refusait « rien à collecter » et
+> `suite` perdait la collecte du produit qui, lui, était là. L'orchestrateur saute le dossier vide, le
+> reçu dit qu'aucune annexe n'a été collectée, et le contrôle exige `exit 0`, le produit sous `raw/` et
+> pas de `annexe/`. Reprouvé par mutation : le même contrôle, joué sur une copie de l'orchestrateur où le
+> test du dossier vide est retiré, sort `1` et nomme le refus. Aucun contrôle existant n'est renuméroté.
+
+> V0.58 — 2026-10-24 : **301** contrôles ; **302 à 308** éprouvent le gel sur ce qu'un cas ne peut pas
+> jouer (ADR-094). Sept contrôles, chacun sa fixture : budget que la porte épuise, comptes de réponses
+> divergents entre le §8 et l'attendu, `arbre_attendu` qui omet le fichier de `produit.racine`, `P` qui cite
+> un `sha256` du gel sans `--ref`, cas complet sans confirmation, confirmation sans date ISO, et confirmation
+> datée dans l'attendu recopiée dans le gel. Les gels du banc passent `--confirme-par banc` ; les fixtures
+> 237 et 238 déclarent leur `arbre_attendu` avec le produit qu'elles déplacent. Aucun contrôle existant
+> n'est renuméroté.
+
+> V0.57 — 2026-10-24 : **294** contrôles ; **293** et **294** éprouvent `ouvrir` sur un cas qui déclare
+> `pause.requis: false` (ADR-093). Même porte, même texte, même serveur factice ; seule l'attente change.
+> 293 : la session s'arrête sur un texte sans question, `ouvrir` sort en `0`, un message envoyé, aucune
+> réponse jouée, le bloc dit « 0 question attendue ». 294 : elle pose une question que le cas n'attend
+> pas, `ouvrir` sort en `1` en nommant `pause.requis: false`, sans jouer de réponse figée. Les cas qui
+> pausent (224 à 291) passent sans changement. Aucun contrôle existant n'est renuméroté.
+
+> V0.56 — 2026-10-24 : **292** contrôles ; **292**, étendu, **300** et **301** éprouvent la mesure
+> d'`attendu_vu` (ADR-092). 292 lit désormais `attendu_vu_mesure.etat: non` et la ligne `Attendu vu` du
+> rapport ; 300 ajoute une lecture du fichier attendu sous `CASES/` à la trace d'un faits qui déclare
+> `non` : le reçu refuse, nomme la contradiction et n'écrit aucune pièce ; 301 ajoute un `glob` sans
+> chemin : `etat: inconnu`, limite « reste une déclaration », rapport. Aucun contrôle existant n'est
+> renuméroté.
+
+> V0.55 — 2026-10-24 : **290** contrôles ; **297** éprouve la correction d'un verdict (ADR-091), **298** et
+> **299** ses deux refus. 297 monte un reçu, une note et un `correction.json` : l'index affiche
+> `conforme (corrigé non concluant, [note](<run>/note.md))` et le vérificateur l'accepte. 298 refuse une
+> correction dont la note manque au dossier ; 299 refuse une correction qui retient le verdict du reçu.
+> Aucun contrôle existant n'est renuméroté.
+
+> V0.54 — 2026-10-24 : **287** contrôles ; **295** éprouve le bloc `promesse` et **296** le juge nommé
+> (ADR-090). 295 monte deux gels du cas jouet dans le même espace : l'un porte `P` et le reçu écrit
+> `promesse.mode: juge_seul` avec la limite qui dit que le juge manque ; l'autre perd `P` et son `attendu`,
+> le reçu refuse `conforme` en nommant `non_mesuree`, accepte `non concluant` et écrit `promesse_non_mesuree`.
+> 296 relit trois reçus minimaux par `compare` : un `conforme` sans `--juge` ni `--rubrique` est refusé,
+> nommé avec les deux, il écrit `output.promesse{juge, rubrique}`, et un reçu `non_mesuree` ou antérieur
+> au bloc est refusé. Aucun contrôle existant n'est renuméroté ; 66 lit le nouveau champ
+> `trace_lue.lignes_dans_la_fenetre`, et les contrôles de `conforme` passent désormais `--juge` et
+> `--rubrique`.
 
 > V0.49 — 2026-10-23 : **281** contrôles ; 281 éprouve que le refus de `suite` sur une trace existante nomme
 > son auteur, sans fichier neuf : avec `trace/fil.json`, il dit que la trace vient de `tracer` ; sans lui, que
@@ -274,12 +328,13 @@ discriminant par un message unique fait tomber l'un des deux. Une trace recopié
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 283 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 304 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
 `orchestrer.mjs`, l'orchestrateur interactif (contrôles 131 à 153, puis 269 à 281, qui traversent un cas
-**fabriqué** par lui) ; `rapport.mjs`, la vue déterministe du reçu (contrôles 179 à 190). Il éprouve aussi l'adaptateur
+**fabriqué** par lui) ; `rapport.mjs`, la vue déterministe du reçu (contrôles 179 à 190) ; `runs.mjs`, la vue du dossier des runs
+(contrôles 272 à 274, puis 297 à 299, qui lient une note de correction au verdict). Il éprouve aussi l'adaptateur
 `clients.mjs` sous un faux `opencode` (contrôles 154 à 171), la lecture hors du **cadre déclaré**
 (contrôles 176 à 178), le bloc qui déclare ce cadre (contrôles 191 à 193), et les effets d'une
 commande `shell` lus dans son texte (contrôles 194 à 201), et le puits `/dev/null` qui n'est ni un
@@ -305,13 +360,13 @@ texte sans question, et la durée de la pause.
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 283/283 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 301/301 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
 
 Chaque contrôle s'imprime `PASS` ou `FAIL` avec le code de sortie vu et celui qui était attendu ; le
-dernier mot est le compte, `283/283 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
+dernier mot est le compte, `301/301 PASS`, et le script sort en `0` seulement si tout passe. Un `FAIL` est
 une information : le dossier jetable du passage est imprimé au départ et conservé, c'est là que vivent
 les gels faux et les manifestes recollés qui l'ont produit.
 

@@ -93,7 +93,7 @@ node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis 
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | `--cases` (deux pièces et le gel), `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
-| `suite` | les faits, l'export de la trace par l'adaptateur du client, le dernier message haché, la copie du produit, et l'annexe du scratch quand le cas le déclare | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json`, `annexe/<cas>/` |
+| `suite` | les faits, l'export de la trace par l'adaptateur du client, le dernier message haché, la copie du produit, et l'annexe du scratch quand le cas le déclare et que le dossier porte un fichier | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json`, `annexe/<cas>/` |
 | `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture ; quand l'attendu déclare `verification`, elle fait jouer `verifier` avant le reçu | `verification.json` (par `verifier`), `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
@@ -151,7 +151,11 @@ sa date de création d'origine, et une borne sur elle la rendait invisible.
 `session_non_independante` est déclarée, une `revision: null` sans `revision_non_consignee`, une pièce citée
 et absente, et un `INDEX.md` qui diverge de la génération. `--index` écrit `docs/device/runs/INDEX.md` : la
 ligne des comptes par mode, puis une ligne par dossier avec ses limites et ses pièces ; `--runs <dossier>`
-lit un autre dossier, pour le banc. L'index est une vue : le reçu et le `run.json` restent les sources, et un
+lit un autre dossier, pour le banc. Un `correction.json` dans un dossier de reçu nomme la note qui corrige le
+verdict, le verdict retenu et la preuve qui le porte : l'index affiche alors
+`conforme (corrigé non concluant, [note](…))`, et `--verifier` refuse une correction sans note, sans preuve,
+qui ne change pas le verdict, ou portée par un guidé ([ADR-091](DECISIONS.md)). Le reçu n'est pas réécrit.
+L'index est une vue : le reçu et le `run.json` restent les sources, et un
 compte de runs se cite de l'index, jamais d'une page qui le recopie.
 
 `cas` fabrique un **squelette** : le falsificateur de la promesse reste marqué `a_remplir`, et tant qu'il
@@ -160,10 +164,23 @@ l'est, le reçu porte `attendu_incomplet` et le verdict plafonne à `non conclua
 la promesse, le produit attendu, le §6 de la demande, la marque `P` de l'attendu et la première réponse
 figée ; la personne corrige ou confirme, puis l'agent écrit et re-gèle. Le squelette porte le bloc
 `cloisonnement` par défaut, que la personne corrige si son cas demande autre chose, et le **scratch**
-(`terrain/.scratch`), collecté en annexe et jamais compté comme produit ([ADR-067](DECISIONS.md)). Le
+(`terrain/.scratch`), collecté en annexe et jamais compté comme produit ([ADR-067](DECISIONS.md)) ; un
+scratch vide se saute sans faire perdre le produit ([ADR-095](DECISIONS.md)). Le
 gabarit demande le **tableau** de qualification et la **pause** qui le suit ([ADR-068](DECISIONS.md),
-[ADR-069](DECISIONS.md)). `freeze --refreeze` est la seule commande qui re-gèle, et l'orchestrateur ne
+[ADR-069](DECISIONS.md)). Un cas qui ne pause pas déclare `attendu_details.pause.requis: false` : `ouvrir`
+s'arrête alors sans question, et refuse une question que le cas n'attend pas ([ADR-093](DECISIONS.md)). `freeze --refreeze` est la seule commande qui re-gèle, et l'orchestrateur ne
 l'appelle jamais.
+
+`freeze` refuse un cas qu'aucune porte ne pourrait jouer ([ADR-094](DECISIONS.md)) : une pause absente qui
+fige des réponses, un budget que le message de la porte épuise à lui seul (moins de deux échanges avec des
+réponses figées), deux comptes de réponses différents entre le §8 de la demande et `demande.reponses_figees`,
+un `arbre_attendu` non vide qui n'inclut pas le fichier que `produit.racine` nomme, un `P` qui mesure un
+`sha256` contre le gel alors qu'aucun `--ref` ne hache le chemin qu'il cite, et un cas complet — sans marque
+`a_remplir` — que personne n'a confirmé : `--confirme-par` et `--confirme-preuve` vont ensemble, ou l'attendu
+porte `confirmation{par, le, preuve}` avec une date ISO 8601, et le gel recopie la confirmation. Un squelette
+en est dispensé : il n'est pas encore le cas que la personne confirme. Le refus nomme la pièce à corriger, et
+le gel précédent reste sur disque. `collect` confronte ensuite le produit déclaré à `arbre_attendu` et refuse
+une entrée absente ([ADR-094](DECISIONS.md)).
 
 `porte` ajoute au bloc `▸ FIN` la durée observée du cas et la taille de l'échantillon, lues dans les runs
 passés du même cas, avec leurs réserves ; un cas jamais mesuré reçoit « aucune mesure pour ce cas ».
@@ -218,7 +235,9 @@ La commande précède sa sortie : le bloc dit ce qui a été lancé avant de dir
   ([ADR-064](DECISIONS.md)). Le scratch déclaré est lu et écrit comme une racine d'écriture, sans jamais
   compter comme produit ([ADR-067](DECISIONS.md)). Une écriture d'outil hors des racines mord de même
   ([ADR-063](DECISIONS.md)) ; relire un fichier que la session a écrit ne mord pas deux fois
-  ([ADR-066](DECISIONS.md)).
+  ([ADR-066](DECISIONS.md)). `cloisonnement.attendu_vu` n'est plus cru : le reçu lit les chemins touchés
+  sous le dossier des cas et écrit `attendu_vu_mesure` ; un `non` déclaré que la trace contredit refuse
+  le reçu, et une lecture sans chemin rend la mesure `inconnue`, dite en limite ([ADR-092](DECISIONS.md)).
 - **Le reçu décide** du verdict : `fin` demande d'abord, à blanc (`--sans-ecrire`), la valeur que les
   falsificateurs imposent. Sans `--verdict`, l'orchestrateur l'imprime avec sa raison et n'écrit rien :
   c'est la personne qui tranche, et la même commande avec `--verdict` écrit le reçu une seule fois.
@@ -245,10 +264,12 @@ le dire. `--tel-quel` lève ce dernier refus en portant l'arbre de travail dans 
 le gel enregistre le dit ([ADR-042](DECISIONS.md)).
 
 `ouvrir` a ses propres refus : aucune porte, un texte dont le `sha256` n'est plus celui de la porte, un gel
-sans arbre `travail`, un attendu sans réponse figée, `opencode` introuvable, un serveur muet ou qui rend
-`401`, une session ou un message refusés, un champ de formulaire que la règle du §2 ne remplit pas, une
-question de plus que le cas n'en fige, formulaire ou texte, une session arrêtée sur un texte qui ne demande
-rien alors qu'une réponse reste à jouer ([ADR-077](DECISIONS.md)), et le délai dépassé. Chacun sort en `1`
+sans arbre `travail`, un attendu qui exige une pause sans réponse figée, `opencode` introuvable, un serveur
+muet ou qui rend `401`, une session ou un message refusés, un champ de formulaire que la règle du §2 ne
+remplit pas, une question de plus que le cas n'en fige, formulaire ou texte, une session arrêtée sur un
+texte qui ne demande rien alors qu'une réponse reste à jouer et que le cas déclare une pause
+([ADR-077](DECISIONS.md)), une question que le cas n'attend pas quand il déclare `pause.requis: false`
+([ADR-093](DECISIONS.md)), et le délai dépassé. Chacun sort en `1`
 et nomme la pièce, le fil compris pour les deux derniers.
 
 Le client est un fait du run, jamais un paramètre du cas ([ADR-044](DECISIONS.md)). `suite` sans `--client`
@@ -260,8 +281,10 @@ session par `opencode session export` dans le répertoire `travail` du gel, et `
 
 ## 6. Ce que le protocole n'atteste pas
 
-- **La qualité du skill**, ni la justesse du produit : l'ordre des gestes et les destinations, jamais le
-  texte. Un cas fabriqué le dit deux fois (attendu incomplet, verdict plafonné).
+- **La qualité du skill**, ni la justesse du produit : les destinations et l'ordre écriture/tableau, jamais
+  le texte ni l'ordre des actions du skill. Un cas fabriqué le dit deux fois (attendu incomplet, verdict
+  plafonné). La promesse énoncée par le cas n'est pas mesurée pour autant : le reçu la nomme
+  ([ADR-090](DECISIONS.md)), et un juge doit signer un `conforme`.
 - **Que la porte n'a pas été sautée** : elle est forgeable, et le reçu ne mesure pas l'ordre porte/session.
 - **Un run sans session** : les contrôles du banc traversent la chaîne sur des fixtures ; un `conforme` de
   banc prouve que le harnais l'accepte, jamais qu'un run le mériterait.

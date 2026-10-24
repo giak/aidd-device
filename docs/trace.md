@@ -8727,3 +8727,587 @@ le refus à zéro réponse tient encore.
 devient disponible ; rejouer le cas `06-test` sur un nouveau gel avec le reçu corrigé.
 
 **Mémoires.** `9748da8a-811b-4574-a516-f9d4343f59fc` (ADR-088, ADR-089, contrôles 291/292).
+
+## Séance 161 — 2026-10-24 (audit v2 du protocole : le rapport suraffirme, la promesse n'est pas mesurée)
+
+**Objectif.** Auditer le protocole après le P0 du 2026-10-23 et le rejeu `06-test`, sur les artefacts réels,
+et proposer une version générique. Aucun code n'est modifié : le livrable est l'audit.
+
+**Fait.**
+
+- Livrable : `docs/tasks/2026_10/2026-10-24-063224-audit-protocole-de-test-v2/2026-10-24-063602-audit.md`,
+  **570 lignes**, huit sections : état des lieux, matrice A/B/C, défauts, retour d'expérience, protocole
+  cible, plan, preuves, incertitudes.
+- Corpus : **37** runs (22 indépendants, 5 guidés, 8 avortés, 2 manuels) ; **5 `conforme`, 3 `ecart`,
+  14 `non concluant`** ; **207** limites ; **8/37** sans reçu ; **5/51** skills avec un reçu indépendant,
+  **7/51** avec un test quelconque ; **5/5** guidés `session_non_independante` et `attendu_non_gele`,
+  **4/5** `trace_absente` (`runs/INDEX.md`).
+- Défauts mesurés : `RAPPORT.md` dit « l'ordre des gestes » (`rapport.mjs:140`) alors que l'ordre n'est pas
+  mesuré ; « 34 échange(s) » alors que `receipt.echanges.utilises` vaut 1 ; durée finit à l'heure de `suite`.
+  `falsificateurs_du_run` (`P`) n'est lu par aucun code ; `arbre_attendu` non plus ; le juge est anonyme
+  (`output.json` n'a que `juge_le`) ; `attendu_vu` est déclaré, jamais mesuré ; `BANC.md` dit 283 quand le
+  banc rend 285 ; le cas `03-shadow` a un budget 1 consommé par la demande, deux réponses figées dans la
+  request et une dans l'expected, et un `P` qui cite une preuve de source absente du manifeste et du gel ;
+  `ouvrir` refuse une clôture normale pour `pause:false`.
+- Revue headless `audit-review-1` (`opencode run`, `deepseek-v4.1-flash-free`) : 14 constats ; R5-R10 et R14
+  recoupés sur les pièces ; R11 (« 100% scale » cité de « 100% noir ») vérifié ; R13 (sévérité `minor` contre
+  la rubric `major`) reste une inférence. Ce n'est pas une revue humaine, et le modèle est de la même famille
+  que le run jugé.
+- Protocole cible : trois couches (chaîne, promesse, jugement), bloc `promesse` (`mesure` ou `juge_seul`),
+  `verdict.promesse.etat`, `conforme` interdit si `non_mesuree`, juge nommé, `RAPPORT` dérivé des champs,
+  `ouvrir` lit `pause.requis`, `freeze` valide budget/réponses, `P`/manifeste, `arbre_attendu`, confirmation.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` => **285/285 PASS**, `exit 0`, dont 290, 291 et 292.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+- `node docs/device/harness/liens.mjs` => **1451** liens hors code, **0 mort**, `exit 0`.
+- `python3 -m pytest -q -p no:cacheprovider test_skill_analysis.py` sur une copie de `/tmp` => `9 passed
+  in 0.14s`, `exit 0` ; `grep -c '^def test_'` => **7** fonctions.
+- Script `node` sur le rapport `03-shadow` => **18** écarts, **0/11/7**, `badCat 0`, `badSev 0`, `badQ 0`,
+  `badQuote 0`.
+- `grep -rn "falsificateurs_du_run" docs/device/harness/*.mjs` => `orchestrer.mjs:610` seulement ;
+  `grep -rn "arbre_attendu"` => `orchestrer.mjs:606` et une fixture de banc.
+
+**Dérives signalées, non corrigées.** Les défauts du §3 de l'audit restent ouverts : le rapport qui
+suraffirme, la promesse non mesurée, le juge anonyme, `ouvrir` sur `pause:false`, le budget du cas 03, les
+champs de cas non lus, le compte du BANC et le libellé `framework-origin`. Le reçu du run
+`2026-10-24-045529` reste `conforme` ; sa note `2026-10-24-050754-verdict-non-concluant.md` reste le verdict
+vérifié ; aucune réécriture. La couverture reste 5/51.
+
+**Rectifications.** La Séance 160 disait « aucune revue indépendante, aucun headless » : une revue headless
+de contexte a été conduite ici, sur le run `03-shadow` ; elle n'est pas humaine et partage la famille de
+modèle du run jugé. La Séance 159 disait le produit 06 de 9 tests ; le produit 5488 en porte 9 cas et
+7 fonctions, et le produit 4134 de l'ancien run en portait 4 et 9.
+
+**Prochaines étapes.** P0 du §6 de l'audit : corriger la phrase de `RAPPORT.md`, ajouter le bloc `promesse`
+et le juge nommé, lier la note de correction du 06 ; puis P1 : `ouvrir` sur `pause.requis`, validation du gel
+(budget/réponses, `P`/manifeste, `arbre_attendu`, confirmation).
+
+**Mémoires.** `d59a89b7-ba4a-4d92-b2a4-c4281d4e79bf` (audit v2, faits, défauts, protocole cible, limites),
+relue après écriture.
+
+## Séance 162 — 2026-10-24 (P0 de l'audit v2 : le rapport ne suraffirme plus, la promesse est nommée, le juge signe)
+
+**Objectif.** Appliquer les trois corrections P0 du §6 de l'audit v2 : D1, le rapport utilisateur dit ce
+qu'un champ mesure ; D2, le reçu porte un bloc `promesse` et refuse `conforme` quand elle n'est pas nommée ;
+D3, `conforme` exige un juge nommé et une rubrique. D4 (lier la note de correction du 06) reste ouvert.
+
+**Fait.**
+
+- `rapport.mjs` : la phrase du §1 ne revendique plus « l'ordre des gestes » ; elle dit que cet ordre, la
+  qualité du skill et la justesse du produit ne sont pas mesurés. La durée se lit du premier au dernier
+  message de la trace, et la fenêtre déclarée par le reçu est une ligne distincte quand elle en diffère.
+  Le §3 lit `trace_lue.lignes_dans_la_fenetre` (avec repli sur l'ancien nom), nomme `promesse.mode`, cite
+  le juge de `output.promesse`, et ajoute une limite quand le reçu précède le bloc.
+- `run.mjs` : `trace_lue.lignes_dans_la_fenetre` remplace `echanges_dans_la_fenetre` ; `promesse{mode,
+  declaree_par, condition, mesure, juge, raison}` est calculé par `lirePromesse` (`mesure` si
+  `verification.mord === true`, `juge_seul` si `P` ou `attendu` énonce la promesse, `non_mesuree` sinon) ;
+  `conforme` est refusé sur `non_mesuree`, après le refus du mutant survivant ; `compare` gagne `--juge`
+  et `--rubrique`, les exige pour `conforme`, et écrit `output.promesse{mode, condition, juge, rubrique}`.
+- `orchestrer.mjs` : `fin` transporte `--juge` et `--rubrique`, et refuse `conforme` sans eux **avant**
+  d'écrire le reçu, qui ne s'écrit qu'une fois.
+- `banc-harnais.sh` : contrôles **295** (deux gels du cas jouet, avec `P` puis sans `attendu` ni `P`) et
+  **296** (trois reçus minimaux relus par `compare`) ; 66 lit le nouveau champ ; les contrôles de
+  `conforme` passent `--juge banc --rubrique …` (129, 142, 169, 171, 184) ; 268 vise l'ancienne limite de
+  la pause, que le mot « promesse » ne déclenche plus. Le contrôle 292, perdu un instant dans l'insertion,
+  est restauré.
+- `DECISIONS.md` : ADR-090 ; `BANC.md` V0.54 et compte **287** ; `ARCHITECTURE.md` (bloc `promesse`,
+  champs de `compare`, refus) ; `PROTOCOLE.md` §6 dit que l'ordre des actions du skill n'est pas mesuré.
+
+**Vérifié.**
+
+- `node --check` sur `run.mjs`, `rapport.mjs`, `orchestrer.mjs` ; `bash -n` sur le banc => `SYNTAXE_OK`,
+  `BANC_SYNTAXE_OK`.
+- `bash docs/device/harness/banc-harnais.sh` => **287/287 PASS**, `exit 0` ; 292, 295 et 296 verts.
+- Rapport recalculé sur une copie du run `03-shadow` => plus de « l'ordre des gestes » positif, « 34
+  ligne(s), dont 34 dans la fenêtre », durée **05:59:40 → 06:01:54** (premier et dernier message), fenêtre
+  du reçu **05:59:40 → 06:03:48**.
+- Reçu recalculé sur une copie du run `03-shadow` => `promesse.mode: juge_seul`, `declaree_par:
+  falsificateurs_du_run.P`, `juge: null`, 16 limites ; `compare --verdict conforme` sans juge => `exit 1`,
+  avec `--juge Buffy --rubrique P` => `exit 0` et `output.promesse.juge: Buffy`.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0` ; `node docs/device/harness/liens.mjs` =>
+  **0 mort**.
+
+**Dérives signalées, non corrigées.** D4 de l'audit (la note `2026-10-24-050754-verdict-non-concluant.md`
+n'est pas liée au verdict dans l'index) reste ouvert ; `attendu_vu` reste déclaré, pas mesuré ; P1
+(`ouvrir` sur `pause.requis`, validation du gel) et P2 (matrice de couverture) restent ouverts. Aucun
+`receipt.json` historique n'est réécrit ; aucun `RAPPORT.md` existant n'est régénéré.
+
+**Rectifications.** L'audit v2 disait que les 7 cas anciens resteraient lisibles avec `recu_avant_promesse` :
+le bloc est absent de leurs reçus, mais un nouveau reçu sur un cas qui énonce `attendu` rend `juge_seul`,
+y compris le cas jouet et le cas promesse, qui n'ont pas de `P`. Seul un cas sans `attendu` ni `P` rend
+`non_mesuree`.
+
+**Prochaines étapes.** D4 (lien note/reçu dans l'index), la mesure d'`attendu_vu`, puis P1.
+
+**Mémoires.** `cc1dcc26-2c80-46d3-9c7f-f1445c041c66` (ADR-090, promesse, juge, contrôles 295/296), relue
+après écriture.
+
+## Séance 163 — 2026-10-24 (P0 de l'audit v2, D4 : la note du 06 est liée à son verdict)
+
+**Objectif.** Fermer D4 : le reçu du run `2026-10-24-045529-9c8fd81c-rejeu-06-test` dit `conforme` alors que
+`F5` impose `non concluant`, et la note du 05:07:54 le corrige sans que l'index le montre. Le reçu n'est pas
+réécrit ; la correction devient une pièce datée que l'index lit.
+
+**Fait.**
+
+- `runs.mjs` : un dossier de reçu peut porter `correction.json` `{type, note, verdict_retenu, preuve}`.
+  `lireCorrection` refuse une note absente ou hors du dossier, un `verdict_retenu` hors domaine, une preuve
+  vide, et une correction qui retient le verdict déjà écrit ; un guidé qui porte le fichier est refusé.
+  L'index affiche `conforme (corrigé non concluant, [note](<run>/<note>))`, le lien résolu depuis
+  `docs/device/runs/`.
+- `docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test/correction.json` : `verdict_retenu: non
+  concluant`, preuve = `trace/echange.jsonl` seq 21, 43, 47 et 60 (`/tmp/opencode`), seq 22 (`/tmp`), et
+  `F5` du cas `2026-10-23-202011-test-analyse`.
+- `banc-harnais.sh` : **297** (reçu, note et correction, l'index affiche les deux verdicts et le lien, le
+  vérificateur l'accepte), **298** (note absente refusée), **299** (correction qui ne corrige rien refusée).
+- `DECISIONS.md` : ADR-091 ; `BANC.md` V0.55 et compte **290** ; `PROTOCOLE.md` dit ce qu'un
+  `correction.json` nomme et ce que `--verifier` en refuse.
+
+**Vérifié.**
+
+- `node --check docs/device/harness/runs.mjs` et `bash -n docs/device/harness/banc-harnais.sh` => `exit 0`.
+- `node docs/device/harness/runs.mjs --index` => `INDEX — 37 run(s) écrit(s)`, la ligne du run 06 porte
+  `conforme (corrigé non concluant, [note](2026-10-24-045529-9c8fd81c-rejeu-06-test/2026-10-24-050754-verdict-non-concluant.md))`.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+- `node docs/device/harness/liens.mjs` => **1456 liens, 0 mort**, `exit 0` (un premier essai liait `note.md`
+  à côté de l'index et le contrôle 61 l'a refusé : le lien porte désormais le dossier du run).
+- `bash docs/device/harness/banc-harnais.sh` => **290/290 PASS**, `exit 0` ; 297, 298 et 299 verts.
+
+**Dérives signalées, non corrigées.** `attendu_vu` reste déclaré, pas mesuré (D3) ; P1 (`ouvrir` sur
+`pause.requis`, validation du gel) et P2 (matrice de couverture) restent ouverts. Le champ `preuve` de
+`correction.json` est une citation, pas une mesure neuve : il ne relit ni la trace ni le cas. Aucun
+`receipt.json`, `output.json` ou `RAPPORT.md` historique n'est réécrit.
+
+**Prochaines étapes.** La mesure d'`attendu_vu`, puis P1.
+
+**Mémoires.** `10f709d6-aece-43c8-b30d-c5a1503cea01` (ADR-091, correction, contrôles 297 à 299), relue
+après écriture.
+
+## Séance 164 — 2026-10-24 (P0 de l'audit v2, D3 : `attendu_vu` est mesuré)
+
+**Objectif.** Fermer le dernier étage de D3 : `cloisonnement.attendu_vu` était recopié de `faits.json`, et
+rien ne le confrontait aux chemins que la session avait réellement touchés. La mesure se fait sur les
+lectures, une contradiction refuse le reçu, et l'incertitude devient une limite.
+
+**Fait.**
+
+- `run.mjs` : après les lectures d'outil et les chemins littéraux des commandes `shell`, tout chemin sous
+  le dossier des cas (`--cases`) alimente `cloisonnement.attendu_vu_mesure{etat, seq, chemin, motif}`.
+  `oui` cite le premier chemin touché, `non` dit qu'aucun ne l'a été, `inconnu` nomme la cause (lecture
+  sans chemin comme `glob`, ou commande `shell` non interprétable). Un `non` déclaré contredit par un
+  `oui` refuse le reçu, sans écrire ; une mesure `inconnue` ajoute la limite qui dit que la déclaration
+  reste une déclaration. Un `oui` déclaré garde son effet (`non concluant`) et n'est pas confronté.
+- `rapport.mjs` : le §2 porte la ligne `Attendu vu` (déclaration, puis mesure ; « mesure absente du reçu
+  (antérieur à l'ADR-092) » pour un reçu historique).
+- `banc-harnais.sh` : **292**, étendu, lit `etat: non` et la ligne du rapport ; **300** ajoute une lecture
+  de l'attendu sous `CASES/` à la trace et attend le refus nommé, sans pièce écrite ; **301** ajoute un
+  `glob` sans chemin et attend `etat: inconnu`, la limite et le rapport. Le script `code-292.sh` prend un
+  mode (`conflit`, `inconnu`) au lieu d'un second montage.
+- `DECISIONS.md` : ADR-092 ; `BANC.md` V0.56 et compte **292** ; `PROTOCOLE.md` §4 dit la mesure et le
+  refus ; `ARCHITECTURE.md` porte le champ et le refus.
+
+**Vérifié.**
+
+- `node --check` sur `run.mjs` et `rapport.mjs`, `bash -n` sur le banc => `SYNTAXE_OK`.
+- `bash docs/device/harness/banc-harnais.sh` => **292/292 PASS**, `exit 0` ; 292, 300 et 301 verts.
+- `rapport.mjs` sur une copie du run 06 (reçu antérieur) => `exit 0`, ligne
+  `Attendu vu | déclaré non ; mesure absente du reçu (antérieur à l'ADR-092)`.
+- Contrôle 300 : le reçu sort en `1`, nomme « se contredisent », n'écrit aucun `receipt.json` ; contrôle
+  301 : le reçu sort en `0`, `etat: inconnu`, la limite et la ligne du rapport sont présentes.
+
+**Limites.** La mesure porte sur un chemin touché sous `CASES/`, pas sur ce que la session en a lu : un
+attendu relayé dans le prompt reste invisible, et le `oui` déclaré reste la seule trace de ce canal. Les
+reçus historiques gardent la déclaration seule ; aucun n'est réécrit. P1 (`ouvrir` sur `pause.requis`,
+validation du gel) et P2 (matrice de couverture) restent ouverts.
+
+**Prochaines étapes.** P1, puis P2.
+
+**Mémoires.** `ec90deb7-19aa-46a3-ba13-827a4a81e864` (ADR-092, `attendu_vu_mesure`, contrôles
+292/300/301), relue après écriture.
+
+## Séance 165 — 2026-10-24 (P1 de l'audit v2 : `ouvrir` lit `pause.requis`)
+
+**Objectif.** Fermer D5 : `ouvrir` sortait en `1` sur un cas qui ne pause pas, parce que la règle
+d'ADR-077 protège une pause qui existe. Un cas qui déclare `pause.requis: false` se clôt sans question, et
+une question qu'il n'attend pas se refuse.
+
+**Fait.**
+
+- `orchestrer.mjs` : `commandeOuvrir` lit `attendu_details.pause.requis` ; `false` rend la clôture sans
+  question normale (même après zéro réponse jouée), et le bloc dit « 0 question attendue ». Une réponse
+  figée n'est plus exigée pour un tel cas. Un formulaire ou un texte finissant par `?` est refusé avant
+  qu'aucune réponse ne parte, avec un message qui nomme `pause.requis: false` et « n'en attend aucune ».
+  Un bloc absent, ou `requis: true`, garde le comportement d'ADR-077 et d'ADR-089.
+- `banc-harnais.sh` : **293** (même porte, même texte, même serveur factice, `pause.requis: false` : la
+  session s'arrête sur un texte sans question, `exit 0`, un message, 0 réponse, « 0 question attendue ») et
+  **294** (elle pose une question : `exit 1`, refus nommé, aucune réponse figée jouée). Les copies vivent
+  sous `$B/pause293`, `$O/run` et `$O/cases` ne sont pas retouchés.
+- `DECISIONS.md` : ADR-093 ; `BANC.md` V0.57 et compte **294** ; `PROTOCOLE.md` dit la clôture sans pause
+  et le refus d'une question inattendue.
+
+**Vérifié.**
+
+- `node --check docs/device/harness/orchestrer.mjs` et `bash -n docs/device/harness/banc-harnais.sh` =>
+  `exit 0`.
+- `bash docs/device/harness/banc-harnais.sh` => **294/294 PASS**, `exit 0` ; 293 et 294 verts, 224 à 291
+  inchangés sur un cas qui pause.
+- `node docs/device/harness/liens.mjs` => **1461 liens, 0 mort**, `exit 0` ; `runs.mjs --verifier` =>
+  `exit 0`.
+
+**Limites.** La règle ne lit que la dernière ligne hors bloc : sur un cas sans pause, elle accepte aussi un
+arrêt manqué, contrepartie de ne pas exiger une question que le cas interdit. Le run `03-shadow` n'est ni
+rejoué ni réécrit ; sa note d'ouverture refusée reste la pièce de ce qui s'est passé. D6 à D8 (validation du
+gel) et P2 (matrice de couverture) restent ouverts.
+
+**Prochaines étapes.** D6 à D8, puis P2.
+
+**Mémoires.** `a8357fcd-b2f3-4bbf-a3d2-304cdca666a9` (ADR-093, `pause.requis`, contrôles 293/294), relue
+après écriture.
+
+## Séance 166 — 2026-10-24 (P1 de l'audit v2, D6 à D8 : le gel refuse ce qu'aucune porte ne jouerait)
+
+**Objectif.** Fermer D6, D7 et D8 : le cas `03-shadow` se contredit sur ses réponses et son budget, son `P`
+cite un `sha256` que le gel ne hache pas, et aucun champ ne portait la confirmation de la personne. Le gel
+vérifie désormais ce qu'il gèle ; `collect` confronte le produit à `arbre_attendu`.
+
+**Fait.**
+
+- `run.mjs`, `freeze` : six refus avant d'écrire le gel — `pause.requis: false` avec des réponses figées ;
+  budget de moins de deux échanges avec des réponses ; compte de blocs `<<<REPONSE_…>>>` du §8 différent de
+  `demande.reponses_figees` ; `arbre_attendu` non vide qui n'inclut pas le fichier de `produit.racine` ; `P`
+  mesurant un `sha256`/`md5` contre le gel sans `--ref` couvrant un chemin cité ; cas complet sans
+  confirmation. La confirmation vient de `--confirme-par`/`--confirme-preuve` (le gel date `le`) ou du bloc
+  `confirmation{par, le, preuve}` de l'attendu, dont le `le` doit être ISO 8601 ; le gel la recopie. Un
+  squelette `a_remplir` en est dispensé. `one()` rendant `undefined` pour un flag absent, les deux flags
+  sont repliés sur `null` : sans ce repli, un gel sans confirmation passait avec `par: "undefined"`.
+- `run.mjs`, `collect` : le produit collecté est comparé à `arbre_attendu`, quand le `--from` est sous
+  `produit.racine` ; une entrée déclarée et absente refuse. Les entrées de prose (espace ou `<`, comme
+  `<bank>`) ne sont pas des chemins et n'entrent pas dans la comparaison.
+- `banc-harnais.sh` : contrôles **302 à 308**, sept fixtures d'un seul script à mode `gel-302.sh` (budget,
+  comptes de réponses, arbre attendu sans son produit, `P` sans `--ref`, confirmation absente, sans date ISO,
+  et datée dans l'attendu). Tous les gels du banc passent `--confirme-par banc --confirme-preuve banc` ; les fixtures
+  237 et 238 déclarent leur `arbre_attendu` avec le produit qu'elles déplacent, et `cases-budget-zero`
+  supprime les réponses du §8 comme celles de l'attendu ; le `P` de 295 ne cite plus « les sha256 du gel »,
+  qu'aucune référence ne couvrait.
+- `DECISIONS.md` : ADR-094 ; `BANC.md` V0.58 et compte **301** ; `PROTOCOLE.md` dit les six refus du gel et
+  la confrontation du produit.
+
+**Vérifié.**
+
+- `node --check docs/device/harness/run.mjs`, `bash -n docs/device/harness/banc-harnais.sh` => `exit 0`.
+- `bash docs/device/harness/banc-harnais.sh` => **301/301 PASS**, `exit 0` ; 302 à 308 verts, chacun sur sa
+  fixture. Les deux passages précédents ont échoué et nommé leurs causes : comptes de réponses de
+  `cases-budget-zero`, puis `arbre_attendu` des fixtures 237 et 238 et `P` de 295.
+- Les sept cas restent gelés : aucun `.freeze.json` de `CASES/` n'est réécrit, aucun run rejoué.
+
+**Dérives signalées, non corrigées.** Le cas `03-shadow` reste gelé avec ses quatre défauts ; un re-gel le
+refuserait (`exit 1`, « déclare pause.requis: false et fige 1 réponse(s) »), et le réparer coûte un nouveau
+run. L'écart assumé sur le §5.5-3 de l'audit (`budget < 2` et non
+`1 + len(reponses_figees)`) est consigné dans l'ADR-094 : `ouvrir` présente les réponses comme un menu, et la
+formule littérale refuserait le cas jouet, sain. Le contrôle du `P` vérifie la couverture des chemins cités,
+pas la justesse de la promesse ; la confirmation est une pièce datée, pas une identité vérifiée. P2 (libellé
+`framework-origin`, matrice de couverture) reste partiellement ouvert : le compte du BANC est à jour, mais
+la page le recopie encore.
+
+**Prochaines étapes.** P2 : le libellé `framework-origin` et la matrice de couverture par plugin et nature de
+produit.
+
+**Mémoires.** `83d5bd0d-1495-4933-844b-885e4d07a13c` (ADR-094, six refus du gel, `collect`, contrôles
+302 à 308), relue après écriture.
+
+## Séance 167 — 2026-10-24 (le cas `03-shadow` réparé et rejoué : rapport juste, cadre rompu, non concluant)
+
+**Objectif.** Réparer le cas `2026-10-24-055310-shadow-areas-design` (pause, réponses figées, budget, `P`
+adossé à une référence du gel), le rejouer sur un nouveau gel et rendre le verdict.
+
+**Fait.**
+
+- Cas réparé. `CASES/2026-10-24-055310-shadow-areas-design.request.md` §8 : le cas ne pause pas,
+  `reponses_figees` est vide, budget 1 échange, ADR-093 et ADR-094 cités. Son `expected.json` porte
+  `demande.reponses_figees: []`, `pause.requis: false`, `arbre_attendu` = le rapport, et un `P` qui nomme le
+  rapport, ses ensembles verrouillés, l'invariant de la source et le statut, mesuré contre les références du
+  gel ; son `statut` dit la réparation.
+- Nouveau gel : `run.mjs freeze --case … --racine /home/giak/aidd-device-work-rejeu --arbre
+  framework-origin=… --arbre terrain=… --ref-root … --ref docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md
+  --refreeze --confirme-par "opérateur giak" --confirme-preuve "consigne du 2026-10-24 : « Répare le cas
+  03-shadow (pause, réponses, budget, P avec référence) et rejoue-le sur un nouveau gel. »"` => empreinte
+  `79bb9b7e47e7…`, 2 fichiers, 1 référence (`cbb7e63e…`), confirmation datée `2026-10-24T10:04:47+02:00`
+  (`CASES/…freeze.json`). Le gel accepte donc un cas sans pause ni réponse figée, budget 1 et `P` couvert
+  par `--ref` : les six refus du gel (contrôles 302 à 308) ne mordent pas ici.
+- Rejeu dans `aidd-device-work-rejeu/2026-10-24-055310-shadow-areas-design` (`framework-origin` `fe48de12`,
+  `terrain` `6a74c46`). Porte `5c6aedf1…` passée à `10:17:37` ; session opencode
+  `openrouter/cohere/north-mini-code:free`, fil `ses_e930348d8ffeYHzzvlUz1CcNSF`, de `10:17:44` à
+  `10:21:51` ; budget 1/1 épuisé au seq 1 ; aucune question posée, donc rien à figer. `suite` a écrit
+  `faits.json`, `trace/echange.jsonl` (95 lignes dans la fenêtre, sha256 `33522fc6…`), `last-message.md`
+  (1933 o, seq 46) et collecté `raw/…/2026-08-01-carte-visite-v2-design-shadow-report.md` (1942 o, sha256
+  `e0f80c39…`, né `10:21:29`).
+- Verdict : **non concluant**, écrit par `fin` (`receipt.json`, `output.json`, `RAPPORT.md`). Plafonds :
+  `ecriture_hors_dossier` (5 écritures d'outil, seq 22, 27, 32, 36, 41, toutes `terrain/*.py`),
+  `hors_produit` (les mêmes cinq, `nature: "produit"`), `code_hors_dossier` (27 chemins extraits du code de
+  `execute`), `shell_hors_dossier` (`find .` et `ls` depuis la racine de l'espace, seq 24, 29, 30, 31, 34).
+  Le reçu porte 24 limites, 1 fichier produit, budget 1/1.
+- `P` ne mord pas : rapport présent à son chemin dérivé ; source `cbb7e63e…`, identique au gel ; 7 écarts ;
+  4 catégories, toutes dans les sept de `locked-sets.json` ; sévérités dans `blocker|major|minor` ; chaque
+  question finit par `?` ; aucun champ `status` (la ligne `# status: clean` du gabarit reste un commentaire
+  YAML, donc pas de statut, comme le veut l'action 02 tant qu'un blocker demeure).
+
+**Vérifié.**
+
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0` ; `--index` => 40 runs, ligne
+  `2026-10-24-101737-79bb9b7e-961c4a7 | … | non concluant | 24, reçu`.
+- `node docs/device/harness/liens.mjs` => 1473 liens hors code, 0 mort.
+- `sha256sum terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md` =>
+  `cbb7e63e85ae628dc49a0028ac8a389f85783aaafed375b96d7fcbff921e22a8`, l'empreinte du gel ; le porcelain du
+  terrain nomme le rapport et les cinq scripts, rien d'autre ; `framework-origin` est propre.
+- Le reçu re-hache le gel (`79bb9b7e…`, 1 référence), cite la porte `5c6aedf1…` et compte `1/1` échange.
+
+**Dérives signalées, non corrigées.** Les 27 entrées de `code_hors_dossier` sont des littéraux de regex du
+code de `execute` (`/assume/i`, `/obviously/i`, …) : ce ne sont pas des chemins, et le plafond ne repose pas
+sur eux. Les entrées `shell_hors_dossier` mêlent des artefacts d'extraction (`…/f`, `…/.git`,
+`…/__pycache__`) à la lecture réelle, `find .` depuis la racine de l'espace, hors des deux racines
+autorisées : la morsure tient par cette lecture. Deux tentatives ont été abandonnées avant le run retenu :
+`runs/2026-10-24-100502-79bb9b7e-fdb977a` (fil `ses_e930ecef…`, 1 ligne de trace, 10 s) et
+`runs/2026-10-24-101700-79bb9b7e-74860a0` (porte passée, aucune session) ; elles restent, non rejouées. La
+demande remise interdit d'écrire « ailleurs » sans dire que `terrain/.scratch` est ouvert : une session qui
+veut un script n'a nulle part où le mettre, et le cas se prive d'un run conclusif pour un défaut de texte.
+Le rapport porte `## Warnings` avec `- None` alors que l'action 02 dit d'omettre le bloc sans avertissement ;
+`P` ne le mesure pas, donc le run ne le juge pas.
+
+**Prochaines étapes.** Nommer `terrain/.scratch` dans le texte remis (re-gel et nouveau run), pour obtenir un
+verdict concluant et voir `P` mesuré sous `conforme` ; trier ensuite les faux positifs de `code_hors_dossier`.
+
+**Mémoires.** `66d53cf3-9df0-42f9-94da-20ff508f09fa` (cas `03-shadow` réparé, gel `79bb9b7e`, run `101737`, verdict non concluant, faux positifs de `code_hors_dossier`), relue après écriture.
+
+## Séance 168 — 2026-10-24 (cas 03-shadow : le texte remis nomme `terrain/.scratch`, gel `868436ae`, verdict `ecart`)
+
+**Objectif.** Nommer `terrain/.scratch` dans le texte remis du cas `2026-10-24-055310-shadow-areas-design`,
+re-geler le cas et le rejouer pour obtenir un verdict concluant.
+
+**Fait.**
+
+- Texte remis (`request.md` §5), trois clauses ajoutées : le dépôt nommé est
+  `$RACINE/2026-10-24-055310-shadow-areas-design/terrain`, la session travaille depuis `terrain/` et lit
+  seulement `terrain/` et `framework-origin/`, et un fichier de travail va sous `terrain/.scratch/`. Les
+  deux autres clauses du §5 sont conservées mot pour mot.
+- `expected.json` `demande.texte_verbatim` remis égal au §5 : il portait encore le texte d'avant la
+  réparation (comparaison `champ == §5 : true` après correction). Ce champ est une copie du texte remis, et
+  une copie fausse dans un cas gelé aurait décrit un run qui n'a pas eu lieu.
+- Gel final : `run.mjs freeze --case … --racine /home/giak/aidd-device-work-rejeu3 --arbre
+  framework-origin=… --arbre terrain=… --ref-root … --ref docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md
+  --refreeze --confirme-par "opérateur giak" --confirme-preuve "consigne du 2026-10-24 : « Nomme
+  terrain/.scratch dans le texte remis du cas 03-shadow, re-gèle-le et rejoue-le pour obtenir un verdict
+  concluant. »"` => empreinte `868436ae4c41…`, `gele_le 2026-10-24T11:31:39.072856216+0200`, 2 fichiers du
+  cas, 1 référence (`cbb7e63e…`, la source du terrain).
+- Rejeu dans `aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design` (`framework-origin` `fe48de12`,
+  `terrain` `6a74c46`, porcelain vide à la porte). Porte `97d06ca4…`, texte `ca9a87fc` (797 o), session
+  opencode `openrouter/cohere/north-mini-code:free`, fil `ses_e92bf7bb7ffeTp6Nh9xCBqVl5c`, de `11:31:48` à
+  `11:34:38`, budget 1/1 épuisé au seq 1, aucune question posée.
+- `suite` a refusé une première fois : le produit nommé par l'attendu n'existait pas. La session avait écrit
+  `docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md`, retirant `-design` avec l'extension,
+  alors que l'action 02 demande de retirer la seule dernière extension (`md`) et donne l'exemple
+  `feature-v2.draft.md` => `feature-v2.draft-shadow-report.md`. Le refus a été traité comme un fait, pas
+  contourné : `faits.json` et `trace/` déplacés sous `reprise-1/`, puis `suite --produit
+  docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md` a collecté le fichier réellement écrit
+  (984 o, né `11:34:38`) et le scratch `terrain/.scratch` (5 fichiers, en annexe).
+- Verdict : **ecart**, écrit par `fin` avec `--verdict ecart` (`receipt.json`, `output.json`, `RAPPORT.md`).
+  Morsure `hors_produit` : `terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md`.
+  Le reçu porte 14 limites, 1 fichier produit, budget 1/1, porte `97d06ca4…`, gel `868436ae4c41…` re-haché.
+  Aucun `lecture_hors_dossier`, `ecriture_hors_dossier`, `shell_hors_dossier`, `reseau` : le cadre tient.
+- `P` mord par sa première clause : le rapport au nom dérivé est absent. Le fichier écrit porte 6 écarts,
+  catégories `unstated assumption`, `missing actor`, `missing edge case`, `missing failure mode`,
+  `missing acceptance criterion`, `missing dependency`, toutes dans les sept de `locked-sets.json` ;
+  sévérités `major` ; chaque question finit par `?` ; pas de clé `status` (la ligne `# status: clean` reste
+  un commentaire YAML).
+- Run de répétition : `runs/2026-10-24-112620-85d12f10-9fc5285`, sous le gel `85d12f10` et le texte d'avant
+  la correction du champ. Sa session avait produit le rapport au nom exact, aucun falsificateur ne mordait,
+  `fin` proposait `conforme`. Il reste sans reçu, classé « avorté » par `runs.mjs`, et son gel a été écrasé
+  par le re-gel : il ne se juge plus.
+
+**Vérifié.**
+
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0`, aucune sortie ; `--index` => 42 runs, ligne
+  `2026-10-24-113143-868436ae-576c360 | 2026-10-24 | indépendant | 2026-10-24-055310-shadow-areas-design |
+  ecart | 14, reçu`.
+- `node docs/device/harness/liens.mjs` => 242 fichiers, 1479 liens hors code, 0 mort.
+- `sha256sum terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md` =>
+  `cbb7e63e85ae628dc49a0028ac8a389f85783aaafed375b96d7fcbff921e22a8`, l'empreinte de la référence du gel ;
+  `framework-origin` propre, le terrain ne porte que le rapport et `.scratch/`.
+- `run.mjs receipt … --verdict ecart --sans-ecrire` => `exit 0`, « 1 morsure(s) hors produit », avant
+  l'écriture du reçu ; le reçu écrit le reprend.
+
+**Dérives signalées, non corrigées.**
+
+- `fin` sans `--verdict` ne propose jamais `ecart` : il interroge `conforme`, et sur refus conclut
+  `non concluant`, alors que la morsure autorisait `ecart`. Ici la valeur proposée était donc fausse, et le
+  verdict n'a été juste que par `--verdict ecart`.
+- Un `suite` refusé à l'étape produit laisse `faits.json` et `trace/` sur disque, et le relancer est refusé
+  (« des faits écrits ne se réécrivent pas ») : la reprise n'est écrite nulle part, et le message du refus de
+  trace ne parle que de la trace.
+- Le rapport produit porte `generated_at: 2026-10-24T05:53:10Z`, incompatible avec la fenêtre du run
+  (`11:31:48` à `11:34:38` en heure locale) : la session a inventé son horodatage, et `P` ne le mesure pas.
+  Il porte aussi un bloc `## Warnings` vide, alors que l'action 02 dit de l'omettre sans avertissement.
+- Le run `112620` reste dans `runs/` sans reçu, sous un gel qui n'existe plus.
+
+**Prochaines étapes.** Faire proposer `ecart` par `fin` quand une morsure l'autorise ; écrire la reprise d'un
+`suite` arrêté après ses faits ; corriger la dérivation du nom dans le skill `03-shadow-areas` (l'exemple de
+son propre test dit `feature-v2.draft.md` => `feature-v2.draft-shadow-report.md`) ; puis rejouer et attendre
+un `conforme` signé par un juge.
+
+**Mémoires.** `388e2168-36a5-400a-b5ec-6741fe064dc5` (cas `03-shadow` : texte remis nommant `terrain/.scratch`,
+gel `868436ae`, run `113143`, verdict `ecart`, défauts de `fin` et de `suite`), relue après écriture.
+
+## Séance 169 — 2026-10-24 (cas 03-shadow rejoué sur la révision qui porte le correctif de nommage : conforme)
+
+**Objectif.** Rejouer le cas `2026-10-24-055310-shadow-areas-design` du dispositif sur une révision qui
+inclut la correction du nommage du skill `03-shadow-areas`, et rendre le verdict.
+
+**Fait.**
+
+- Révision sous test : copie de `/home/giak/projects/framework` (tête `fe48de12`, branche
+  `feat/protocole-de-test-aidd`) portant la correction de `actions/02-render-report.md`, committée en
+  `f43af3fe` dans `$RACINE/2026-10-24-20261024-120328-framework` ; `framework-origin` est son clone détaché
+  à `f43af3fe`, porcelain vide. Le commit du bac a été fait avec `--no-verify` : deux crochets du dépôt
+  échouent déjà à `fe48de12` sans rapport avec la correction (trois chemins cités qui n'existent pas, dont
+  `README.md:181 .kilo/kilo.jsonc` ; un test `check-referenced-paths` sur ces trois chemins).
+- Le cas nomme la nouvelle provenance : §2 de `request.md` et `contexte.arbres` de `expected.json` disent
+  `$RACINE/2026-10-24-20261024-120328-framework`, tête `f43af3fe`. Le §5 remis est inchangé.
+- Gel `5b1e2724dd9c…`, `gele_le 2026-10-24T12:05:03…`, 2 fichiers du cas, 1 référence `cbb7e63e…`,
+  confirmation `opérateur giak` sur la consigne du jour.
+- Porte `c1e6f407…`, texte `469fbaaf` (797 o), session `ses_e92a08340ffeRTd3tm4Ti7rwAE`,
+  `openrouter/cohere/north-mini-code:free`, de `12:05:38` à `12:10:20`, budget 1/1 épuisé au seq 1,
+  trace 95 lignes. La session lit `SKILL.md` et `actions/02-render-report.md` sous `framework-origin`.
+- `suite` a refusé une première fois, sur le scratch : `collect : rien à collecter sous …/terrain/.scratch`.
+  La session avait créé un `.scratch` vide ; `suite` collecte une annexe dès que le dossier existe, et
+  `collect` refuse un dossier vide. Reprise : `rmdir` du dossier vide, déplacement de `faits.json`,
+  `trace/`, `raw/` et `annexe/` sous `reprise-1/`, puis `suite` relancé ; le reçu porte alors la limite
+  « le cas déclare un scratch, mais le run n'a aucune annexe collectée ».
+- Produit : `terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design-shadow-report.md`, 2023 o,
+  nom dérivé correct (`-design` conservé), source intacte `cbb7e63e…`.
+- Verdict : **conforme**, écrit par `fin` avec `--juge "Buffy, agent de l'opérateur giak, revue interne non
+  indépendante"` et `--rubrique P`. Aucun falsificateur ne mord ; 15 limites ; porte `c1e6f407…` ; produit
+  1 fichier ; budget 1/1.
+- `P` lu par le juge : rapport présent au nom dérivé ; source à l'empreinte du gel ; six écarts ;
+  catégories `unstated assumption`, `ambiguous term`, `missing actor`, `missing acceptance criterion`,
+  `missing dependency`, toutes dans les sept ; sévérités 4 `blocker`, 1 `major`, 1 `minor` ; les six sondes
+  finissent par `?` ; pas de clé `status` (la ligne du gabarit reste `# status: ` vide), donc rien qui dise
+  `clean` avec un blocker.
+
+**Vérifié.**
+
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0`, aucune sortie ; `--index` => 43 runs, ligne
+  `2026-10-24-120532-5b1e2724-6b24ca8 | 2026-10-24 | indépendant | 2026-10-24-055310-shadow-areas-design |
+  conforme | 15, reçu`.
+- `node docs/device/harness/liens.mjs` => 246 fichiers, 1485 liens hors code, 0 mort.
+- `sha256sum terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md` =>
+  `cbb7e63e85ae628dc49a0028ac8a389f85783aaafed375b96d7fcbff921e22a8`, l'empreinte de la référence du gel.
+- Le reçu re-hache le gel (`5b1e2724…`), cite la porte `c1e6f407…`, compte `1/1` échange, 15 limites,
+  et ne nomme aucun falsificateur.
+
+**Dérives signalées, non corrigées.**
+
+- `suite` casse sur un scratch vide : `collect --annexe` refuse « rien à collecter », et la reprise oblige à
+  retirer un dossier que la session a créé sans y écrire. Un scratch vide n'est pas une preuve, et il ne
+  devrait pas arrêter la collecte du produit.
+- Le correctif de `fin` signalé en séance 168 reste : sans `--verdict`, `fin` ne propose jamais `ecart`.
+  Ici la proposition `conforme` était juste, donc le défaut n'a pas mordu.
+- Le rapport laisse la ligne `# status: ` du gabarit vide plutôt que de l'omettre ; ce n'est pas un statut,
+  donc `P` n'en dit rien, mais la forme reste à un caractère de `status: clean`.
+
+**Prochaines étapes.** Traiter le scratch vide dans `suite` ; puis rejouer le cas une seconde fois pour
+savoir si le nom tient hors d'un échantillon, et laisser un juge indépendant signer le prochain `conforme`.
+
+**Mémoires.** `c045de42-6b2e-440a-8472-e8f2079155ba` (cas `03-shadow` rejoué sur `f43af3fe`, gel
+`5b1e2724`, run `120532`, verdict `conforme`, refus du scratch vide), relue après écriture.
+
+## Séance 170 — 2026-10-24 (`suite` saute un scratch vide, et le banc le prouve)
+
+**Objectif.** `suite` ne doit plus refuser la collecte d'un produit quand le scratch déclaré par le cas est
+un dossier vide ; la correction se prouve par un contrôle du banc.
+
+**Fait.**
+
+- Le défaut vient du run `2026-10-24-120532-5b1e2724-6b24ca8` (cas `2026-10-24-055310-shadow-areas-design`,
+  Séance 169) : la session a créé `terrain/.scratch` sans y écrire, `suite` a collecté l'annexe dès que le
+  dossier existait (ADR-067), `collect --annexe` a refusé « rien à collecter », et le produit, lui, était là.
+- `docs/device/harness/orchestrer.mjs` : helper `contientUnFichier(dossier)` (un fichier à quelque
+  profondeur) et la collecte de l'annexe conditionnée à `existsSync(sourceAnnexe) && contientUnFichier(sourceAnnexe)`.
+  Dossier vide ou qui ne porte que des sous-dossiers vides : sauté, le run continue et le reçu porte la limite
+  « le cas déclare un scratch, mais le run n'a aucune annexe collectée ». Scratch absent et dossier non vide :
+  comportement inchangé ; un refus de `collect --annexe` arrête toujours l'orchestrateur.
+- `docs/device/harness/banc-harnais.sh`, contrôle **309** : la fixture crée un `.scratch` vide sous le terrain
+  du cas, joue `suite` en opencode sur la porte copiée, et exige `exit 0`, le produit `raw/cas-oc/NOTES.md`
+  et aucun `annexe/`.
+- En-tête du script : le compte de contrôles qu'il portait (287) avait dérivé du banc réel (301). Le compte a
+  un seul foyer, `docs/BANC.md` ; l'en-tête nomme ce foyer au lieu de recopier un chiffre.
+- `docs/BANC.md` : version **V0.59**, description et entrée à **302** contrôles.
+- `docs/DECISIONS.md` : **ADR-095**, un scratch vide ne se collecte pas et ne fait pas perdre le produit.
+
+**Vérifié.**
+
+- `bash -n docs/device/harness/banc-harnais.sh` => `exit 0`.
+- `bash docs/device/harness/banc-harnais.sh` => `302/302 PASS`, `exit 0` ; `PASS 309 suite, un scratch vide
+  ne fait pas échouer la collecte  exit=0`.
+- Le contrôle mord, vérifié par mutation sur la fixture du banc conservée sous `/tmp/banc-harnais.aSvNHv` :
+  une copie de l'orchestrateur réduite à `existsSync(sourceAnnexe)` fait sortir le 309 en `1`, détail
+  « suite refuse un scratch vide : exit 1 : ▸ ÉTAPE 1/3 — la trace » ; la même fixture neuve sur
+  l'orchestrateur réel sort `0` et collecte `raw/cas-oc/` (`NOTES.md`, `manifest.json`, `last-message.md`).
+  Une première tentative de mutation a échoué pour une autre raison (`Cannot find module …/run.mjs`, la copie
+  hors du dossier du harnais), et n'a pas été comptée comme preuve.
+- Mémoire `ece5bece-5768-40e5-8c1d-6bf10b3912c8`, relue.
+
+**Dérives signalées, non corrigées.**
+
+- L'ADR-094 (Séance 166) écrit que le cas `03-shadow` « reste gelé tel quel » et que sa réparation « n'est pas
+  faite ». Les Séances 168 et 169 l'ont réparé et re-gelé (`868436ae`, puis `5b1e2724`). Le registre garde la
+  phrase datée ; aucun ADR ne la remplace encore.
+
+**Prochaines étapes.** Rejouer `03-shadow` depuis une session réelle pour voir le chemin du scratch vide sur
+un run, et non seulement sur la fixture du banc.
+
+**Mémoires.** `ece5bece-5768-40e5-8c1d-6bf10b3912c8` — `suite` saute un scratch vide, contrôle 309, banc 302/302.
+
+## Séance 171 — 2026-10-24 (le banc éprouve les deux moitiés du scratch : collecte et arrêt sur refus)
+
+**Objectif.** Prouver par le banc qu'un scratch non vide se collecte toujours, et qu'un refus de collecte
+d'annexe arrête encore l'orchestrateur.
+
+**Fait.**
+
+- `docs/device/harness/banc-harnais.sh`, contrôle **310** : le scratch porte `preuve.md` ; `suite` doit sortir
+  en `0`, le produit `raw/cas-oc/NOTES.md` être collecté, le fichier se retrouver verbatim sous
+  `annexe/cas-oc/` avec un manifeste `role: annexe`, et jamais sous `raw/cas-oc/`.
+- Contrôle **311** : le scratch porte `preuve.md` et un lien symbolique `sortie` vers `../../ailleurs` ;
+  `collect --annexe` refuse « lien symbolique dans le produit » ; `suite` doit sortir en `1`, nommer le lien et
+  ce que le refus empêche, ne pas écrire `raw/cas-oc/last-message.md`, et avoir déjà collecté le produit —
+  c'est l'absence du dernier message qui prouve l'arrêt, pas l'absence de produit. `faits.json` s'écrit à
+  l'étape 1 : une première version du contrôle l'interrogeait et tombait pour cette raison, la version
+  retenue ne le fait plus.
+- `docs/BANC.md` : version **V0.60**, description et phrase de tête à **304** contrôles.
+- `docs/DECISIONS.md` : **ADR-096**, le falsificateur du scratch se mesure des deux côtés.
+
+**Vérifié.**
+
+- `bash -n docs/device/harness/banc-harnais.sh` => `exit 0`.
+- `bash docs/device/harness/banc-harnais.sh` => `304/304 PASS`, `exit 0` ; `PASS 310` et `PASS 311`.
+- Morsure par mutation, sur des copies de l'orchestrateur du banc conservé (`/tmp/mut-310`, `/tmp/mut-311`,
+  `run.mjs` et les trois modules liés) : sans la branche de collecte de l'annexe (`if (false)`), **310** sort
+  `1` avec « le scratch non vide n'est pas collecté sous annexe/cas-oc/ » et « l'annexe n'a pas de
+  manifeste » ; quand `harnaisOuRefus` affiche le refus sans `process.exit(1)`, **311** sort `1` avec « suite
+  accepte un scratch dont la collecte refuse : exit 0 » et « le run poursuit après un refus de collecte ».
+- Témoins sur l'orchestrateur réel, fixtures neuves : **310** `exit 0`, `annexe/cas-oc/{manifest.json,
+  preuve.md}` ; **311** `exit 0`, `raw/cas-oc/{manifest.json, NOTES.md}` sans dernier message.
+- Deux premières tentatives de témoin ont échoué sur un mauvais chemin de store (`$B/orch/oc` au lieu de
+  `$B/oc`) ; elles ne comptent pas comme preuve.
+- Mémoire `6d7ea1a3-77b4-4a0a-ba4d-501426cd7127`, relue.
+
+**Dérives signalées, non corrigées.**
+
+- L'ADR-094 écrit encore que la réparation de `03-shadow` « n'est pas faite », alors que les Séances 168 et
+  169 l'ont réparé et rejoué.
+
+**Prochaines étapes.** Éprouver le refus de la copie du produit (et non de l'annexe), autre chemin où `suite`
+doit s'arrêter.
+
+**Mémoires.** `6d7ea1a3-77b4-4a0a-ba4d-501426cd7127` — contrôles 310 et 311, banc 304/304.

@@ -2756,3 +2756,230 @@ limites ; `ouvrir` ne fait que ne plus confondre une clôture après réponse av
 
 **Falsificateur** : `ouvrir` acceptant une session arrêtée avant toute réponse ; `ouvrir` refusant encore
 une clôture après une réponse jouée.
+
+## ADR-090 — Le reçu nomme la promesse du cas, et un `conforme` nomme son juge (2026-10-24)
+
+**Contexte.** L'audit du protocole du 2026-10-24 a mesuré deux surdités. Le falsificateur `P` des attendus
+n'était lu par aucun code : `conforme` pouvait être rendu sans qu'aucune commande n'ait éprouvé la promesse
+du skill. Et `output.json` ne nommait pas le juge : `difference` et `phrase` étaient recopiées sans qu'on
+sache qui les avait écrites. Le rapport utilisateur, lui, affirmait « l'ordre des gestes », que rien ne
+mesure, comptait les lignes de trace comme des « échanges », et terminait sa durée à l'heure de `suite`.
+
+**Options** : ajouter un vérificateur de promesse par cas (rejeté : c'est P1, et tous les cas n'ont pas de
+commande de promesse) · laisser `conforme` muet sur la promesse et le dire dans le rapport seulement
+(rejeté : le verdict resterait plus large que la preuve) · séparer trois étages dans le reçu, avec un mode
+de promesse et un juge nommé pour `conforme` (choisi).
+
+**Décision.** `receipt.json` porte `promesse{mode, declaree_par, condition, mesure, juge, raison}`.
+`mesure` exige un bloc `verification` qui a mordu : la commande du cas a éprouvé la promesse. `juge_seul`
+dit que la promesse est énoncée (par `P`, à défaut par `attendu`) sans mesure : `compare` doit alors nommer
+`--juge` et `--rubrique` pour `conforme`, et `output.json` porte `promesse{mode, condition, juge, rubrique}`.
+`non_mesuree` dit que le cas n'énonce ni `attendu` ni `P` : `conforme` est refusé au reçu. Un reçu antérieur
+au bloc ne peut plus être signé `conforme` par `compare` ; il reste lisible, et le rapport ajoute la limite
+qui dit ce qu'il ne couvre pas.
+
+**Conséquences.** Contrôles **295** (deux gels du cas jouet, l'un avec `P`, l'autre sans `attendu` ni `P` :
+`juge_seul` accepté avec sa limite, `non_mesuree` refusé en `conforme` et accepté en `non concluant`) et
+**296** (`compare` refuse `conforme` sans juge, l'écrit avec, refuse `non_mesuree` et un reçu sans bloc).
+Les contrôles de `conforme` du banc passent `--juge banc --rubrique …` ; `fin` refuse avant d'écrire un
+reçu quand le verdict est `conforme` sans juge, parce que le reçu ne s'écrit qu'une fois. Le rapport dérive
+sa durée du premier au dernier message de la trace, nomme la fenêtre déclarée par le reçu quand elle en
+diffère, et compte des lignes dans la fenêtre, jamais des échanges. Aucun reçu, gel ou run existant n'est
+réécrit.
+
+**Ce que ce n'est pas** : une mesure de la promesse. `juge_seul` reste une lecture humaine nommée, que le
+reçu ne vérifie ni ne reproduit ; `mesure` porte sur les mutations déclarées, pas sur tout ce que le skill
+promet.
+
+**Falsificateur** : un `conforme` écrit sur un cas qui n'énonce ni `attendu` ni `P` ; un `output.json`
+`conforme` sans `--juge` et `--rubrique` ; un rapport qui compte les lignes de trace comme des échanges ou
+qui finit sa durée à l'heure de `suite`.
+
+## ADR-091 — La correction d'un verdict se lie à lui, sans le réécrire
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : l'audit v2 du protocole (D4) a établi que le reçu du
+run `2026-10-24-045529-9c8fd81c-rejeu-06-test` porte `conforme` alors que sa trace nomme `/tmp/opencode` et
+que `F5` du cas attache `non concluant` à une écriture hors du terrain ; la note du 05:07:54 corrige le
+verdict en prose, mais rien ne lie cette note au reçu dans l'index, et l'index affiche `conforme` seul.
+
+**Décision.** Un dossier de run peut porter un `correction.json` :
+`{type, note, verdict_retenu, preuve}`. La note est un chemin relatif au dossier du run et doit exister ;
+`verdict_retenu` appartient à `conforme|ecart|non concluant` et diffère du verdict du reçu ; `preuve` n'est
+pas vide. `runs.mjs --index` affiche alors `conforme (corrigé non concluant, [note](<run>/<note>))` : le
+verdict du reçu reste le premier mot, la correction le suit, la note est cliquable. `--verifier` refuse une
+correction sans note, hors domaine, sans preuve, ou qui retient le verdict déjà écrit ; un guidé qui porte
+`correction.json` est refusé, faute de verdict à corriger. `receipt.json` et `output.json` ne sont jamais
+réécrits : le faux positif reste une pièce, la correction une lecture datée.
+
+**Conséquences.** Contrôles **297** (l'index affiche les deux verdicts et le lien, le vérificateur l'accepte),
+**298** (note absente refusée) et **299** (correction sans effet refusée). Le dossier du run 06 porte son
+`correction.json` ; l'index le montre corrigé. Le champ `preuve` est une citation, pas une nouvelle mesure :
+il nomme les lignes de trace et le falsificateur qui portent le verdict retenu, et ne remplace ni la trace ni
+l'audit.
+
+**Falsificateur** : un index où un run corrigé s'affiche sans sa correction ; un `correction.json` accepté
+sans note ou sans preuve ; un reçu modifié pour absorber sa correction.
+
+## ADR-092 — `attendu_vu` se mesure, et une contradiction refuse le reçu
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : D3 de l'audit v2 du protocole a établi que
+`cloisonnement.attendu_vu` était une déclaration recopiée de `faits.json` ; rien ne la confrontait aux
+chemins que la session avait réellement touchés, et un `glob` sans chemin laissait croire à une mesure.
+
+**Décision.** Le reçu lit dans `lecturesFaites` — lectures d'outil avec chemin et chemins littéraux des
+commandes `shell` — tout chemin sous le dossier des cas (`--cases`, `docs/device/CASES/` par défaut) et
+écrit `cloisonnement.attendu_vu_mesure{etat, seq, chemin, motif}`. `oui` cite le premier chemin touché,
+avec son seq et son chemin relatif au dossier ; `non` dit qu'aucun n'a été touché ; `inconnu` dit qu'une
+lecture sans chemin (`glob`, `grep`) ou une commande `shell` non interprétable empêche de conclure, et
+`motif` le nomme. Un `non` déclaré que la mesure contredit par un `oui` **refuse le reçu** : la
+déclaration et la trace ne peuvent pas être vraies ensemble. Un `oui` déclaré n'est pas confronté : il
+force déjà `non concluant`, et la mesure n'a rien à lui apprendre. Une mesure `inconnue` ajoute une
+limite qui dit que la déclaration reste une déclaration.
+
+**Conséquences.** Le rapport porte une ligne `Attendu vu` qui lit la déclaration et la mesure ; un reçu
+antérieur n'a pas le bloc, et la ligne le dit. Contrôles **292** (trace sans lecture du kit :
+`etat: non`, ligne du rapport), **300** (lecture de l'attendu sous `CASES/` et `non` déclaré : refus
+nommé, aucune pièce écrite) et **301** (`glob` sans chemin : `etat: inconnu`, limite et rapport).
+Contrôle **295** inchangé. Aucun reçu historique n'est réécrit : les runs passés gardent la déclaration
+seule, et le rapport dit que la mesure manque.
+
+**Ce que ce n'est pas** : la preuve que le contenu de l'attendu a été lu, ni qu'il a été compris. La
+mesure porte sur un chemin touché sous le dossier des cas, pas sur ce que la session en a fait ; un
+attendu relayé dans le prompt reste invisible, et le `oui` déclaré reste la seule trace de ce canal.
+
+**Falsificateur** : un reçu qui écrit `attendu_vu_mesure: oui` sans seq ni chemin ; un `non` déclaré
+accepté alors que la trace lit un fichier sous `CASES/` ; un `glob` sans chemin qui rend `non` au lieu
+d'`inconnu`.
+
+## ADR-093 — Un cas sans pause se clôt sans question, et refuse une question
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : D5 de l'audit v2. Le cas
+`2026-10-24-055310-shadow-areas-design` déclare `attendu_details.pause.requis: false` et sa demande interdit
+les questions ; `ouvrir` a ouvert la session, envoyé le texte, puis est sorti en `1` avec « le run n'est pas
+un succès à zéro question ». La règle d'ADR-077 protège une pause qui existe ; elle refusait la clôture
+normale d'un skill qui ne pose aucune question.
+
+**Décision.** `ouvrir` lit `attendu_details.pause.requis`. Quand il vaut exactement `false`, une session
+inactive sur un texte qui ne demande rien est une clôture normale, même après zéro réponse jouée : le bloc
+dit « 0 question attendue », et `demande.reponses_figees` peut être vide. Une question reste un refus, sous
+ses deux formes : un formulaire ou un texte finissant par `?` sont refusés avant qu'une réponse figée ne
+parte, avec un message qui nomme `pause.requis: false` et « n'en attend aucune ». Un bloc absent, ou
+`requis: true`, garde le comportement d'ADR-077 et d'ADR-089 : zéro question après zéro réponse reste un
+refus.
+
+**Conséquences.** Contrôles **293** (pause fausse, texte sans question : `exit 0`, un message, 0 réponse,
+« 0 question attendue ») et **294** (pause fausse, question en texte : `exit 1`, refus nommé, aucune réponse
+figée jouée). Les contrôles 224 à 291, écrits sur un cas qui pause, passent sans changement. Le run
+`03-shadow` n'est ni rejoué ni réécrit : sa note d'ouverture refusée reste la pièce de ce qui s'est passé.
+
+**Ce que ce n'est pas** : la preuve qu'un dernier texte sans `?` est bien une clôture. La règle ne lit que
+la dernière ligne hors bloc ; sur un cas sans pause, elle accepte donc aussi un arrêt manqué, et c'est la
+contrepartie assumée de ne pas exiger une question que le cas interdit.
+
+**Falsificateur** : un cas `pause.requis: false` dont une question est jouée au lieu d'être refusée ; un cas
+qui pause dont une clôture à zéro question sort en `0` ; `ouvrir` qui écrit une pièce dans le dossier du run.
+
+## ADR-094 — Le gel refuse un cas qu'aucune porte ne pourrait jouer
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : D6, D7 et D8 de l'audit v2. Le cas
+`2026-10-24-055310-shadow-areas-design` fige deux réponses au §8 de sa demande et une seule dans son
+attendu, avec un budget d'un échange que le message de la porte consomme à lui seul ; son `P` mesure « le
+sha256 de la source contre le gel » alors qu'aucun `--ref` ne hache cette source. Aucun champ ne
+confrontait ces déclarations : `P` et `arbre_attendu` n'étaient lus par aucun code, et la confirmation de la
+personne restait une convention. Un agent pouvait donc fixer lui-même la borne sur laquelle il serait jugé.
+
+**Décision.** `freeze` refuse, avant d'écrire le gel :
+
+1. une pause absente (`pause.requis: false`) qui fige des réponses — aucune question ne les jouerait ;
+2. un budget que la porte épuise à elle seule : moins de deux échanges quand des réponses sont figées ;
+3. deux comptes de réponses différents entre les blocs `<<<REPONSE_…>>>` du §8 et `demande.reponses_figees` ;
+4. un `arbre_attendu` non vide qui n'inclut pas le fichier nommé par `produit.racine` (une racine de
+   répertoire ne nomme aucun fichier : la comparaison revient alors à `collect`) ;
+5. un `P` qui mesure un `sha256` ou un `md5` contre le gel sans qu'un `--ref` ne hache l'un des chemins qu'il
+   cite ;
+6. un cas complet, sans marque `a_remplir`, que personne n'a confirmé : `--confirme-par` et
+   `--confirme-preuve` vont ensemble, ou l'attendu porte `confirmation{par, le, preuve}` avec une date ISO
+   8601 ; le gel recopie la confirmation, et un squelette en est dispensé.
+
+`collect` confronte le produit à `arbre_attendu` : une entrée déclarée et absente refuse la collecte. La
+comparaison ne porte que sur le produit que le cas déclare (un `--from` hors de `produit.racine` n'est pas ce
+produit), et une entrée qui contient un espace ou un `<` est une règle de prose, pas un chemin.
+
+**Écart assumé sur la formule du §5.5-3.** L'audit demande `budget_echanges < 1 + len(reponses_figees)`. Le
+gel applique `budget < 2` quand des réponses sont figées : `ouvrir` présente les réponses comme un menu
+(« à utiliser telles qu'elles »), pas comme une file, et deux réponses sont deux variantes de la même pause.
+La formule littérale refuserait le cas jouet, sain avec deux réponses et deux échanges, et ferait échouer le
+contrôle 121 du banc. La règle retenue refuse exactement les cas où aucune réponse ne peut être jouée.
+
+**Conséquences.** Contrôles **302** à **308** : budget épuisé par la porte, comptes de réponses divergents,
+`arbre_attendu` sans son produit, `P` contre un gel sans référence, confirmation absente, confirmation sans
+date ISO, et confirmation datée dans l'attendu recopiée dans le gel. Les sept cas existants restent gelés ;
+aucun n'est re-gelé ni réécrit. Le cas `03-shadow` reste gelé tel quel et serait refusé à tout re-gel : ses quatre défauts (pause fausse
+avec une réponse figée, deux réponses au §8 contre une, budget 1 avec une réponse, `P` sans référence) sont
+connus, et sa réparation coûte un nouveau run — elle n'est pas faite.
+
+**Ce que ce n'est pas** : la preuve que le `P` mesure la bonne chose. Le gel vérifie qu'un `sha256` cité
+contre le gel est couvert par une référence, pas que la condition énonce la promesse du skill ; un `P` en
+prose reste un `juge_seul`. La confirmation est une pièce datée, pas une identité vérifiée : le gel recopie
+qui a confirmé, et rien ne prouve que ce soit la personne.
+
+**Falsificateur** : un gel écrit avec un `budget_echanges` de 1 et une réponse figée ; un attendu qui recopie
+un autre nombre de réponses que le §8 ; un `arbre_attendu` qui omet le fichier de `produit.racine` ; un `P`
+cité « sha256 du gel » accepté sans `--ref` ; un cas complet gelé sans confirmation ; une confirmation dont
+le `le` n'est pas ISO 8601 ; un `collect` qui accepte un produit dont une entrée d'`arbre_attendu` manque.
+
+## ADR-095 — Un scratch vide ne se collecte pas, et ne fait pas perdre le produit
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : le run `2026-10-24-120532-5b1e2724-6b24ca8`, cas
+`2026-10-24-055310-shadow-areas-design`, refusé une première fois par
+`collect : rien à collecter sous …/terrain/.scratch`. La session avait créé le dossier `.scratch` déclaré au
+cas sans y écrire ; l'ADR-067 dit que `suite` collecte l'annexe « quand le cas déclare un scratch et que le
+dossier existe », et `collect --annexe` refuse un dossier vide. Le produit, lui, était là : le run perdait sa
+collecte à cause d'un dossier vide, et la reprise a coûté un déplacement manuel des pièces.
+
+**Décision.** `suite` ne collecte l'annexe que si le dossier du scratch porte au moins un fichier, à quelque
+profondeur (`contientUnFichier`). Un dossier vide, ou qui ne contient que des sous-dossiers vides, se saute :
+le produit se collecte, et le reçu porte la limite « le cas déclare un scratch, mais le run n'a aucune annexe
+collectée ». Un scratch absent garde son comportement. Un dossier non vide se collecte comme avant, et un
+`collect --annexe` qui refuse arrête toujours l'orchestrateur : la règle ne couvre que le vide.
+
+**Conséquences.** Contrôle **309** du banc : la fixture crée un `.scratch` vide sous le terrain du cas, joue
+`suite` en opencode sur la porte déjà copiée, et exige `exit 0`, le produit sous `raw/<cas>/` et aucun
+`annexe/`. Le contrôle est prouvé mordant par mutation : joué sur une copie de l'orchestrateur où le test du
+dossier vide est retiré, il sort `1` et nomme `suite refuse un scratch vide`. Le banc passe de **301** à
+**302** contrôles ; aucun contrôle existant n'est renuméroté.
+
+**Ce que ce n'est pas** : la preuve qu'une session a écrit dans son scratch, ni une tolérance pour un scratch
+hors de l'arbre du cas, toujours refusé.
+
+**Falsificateur** : un `suite` qui refuse un scratch vide ; une annexe collectée pour un dossier vide ; un
+scratch non vide dont la collecte refusée ne stoppe plus l'orchestrateur.
+
+## ADR-096 — Le falsificateur du scratch se mesure des deux côtés (2026-10-24)
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : l'ADR-095 énonce deux falsificateurs, et le banc
+n'en mesurait qu'un, le scratch vide. « Un scratch non vide dont la collecte refusée ne stoppe plus
+l'orchestrateur » restait une phrase, et rien ne distinguait un `suite` qui saute le vide d'un `suite` qui
+saute l'annexe entière, ou qui avale un refus de `collect`.
+
+**Décision.** Deux contrôles, aucun code de production changé. **310** : le scratch porte `preuve.md` ;
+`suite` doit sortir en `0`, le fichier se retrouve verbatim sous `annexe/<cas>/` avec un manifeste
+`role: annexe`, et jamais sous `raw/<cas>/`. **311** : le scratch porte un fichier et un lien symbolique vers
+`../../ailleurs` ; `collect --annexe` refuse la copie, et `suite` doit sortir en `1` en nommant « lien
+symbolique » et ce que le refus empêche, sans écrire `raw/<cas>/last-message.md`. Le produit, collecté
+avant l'annexe, est bien là : c'est l'absence du dernier message qui prouve l'arrêt. `faits.json` s'écrit à
+l'étape 1 et ne dit rien du refus, donc ce contrôle ne l'interroge pas.
+
+**Conséquences.** Le banc passe de **302** à **304** contrôles ; aucun n'est renuméroté. Morsure prouvée par
+mutation, sur des copies de l'orchestrateur dont `run.mjs` et les trois modules sont liés : sans la branche
+de collecte de l'annexe, **310** sort `1` avec « le scratch non vide n'est pas collecté sous
+annexe/cas-oc/ » ; quand `harnaisOuRefus` affiche le refus sans sortir, **311** sort `1` avec « suite accepte
+un scratch dont la collecte refuse : exit 0 » et « le run poursuit après un refus de collecte ». Témoins sur
+l'orchestrateur réel : **310** `exit 0`, annexe `{manifest.json, preuve.md}` ; **311** `exit 0`, produit seul
+sous `raw/cas-oc/`.
+
+**Ce que ce n'est pas** : la preuve qu'un refus de la copie du produit arrête `suite` (autre chemin, non
+éprouvé ici), ni que le lien symbolique soit la seule cause de refus d'une annexe.
+
+**Falsificateur** : un `suite` qui laisse l'annexe non collectée alors que le scratch porte un fichier ; un
+`suite` qui sort en `0` après un `collect --annexe` refusé.

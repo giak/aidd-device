@@ -8145,3 +8145,585 @@ arrivée dans la même séance de travail, et la phrase est corrigée par une re
 
 **Mémoires.** `7222a322-493c-4539-985d-3b80d66f1ff7` : le refus, son ordre, le contrôle 280, le falsificateur
 et l'effet de bord.
+
+## Séance 151 — 2026-10-23 (le refus de `suite` nomme l'auteur de la trace, contrôle 281)
+
+**Objectif.** Distinguer, dans le refus de `suite` sur une trace existante, la trace laissée par un `suite`
+arrêté avant ses faits de la trace d'un run voisin, sans ajouter de fichier d'état au dossier du run.
+
+**Fait.**
+
+- `docs/device/harness/orchestrer.mjs` : le refus lit `trace/fil.json` et `trace/echange.jsonl` (lignes 1118 à
+  1124). `tracer` est le seul écrivain de `fil.json`, et `suite` écrit ses faits aussitôt sa trace renommée, dont
+  le refus des faits précède celui-ci : une trace avec `fil.json` est nommée « trace de run guidé, écrite par
+  `tracer` » ; sans lui, « trace d'un `suite` arrêté avant ses faits ». Aucun marqueur, aucun fichier neuf.
+- `docs/device/harness/banc-harnais.sh` : contrôle **281** (`suite-trace-origine.mjs`, ligne 2827) sur deux
+  dossiers de banc, l'un avec `fil.json`, l'autre sans. Les deux refus doivent être distincts et nommer le bon
+  auteur, jamais l'inverse ; chaque dossier garde `gate.json,trace`, ses pièces et les octets de la trace, sans
+  `.suite-<pid>`.
+- `docs/DECISIONS.md` : ADR-083 reçoit une **Précision** datée, avec ses deux limites. `docs/BANC.md` : V0.49,
+  ligne 281, et les trois comptes de la page portés à 281.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` → `281/281 PASS`, `exit 0` (`/tmp/banc-281.log`) ;
+  `PASS 281 suite nomme l'auteur de la trace existante exit=0`, avec 279 et 280 verts.
+- Les deux messages, lus à la main sur des dossiers de `/tmp` : avec `fil.json`, « c'est une trace de run guidé,
+  écrite par `tracer` (…/fil.json est là) » ; sans, « aucun …/fil.json : c'est la trace d'un `suite` arrêté avant
+  ses faits » ; `exit 1` dans les deux cas.
+- Falsificateur : une copie de l'orchestrateur où le discriminant est forcé vers la branche « suite » rend, sur
+  le dossier qui porte `fil.json`, le message « suite arrêté » — le contrôle 281 tombe donc par son message, et
+  c'est bien la lecture de `fil.json` qui distingue les deux origines.
+- `node docs/device/harness/liens.mjs` → 0 lien mort ; `node docs/device/harness/runs.mjs --verifier` →
+  `exit 0` ; `git diff --check` → `exit 0`.
+
+**Dérives signalées, non corrigées.** Une trace recopiée à la main sans `fil.json` est nommée « suite arrêté »,
+faute de marqueur. Un `fil.json` seul, sans `echange.jsonl`, n'est pas refusé : `suite` écrirait alors sa trace à
+côté d'une pièce étrangère.
+
+**Rectifications.** Mon premier falsificateur découpait le fichier par numéros de lignes et produisait une copie
+qui sautait le bloc : elle est allée jusqu'au refus du client, et ne prouvait rien. Remplacé par une copie où
+seul le discriminant est forcé, relue à l'exécution.
+
+**Prochaines étapes.** Rien de demandé.
+
+**Mémoires.** `7222a322-493c-4539-985d-3b80d66f1ff7`, tenue à jour : le discriminant `fil.json`, les deux
+messages, les contrôles 280 et 281, le falsificateur et les deux limites.
+
+## Séance 152 — 2026-10-23 (un run indépendant de `06-test` sur audio-sync-tool, verdict ecart)
+
+**Objectif.** Éprouver un skill qui n'avait aucun cas gelé, `06-test` d'`aidd-dev`, par le protocole
+indépendant et avec opencode comme client headless.
+
+**Fait.**
+
+- Cas `2026-10-23-202011-test-analyse`, né à 20:20:11 (`stat -c %w`), sur deux clones propres :
+  `2026-10-23-202002-framework` (`fe48de12`) et `2026-10-23-202002-terrain` (`416ec1f`). Demande : lister les
+  comportements non testés de `analysis.py`, attendre l'accord, puis écrire au plus les deux comportements les
+  plus prioritaires dans `test_skill_analysis.py`. Attendu confirmé, gel `32cfec45`.
+- `porte` : `4c3db196`, ouverture autorisée dans le terrain (`HEAD 416ec1f`, porcelain vide), texte
+  `2245649c` (818 o).
+- `ouvrir --modele opencode/deepseek-v4.1-flash-free` a refusé, `exit 1` : la session s'est arrêtée après
+  « Do you approve these two (and the pending entry)? Reply "oui" to start writing, » — une question bien
+  formée, mais dont la dernière ligne ne finit pas par `?` (règle du §2 d'[ADR-077](DECISIONS.md)).
+- La réponse figée 1 a été envoyée à la main par `opencode run --session`, le geste que le refus nomme, puis
+  `suite --client opencode` : trace de 33 lignes, `faits.json`, dernier message de 1 250 o (seq 20), copie de
+  `test_skill_analysis.py` (4 134 o, `sha256 3c01985e`).
+- `fin` : `--sans-ecrire` sort en `2` (option absente du parseur, bien que la page la nomme) ; sans
+  `--verdict`, le verdict proposé est `conforme`, aucun falsificateur ne mord. La personne tranche `ecart`,
+  parce que le produit porte neuf tests là où l'attendu écrivait « au plus deux tests ». Reçu écrit, 14
+  limites, output et `RAPPORT.md`.
+- Index régénéré : **35 runs**.
+
+**Vérifié.**
+
+- `python3 -m pytest -q test_skill_analysis.py` → `9 passed`, `exit 0`, dans la trace (seq 18) comme à la main.
+- `suite` `exit 0` ; `fin --verdict ecart` `exit 0` ; `lire` `exit 0` ; `rapport --remplacer` rend le même
+  `sha256` (`de08421f`) ; `runs.mjs --verifier` `exit 0` après `--index`.
+- Le porcelain du terrain ne porte que `?? test_skill_analysis.py` : aucun fichier existant n'a changé.
+- Pause mesurée : seq 15 → seq 16, 110 866 ms, `pause.mesuree: true`.
+
+**Dérives signalées, non corrigées.**
+
+- `ouvrir` refuse une question dont la dernière ligne est une consigne (« Reply "oui"… ») et non un `?` : la
+  règle rate une question bien formée, et le repli manuel est la seule issue. Le run a coûté un refus.
+- `PROTOCOLE.md` §4 et l'usage d'`orchestrer.mjs` nomment `--sans-ecrire` ; `commandeFin` ne l'accepte pas et
+  sort en `2`. Le à-blanc s'obtient en omettant `--verdict` : la page et le parseur divergent.
+- Le cas est né avec deux formulations qui se contredisent : la demande borne les comportements, l'attendu
+  écrit « au plus deux tests ». Le produit a neuf tests ; le verdict `ecart` en découle. Le cas gelé n'est pas
+  réécrit après coup : sa correction demande un nouveau cas ou un re-gel explicite.
+- La conduite `agent` est déclarée, jamais prouvée ; le reçu le dit ([ADR-071](DECISIONS.md)).
+
+**Rectifications.**
+
+- Premier appel de `fin` avec `--sans-ecrire` : `exit 2`, rien écrit. Le à-blanc se fait sans `--verdict`,
+  contrairement à ce que la page et l'usage impriment.
+- La `--difference` et la `--phrase` annonçaient « neuf tests là où l'attendu demandait au plus deux tests » :
+  c'est cette constatation qui a fondé `ecart`, après un verdict proposé `conforme`.
+
+**Prochaines étapes.** Si la question doit se lire autrement que par un `?` final, c'est une spec ; si
+`--sans-ecrire` doit exister, c'est une ligne de parseur ; pour rejouer le cas, en fabriquer un dont la règle
+borne les comportements, pas le nombre de tests.
+
+**Mémoires.** `9a4cc251-346c-433c-a831-5beb36547e11` : le cas, la session, le verdict `ecart`, les pièces, et
+les trois dérives (le `?` final, `--sans-ecrire`, la borne du cas).
+
+## Séance 153 — 2026-10-23 (le run `06-test` est L1, pas L4 : rôles, erreurs et douze corrections)
+
+**Objectif.** Répondre aux six questions du retour d'expérience du run `06-test`, définir les rôles,
+et proposer un protocole de test robuste, générique à tout skill AIDD. Aucun code, aucun cas, aucun
+run nouveau.
+
+**Fait.**
+
+- Les pièces du run relues : `receipt.json` (14 limites, `verdict: ecart`, `pause.attente_ms: 110866`),
+  `faits.json` (`modele: opencode/deepseek-v4.1-flash-free`, `cloisonnement.attendu_vu: "non"`), la
+  trace de 33 lignes, le produit `test_skill_analysis.py` (4 fonctions, 9 cas), la demande et l'attendu.
+- Deux recherches `researcher-web` : isolement d'opencode v2 (`HOME` + `XDG_CONFIG_HOME`, `--pure` non
+  documenté, export sans prompt assemblé) et pratique de l'évaluation (mutation, contamination,
+  attribution). Aucun second agent `thinker` ou `reviewer` n'existe dans la session : la revue est
+  interne, et le document le dit.
+- Livrable : [brainstorm](brainstorm/2026-10-23-210021-protocole-de-test-robuste.md), six réponses,
+  niveaux L0-L4, sept rôles (auteur, greffier, juge, avocat du diable, auditeur, opérateur, relecteur
+  externe), huit erreurs classées, douze corrections C1-C12, huit invariants, plan en trois phases.
+  Contrôles de banc proposés 282 à 290, aucun joué.
+
+**Vérifié.**
+
+- `node docs/device/harness/orchestrer.mjs fin --cas 2026-10-23-202011-test-analyse --run docs/device/runs/2026-10-23-202344-32cfec45-e51e7a6 --difference a --phrase b --sans-ecrire` → `EXIT=2`,
+  `USAGE — option inconnue « --sans-ecrire »` : la page et l'usage la nomment, le parseur la refuse.
+- `node docs/device/harness/liens.mjs` → 219 fichiers, 1384 liens hors code, 0 mort, `exit 0` ; le
+  nouveau document et le lien du journal sont dans le compte.
+- `stat -c %w` → `2026-10-23 21:00:21.531518765 +0200`, préfixe du fichier identique.
+- La trace porte `9 passed` (seq 18) ; le produit a 4 fonctions et 9 cas pour 2 comportements ; sur les
+  10 comportements listés, 2 sont couverts, 1 est `pending`, 7 sont silencieux.
+- Trois commandes portent `rtk` (seq 6, 7, 19), un raisonnement le cite (seq 8) ; la convention est
+  absente du terrain et du cas.
+- Modèle : skill `model: sonnet`, run `opencode/deepseek-v4.1-flash-free` ; aucune limite dédiée.
+
+**Dérives signalées, non corrigées.**
+
+- Le produit dépasse la borne écrite : la demande §6 et l'attendu disent « au plus deux tests, un par
+  comportement » ; le produit porte quatre fonctions et neuf cas pour deux comportements. Aucun
+  falsificateur ne mesure le compte, donc le reçu ne tranche pas. Le run gelé reste `ecart`, et l'écart
+  est fondé ; la correction (C2) demande un falsificateur, pas une réécriture du cas.
+- Le verdict `ecart` n'est attribué à aucune couche : la session a dépassé la borne, le cas ne l'a pas
+  mesurée, et le rapport ne le dit pas comme une attribution. L'audit ne conteste pas `ecart` ; il
+  propose `attribution: session` et un falsificateur (C2, C5).
+- L'isolement n'est pas mesuré (`attendu_vu: "non"`), le prompt système n'est pas dans l'export, et
+  aucune faute n'a été injectée dans le produit : les tests peuvent passer sans mordre.
+- `ouvrir` garde sa règle du `?` final ; `fin --sans-ecrire` reste absent du parseur. Les deux
+  corrections sont proposées (C3, C4), aucune n'est appliquée.
+
+**Rectifications.**
+
+- Première rédaction du brainstorm : j'ai écrit que la demande bornait les comportements et l'attendu
+  les tests, donc que le cas se contredisait. La relecture de la demande §6 le réfute : elle dit aussi
+  « au plus deux tests, un par comportement ». Le produit a quatre fonctions, il dépasse la borne ; le
+  défaut du cas est l'absence de falsificateur, pas une contradiction. Document et mémoire corrigés.
+- J'ai d'abord soupçonné un couplage à l'implémentation dans le mock ffmpeg ; la lecture du produit le
+  réfute : `fake_run(*_args, **_kwargs)` ignore les arguments, ne touche ni la ligne de commande ni une
+  fonction privée. L'affirmation du dernier message était juste.
+- Le fichier a d'abord été nommé `2026-10-23-205857-…`, d'après l'heure de la commande `date` ; sa
+  naissance mesurée est `21:00:21`, et il a été renommé sur cette mesure.
+- Les 7 comportements silencieux ne sont pas une faute : la demande autorisait « au plus les deux
+  comportements les plus prioritaires ». C'est une trace incomplète, pas un écart.
+
+**Prochaines étapes.** Écrire la spec de la phase 0 (C1 isolement, C2 règle/falsificateur, C3 question,
+C5 attribution) et ses cinq contrôles de banc (282, 283, 285, 286, 287), avant toute modification du
+harnais. Puis la phase 1 (C4, C6, C7, C8), puis la phase 2 (C9 à C12).
+
+**Mémoires.** `17b3e3fd-35eb-4639-a873-cb28feec11cc` : le run, les six faits, le livrable, les statuts
+`CONFIRME` / `HYPOTHESE` / `OUVERT`, relu après écriture.
+
+## Séance 154 — 2026-10-23 (la spec de la phase 0 : isolement, règles, question, attribution)
+
+**Objectif.** Écrire la spec de la phase 0 du protocole de test, C1, C2, C3 et C5, avec ses cinq
+contrôles de banc. Aucun code, aucun cas, aucun run nouveau.
+
+**Fait.**
+
+- Les points du harnais relus : `commandeOuvrir` (la question sur `texte.ligne.endsWith("?")`, le
+  `spawn` de `opencode serve` sans `env`), `commandeFin` (ni `--attribution`, ni `--regle`),
+  `cmdFreeze` et `cmdReceipt` (aucune validation de `version_attendu`), `clients.mjs`
+  (`execFileSync("opencode", ["session", "export", …], { cwd, encoding })` sans `env`), et le banc,
+  dont le dernier contrôle est 281.
+- Livrable :  [spec](tasks/2026_10/2026-10-23-211200-phase-0-protocole-de-test/2026-10-23-211200-spec.md),
+  353 lignes, quatre corrections, cinq contrôles (282, 283, 285, 286, 287), le 284 réservé à C4, et
+  trois ADR réservées (084, 085, 086).
+- C1 : `HOME` et les quatre `XDG_*` neufs sous `<caseRoot>/environnement/<run>/`, sidecar
+  `environnement.json`, export de `suite` avec le même environnement, bloc `environnement` dans
+  `faits` et le reçu, limites quand l'isolement manque. C2 : `version_attendu: 2`, `unite_de_borne`,
+  `borne_source`, `regles[]` avec `mesure` ou `juge_seul`, refus au gel et au reçu, `fin --regle`.
+  C3 : `derniereQuestionHorsBloc`. C5 : `--attribution` et `--attribution-detail`, obligatoires pour
+  `ecart` et `non concluant`, refusés pour `conforme`.
+
+**Vérifié.**
+
+- `stat -c %w` → naissance `2026-10-23 21:12:00.877470059 +0200`, préfixe identique.
+- `node docs/device/harness/liens.mjs` → 220 fichiers, 1398 liens hors code, 0 mort, `exit 0` ; le
+  lien de cette séance vers la spec est compris.
+- Les faits de code cités sont ceux du dépôt : `texte.ligne.endsWith("?")` dans `commandeOuvrir`, `spawn`
+  sans `env` dans `demarrerServeur`, `execFileSync` sans `env` dans `clients.mjs`, aucune validation de
+  `version_attendu` dans `cmdFreeze` et `cmdReceipt`, et 281 comme dernier contrôle du banc.
+- La spec n'est pas implémentée ; les cinq contrôles ne sont pas joués ; le banc reste à 281.
+
+**Dérives signalées, non corrigées.**
+
+- La spec change une règle du protocole : `ouvrir` écrira `environnement.json` là où le §2 dit « rien ».
+  L'amendement est porté par l'ADR-084, pas par une réécriture silencieuse de la page.
+- Le store isolé n'est pas tranché par la documentation v2 : la spec essaie `<data>/opencode` puis
+  `<home>/.local/share/opencode`, et refuse si aucun n'existe. Le contrôle et la campagne canari doivent
+  le vérifier.
+- Le contrôle 282 ne prouve que le lanceur, pas le client : le vrai canari reste une campagne hors banc
+  sec, et la spec le dit.
+- Aucun code n'est modifié : la phase 0 est une proposition, pas un résultat.
+
+**Rectifications.**
+
+- Première écriture du critère d'acceptation : « `git status --porcelain docs/device/runs/` vide ».
+  C'est faux, le run `2026-10-23-202344` est non suivi. Corrigé en « aucune modification (`M`) d'un
+  `receipt.json` existant, `git diff --stat` vide ».
+- Le faux `opencode` du contrôle 282 « sortait » après les deux lignes de serveur ; `demarrerServeur`
+  aurait pu voir la sortie avant de rendre l'URL. Corrigé en « attend », pour que le sidecar soit écrit
+  avant l'échec de `/api/session`.
+- Le store isolé a d'abord été écrit `<data>/opencode` seul ; la documentation v2 ne tranche pas le
+  chemin, donc la spec accepte aussi `<home>/.local/share/opencode` et refuse si aucun n'existe.
+
+**Prochaines étapes.** Faire approuver la spec, puis l'implémenter (C1, C2, C3, C5) et jouer les cinq
+contrôles jusqu'à `286/286 PASS`. Ensuite la phase 1 (C4, C6, C7, C8), puis la phase 2 (C9 à C12).
+
+**Mémoires.** `5c2c238a-a624-479b-93c3-9b7789821d0d` : le contenu de la spec, ses cinq contrôles, les
+rectifications et les statuts `CONFIRME` / `OUVERT`, relu après écriture.
+
+## Séance 155 — 2026-10-23 (C7 : vérifier le produit par mutations, et refuser un test qui ne mord pas)
+
+**Objectif.** Implémenter C7 du [brainstorm du 21:00](brainstorm/2026-10-23-210021-protocole-de-test-robuste.md)
+dans le harnais : une commande `verifier`, un bloc `verification`/`mutations` dans l'attendu, la lecture
+par le reçu, l'appel par `fin`, et un contrôle de banc qui refuse un mutant survivant. Aucun cas réel
+n'est gelé, aucun run n'est ouvert.
+
+**Fait.**
+
+- [Spec](tasks/2026_10/2026-10-23-212018-verification-par-mutations/2026-10-23-212018-spec.md), 220 lignes,
+  `status: done`, née à **21:20:18** (`stat -c %w`) ; le préfixe du fichier porte cette naissance, pas
+  l'heure de la commande qui l'a précédée.
+- `run.mjs` : imports `cpSync`, `mkdtempSync`, `spawnSync`, `tmpdir` ; `lireBlocVerification`,
+  `lancerVerification`, `cmdVerifier`, `lireVerificationDuRecu` ; `bash` ajouté aux prérequis ; `verifier`
+  ajouté à `COMMANDS` et à l'usage ; le reçu porte `verification` et refuse `conforme` si `mord: false` ;
+  `compare` recopie `verification` dans `output.json`.
+- `orchestrer.mjs` : `fin` lit l'attendu, joue `verifier` avant le reçu quand le cas le déclare, et passe
+  à trois étapes ; un refus avec `verification.json` continue (le test qui ne mord pas est un écart), un
+  refus sans pièce arrête.
+- `banc-harnais.sh` : contrôle **289** en deux parties. La première sur une fixture simple (test `exit 0`,
+  test qui lit la valeur mutée, mutation au texte absent). La seconde construit une fixture complète (gel,
+  porte, produit neuf, trace, faits), joue `receipt --verdict conforme` et attend le refus, puis
+  `receipt --verdict « non concluant »` et attend `verification.mord: false` avec les deux empreintes.
+- [ADR-087](DECISIONS.md), [PROTOCOLE](PROTOCOLE.md) §2, [ARCHITECTURE](ARCHITECTURE.md) §4 et §5,
+  [BANC](BANC.md) V0.50.
+
+**Vérifié.**
+
+- `node --check docs/device/harness/run.mjs` et `node --check docs/device/harness/orchestrer.mjs` → `0`.
+- `bash docs/device/harness/banc-harnais.sh` → **282/282 PASS**, `exit 0` ; le contrôle 289 est nommé
+  « verifier et reçu refusent un mutant survivant ».
+- `node docs/device/harness/liens.mjs` → 221 fichiers, 1414 liens hors code, 0 mort, `exit 0`.
+- Le contrôle 289 chiffre : test faux → `exit 1`, `mord: false`, `mutants_survivants: ["M1"]` ; test vrai →
+  `exit 0`, `mord: true` ; texte absent → refus sans `verification.json` ; reçu `conforme` → refus « le test
+  ne mord pas sur M1 » ; reçu `non concluant` → écrit, porte `mord: false` et les deux `sha256`.
+- Le `run.mjs` mesure **3 508 lignes**, l'orchestrateur **1 735** ; l'architecture porte le premier chiffre.
+
+**Dérives signalées, non corrigées.**
+
+- C7 appartient à la phase 1 du brainstorm, alors que la phase 0 n'est ni approuvée ni implémentée : le
+  banc passe de 281 à 282, et la spec de phase 0 prévoyait 286. Le contrôle 289 prend le numéro réservé à
+  C7 ; les 282-287 de la phase 0 restent libres, et leur total devra être recalculé quand elle sera jouée.
+- Le réseau n'est pas coupé : la commande déclarée peut l'utiliser. Les mutants sont choisis à la main ;
+  tuer `M1` ne prouve pas la couverture du produit.
+- Le chemin `fin` qui appelle `verifier` n'est pas joué par le banc. Le reçu et `verifier` le sont ; c'est
+  une limite de preuve, dite au §8 de la spec et dans BANC.
+- Le contrôle 289, seconde partie, crée `verif_docs/NOTES.md` et `test-verif.sh` dans le terrain du jouet
+  sous `$B` ; il ne touche ni le dépôt ni les quatre arbres. Le terrain du jouet est modifié à la fin du
+  banc, après les autres contrôles.
+
+**Rectifications.**
+
+- La spec a d'abord été nommée `2026-10-23-211825-…` d'après la commande `date` ; sa naissance mesurée est
+  `21:20:18`. Le dossier et le fichier ont été renommés sur la mesure, et la spec le dit.
+- La première version du contrôle 289 ne jouait que `verifier` ; le refus de `receipt` était implémenté mais
+  non joué. La seconde partie a été ajoutée après une fixture manuelle : `receipt --verdict conforme` refuse
+  bien sur `mord: false`, et `non concluant` écrit.
+- Le premier essai de la seconde partie tombait sur `UNIQUE constraint failed` et sur un `['M1']` mangé par
+  le shell ; le fil est supprimé avant réinsertion, et la comparaison passe par `JSON.stringify(["M1"])`.
+
+**Prochaines étapes.** Faire approuver et implémenter la phase 0 (C1, C2, C3, C5), puis la phase 1 restante
+(C4, C6, C8), et jouer un `fin` complet sur un cas qui déclare `verification` pour couvrir le seul chemin
+que le banc ne joue pas encore.
+
+**Mémoires.** `eddbb97e-738d-45f8-8672-4929b6ba3a45` : C7, les commandes de preuve, le contrôle 289, les
+statuts `CONFIRME` / `OPEN`, relu après écriture.
+
+## Séance 156 — 2026-10-23 (audit du protocole de test : le verdict, le cas, la question)
+
+**Objectif.** Auditer le protocole de test d'un skill, avec les huit livrables demandés, sur le run
+`06-test` et sur le harnais réel, sans réécrire aucun reçu ni re-geler aucun cas.
+
+**Fait.** Le rapport
+[2026-10-23-223726-audit.md](tasks/2026_10/2026-10-23-215755-audit-protocole-de-test/2026-10-23-223726-audit.md)
+porte l'état des lieux, la matrice, neuf défauts nommés, le retour d'expérience, le protocole cible, le
+plan de correction, les preuves d'efficacité et les incertitudes. Il est né le
+`2026-10-23 22:37:26.282362136 +0200` (`stat -c %w`). Il conclut que le run `06-test` est conforme à
+l'ancien contrat du skill, que son `ecart` est un faux positif d'un cas qui se contredit, et que deux
+couvertures annoncées du produit ne sont pas établies. Les deux compteurs de documentation dérivés après C7 sont corrigés :
+`BANC.md` passe de 281 à 282 dans son résumé et ses commandes, `ARCHITECTURE.md` de « six » à « sept »
+commandes.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` → **282/282 PASS**, `exit 0`, contrôle 289 inclus.
+- `python3 -m pytest -q test_skill_analysis.py` sur une copie jetable → `9 passed`, `exit 0` ; la même
+  copie avec `ANALYSIS_RATE = 4000 -> 8000` → `9 passed`, `exit 0` ; avec `if path.lower().endswith('.wav')`
+  remplacé par `if True` → `9 passed`, `exit 0`. Les mutations `32768.0 -> 16384.0`,
+  `endswith('.wav') -> endswith('.wavx')`, `sw not in (1, 2) -> (1, 2, 3)`, `ch > 2 -> ch > 3` et
+  `except (OSError, SubprocessError) -> OSError` tuent chacune au moins un test, `exit 1`.
+- `receipt.falsificateurs` du run `2026-10-23-202344-32cfec45-e51e7a6` : toutes les listes vides ;
+  `output.verdict` : `ecart` ; `RAPPORT.md` §5 : « Aucun falsificateur ne mord ».
+- La question du run, extraite de `trace/echange.jsonl` seq 11, finit par un point :
+  `Do you approve these two (and the pending entry)? Reply "oui" to start writing, ...` ;
+  `endsWith("?")` rend `false`, et la règle C3 « dernière ligne qui finit par `?` » aussi.
+- `node --check` sur `run.mjs`, `orchestrer.mjs`, `clients.mjs` → `0` ; `bash -n` sur le banc → `0` ;
+  `node docs/device/harness/liens.mjs` → 0 lien mort, `exit 0` ; `git diff --check` → `0`.
+- Aucune revue indépendante, aucun headless, aucun canari client. C1, C2, C3 et C5 restent des specs
+  non implémentées ; le chemin `fin` qui appelle `verifier` n'est pas joué par le banc.
+
+**Dérives signalées, non corrigées.** Le rapport nomme neuf défauts ; les plus matériels sont le
+`ecart` sans falsificateur (D1), le cas qui se contredit sur sa borne (D2), la correction C3 qui ne couvre
+pas la question observée (D4), les deux tests qui ne mordent pas (D5), l'environnement non isolé (D6) et
+un `conforme` possible avec zéro règle mesurée (D9). Le plan P0 à P3 les ordonne ; rien n'est appliqué
+au-delà des deux compteurs de documentation. L'origine du framework n'est pas propre au relevé :
+`git -C /home/giak/projects/framework status --porcelain` rend
+`?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md`, avec le HEAD `fe48de12` ; l'instant de naissance du fichier
+n'est pas établi, et la paire avant/après n'a pas été relevée.
+
+**Rectifications.** Le premier lot de mutations a imprimé `M2 SURVIVED` ; la reprise isolée du même
+mutant, sur une copie fraîche, a rendu `1 failed, 8 passed`, `exit 1`. Le résultat isolé est celui qui
+compte, et le rapport le dit. Le rapport a d'abord été nommé `2026-10-23-223446` d'après l'heure de la
+commande ; sa naissance mesurée est `22:37:26`, et le fichier a été renommé sur la mesure. La mémoire
+cite le chemin renommé.
+
+**Prochaines étapes.** P0 : corriger le cas (texte remis et §6 alignés, `borne_source` citée du texte
+remis) et refuser un `ecart` sans falsificateur ou sans `regle_jugee`. P1 : C3 avec la ligne verbatim du run, C2,
+C5, C1. P2 : la barre du skill et le contrôle `fin`. P3 : un cas v2 indépendant et un canari client.
+
+**Mémoires.** `2b4ae641-d971-489d-a090-0afb06bf3a87` : les six faits mesurés de l'audit, leurs
+commandes, les statuts `CONFIRME` / `OPEN`, relue après écriture.
+
+## Séance 157 — 2026-10-23 (P0 de l'audit : le cas `06-test` et l'écart sans morsure)
+
+**Objectif.** Appliquer le P0 de l'audit de la séance 156 : (1) aligner le texte remis et la §6 du cas
+`2026-10-23-202011-test-analyse`, (2) refuser un verdict `ecart` qu'aucun falsificateur ne cite, sans
+fermer l'`ecart` qu'une morsure justifie.
+
+**Fait.**
+
+- `docs/device/CASES/2026-10-23-202011-test-analyse.request.md` §6 et
+  `docs/device/CASES/2026-10-23-202011-test-analyse.expected.json` (`attendu`, `ordre[2].geste`,
+  `produit.regle`) portent désormais la même borne que le §5 : « au plus deux comportements, chacun
+  couvert par au moins un test nommé `test_...` ». Le `P` du cas bornait déjà les comportements, pas les
+  tests ; la §6 était la pièce isolée. Aucun re-gel : le gel du run `2026-10-23-202344` reste celui
+  d'avant l'alignement, et le reçu historique n'est pas réécrit.
+- `run.mjs` refuse `ecart` quand `motifsEcart` est vide et que `verification.mord` n'est pas `false` :
+  message « verdict « ecart » refusé, aucun falsificateur ne mord — un écart se cite par une morsure,
+  ou se dit « non concluant » (audit du 2026-10-23, D1) ». Un `ecart` qui porte un fichier produit hors
+  produit, ou une pièce `verification.mord: false`, reste accepté.
+- Le message à blanc de `run.mjs` et la raison de `orchestrer.mjs` ne proposent plus « conforme ou
+  ecart » quand rien ne mord : ils disent que l'écart sans morsure est refusé et que la personne tranche
+  entre `conforme` et `non concluant`. La figure de `docs/ARCHITECTURE.md` porte la même règle :
+  « conforme ; ecart si une morsure ; non concluant si la preuve manque ».
+- Le contrôle 289 du banc a une troisième partie : sur une copie du run de la fixture, il retire le
+  reçu, réécrit les chemins de `faits.json`, puis vérifie qu'un `ecart` sur `verification.mord: false`
+  est accepté et écrit son reçu.
+
+**Vérifié.**
+
+- `node docs/device/harness/run.mjs receipt --run <copie du run 2026-10-23-202344> --case
+  2026-10-23-202011-test-analyse --faits <copie/faits.json> --verdict ecart`, sur une copie dont le cas
+  est l'ancien (attendu `c00c99f6…`, demande `4d42b801…`, gel inchangé) → `exit 1`, message D1, aucun
+  `receipt.json` écrit.
+- La même commande sur le cas édité refuse d'abord « le attendu a changé depuis le gel — `10cd895b` au
+  disque, `c00c99f6` gelé » ; ce n'est pas D1. Le test D1 a donc été refait sur le cas ancien, dont les
+  deux pièces ont été reconstruites jusqu'à retrouver les sha256 du gel (`c00c99f6…` et `4d42b801…`),
+  puis le cas édité a été restauré (`10cd895b…`, `4bdd7452…`).
+- `bash docs/device/harness/banc-harnais.sh` → **282/282 PASS**, `exit 0`, contrôle 289 inclus avec sa
+  troisième partie.
+- `node --check` sur `run.mjs` et `orchestrer.mjs`, `bash -n` sur le banc → `0` ; `node
+  docs/device/harness/liens.mjs` → 222 fichiers, 1432 liens, 0 mort, `exit 0` ; `git diff --check` →
+  `0`.
+- `JSON.parse` sur l'attendu édité → OK.
+
+**Dérives signalées, non corrigées.** Le run `2026-10-23-202344` reste un `ecart` sans falsificateur :
+c'est le faux positif de D2, et il n'est pas réécrit. Son gel reste l'ancien, donc un rejeu du reçu sur
+le cas édité bute sur « l'attendu a changé » avant le fond ; le rejeu v2 reste à faire. La borne « deux
+comportements » n'est pas comptée mécaniquement (C2 non implémentée, D3/D5) : le juge la lit. Le refus
+D1 n'a pas de contrôle de banc dédié ; il a été vérifié à la main sur une copie, et le 289 ne couvre que
+l'acceptation de l'écart avec morsure. Aucune revue indépendante, aucun headless.
+
+**Rectifications.** Le premier essai de refus D1, lancé après l'édition du cas, a rendu « le attendu a
+changé depuis le gel », pas D1 : le cas édité ne peut plus fonder le reçu du run gelé. La reconstruction
+de l'ancien attendu a d'abord rendu `6ad6cc69…` au lieu de `c00c99f6…`, parce que le remplacement du
+`produit.regle` passait après un remplacement plus court qui coupait sa phrase ; l'ordre corrigé a rendu
+le hash gelé, et le test a alors porté sur la règle D1.
+
+**Prochaines étapes.** P1 : C2 (`regles[]`, `borne_source` citée du texte remis, comptage mécanique) et
+C3 (la question verbatim du run), puis C5 et C1. Ajouter un contrôle de banc dédié au refus D1 si la
+règle doit survivre à une nouvelle évolution du harnais.
+
+**Mémoires.** `d59a89b7-ba4a-4d92-b2a4-c4281d4e79bf` : le cas aligné, le refus D1, les hashes, les
+commandes, les statuts `CONFIRME` / `OPEN`, relue après écriture.
+
+## Séance 158 — 2026-10-23 (contrôle 290 : le reçu refuse un écart sans falsificateur)
+
+**Objectif.** Fermer la couverture de banc du refus D1 laissée `OPEN` par la séance 157 : un contrôle
+qui joue un vrai reçu en `ecart` sans falsificateur, vérifie le refus nommé et l'absence de
+`receipt.json`, sans toucher au terrain du jouet.
+
+**Fait.**
+
+- `docs/device/harness/banc-harnais.sh` gagne la fixture `ecart-290` et le contrôle
+  « 290 reçu refuse un écart sans falsificateur ». La fixture recopie le cas jouet sous le nom
+  `ecart-290`, remplace `aidd_docs` par `ecart_docs` dans la demande et l'attendu, vérifie que l'attendu
+  ne déclare ni `verification` ni `mutations`, copie les deux arbres du jouet sous `$JB/ecart-290`,
+  gèle, passe la porte, écrit `ecart_docs/NOTES.md`, construit une trace avec tableau, pause et
+  écriture, collecte, écrit les faits, exporte, puis joue `receipt --verdict ecart`.
+- Le contrôle exige `exit 1`, les deux fragments « verdict « ecart » refusé » et « aucun falsificateur
+  ne mord », et l'absence de `receipt.json`. Il vérifie aussi que la fixture ne déclare pas de
+  vérification, sinon le refus ne serait plus attribuable à D1.
+- Le banc passe de **282** à **283** contrôles ; `docs/BANC.md` passe à **283** dans son en-tête, son
+  résumé et ses commandes, et reçoit la note **V0.52** ; le commentaire d'en-tête du script passe à
+  **283**. Aucun contrôle existant n'est renuméroté.
+
+**Vérifié.**
+
+- `bash docs/device/harness/banc-harnais.sh` → **283/283 PASS**, `exit 0`, contrôle 290 inclus.
+- `bash -n docs/device/harness/banc-harnais.sh` → `0`.
+- `node docs/device/harness/liens.mjs` → 222 fichiers, 1432 liens, 0 mort, `exit 0` ; `git diff
+  --check` → `0`.
+- Le contrôle 289 reste vert : l'`ecart` avec `verification.mord: false` est toujours accepté ; le 290
+  ne le ferme pas.
+- Mutation : le bloc D1 retiré d'une **copie** de `run.mjs`, la fixture 290 rend `exit 1` avec « receipt
+  ecart sans falsificateur : exit 0 au lieu de 1 » et « un reçu a été écrit pour un écart refusé » ; le
+  contrôle mord sur l'absence de la règle. Le `run.mjs` du dépôt n'a pas été touché.
+
+**Dérives signalées, non corrigées.** Le 290 éprouve D1 sur une fixture sans `verification` ; il ne
+couvre pas le cas d'un `ecart` qui porterait une `regle_jugee` future (C2), ni le comptage mécanique de
+la borne. Le contrôle ne remplace pas un rejeu v2 du cas `06-test` ; il prouve la règle du reçu, pas le
+cas réel. Aucune revue indépendante, aucun headless.
+
+**Prochaines étapes.** P1 : C2 (`regles[]`, `borne_source`, comptage mécanique) et C3 (la question
+verbatim du run), puis C5 et C1.
+
+**Mémoires.** `d59a89b7-ba4a-4d92-b2a4-c4281d4e79bf`, mise à jour : la couverture de banc du refus D1
+passe de `OPEN` à `CONFIRME` par le contrôle 290, banc 283/283.
+
+## Séance 159 — 2026-10-24 (rejeu v2 du cas 06-test : gel 9c8fd81c, non concluant par F5)
+
+**Objectif.** Rejouer `2026-10-23-202011-test-analyse` sur un gel neuf qui couvre le cas aligné
+(« au plus deux comportements »), puis vérifier le verdict du reçu ; le run du 2026-10-23 restait un
+`ecart` sans falsificateur, produit d'une borne « deux tests » que le cas ne porte plus.
+
+**Fait.**
+
+- Le terrain gardait le produit du run `2026-10-23-202344` (`sha256 3c01985e…`, 4 134 o), identique à
+  la copie archivée sous `raw/2026-10-23-202011-test-analyse/` ; `cmp -s` puis `rm` du seul fichier non
+  suivi. Le re-gel du cas aligné : `node docs/device/harness/run.mjs freeze --case
+  2026-10-23-202011-test-analyse --cases docs/device/CASES --racine /home/giak/aidd-device-work --arbre
+  framework-origin=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin --arbre
+  terrain=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain --refreeze` => empreinte
+  `9c8fd81c0fe4ec9015720d832bd36b37a7e7ac1172de319cb3e47c72764157a1`, `gele_le
+  2026-10-24T04:55:29.782499268+0200`, expected `10cd895b…`, request `4bdd7452…`, arbres `fe48de12`
+  et `416ec1f`, porcelain vides.
+- `orchestrer.mjs porte` => gate `7215b44d…`, texte `2245649c` (818 o), run
+  `docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test`.
+- `orchestrer.mjs ouvrir` avec `--modele opencode/deepseek-v4.1-flash-free` => fil
+  `ses_e942a1cb1ffeguu7GjkzlgzYDY` ; tableau seq 14, 10 lignes × 4 colonnes ; pause mesurée seq 16
+  -> 18, 13 021 ms ; produit `raw/2026-10-23-202011-test-analyse/test_skill_analysis.py`, `sha256
+  5dff3c5a…`, 5 488 o ; budget 2/3 échanges. `ouvrir` a refusé en fin de course : « la session
+  ses_e942a1cb1ffeguu7GjkzlgzYDY s'est arrêtée sans question après 1 réponse(s) jouée(s) » et « le run
+  n'est pas un succès à zéro question ». Le fil était inactif et le produit fini.
+- `orchestrer.mjs suite` a mesuré le fil malgré ce refus ; `fin` à blanc a proposé `conforme`, puis `fin
+  --verdict conforme` a écrit `receipt.json`, `output.json` et `RAPPORT.md`. Le reçu **mécanique** porte
+  `conforme`, 11 limites, aucun falsificateur, `attendu_vu: non`. Ce n'est pas le verdict vérifié : le
+  dernier message nomme « Mutations sur copie dans `/tmp/opencode/mut` » (ligne 27), la trace nomme
+  `/tmp` aux lignes 21, 22, 43, 47 et 60, et `F5` du cas impose `non concluant`.
+- `runs.mjs --index` => 36 runs, 21 indépendants, 5 guidés, 8 avortés, 2 manuels ; `runs.mjs
+  --verifier` => `exit 0`.
+
+**Vérifié.**
+
+- `git -C …/terrain status --porcelain` après `rm` => 0 ligne ; le gel re-haché par `porte` => 2
+  fichiers du cas, 0 référence, empreinte `9c8fd81c`.
+- `python3 -m pytest -q test_skill_analysis.py` sur une copie temporaire du produit collecté et de
+  `analysis.py` => `9 passed in 0.14s`, `exit 0`. Le produit collecté a le même `sha256` que celui du
+  terrain (`5dff3c5a…`).
+- `receipt.json` => `verdict: conforme` mécanique, `falsificateurs` vides, `echanges 2/3`,
+  `pause.mesuree: true`, `produit.fichiers: 1` ; `RAPPORT.md` et `output.json` reprennent ce
+  `conforme`. La limite du reçu dit elle-même qu'il ne lit pas « les effets d'un binaire opaque » ;
+  l'outil `execute` du mode code n'entre pas dans `cloisonnement.ecriture`, qui ne relève que `write`
+  et `edit`.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0` ; `docs/device/runs/INDEX.md` porte le
+  nouveau run en ligne 42 et la note de correction.
+- Note datée `2026-10-24-050754-verdict-non-concluant.md` : `F5` établi par le dernier message et la
+  trace ; verdict vérifié `non concluant`, le reçu n'est pas réécrit.
+
+**Dérives signalées, non corrigées.** `F5` est le fait matériel : des écritures `/tmp/opencode`,
+absentes des chemins vus par le reçu, violent le §7 du cas et imposent `non concluant`. Le reçu
+`conforme` est un faux positif mécanique, non réécrit ; il est corrigé par la note datée. `ouvrir`
+sort en `1` sur une session qui a fini sans seconde question alors qu'une réponse figée reste à jouer :
+faux refus d'ADR-077, non corrigé. Le run a été mesuré par `suite` après ce refus, sans réponse
+manuelle : aucune question n'était posée ; la clôture n'est pas le chemin heureux de l'orchestrateur.
+La seconde réponse figée reste inutilisée (2/3). Le re-gel a remplacé le fichier de gel : le reçu du run
+`2026-10-23-202344` cite encore `32cfec45`, absent du disque ; son `ecart` reste, non réécrit. La borne
+« deux comportements » n'est pas comptée mécaniquement (C2 non implémentée). `ouvrir.log` reste dans le
+dossier du run et l'index le cite. Aucune revue indépendante, aucun headless ; le réseau n'est pas
+coupé, et `attendu_vu: non` est déclaré, jamais mesuré.
+
+**Rectifications.** Le reçu `conforme` a été écrit avant la lecture du dernier message ; `F5` l'invalide.
+Aucune réécriture : la note datée `2026-10-24-050754-verdict-non-concluant.md` porte le verdict vérifié
+`non concluant`, et le reçu reste la pièce mécanique qu'il est.
+
+**Prochaines étapes.** Instrumenter les écritures de l'outil `execute` du mode code, que le reçu ne lit
+pas ; puis corriger le faux refus d'`ouvrir` quand la session s'arrête sans question et qu'une réponse
+figée reste disponible ; puis P1, C2 (`regles[]`, `borne_source`, comptage mécanique) et C3 (la question
+verbatim).
+
+**Mémoires.** `d59a89b7-ba4a-4d92-b2a4-c4281d4e79bf`, correction : le rejeu v2 est `non concluant` par
+`F5`, pas `CONFIRME` ; le reçu `conforme` est un faux positif mécanique, et l'instrumentation de
+l'outil `execute` reste `OPEN`.
+
+## Séance 160 — 2026-10-24 (F5 par le code d'un outil, et clôture d'`ouvrir` après une réponse)
+
+**Objectif.** Fermer les deux dérives de la Séance 159 : un reçu qui ne voit pas les écritures de l'outil
+`execute` du mode code, et un `ouvrir` qui refuse une session finie après une réponse figée jouée.
+
+**Fait.**
+
+- `run.mjs` : `MOTS_CODE`, `cheminsDuCode` et le falsificateur `code_hors_dossier` ; le reçu relit
+  `trace/export-brut.json` pour chaque part `state.input.code`/`script`, extrait les littéraux absolus,
+  ignore les racines système et `/dev/null`, développe `~`, résout les liens, et confronte chaque chemin
+  au bloc `cloisonnement`. Une entrée force `non concluant` ; une limite dit ce qui reste non lu
+  (dynamique, relatif, export absent ou instable, Freebuff sans export brut). `rapport.mjs` et
+  `resultat.mjs` nomment la morsure, §6.9 et la piste.
+- `orchestrer.mjs` : une session inactive sur un texte sans `?` termine le run dès que
+  `jouees.length > 0` ; avant la première réponse, le refus d'ADR-077 reste.
+- `banc-harnais.sh` : mode `texte-apres-une` du faux serveur et contrôle **291** ; fixture opencode
+  complète avec faux binaire `opencode`, contrôle **292**.
+- `DECISIONS.md` : ADR-088 et ADR-089 ; `BANC.md` V0.53 ; `ARCHITECTURE.md` passe à dix-huit mesures.
+
+**Vérifié.**
+
+- `node --check` sur `run.mjs`, `orchestrer.mjs`, `rapport.mjs`, `resultat.mjs` ; `bash -n` sur le banc
+  => `SYNTAXE_OK`.
+- `bash docs/device/harness/banc-harnais.sh` => **285/285 PASS**, `exit 0` ; 291 et 292 verts, les
+  contrôles 257, 266 et 290 inchangés.
+- Copie du run réel sous `/tmp/f5-real-run`, `receipt --verdict conforme` => `exit 1`, refus nommant
+  « un chemin hors du cadre est nommé dans le code d'un outil : seq 10, outil « execute », chemin
+  /tmp/x.mp3 ». Le même reçu en `non concluant` => `exit 0`, 16 entrées `code_hors_dossier`, toutes sous
+  `/tmp` ; aucun faux positif (`/len`, `/e`, `/0.0015` écartés). Le reçu du run n'est pas réécrit.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0` ; `node docs/device/harness/liens.mjs`
+  => 0 mort.
+
+**Dérives signalées, non corrigées.** Le client Freebuff n'a pas d'export brut : `code_hors_dossier`
+n'y est pas mesuré, et la limite le dit. Le reçu du run `2026-10-24-045529` reste `conforme` et sa note
+datée `2026-10-24-050754-verdict-non-concluant.md` reste le verdict vérifié ; aucune réécriture. Le re-gel
+a remplacé `32cfec45`, et le reçu de l'ancien run le cite encore. C2 (`regles[]`, `borne_source`,
+comptage mécanique) et C3 restent ouvertes. Aucune revue indépendante, aucun headless ; le réseau n'est
+pas coupé.
+
+**Rectifications.** La Séance 159 disait l'instrumentation de `execute` `OPEN` : elle est faite ici. Le
+faux refus d'`ouvrir` qu'elle signalait est corrigé par ADR-089, et les contrôles 257/266 prouvent que
+le refus à zéro réponse tient encore.
+
+**Prochaines étapes.** P1, C2 et C3 de l'audit ; instrumenter le mode code de Freebuff si un export brut
+devient disponible ; rejouer le cas `06-test` sur un nouveau gel avec le reçu corrigé.
+
+**Mémoires.** `9748da8a-811b-4574-a516-f9d4343f59fc` (ADR-088, ADR-089, contrôles 291/292).

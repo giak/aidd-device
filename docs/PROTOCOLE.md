@@ -94,10 +94,17 @@ node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis 
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
 | `suite` | les faits, l'export de la trace par l'adaptateur du client, le dernier message haché, la copie du produit, et l'annexe du scratch quand le cas le déclare | `faits.json`, `trace/`, `raw/<cas>/last-message.md`, `raw/<cas>/manifest.json`, `annexe/<cas>/` |
-| `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture | `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
+| `fin` | le verdict que la preuve autorise, l'output du juge, le rapport technique, et la page utilisateur quand le cas déclare sa lecture ; quand l'attendu déclare `verification`, elle fait jouer `verifier` avant le reçu | `verification.json` (par `verifier`), `receipt.json`, `output.json`, `RAPPORT.md`, et `RESULTAT.md` si `CASES/<cas>.lecture.json` existe |
 | `rapport` | le rapport et la page utilisateur, depuis le reçu, l'output, la trace et la lecture du cas, vérifiée avant toute écriture | `RAPPORT.md` et `RESULTAT.md`, avec `--remplacer` |
 | `lire` | rien : elle relit | rien |
 | `tracer` | le client du fil, la session normalisée, le compte des lignes et le `sha256` de l'export | `trace/echange.jsonl` et `trace/fil.json` dans un dossier de run guidé, et rien d'autre |
+
+Quand l'attendu porte `verification`, `fin` joue d'abord `verifier` ([ADR-087](DECISIONS.md)) : la commande
+déclarée tourne sur une copie du terrain et du produit collecté, puis sur chaque mutation. Un mutant qui
+survit rend `exit 1` et `verification.json` porte `mord: false` ; `fin` ne s'arrête pas pour autant, parce
+qu'un test qui ne mord pas est un écart à juger. Le reçu exige la pièce, la hache et refuse `conforme`
+quand un mutant survit ; `ecart` et `non concluant` restent possibles. Le réseau n'est pas coupé et les
+mutants sont déclarés à la main : ce sont des limites dites, pas des propriétés.
 
 `tracer` lit `run.json` : le dossier doit être un run guidé dont `pieces` cite `run-guide.md`, et le
 fichier doit être présent. Un run-guide d'avant la centralisation, sans `run.json`, est refusé ; les trois

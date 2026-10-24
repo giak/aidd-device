@@ -1,0 +1,45 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-112620-85d12f10-9fc5285",
+  "role": "annexe",
+  "source": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain/.scratch",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain"
+  },
+  "collecte_le": "2026-10-24T11:29:04+02:00",
+  "fichiers": [
+    {
+      "chemin": "detect_gaps.py",
+      "source": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect_gaps.py",
+      "sha256": "5f6e54689fbd15610e9db9893c7402b7b1cf3f64666a6a9a2d73b962deb6a56d",
+      "taille": 8098,
+      "birth": "2026-10-24 11:27:17.168093499 +0200",
+      "birth_epoch": 1792834037
+    },
+    {
+      "chemin": "detect_shadow.py",
+      "source": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect_shadow.py",
+      "sha256": "93afeadeb4c5f1334fbcba880e5272b639104961d7211679f572fbaf33171ed2",
+      "taille": 9375,
+      "birth": "2026-10-24 11:28:12.906292808 +0200",
+      "birth_epoch": 1792834092
+    },
+    {
+      "chemin": "detected_gaps.json",
+      "source": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detected_gaps.json",
+      "sha256": "c1633ca1aba9764017dcce23a099e771263e637467b21f18c7aa79917480bc30",
+      "taille": 321,
+      "birth": "2026-10-24 11:28:27.961887934 +0200",
+      "birth_epoch": 1792834107
+    },
+    {
+      "chemin": "render_report.py",
+      "source": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain/.scratch/render_report.py",
+      "sha256": "98fefa57ca89e4cd78abc2753df354ab32f058d2cbb6dd135a7a62b43e1649ed",
+      "taille": 5039,
+      "birth": "2026-10-24 11:28:43.260493103 +0200",
+      "birth_epoch": 1792834123
+    }
+  ]
+}

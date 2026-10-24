@@ -1,0 +1,53 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-113143-868436ae-576c360",
+  "role": "annexe",
+  "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain"
+  },
+  "collecte_le": "2026-10-24T11:36:53+02:00",
+  "fichiers": [
+    {
+      "chemin": "detect.py",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect.py",
+      "sha256": "e3335d4ec5f6cfa9f8dc5d6b02bcda6eb1fb8e6d22f4deec799f62e1b8109ebc",
+      "taille": 8047,
+      "birth": "2026-10-24 11:33:41.752372488 +0200",
+      "birth_epoch": 1792834421
+    },
+    {
+      "chemin": "detect_simple.py",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect_simple.py",
+      "sha256": "2bd08175151c41a8bec623ad2903a71e3ee54c4da65a343653dd2c01986182e4",
+      "taille": 7889,
+      "birth": "2026-10-24 11:34:10.053504510 +0200",
+      "birth_epoch": 1792834450
+    },
+    {
+      "chemin": "gaps.json",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/gaps.json",
+      "sha256": "10cc9ce2cac6f03d456dbc3df79e4a6fbdc32ddb1538ad14b99cacda115a2b65",
+      "taille": 848,
+      "birth": "2026-10-24 11:33:18.565445640 +0200",
+      "birth_epoch": 1792834398
+    },
+    {
+      "chemin": "gaps_final.json",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/gaps_final.json",
+      "sha256": "45e60b7909c22cf1b582d38a69326c75126f42214da41b0f420ff5182b4b67b6",
+      "taille": 1834,
+      "birth": "2026-10-24 11:34:30.857337151 +0200",
+      "birth_epoch": 1792834470
+    },
+    {
+      "chemin": "report-template-full.md",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/report-template-full.md",
+      "sha256": "d943497e6233271cf758d14e28b90d979a307903a37f564319c86f959250b865",
+      "taille": 863,
+      "birth": "2026-10-24 11:33:27.765813338 +0200",
+      "birth_epoch": 1792834407
+    }
+  ]
+}

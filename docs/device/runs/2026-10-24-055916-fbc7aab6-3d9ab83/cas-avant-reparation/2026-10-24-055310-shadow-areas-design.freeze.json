@@ -1,0 +1,93 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "racine_espace_de_travail": "/home/giak/aidd-device-work",
+  "gele_le": "2026-10-24T05:58:50.833436783+0200",
+  "gele_le_epoch": 1792814330,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-24-055310-shadow-areas-design --cases docs/device/CASES --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/framework-origin --arbre terrain=/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/terrain",
+  "empreinte": "fbc7aab67ace1475c8943ccd7b15762c71464312997d0c408ce7b11857c5b738",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.expected.json",
+      "sha256": "9d0889c7eb16d188e6c566193b74eb82604a628d1b8c5286f1d5d018035d9775",
+      "taille": 7653,
+      "birth": "2026-10-24 05:53:10.995743781 +0200",
+      "birth_epoch": 1792813990
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.request.md",
+      "sha256": "db6411d6cac43359efeb7dc0ccf8b0d2cb083fc553383069bf1b1e10cef08d2c",
+      "taille": 3242,
+      "birth": "2026-10-24 05:53:10.992743659 +0200",
+      "birth_epoch": 1792813990
+    }
+  ],
+  "references": [],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/terrain",
+      "head": "6a74c46",
+      "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/main"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/terrain",
+      "head": "6a74c46",
+      "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work/2026-10-24-055310-shadow-areas-design/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/main"
+      ]
+    }
+  ]
+}

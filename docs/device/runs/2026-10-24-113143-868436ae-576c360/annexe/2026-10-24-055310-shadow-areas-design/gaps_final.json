@@ -1,0 +1,38 @@
+[
+  {
+    "category": "unstated assumption",
+    "severity": "major",
+    "question": "What is the exact definition of \"plus minimale\" and \"plus carrée\"?",
+    "snippet": "L\u2019utilisateur ... veut des cartes de visite imprimées en laser noir et blanc sur A4, plusieurs cartes par page. Une v1 existe ... La v2 est plus minimale, plus \"carrée\", limite LaTeX."
+  },
+  {
+    "category": "missing edge case",
+    "severity": "major",
+    "question": "What happens if the browser doesn't have the required fonts?",
+    "snippet": "Polices chargées via Google Fonts (EB Garamond + Montserrat) ; le PDF doit embarquer les glyphes (chrome headless le fait)."
+  },
+  {
+    "category": "missing actor",
+    "severity": "major",
+    "question": "Who is responsible for printing and distributing the business cards?",
+    "snippet": "L'utilisateur (Christophe Giacomel, publication \"Résistance Cognitive\" sur Substack) veut des cartes de visite imprimées en laser noir et blanc sur A4, plusieurs cartes par page."
+  },
+  {
+    "category": "missing failure mode",
+    "severity": "major",
+    "question": "What happens if the laser printer jams during production?",
+    "snippet": "Laser B\u0026N, 100% noir sur blanc pur."
+  },
+  {
+    "category": "missing acceptance criterion",
+    "severity": "major",
+    "question": "What are the quantitative criteria for the cards to be considered \"lisibles\" (readable)?",
+    "snippet": "PDF A4 imprimé en laser B\u0026N : 10 cartes découpageables, lisibles, aucun texte tronqué."
+  },
+  {
+    "category": "missing dependency",
+    "severity": "major",
+    "question": "What is the exact repository structure and access requirements?",
+    "snippet": "**Date** : 2026-08-01\n**Projet** : `/home/giak/projects/cartes-de-visite/`\n**URL cible** : https://giak.substack.com/about"
+  }
+]

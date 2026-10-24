@@ -1,0 +1,406 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "recu_ecrit_le": "2026-10-24T11:37:35+02:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e92bf7bb7ffeTp6Nh9xCBqVl5c",
+    "modele": "openrouter/cohere/north-mini-code:free",
+    "ouverte_par": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "ouverte_le": "2026-10-24T11:31:47+02:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_e92bf7bb7ffeTp6Nh9xCBqVl5c",
+    "repertoire_de_travail": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+    "modele": "openrouter/cohere/north-mini-code:free",
+    "ouverte_le": "2026-10-24T11:31:47+02:00",
+    "premier_message": "2026-10-24T11:31:48+02:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.request.md",
+    "sha256": "a8ef69bc7e31fd6d852e51acc7e44e98f3ca27bb0bc7d215aae4681578a670ee",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/2026-10-24-055310-shadow-areas-design.freeze.json",
+    "empreinte_gel": "868436ae4c4133fb3a6591f5adb42cb80e599df7e4591a6be9954aaeffc512b5",
+    "gele_le": "2026-10-24T11:31:39.072856216+0200"
+  },
+  "gel_verifie": {
+    "le": "2026-10-24T11:37:35+02:00",
+    "empreinte": "868436ae4c4133fb3a6591f5adb42cb80e599df7e4591a6be9954aaeffc512b5",
+    "fichiers": 2,
+    "references": 1
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin",
+  "terrain_rev": "6a74c46",
+  "terrain_rev_arbre": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+  "repertoire_de_travail": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+  "horodatage_debut": "2026-10-24T11:31:48+02:00",
+  "horodatage_fin": "2026-10-24T11:36:53+02:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-113143-868436ae-576c360/trace/echange.jsonl",
+    "commande": "opencode session export ses_e92bf7bb7ffeTp6Nh9xCBqVl5c",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-113143-868436ae-576c360/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 44,
+    "lignes_dans_la_fenetre": 44,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "0452ba9264848adbf9903e943a68a9338337f05b76b78a982d720187d7f5755b",
+    "rejoue_le": "2026-10-24T11:37:35+02:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_e92bf7bb7ffeTp6Nh9xCBqVl5c",
+    "cwd": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+    "sha256": "0452ba9264848adbf9903e943a68a9338337f05b76b78a982d720187d7f5755b",
+    "brut_sha256": "93f96ce10fff34640657c06172211c9daf9d69733e352da7f65e9f96de8c5b93",
+    "rejoue_le": "2026-10-24T11:37:35+02:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": false,
+    "index": null,
+    "seq": null,
+    "ts": null,
+    "lignes": 0,
+    "colonnes": 0,
+    "requis": false
+  },
+  "pause": {
+    "requise": false,
+    "mesuree": false,
+    "seq_reponse": null,
+    "seq_ecriture": 10,
+    "outil_ecriture": "write",
+    "attente_ms": null
+  },
+  "echanges": {
+    "budget": 1,
+    "utilises": 1,
+    "epuise_par": {
+      "seq": 1,
+      "ts": 1792834308354
+    }
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-113143-868436ae-576c360/gate.json",
+    "sha256": "97d06ca48ee61c41e8e49ea5264fc3b67c4daff789b85e5d139f2f73f7dc45a3",
+    "cas": "2026-10-24-055310-shadow-areas-design",
+    "passe_le": "2026-10-24T11:31:43.344747617+0200",
+    "passe_le_epoch": 1792834303,
+    "repertoire": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+    "gel_empreinte": "868436ae4c4133fb3a6591f5adb42cb80e599df7e4591a6be9954aaeffc512b5",
+    "gele_le_epoch": 1792834299,
+    "arbre": {
+      "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+      "head": "6a74c46",
+      "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+      "porcelain": []
+    },
+    "texte_sha256": "ca9a87fc797e363320f8706c78de1117b700cc60d1132501e706f6208c0ecfb5"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+        "head": "6a74c46",
+        "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+        "head": "6a74c46",
+        "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+        "head": "6a74c46",
+        "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+        "porcelain": [
+          "?? .scratch/",
+          "?? docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+        "head": "6a74c46",
+        "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+        "porcelain": [
+          "?? .scratch/",
+          "?? docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/main"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": false,
+    "chemins": [
+      "raw/2026-10-24-055310-shadow-areas-design/2026-08-01-carte-visite-v2-shadow-report.md"
+    ],
+    "fichiers": [
+      {
+        "chemin": "2026-08-01-carte-visite-v2-shadow-report.md",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md",
+        "sha256": "c56545a90bc0bce885fae6005f7ba6241a72aaa50bd587a08aaa800bc3a6d23b",
+        "taille": 984,
+        "birth": "2026-10-24 11:34:38.456641402 +0200",
+        "birth_epoch": 1792834478
+      }
+    ],
+    "verifie": {
+      "fichiers": 1,
+      "manifeste_sha256": "0f93813aa023c958d60b9d3bd6d8767b5ab2605c6e8533aa933e240e14c3a317",
+      "last_message_sha256": "76d050bd5cdefb16a0cb61dad878236e5d23053df5474a8fc4a68b4ddd249c48"
+    }
+  },
+  "annexe": {
+    "fichiers": [
+      {
+        "chemin": "detect.py",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect.py",
+        "sha256": "e3335d4ec5f6cfa9f8dc5d6b02bcda6eb1fb8e6d22f4deec799f62e1b8109ebc",
+        "taille": 8047,
+        "birth": "2026-10-24 11:33:41.752372488 +0200",
+        "birth_epoch": 1792834421
+      },
+      {
+        "chemin": "detect_simple.py",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/detect_simple.py",
+        "sha256": "2bd08175151c41a8bec623ad2903a71e3ee54c4da65a343653dd2c01986182e4",
+        "taille": 7889,
+        "birth": "2026-10-24 11:34:10.053504510 +0200",
+        "birth_epoch": 1792834450
+      },
+      {
+        "chemin": "gaps.json",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/gaps.json",
+        "sha256": "10cc9ce2cac6f03d456dbc3df79e4a6fbdc32ddb1538ad14b99cacda115a2b65",
+        "taille": 848,
+        "birth": "2026-10-24 11:33:18.565445640 +0200",
+        "birth_epoch": 1792834398
+      },
+      {
+        "chemin": "gaps_final.json",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/gaps_final.json",
+        "sha256": "45e60b7909c22cf1b582d38a69326c75126f42214da41b0f420ff5182b4b67b6",
+        "taille": 1834,
+        "birth": "2026-10-24 11:34:30.857337151 +0200",
+        "birth_epoch": 1792834470
+      },
+      {
+        "chemin": "report-template-full.md",
+        "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch/report-template-full.md",
+        "sha256": "d943497e6233271cf758d14e28b90d979a307903a37f564319c86f959250b865",
+        "taille": 863,
+        "birth": "2026-10-24 11:33:27.765813338 +0200",
+        "birth_epoch": 1792834407
+      }
+    ],
+    "manifeste_sha256": "621574317f72714f849b1b84d2cbcde6c819447a350e6ea4e58fce84e6bc0c08",
+    "verifie": {
+      "fichiers": 5,
+      "manifeste_sha256": "621574317f72714f849b1b84d2cbcde6c819447a350e6ea4e58fce84e6bc0c08"
+    }
+  },
+  "cloisonnement": {
+    "attendu_vu": "non",
+    "attendu_vu_mesure": {
+      "etat": "non",
+      "seq": null,
+      "chemin": null,
+      "motif": null
+    },
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain",
+        "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/framework-origin"
+      ],
+      "racine_du_cas": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design"
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/docs/superpowers/specs"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/docs/superpowers/specs"
+      ],
+      "scratch": "terrain/.scratch",
+      "scratch_resolu": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "quand": "2026-10-24T11:36:53+02:00"
+  },
+  "promesse": {
+    "mode": "juge_seul",
+    "declaree_par": "falsificateurs_du_run.P",
+    "condition": "le rapport `terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design-shadow-report.md` est absent ; ou la source `docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md` n'a plus le sha256 du gel ; ou le rapport ne porte aucun écart ; ou un écart porte une catégorie hors des sept de `locked-sets.json`, une sévérité hors de `blocker|major|minor`, ou une question qui ne finit pas par `?` ; ou `status: clean` alors qu'un blocker ou un major est présent",
+    "mesure": null,
+    "juge": null,
+    "raison": "la promesse est énoncée, mais aucune mesure ne l'éprouve : `compare` doit nommer le juge et sa rubrique"
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": false,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "question_sans_reponse": [],
+    "pause_non_tenue": [],
+    "lecture_hors_dossier": [],
+    "ecriture_hors_dossier": [],
+    "code_hors_dossier": [],
+    "shell_hors_dossier": [],
+    "shell_ecriture_hors_produit": [],
+    "shell_invalide": [],
+    "shell_non_interpretable": [],
+    "reseau": [],
+    "hors_produit": [
+      {
+        "chemin": "terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md",
+        "nature": "produit"
+      }
+    ]
+  },
+  "verdict": "ecart",
+  "limites": [
+    "la conduite (agent) est déclarée par « Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24 » : le reçu ne prouve pas qui a répondu, et un run conduit par un agent n'est ni une faute ni un mérite (ADR-071)",
+    "le cas limite l'écriture à terrain/docs/superpowers/specs et à son scratch terrain/.scratch ; ce reçu compare les chemins nommés par les outils d'écriture, les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture, ADR-063)",
+    "les chemins absolus nommés dans le code de execute sont lus dans l'export brut (4 chemin(s)) ; un chemin construit dynamiquement, relatif ou hors d'un littéral n'est pas mesuré, et le reçu ne distingue pas une lecture d'une écriture (ADR-088)",
+    "le scratch terrain/.scratch est lisible et scriptible, jamais compté comme produit ; il est collecté sous annexe/<cas>/ et le reçu le vérifie (ADR-067)",
+    "le cas ne demande pas de tableau : l'ordre écriture/tableau n'est pas mesuré (ADR-068)",
+    "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    "la promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, que `compare` doit nommer avec sa rubrique pour `conforme` — le reçu ne vérifie ni l'identité du juge ni sa lecture (audit du 2026-10-24, D2, D3)",
+    "outil(s) dont le nom évoque une écriture et qui ne nomment aucun chemin : write — l'ordre écriture/tableau ne les classe pas (H6)",
+    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée est l'intervalle entre la part précédente et ce tour, jamais une attente humaine, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069, ADR-078)",
+    "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
+    "hors_produit ne retient que les chemins nouveaux du porcelain : une modification ou une suppression d'un fichier déjà présent hors du produit n'est pas attribuée au run (ADR-051)",
+    "la porte et le gel replient un dossier non suivi en une seule entrée du porcelain ; le reçu étend seulement son propre côté après-run (`--untracked-files=all`), saute un chemin sous un dossier déjà non suivi avant le run et un ancêtre de la racine du produit, et compare les entrées comme des chaînes, sans décoder les guillemets de git (ADR-062)",
+    "un fichier hors du produit a été écrit : terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md (§4)"
+  ]
+}

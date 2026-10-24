@@ -1,0 +1,6 @@
+{
+  "type": "correction",
+  "note": "2026-10-24-050754-verdict-non-concluant.md",
+  "verdict_retenu": "non concluant",
+  "preuve": "trace/echange.jsonl, seq 21, 43, 47 et 60 nomment /tmp/opencode et seq 22 nomme /tmp ; F5 du cas 2026-10-23-202011-test-analyse attache « non concluant » à une écriture hors du terrain (docs/device/CASES/2026-10-23-202011-test-analyse.expected.json)"
+}

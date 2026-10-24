@@ -1,0 +1,3 @@
+Read the skill at /home/giak/aidd-device-work-rejeu/2026-10-24-055310-shadow-areas-design/framework-origin/plugins/aidd-refine/skills/03-shadow-areas/SKILL.md and use it on this repository.
+This repository is `cartes-de-visite`, a static business-card project; the artifact to scan is `docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md`.
+Run the skill on that artifact, in the order its own actions prescribe, and write the report where its action 02 says; do not modify the source, do not write anywhere else, and do not ask me a question.

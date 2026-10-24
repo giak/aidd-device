@@ -1,0 +1,21 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-113143-868436ae-576c360",
+  "role": "produit",
+  "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain"
+  },
+  "collecte_le": "2026-10-24T11:36:53+02:00",
+  "fichiers": [
+    {
+      "chemin": "2026-08-01-carte-visite-v2-shadow-report.md",
+      "source": "/home/giak/aidd-device-work-rejeu3/2026-10-24-055310-shadow-areas-design/terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-shadow-report.md",
+      "sha256": "c56545a90bc0bce885fae6005f7ba6241a72aaa50bd587a08aaa800bc3a6d23b",
+      "taille": 984,
+      "birth": "2026-10-24 11:34:38.456641402 +0200",
+      "birth_epoch": 1792834478
+    }
+  ]
+}

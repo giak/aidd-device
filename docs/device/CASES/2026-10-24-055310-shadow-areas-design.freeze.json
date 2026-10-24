@@ -1,0 +1,107 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "confirmation": {
+    "par": "opérateur giak",
+    "le": "2026-10-24T12:05:28+02:00",
+    "preuve": "consigne du 2026-10-24 : « Rejoue le cas 03-shadow du dispositif sur une révision qui inclut le skill corrigé et rapporte le verdict. »"
+  },
+  "racine_espace_de_travail": "/home/giak/aidd-device-work-rejeu4",
+  "gele_le": "2026-10-24T12:05:28.944275855+0200",
+  "gele_le_epoch": 1792836328,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-24-055310-shadow-areas-design --cases docs/device/CASES --racine /home/giak/aidd-device-work-rejeu4 --arbre framework-origin=/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/framework-origin --arbre terrain=/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/terrain --ref-root /home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/terrain --ref docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md --refreeze --confirme-par \"opérateur giak\" --confirme-preuve \"consigne du 2026-10-24 : « Rejoue le cas 03-shadow du dispositif sur une révision qui inclut le skill corrigé et rapporte le verdict. »\"",
+  "empreinte": "5b1e2724dd9cb075a35c179f17073a183808c4d2c472b388ce7c5ffad3dd3706",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.expected.json",
+      "sha256": "e94118c3fb40633e4f1bbb4d252639a2e142bceca949689fa8ac11c9afaf6c07",
+      "taille": 8013,
+      "birth": "2026-10-24 05:53:10.995743781 +0200",
+      "birth_epoch": 1792813990
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.request.md",
+      "sha256": "c323684fabbf2ec5aabbf86e21303bfcbfb3fcf51536ef9e70b6fca090e9438c",
+      "taille": 3564,
+      "birth": "2026-10-24 05:53:10.992743659 +0200",
+      "birth_epoch": 1792813990
+    }
+  ],
+  "references": [
+    {
+      "arbre": "terrain",
+      "chemin": "docs/superpowers/specs/2026-08-01-carte-visite-v2-design.md",
+      "sha256": "cbb7e63e85ae628dc49a0028ac8a389f85783aaafed375b96d7fcbff921e22a8",
+      "taille": 5752,
+      "birth": "2026-10-24 12:05:04.440360700 +0200",
+      "birth_epoch": 1792836304
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/framework-origin",
+      "head": "f43af3fe",
+      "head_complet": "f43af3fe8ad9dcdbb159f42975a6f531853c7a13",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/terrain",
+      "head": "6a74c46",
+      "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/main"
+      ]
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/framework-origin",
+      "head": "f43af3fe",
+      "head_complet": "f43af3fe8ad9dcdbb159f42975a6f531853c7a13",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/origine/framework"
+        }
+      ],
+      "refs_distants": [
+        "origin/feat/protocole-de-test-aidd"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/terrain",
+      "head": "6a74c46",
+      "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+      "porcelain": [],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "/home/giak/aidd-device-work-rejeu4/2026-10-24-055310-shadow-areas-design/origine/terrain"
+        }
+      ],
+      "refs_distants": [
+        "origin/main"
+      ]
+    }
+  ]
+}

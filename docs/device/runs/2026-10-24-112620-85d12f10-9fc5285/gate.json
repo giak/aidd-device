@@ -1,0 +1,33 @@
+{
+  "type": "gate",
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "passe_le": "2026-10-24T11:26:20.485954730+0200",
+  "passe_le_epoch": 1792833980,
+  "repertoire": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/2026-10-24-055310-shadow-areas-design.freeze.json",
+    "empreinte": "85d12f10a4906e12380d0bcfc7295d2734ac2b216c9d5fcab9b30c14db5a53d0",
+    "gele_le_epoch": 1792833962
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/terrain",
+    "head": "6a74c46",
+    "head_complet": "6a74c461f5e3c0c8628051d0bb49ea4048335941",
+    "porcelain": [],
+    "remotes": [
+      {
+        "nom": "origin",
+        "url": "/home/giak/aidd-device-work-rejeu2/2026-10-24-055310-shadow-areas-design/origine/terrain"
+      }
+    ],
+    "refs_distants": [
+      "origin/main"
+    ]
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-24-112620-85d12f10-9fc5285/texte-a-remettre.txt",
+    "sha256": "cf6a221e1386f005f986985fd1740a438b89e45321690835ec376a09c83c5f13",
+    "octets": 797
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "gaps": [
+    {
+      "category": "ambiguous term",
+      "severity": "major",
+      "probe": "what: What does 'small' mean in this context, and what threshold or definition is missing?",
+      "snippet": "The term 'small' is used but lacks a precise definition or measurable threshold."
+    }
+  ],
+  "warnings": []
+}

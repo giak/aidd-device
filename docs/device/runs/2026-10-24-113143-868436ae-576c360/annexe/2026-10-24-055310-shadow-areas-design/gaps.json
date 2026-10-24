@@ -1,0 +1,26 @@
+[
+  {
+    "category": "unstated assumption",
+    "severity": "major",
+    "question": "What happens when the upstream service returns 429 with no Retry-After header?",
+    "snippet": "retry_limit = env.get(\"RETRY_LIMIT\", 3)"
+  },
+  {
+    "category": "missing failure mode",
+    "severity": "major",
+    "question": "What should the system return to the caller when the payment provider responds with a timeout?",
+    "snippet": ""
+  },
+  {
+    "category": "missing actor",
+    "severity": "major",
+    "question": "Who is responsible for approving the access request before it is acted on?",
+    "snippet": ""
+  },
+  {
+    "category": "missing acceptance criterion",
+    "severity": "blocker",
+    "question": "Does the 10 MB file-size limit apply to each individual file in a multi-file upload or to the combined total?",
+    "snippet": ""
+  }
+]

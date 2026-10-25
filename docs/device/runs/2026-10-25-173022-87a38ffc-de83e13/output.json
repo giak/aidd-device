@@ -1,0 +1,38 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "attendu": "La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-10-25-173022-87a38ffc-de83e13/raw/2026-10-18-085308-cas-jouet",
+  "difference": "aucune réponse : la session s'est arrêtée sur provider.free-limit 429 au seq 3 avant d'écrire, et rien n'a été produit",
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif"
+  ],
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu des notes est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes, jamais la justesse du texte"
+    },
+    {
+      "attendu": "la session n'a posé aucune question",
+      "critere": "le playbook demande de montrer et d'attendre ; la seconde réponse figée couvre toute autre question"
+    }
+  ],
+  "verification": null,
+  "promesse": {
+    "mode": "juge_seul",
+    "condition": "La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.",
+    "juge": null,
+    "rubrique": null,
+    "morsure": null
+  },
+  "phrase": "la session n'a pas répondu, donc rien du skill n'est mesuré",
+  "gel_verifie": {
+    "le": "2026-10-25T18:38:23+01:00",
+    "empreinte": "87a38ffcdacff1625e1cc4de6956003026da0017586b0057238aa7ab465cd7c5",
+    "fichiers": 3,
+    "references": 0
+  },
+  "juge_le": "2026-10-25T18:38:23+01:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-25-173022-87a38ffc-de83e13/receipt.json"
+}

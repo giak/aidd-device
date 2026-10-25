@@ -13,9 +13,9 @@ status: done
 
 Le reçu conclut `non concluant` ; morsures : `ecriture_avant_tableau`, `produit_ne_avant_le_tableau` ; limites : 13 (voir §5).
 
-Un non concluant n'est pas une défaillance du dispositif : il dit ce que la preuve ne permet pas de conclure.
+Aucune cause n'est nommée dans l'output : le rapport ne peut pas dire quelle couche a manqué.
 
-La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, et aucun juge n'est nommé dans l'output.
+La promesse du cas n'est pas mesurée mécaniquement : elle est signée « mord » par Buffy (juge du run), rubrique « condition P : type, statut et sections du Defect » sur 1 pièce(s) liée(s) au reçu ; le rapport ne vérifie ni l'identité du juge ni la fidélité de sa lecture. Motif signé : le Defect n'a ni type: defect, ni status, ni les sections Expected, Actual et Reproduction.
 
 > « Le Defect est écrit sous l'arbre travail, mais la qualification n'a été montrée qu'après l'écriture et le produit ne porte pas la forme attendue, donc le cas ne conclut pas » — `output.json`
 
@@ -44,6 +44,7 @@ La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, e
 - la conduite est déclarée par un agent (Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24), non vérifiée (`conduite`).
 - la forme du tableau a été lue : 8 ligne(s) × 2 colonne(s), seq 7 (`tableau`).
 - la promesse du cas est `juge_seul` : la promesse est énoncée, mais aucune mesure ne l'éprouve : `compare` doit nommer le juge et sa rubrique (`promesse`).
+- la promesse est signée « mord » par Buffy (juge du run), rubrique « condition P : type, statut et sections du Defect » : 1 pièce(s) re-hachée(s) contre le reçu (`promesse-signee.json`). Motif signé : le Defect n'a ni type: defect, ni status, ni les sections Expected, Actual et Reproduction.
 
 ## 4. Ce qu'il n'établit pas
 
@@ -121,6 +122,7 @@ Le reçu ne nomme aucun chemin hors du cadre dans le code d'un outil.
 
 ## 7. Les pistes
 
+- Corriger la branche P que le juge a signée « mord » : le Defect n'a ni type: defect, ni status, ni les sections Expected, Actual et Reproduction.
 - Vérifier que la session rend un tableau avant d'écrire, puis rejouer.
 - Relire la limite « la conduite (agent) est déclarée par « Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-24 » : le reçu ne prouve pas qui a répondu, et un run conduit par un agent n'est ni une faute ni un mérite (ADR-071) » et corriger la pièce qu'elle nomme.
 - Relire la limite « le cas déclare un scratch, mais le run n'a aucune annexe collectée : les scripts et les sorties qu'il cite ne sont pas dans le reçu (ADR-067) » et corriger la pièce qu'elle nomme.
@@ -134,6 +136,7 @@ Le reçu ne nomme aucun chemin hors du cadre dans le code d'un outil.
 | trace/echange.jsonl | [trace/echange.jsonl](trace/echange.jsonl) |
 | gate.json | [gate.json](gate.json) |
 | faits.json | [faits.json](faits.json) |
+| promesse-signee.json | [promesse-signee.json](promesse-signee.json) |
 | raw/2026-10-24-175334-defect-racine-terrain/slugify-keeps-separator-runs.md | [raw/2026-10-24-175334-defect-racine-terrain/slugify-keeps-separator-runs.md](raw/2026-10-24-175334-defect-racine-terrain/slugify-keeps-separator-runs.md) |
 
 ## 9. Ce que ce rapport ne prouve pas

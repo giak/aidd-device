@@ -151,6 +151,7 @@ Entre les deux lignes de garde, et rien d'autre :
 
 ```text
 <<<DEMANDE
+You work in the repository at $RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/terrain; that checkout is "this repository".
 Read the project-memory skill from $RACINE/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin/plugins/aidd-context/skills/02-project-memory/SKILL.md and use it on this repository. It has no project memory yet.
 >>>DEMANDE
 ```

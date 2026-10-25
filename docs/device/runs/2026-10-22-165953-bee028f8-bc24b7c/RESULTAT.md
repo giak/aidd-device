@@ -1,61 +1,51 @@
 ---
 name: Résultat — 2026-10-21-173843-plan-simple
-description: non concluant ; 1 règle non tenue ; 5 gestes déclarés
+description: non concluant ; 6 clauses, 2 tenues, 1 violée, 3 non jugées
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-21-173843-plan-simple, 2026-10-22
+# plan-simple — run du 2026-10-22
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 3 tenus, 1 violé, 1 non observé. Le run ne permet pas de conclure.
+**Non concluant.**
+La clause « rendre un tableau d'une ligne par fichier lu et attendre l'accord » n'a pas été tenue.
+Le skill est en cause, et le run est à rejouer après correction.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-21-173843-plan-simple`, session opencode, modèle ollama/qwen3:8b, audio-sync-tool, la copie du terrain sous `terrain/` avec son README et sa page Sync, et la révision sous test sous `framework-origin/`. Durée : 13 min 24 s, 1 échange sur 3, conduite par un agent (Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22).
+La trace couvre 11 min 53 s, du premier message à 16:59 au dernier à 17:11.
+1. 16:59 elle fait 4 lectures, dont `SKILL.md`, et 1 fichier sous `terrain`.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.
-
-Produit attendu : un dossier `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/` contenant `plan.md` et un `phase-<n>.md` par phase ; aucun autre fichier sous cette racine.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire le skill 01-plan et ses actions | « skills/01-plan/SKILL.md » lu | tenu |
-| lire le README et les fichiers du terrain | « terrain/README.md » lu | tenu |
-| montrer un tableau et attendre l'accord | aucun outil « question » dans la trace ; la session n'a pas montré de tableau ; aucune violation mesurée | **violé** |
-| écrire le plan et ses phases sous aidd_docs/tasks/ | aucun fichier produit ; aucune violation mesurée | non observé |
-| rester dans le dossier du cas, sans réseau | aucune violation mesurée | tenu |
+| lire le skill 01-plan et les fichiers d'action qu'il nomme, dans `framework-origin` | « skills/01-plan/SKILL.md » lu du tour 2 | tenu |
+| lire le README et les fichiers du terrain utiles au plan | « terrain/README.md » lu du tour 4 | tenu |
+| rendre un tableau d'une ligne par fichier lu et attendre l'accord | aucun outil « question » dans la trace ; la session n'a pas montré de tableau ; aucune écriture avant le tableau | violé |
+| après la réponse figée, écrire le plan et ses phases sous `aidd_docs/tasks/` | aucun fichier produit ; aucun fichier hors produit | non jugé |
+| terminer par un court rapport de ce qui a été écrit | aucun texte assistant examinable dans la trace | non jugé |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-## 5. Ce que ça veut dire
+## 4. Pourquoi ce verdict, et à qui la faute
 
-Règles non tenues : la session n'a pas montré de tableau.
-Le reçu ne peut pas trancher : ce que le cas attend n'a pas pu être constaté, ou une règle bloque le verdict.
+La session n'a pas montré de tableau. C'est la procédure du skill qui n'a pas obtenu ce qu'elle promet (« rendre un tableau d'une ligne par fichier lu et attendre … »). Une seule sortie interdit le verdict favorable.
 
-## 6. Ce que tu peux décider
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-- **Utilisable en l'état ?** Non : ce run ne démontre ni que le skill tient, ni qu'il échoue. Il faut rejouer.
+**Dit :**
+- Le skill fait lire avant d'écrire : 4 lectures, la première à 16:59.
 
-**À corriger.**
-- le cas exige un tableau avant l'écriture : la session ne l'a pas rendu, donc le skill doit dire plus clairement qu'il faut montrer avant d'écrire
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Ce qu'une personne aurait fait à la place de l'agent qui a conduit ce run.
 
-## 7. Ce que ce run ne dit pas
+## 6. Trois gestes au plus
 
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- La conduite est déclarée par un agent : ce run ne dit rien de ce qu'une personne aurait fait.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
+- **Skill** : rendre explicite la clause qui n'a pas été tenue, puis rejouer.
+- **Protocole** : rejouer après correction, sur le même cas.
 
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

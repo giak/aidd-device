@@ -1,67 +1,56 @@
 ---
 name: Résultat — 2026-10-22-092005-spike-annees
-description: non concluant ; 6 règles non tenues ; 5 gestes déclarés
+description: non concluant ; 6 clauses, 3 tenues, 1 violée, 2 non jugées
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-22-092005-spike-annees, 2026-10-22
+# spike-annees — run du 2026-10-22
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 2 tenus, 2 violés, 1 non observé. Le run ne permet pas de conclure.
+**Non concluant.**
+La promesse n'a pas été tenue : la session n'a pas montré de tableau.
+Le skill est en cause, et le run est à rejouer après correction.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-22-092005-spike-annees`, session opencode, modèle minimax-m3.1-flash-free, audio-sync-tool, outil local de synchronisation musicale, à la révision 416ec1f. Durée : 12 min 20 s, 2 échanges sur 3.
+La trace couvre 10 min 29 s, du premier message à 09:36 au dernier à 09:47.
+1. 09:36 elle fait 41 lectures, dont `SKILL.md` et une action, et 10 fichiers sous `terrain`.
+2. 09:37 une commande regarde hors du dossier.
+3. 09:44 elle relit et retouche ces fichiers 4 fois.
+4. 09:47 elle rend son dernier message, qui nomme le chemin écrit, et s'arrête.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-La session lit le skill 05-spike de la révision sous test, lit le dépôt audio-sync-tool, montre ce qu'elle qualifie et où elle compte écrire et attend l'accord sans avoir écrit un seul fichier, puis investigue dans le dépôt et écrit sous `terrain/aidd_docs/backlog/spikes/` une spike qui porte `type: spike` et les sections Question, Decision, Bounds, Investigation, Outcome et Follow-up, et rien d'autre sous `terrain/`.
-
-Produit attendu : un seul fichier `.md` sous `spikes/`, portant `type: spike` et les six sections du gabarit du skill ; aucun autre fichier sous cette racine.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire le skill 05-spike et les fichiers d'action qu'il nomme | « 05-spike » lu | tenu |
-| lire le dépôt audio-sync-tool | « /terrain/ » lu | tenu |
-| montrer ce qui est qualifié et attendre l'accord | aucun outil « question » dans la trace ; aucune violation mesurée | non observé |
-| écrire la spike sous aidd_docs/backlog/spikes/ | 1 fichier(s) ; un fichier a été écrit hors du produit attendu | **violé** |
-| rester dans le dossier du cas, sans réseau | une lecture est sortie du dossier autorisé ; une commande a lu hors du dossier autorisé ; une commande a écrit hors du fichier attendu ; aucune violation mesurée | **violé** |
+| lire le skill 05-spike et les fichiers d'action qu'il nomme, dans `framework-origin` | « 05-spike » lu du tour 2 | tenu |
+| lire le terrain, au moins un fichier sous `terrain/` | « /terrain/ » lu du tour 4 | tenu |
+| montrer ce qui est qualifié et où le fichier sera écrit, puis attendre l'accord | mesure absente du run | non jugé |
+| après la réponse figée, écrire la spike sous `aidd_docs/backlog/spikes/` | 1 fichier ; un fichier a été écrit hors du produit attendu | violé |
+| conclure la spike : Outcome, Follow-up, et un court rapport de ce qui a été écrit | texte du tour 21 : « aidd_docs » | tenu |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-## 5. Ce que ça veut dire
+## 4. Pourquoi ce verdict, et à qui la faute
 
-Règles non tenues : la session n'a pas montré de tableau ; une lecture est sortie du dossier autorisé ; une commande a lu hors du dossier autorisé ; une commande a écrit hors du fichier attendu ; une commande n'a pas pu être lue ; un fichier a été écrit hors du produit attendu.
-Le reçu ne peut pas trancher : ce que le cas attend n'a pas pu être constaté, ou une règle bloque le verdict.
+La session n'a pas montré de tableau. C'est la procédure du skill qui n'a pas obtenu ce qu'elle promet. Une seule sortie interdit le verdict favorable.
 
-## 6. Ce que tu peux décider
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-- **Utilisable en l'état ?** Non : ce run ne démontre ni que le skill tient, ni qu'il échoue. Il faut rejouer.
+**Dit :**
+- Le skill fait lire avant d'écrire : 41 lectures, la première à 09:36.
+- Le produit demandé est là : 1 fichier, 8 Ko, sous `aidd_docs/spikes/`.
 
-**À corriger.**
-- le cas exige un tableau avant l'écriture : la session ne l'a pas rendu, donc le skill doit dire plus clairement qu'il faut montrer avant d'écrire
-- une lecture est sortie du dossier : le cas doit nommer les racines permises, ou le skill doit dire où lire
-- une commande a lu hors du dossier : pareil, la racine est à déclarer ou l'ordre à corriger
-- une commande a écrit hors du fichier attendu : vérifier si le skill autorise cette écriture
-- une commande n'a pas pu être lue : le cas doit l'écrire en clair, sinon la mesure restera aveugle
-- un fichier a été écrit en dehors du produit attendu : le cas doit dire s'il est permis
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Si un agent ou une personne a conduit ce run : la conduite n'est pas déclarée.
 
-## 7. Ce que ce run ne dit pas
+## 6. Trois gestes au plus
 
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- Les gestes humains reposent sur le témoignage de la personne.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
+- **Skill** : rendre explicite la clause qui n'a pas été tenue, puis rejouer.
+- **Cas** : nommer le répertoire de travail dans le texte remis, pour que la session sache où elle travaille.
+- **Protocole** : rejouer après correction, sur le même cas.
 
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
-| Fichier produit | [spikes/survie-choix-annes-regeneration-caches.md](raw/2026-10-22-092005-spike-annees/spikes/survie-choix-annes-regeneration-caches.md) |
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

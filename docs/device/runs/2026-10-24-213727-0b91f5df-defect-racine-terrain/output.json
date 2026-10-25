@@ -1,0 +1,38 @@
+{
+  "cas": "2026-10-24-213712-defect-racine-terrain",
+  "attendu": "La session lit le skill 09-defect de la révision sous test et ses trois actions, lit l'observation et les fichiers de `slugify-cli`, qualifie l'écart en un Defect, montre un tableau de qualification avant toute écriture, termine ce tour par une question et attend l'accord, puis écrit un seul fichier `aidd_docs/backlog/defects/slugify-keeps-separator-runs.md` portant `type: defect`, un état `reported` ou `ready`, et les sections `Expected`, `Actual`, `Reproduction`, `Impact` et `Evidence` renseignées ; `slugify.py` garde son empreinte et aucun autre fichier n'est écrit.",
+  "produit_brut": "docs/device/runs/2026-10-24-213727-0b91f5df-defect-racine-terrain/raw/2026-10-24-213712-defect-racine-terrain",
+  "difference": "le produit est un Defect sans frontmatter (ni type: defect ni status) et sans les sections Expected, Actual, Reproduction ni Evidence ; il se déclare à l'état capture, hors du domaine reported|ready, et propose un correctif que la demande interdisait",
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif",
+    "cas"
+  ],
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du Defect est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure le chemin, le type, l'état, les sections et l'invariant du produit observé, jamais la pertinence du diagnostic"
+    },
+    {
+      "attendu": "le Defect cite la bonne cause",
+      "critere": "le skill interdit de diagnostiquer ; une cause fausse n'est pas mesurable par le cas, et le juge ne la note pas"
+    }
+  ],
+  "verification": null,
+  "promesse": {
+    "mode": "juge_seul",
+    "condition": "le fichier `terrain/aidd_docs/backlog/defects/slugify-keeps-separator-runs.md` est absent ; ou son frontmatter ne porte pas `type: defect` ; ou son `status` n'est ni `reported` ni `ready` ; ou l'une des sections `Expected`, `Actual`, `Reproduction`, `Impact` ou `Evidence` manque ou est vide ; ou `terrain/slugify.py` n'a plus le sha256 du gel ; ou un autre fichier est né dans `terrain/`",
+    "juge": null,
+    "rubrique": null
+  },
+  "phrase": "le skill 09-defect rend un Defect que son propre gabarit ne reconnaît pas",
+  "gel_verifie": {
+    "le": "2026-10-24T21:52:11+02:00",
+    "empreinte": "0b91f5df708bbdc87b1e5436117d2d94b14c17362d1ba54571c06ae57142a816",
+    "fichiers": 2,
+    "references": 1
+  },
+  "juge_le": "2026-10-24T21:52:11+02:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-24-213727-0b91f5df-defect-racine-terrain/receipt.json"
+}

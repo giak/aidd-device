@@ -3,6 +3,7 @@
 // aucun réseau, aucune dépendance. Deux appels sur les mêmes pièces rendent le même fichier.
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { lireSignature } from "./resultat.mjs";
 
 const VERDICTS = ["conforme", "ecart", "non concluant"];
 
@@ -11,10 +12,13 @@ const ORDRE_FALSIFICATEURS = [
   "arbre_de_travail_inchange",
   "produit_identique_a_une_empreinte_anterieure",
   "trace_sans_echange_dans_la_fenetre",
+  "session_terminale_en_erreur",
   "tableau_absent",
   "ecriture_avant_tableau",
   "produit_ne_avant_le_tableau",
+  "produit_incomplet",
   "question_sans_reponse",
+  "question_en_formulaire",
   "pause_non_tenue",
   "lecture_hors_dossier",
   "ecriture_hors_dossier",
@@ -32,10 +36,13 @@ const PHRASES_FALSIFICATEUR = {
   arbre_de_travail_inchange: "le produit existe mais l'arbre de travail n'a pas bougé",
   produit_identique_a_une_empreinte_anterieure: "le produit recopie un fichier déjà présent",
   trace_sans_echange_dans_la_fenetre: "la trace ne porte aucun échange dans la fenêtre du run",
+  session_terminale_en_erreur: "la session s'est terminée sur une erreur : le run n'a pas été mesuré",
   tableau_absent: "la trace ne porte aucun tableau rendu par la session",
   ecriture_avant_tableau: "une écriture précède le tableau",
   produit_ne_avant_le_tableau: "un produit est né avant le tableau",
+  produit_incomplet: "le produit n'a pas tous les fichiers que son tableau annonce",
   question_sans_reponse: "la session a posé une question et écrit sans attendre la réponse",
+  question_en_formulaire: "la session a posé sa question par un formulaire alors que le cas exige une question en texte",
   pause_non_tenue: "la session a écrit sans laisser la personne répondre",
   lecture_hors_dossier: "une lecture est sortie du cadre déclaré",
   ecriture_hors_dossier: "une écriture d'outil est sortie du cadre déclaré",
@@ -53,6 +60,19 @@ const texte = (valeur, defaut = "—") =>
 const cellule = (valeur) => texte(valeur).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 const inline = (valeur) => `\`${texte(valeur).replace(/`/g, "'")}\``;
 const liste = (valeur) => (Array.isArray(valeur) ? valeur : []);
+
+// La signature de la promesse (promesse-signee.json) est lue par `lireSignature`, qui re-hache le reçu
+// et chaque pièce : le rapport ne recopie un verdict que si la pièce lie encore ce qu'elle nomme.
+function phraseSignature(signature) {
+  const qui = `${texte(signature.juge)}${signature.rubrique ? `, rubrique « ${texte(signature.rubrique)} »` : ""}`;
+  const quoi = signature.verdict === "mord" ? "« mord »" : "« ne mord pas »";
+  return `signée ${quoi} par ${qui}`;
+}
+
+function motifSignature(signature) {
+  const motif = cellule(signature.motif).trim();
+  return /[.!?»]$/.test(motif) ? motif : `${motif}.`;
+}
 
 function lireJson(chemin) {
   try {
@@ -145,7 +165,7 @@ function tableLignes(lignes) {
   return ["| | |", "| --- | --- |", ...lignes.map(([gauche, droite]) => `| ${cellule(gauche)} | ${cellule(droite)} |`)];
 }
 
-function sectionReponse(recu, sortie, morsures, limites) {
+function sectionReponse(recu, sortie, morsures, limites, signature) {
   const details = [];
   if (morsures.length) details.push(`morsures : ${morsures.map((m) => `\`${m.cle}\``).join(", ")}`);
   if (limites.length) details.push(`limites : ${limites.length} (voir §5)`);
@@ -158,11 +178,19 @@ function sectionReponse(recu, sortie, morsures, limites) {
   // D1 (audit du 2026-10-24) : la phrase ne dit que ce qu'un champ mesure. L'ordre des gestes du
   // skill n'est mesuré par aucun champ ; l'ancienne phrase l'affirmait pourtant. La promesse est
   // dite à part, avec son mode, parce qu'un `conforme` ne la couvre pas de lui-même.
+  // Le verdict ne dit pas, à lui seul, quelle couche a manqué : les causes sont déclarées par le juge
+  // dans le reçu et recopiées dans l'output. Une constante qui rassure à leur place serait une
+  // affirmation que rien ne mesure (D1 de l'audit du 2026-10-24).
+  const causes = sortie && Array.isArray(sortie.causes)
+    ? sortie.causes.filter((c) => typeof c === "string" && c.trim() !== "")
+    : [];
   const milieu = verdict === "conforme"
     ? "Cela atteste la chaîne, la porte, la trace et les pièces du run ; l'ordre des gestes du skill, la qualité du skill et la justesse du produit ne sont pas mesurés."
     : verdict === "ecart"
       ? "L'écart est nommé ; il ne dit pas s'il vient du skill ou de la session."
-      : "Un non concluant n'est pas une défaillance du dispositif : il dit ce que la preuve ne permet pas de conclure.";
+      : causes.length
+        ? `Causes nommées : ${causes.join(", ")}.`
+        : "Aucune cause n'est nommée dans l'output : le rapport ne peut pas dire quelle couche a manqué.";
   const promesse = sortie && sortie.promesse && typeof sortie.promesse === "object"
     ? sortie.promesse
     : null;
@@ -174,9 +202,15 @@ function sectionReponse(recu, sortie, morsures, limites) {
     milieuPromesse = "La promesse du cas est mesurée : la commande de vérification du cas a mordu sur chaque mutation déclarée.";
   } else if (duRecu.mode === "juge_seul") {
     const nomme = promesse && typeof promesse.juge === "string" && promesse.juge.trim() !== "";
-    milieuPromesse = nomme
-      ? `La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge nommé (${texte(promesse.juge)}${promesse.rubrique ? `, rubrique ${texte(promesse.rubrique)}` : ""}), et le rapport ne vérifie ni son identité ni sa lecture.`
-      : "La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, et aucun juge n'est nommé dans l'output.";
+    if (signature && signature.lue) {
+      milieuPromesse = `La promesse du cas n'est pas mesurée mécaniquement : elle est ${phraseSignature(signature)} sur ${texte(signature.pieces)} pièce(s) liée(s) au reçu ; le rapport ne vérifie ni l'identité du juge ni la fidélité de sa lecture. Motif signé : ${motifSignature(signature)}`;
+    } else if (signature && !signature.lue) {
+      milieuPromesse = `La promesse du cas n'est pas mesurée mécaniquement ; la signature présente n'a pas été lue : ${texte(signature.raison)}.`;
+    } else {
+      milieuPromesse = nomme
+        ? `La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge nommé (${texte(promesse.juge)}${promesse.rubrique ? `, rubrique ${texte(promesse.rubrique)}` : ""}), et le rapport ne vérifie ni son identité ni sa lecture.`
+        : "La promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, et aucun juge n'est nommé dans l'output.";
+    }
   } else {
     milieuPromesse = "La promesse du cas n'est pas nommée (`non_mesuree`) : le verdict ne parle que de la chaîne, pas du skill.";
   }
@@ -244,7 +278,7 @@ function sectionTeste(recu, trace) {
   ];
 }
 
-function sectionEtablit(recu, sortie) {
+function sectionEtablit(recu, sortie, signature) {
   const gel = recu.gel_verifie || {};
   const porte = recu.porte || {};
   const trace = recu.trace_lue || {};
@@ -287,7 +321,11 @@ function sectionEtablit(recu, sortie) {
   } else {
     lignes.push(`- la promesse du cas est \`${texte(promesse.mode)}\` : ${texte(promesse.raison, "raison non écrite")} (\`promesse\`).`);
     const juge = sortie && sortie.promesse && typeof sortie.promesse === "object" ? sortie.promesse : null;
-    if (juge && typeof juge.juge === "string" && juge.juge.trim() !== "") {
+    if (signature && signature.lue) {
+      lignes.push(`- la promesse est ${phraseSignature(signature)} : ${texte(signature.pieces)} pièce(s) re-hachée(s) contre le reçu (\`promesse-signee.json\`). Motif signé : ${motifSignature(signature)}`);
+    } else if (signature && !signature.lue) {
+      lignes.push(`- la signature présente n'a pas été lue : ${texte(signature.raison)} (\`promesse-signee.json\`).`);
+    } else if (juge && typeof juge.juge === "string" && juge.juge.trim() !== "") {
       lignes.push(`- le juge est nommé par l'output : ${texte(juge.juge)}${juge.rubrique ? `, rubrique ${texte(juge.rubrique)}` : ""} (\`output.promesse\`).`);
     }
   }
@@ -324,6 +362,21 @@ function sectionMorsures(recu, morsures, limites, sortie) {
       lignes.push(`| ${cellule(cle)} | ${cellule(`${phrase} ; valeur : ${detail}`)} |`);
     }
     lignes.push("");
+  }
+  // ADR-100 : un écart sans morsure mécanique peut être signé par le juge de la promesse. Le rapport
+  // nomme la branche recopiée au reçu, puis la différence que l'output a retenue.
+  const promesse = recu.promesse && typeof recu.promesse === "object" ? recu.promesse : null;
+  if (recu.verdict === "ecart" && promesse && typeof promesse.morsure === "string" && promesse.morsure.trim() !== "") {
+    const qui = [
+      typeof promesse.juge === "string" && promesse.juge.trim() !== "" ? `juge : ${promesse.juge}` : null,
+      typeof promesse.rubrique === "string" && promesse.rubrique.trim() !== "" ? `rubrique ${promesse.rubrique}` : null,
+    ].filter(Boolean).join(", ");
+    lignes.push(
+      "**La branche de P nommée par le juge**",
+      "",
+      `${promesse.morsure}${qui ? ` — ${qui}` : ""}`,
+      "",
+    );
   }
   const difference = sortie && typeof sortie.difference === "string" ? sortie.difference.trim() : "";
   if (recu.verdict === "ecart" && difference) {
@@ -442,7 +495,7 @@ function sectionEffets(falsificateurs, { champLecturePresent, lectures }) {
   return lignes;
 }
 
-function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresent, champLecturePresent }) {
+function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresent, champLecturePresent, signature }) {
   const pistes = [];
   const ajouter = (piste) => {
     if (!pistes.includes(piste)) pistes.push(piste);
@@ -454,6 +507,12 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   }
   if (recu.promesse && recu.promesse.mode === "non_mesuree") {
     ajouter("Nommer la promesse du cas par un falsificateur `P`, puis rejouer : le reçu ne couvre pas ce qu'il n'a pas nommé.");
+  }
+  if (signature && signature.lue && signature.verdict === "mord") {
+    ajouter(`Corriger la branche P que le juge a signée « mord » : ${motifSignature(signature)}`);
+  }
+  if (signature && !signature.lue) {
+    ajouter(`Refaire la signature sur les pièces actuelles, puis relire le rapport : ${texte(signature.raison)}.`);
   }
   if (cles.has("tableau_absent") || cles.has("ecriture_avant_tableau")) {
     ajouter("Vérifier que la session rend un tableau avant d'écrire, puis rejouer.");
@@ -514,7 +573,7 @@ function sectionPistes(recu, sortie, morsures, limites, lectures, { outputPresen
   return ["## 7. Les pistes", "", ...pistes.map((p) => `- ${p}`)];
 }
 
-function sectionPreuves(runDir, recu, outputPresent, tracePresent, gatePresent, faitsPresent) {
+function sectionPreuves(runDir, recu, outputPresent, tracePresent, gatePresent, faitsPresent, signaturePresent) {
   const pieces = [
     ["receipt.json", "receipt.json", true],
     ["output.json", "output.json", outputPresent],
@@ -522,6 +581,7 @@ function sectionPreuves(runDir, recu, outputPresent, tracePresent, gatePresent, 
     ["gate.json", "gate.json", gatePresent],
     ["faits.json", "faits.json", faitsPresent],
   ];
+  if (signaturePresent) pieces.push(["promesse-signee.json", "promesse-signee.json", true]);
   for (const chemin of liste(recu.produit?.chemins)) pieces.push([chemin, chemin, existsSync(join(runDir, chemin))]);
   const lignes = ["## 8. Où lire les preuves", "", "| Pièce | Lien |", "| --- | --- |"];
   for (const [label, chemin, present] of pieces) {
@@ -538,7 +598,7 @@ function sectionNeProuvePas() {
   ];
 }
 
-function rapportTexte({ runDir, recu, sortie, trace, gate, faits, falsificateurs, champLecturePresent, lectures, morsures, limites }) {
+function rapportTexte({ runDir, recu, sortie, trace, gate, faits, falsificateurs, champLecturePresent, lectures, morsures, limites, signature }) {
   const description = [
     recu.verdict,
     morsures.length ? `morsure(s) : ${morsures.map((m) => m.cle).join(", ")}` : "aucune morsure",
@@ -556,11 +616,11 @@ function rapportTexte({ runDir, recu, sortie, trace, gate, faits, falsificateurs
     "",
     `> Vue déterministe du reçu \`receipt.json\` et de la trace \`trace/echange.jsonl\`. Reçu écrit le ${dateRecu(recu)}. Ce rapport ne remplace ni le reçu ni l'output.`,
     "",
-    ...sectionReponse(recu, sortie, morsures, limites),
+    ...sectionReponse(recu, sortie, morsures, limites, signature),
     "",
     ...sectionTeste(recu, trace),
     "",
-    ...sectionEtablit(recu, sortie),
+    ...sectionEtablit(recu, sortie, signature),
     "",
     ...sectionNEtablitPas(sortie),
     "",
@@ -569,9 +629,10 @@ function rapportTexte({ runDir, recu, sortie, trace, gate, faits, falsificateurs
     ...sectionPistes(recu, sortie, morsures, limites, lectures, {
       outputPresent: Boolean(sortie),
       champLecturePresent,
+      signature,
     }),
     "",
-    ...sectionPreuves(runDir, recu, Boolean(sortie), trace.present, Boolean(gate), Boolean(faits)),
+    ...sectionPreuves(runDir, recu, Boolean(sortie), trace.present, Boolean(gate), Boolean(faits), signature !== null),
     "",
     ...sectionNeProuvePas(),
     "",
@@ -618,6 +679,12 @@ export function ecrireRapport({ runDir, cas = null, remplacer = false }) {
   const champLecturePresent = Object.prototype.hasOwnProperty.call(falsificateurs, "lecture_hors_dossier");
   const lectures = champLecturePresent ? falsificateurs.lecture_hors_dossier : null;
   const morsures = morsuresDe(recu);
+  let signature = null;
+  try {
+    signature = lireSignature({ runDir: dossier, recu });
+  } catch (e) {
+    signature = { lue: false, raison: `lecture de promesse-signee.json impossible : ${texte(e && e.message, "erreur inconnue")}` };
+  }
   const limites = limitesDe(recu, {
     output: Boolean(sortie),
     trace,
@@ -638,6 +705,7 @@ export function ecrireRapport({ runDir, cas = null, remplacer = false }) {
     lectures,
     morsures,
     limites,
+    signature,
   });
   writeFileSync(cheminRapport, contenu, "utf8");
   return { chemin: cheminRapport, ecrit: true, verdict: recu.verdict };

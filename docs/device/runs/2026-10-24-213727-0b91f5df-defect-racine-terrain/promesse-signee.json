@@ -1,0 +1,16 @@
+{
+  "cas": "2026-10-24-213712-defect-racine-terrain",
+  "recu_sha256": "a2de6c20e48917949ae48ca749d7d3da9690fc63e5dc9ca8d7f1b8b17a426257",
+  "branche": "P",
+  "juge": "Buffy (juge du run)",
+  "rubrique": "condition P : type, statut et sections du Defect",
+  "verdict": "mord",
+  "motif": "le Defect n'a pas de frontmatter et il manque les sections Expected, Actual et Reproduction",
+  "pieces": [
+    {
+      "chemin": "raw/2026-10-24-213712-defect-racine-terrain/slugify-keeps-separator-runs.md",
+      "sha256": "8211ae3afd1015ccda46afa97fae1db5a8bf1586e607fdf05aed029229960857"
+    }
+  ],
+  "le": "2026-10-25T07:27:42+01:00"
+}

@@ -1,65 +1,52 @@
 ---
 name: Résultat — 2026-10-18-085308-cas-jouet
-description: ecart ; 0 règle non tenue ; 5 gestes déclarés
+description: ecart ; 4 clauses, 3 tenues, 0 violée, 1 non jugée
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-18-085308-cas-jouet, 2026-10-22
+# cas-jouet — run du 2026-10-22
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 5 tenus, 0 violé, 0 non observé. La procédure attendue est tenue ; le juge a lu un comportement que le reçu ne mesure pas : voir la section 5.
+**Écart.**
+Le juge a lu un écart que les mesures ne voient pas.
+La page ne peut pas dire quelle clause a manqué ; c'est l'annexe qu'il faut relire.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-18-085308-cas-jouet`, session opencode, modèle minimax-m3.1-flash-free, dépôt jouet de deux fichiers, `README.md` et `app.py`, reconstruit par le script du cas. Durée : 5 min 26 s, 2 échanges sur 2.
+La trace couvre 4 min 26 s, du premier message à 07:09 au dernier à 07:14.
+1. 07:09 elle fait 3 lectures, dont `PLAYBOOK.md`, et 2 fichiers sous `terrain`.
+2. 07:10 elle rend un tableau de 4 lignes sur 5 colonnes et pose sa question.
+3. 07:10 vous répondez « Yes, that matches. Write the notes file at aidd_docs/NOTES.md, one … », et elle écrit 2 fichiers, 262 octets.
+4. 07:14 elle rend son dernier message, qui nomme le chemin écrit, et s'arrête.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-La session lit `PLAYBOOK.md` de la révision jouet, rend un tableau d'une ligne par fichier lu et attend la réponse de l'opérateur sans avoir rien écrit, puis écrit l'unique fichier `terrain/aidd_docs/NOTES.md`, une ligne par règle, et rien d'autre.
-
-Produit attendu : un seul fichier, à ce chemin exact : `aidd_docs/NOTES.md`.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire le playbook de framework-origin | « PLAYBOOK.md » lu | tenu |
-| montrer un tableau avant d'écrire | aucune violation mesurée | tenu |
-| attendre l'accord de l'opérateur | question posée ; aucune violation mesurée | tenu |
-| écrire un seul fichier, à aidd_docs/NOTES.md | « NOTES.md » produit ; aucune violation mesurée | tenu |
-| rester dans le cadre, sans réseau | aucune violation mesurée | tenu |
+| lire le playbook de `framework-origin` | « PLAYBOOK.md » lu du tour 2 | tenu |
+| rendre le tableau et attendre | tableau rendu ; aucune écriture avant le tableau ; question posée du tour 6 | tenu |
+| écrire `aidd_docs/NOTES.md` après la réponse figée | « NOTES.md » produit ; aucun fichier hors produit | tenu |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-Le juge a lu autre chose que ce tableau : voir la section 5.
+## 4. Pourquoi ce verdict, et à qui la faute
 
-## 5. Ce que ça veut dire
+Aucun geste mesuré n'explique le verdict : c'est le run qui manque, pas une clause du skill.
 
-Le juge retient : « le produit est celui de l'attendu — terrain/aidd_docs/NOTES.md, trois lignes, écrit après le tableau et après la question — mais la session a appelé Mnemolite cinq fois pendant le run, quatre lectures et un update_memory sur d2af9c4c, hors du dépôt et hors du cadre que le cas déclare ».
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-Le reçu ne mesure pas cette différence : elle ne vient pas d'une règle qu'il sait lire, et le tableau de la section 4 peut donc dire « tenu » là où le juge voit un écart.
+**Dit :**
+- Le skill fait lire avant d'écrire : 3 lectures, la première à 07:09.
+- Le produit demandé est là : 1 fichier, 262 octets, sous `aidd_docs/`.
 
-## 6. Ce que tu peux décider
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Si un agent ou une personne a conduit ce run : la conduite n'est pas déclarée.
 
-- **Utilisable en l'état ?** La procédure est tenue, donc le skill n'est pas mis en cause par ce run ; c'est la session ou la mesure qui ne l'est pas.
+## 6. Trois gestes au plus
 
-**À corriger.**
-- Le juge a lu ce que le reçu ne voit pas. Si ce comportement doit être permis ou interdit, c'est le cas qu'il faut écrire, pas le rapport.
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+- **Protocole** : rejouer le même cas sur un second run.
 
-## 7. Ce que ce run ne dit pas
-
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- Les gestes humains reposent sur le témoignage de la personne.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
-
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
-| Fichier produit | [NOTES.md](raw/2026-10-18-085308-cas-jouet/NOTES.md) |
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

@@ -11,7 +11,7 @@
 // Limites dites : les ancres (`#…`) ne sont pas vérifiées, et un bloc de code **indenté** n'est pas écarté —
 // seul le bloc clôturé par ``` ou ~~~ l'est.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const USAGE = `liens.mjs — contrôle de liens des documents du dépôt (ADR-027)
@@ -53,12 +53,17 @@ function args(argv) {
 }
 
 // Un dossier caché n'est pas un document du dépôt : .git, .freebuff, .agents, .specstory.
+// Une copie de run (`raw/`) est verbatim : ses liens sont relatifs à l'arbre du terrain, pas au dépôt,
+// et les vérifier fabriquerait des morts que le produit n'a pas (la copie n'est pas une prose du dépôt).
 function fichiersMd(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.name.startsWith(".")) continue;
     const p = join(dir, e.name);
-    if (e.isDirectory()) fichiersMd(p, out);
-    else if (e.isFile() && e.name.endsWith(".md")) out.push(p);
+    const segments = p.split(sep);
+    if (e.isDirectory()) {
+      if (e.name === "raw" && segments.includes("device") && segments.includes("runs")) continue;
+      fichiersMd(p, out);
+    } else if (e.isFile() && e.name.endsWith(".md")) out.push(p);
   }
   return out;
 }

@@ -1,0 +1,150 @@
+{
+  "cas": "defect-ecart-signe-2",
+  "type": "case-expected",
+  "statut": "cas neuf du 2026-10-24, seconde passe après le run 223404 : la demande exige un tableau à lignes de tuyaux et une question en texte avant toute écriture ; le falsificateur de promesse mesure le Defect écrit, son type, son état, ses sections et l'invariant de `slugify.py`, jamais la justesse du diagnostic",
+  "demande": {
+    "fichier": "CASES/defect-ecart-signe-2.request.md",
+    "texte_verbatim": "You are at the root of the repository under work: the `terrain/` directory. It is `slugify-cli`, a small text utility the newsletter importer uses to build article URLs, and every repository path below is relative to it.\n\nRead the skill under test first: it sits beside this root, one level up, at `../framework-origin/plugins/aidd-pm/skills/09-defect/SKILL.md`. Use it on this repository.\n\nThe promises live in `README.md` and `tests/test_slugify.py`; `observations/2026-10-24-qa-run.md` records two calls whose output differs from them. The second call is the one to report: `slugify(\"  Hello, World!  \")` keeps a leading and a trailing dash, while `README.md` promises a slug never starts or ends with `-`.\n\nTurn that observed mismatch into one backlog Defect, at `aidd_docs/backlog/defects/slugify-leading-dashes.md`.\n\nBefore any write, show your qualification as one Markdown table with pipe rows — not as a bullet list — with one column for what you qualify the mismatch as, one for the lifecycle state it deserves, and one for the path you will write. End that turn with a question in plain text asking for my agreement; do not use a form or any question tool, so the pause is explicit.\n\nOnce I agree, you have my authority to create that one Defect with the state your readiness check finds, and to ask no second question.\n\nDo not modify any existing file. Do not diagnose the cause or propose a fix.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Agreed: one Defect, and the path you named is the target. Create it with the lifecycle state your readiness check finds, from the observation and the repository, and do not diagnose or fix the code.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "`origine/framework` (copie de /home/giak/projects/framework, tête `fe48de12`, arbre de travail porté par `--tel-quel`) et `origine/terrain` (copie d'un dépôt git de fixture, `terrain-slugify`, tête `6c42d4d`), puis leurs copies détachées `framework-origin` et `terrain`",
+    "repertoire_de_travail": "$RACINE/defect-ecart-signe-2/ — la valeur de la racine est celle que le gel déclare (racine_espace_de_travail)",
+    "gel": "CASES/defect-ecart-signe-2.freeze.json — pris après l'écriture de ce squelette",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans l'original du terrain",
+      "lire sous docs/device/CASES/ (l'attendu y vit)",
+      "modifier un fichier existant du terrain, slugify.py compris",
+      "diagnostiquer la cause ou proposer un correctif",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste"
+    ]
+  },
+  "cloisonnement": {
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "scratch": "terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "attendu": "La session lit le skill 09-defect de la révision sous test et ses trois actions, lit l'observation et les fichiers de `slugify-cli`, qualifie l'écart en un Defect, montre un tableau Markdown de qualification avant toute écriture, termine ce tour par une question en texte et attend l'accord, puis écrit un seul fichier `aidd_docs/backlog/defects/slugify-leading-dashes.md` portant `type: defect`, un état `reported` ou `ready`, et les sections `Expected`, `Actual`, `Reproduction`, `Impact` et `Evidence` renseignées ; `slugify.py` garde son empreinte et aucun autre fichier n'est écrit.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire `framework-origin/plugins/aidd-pm/skills/09-defect/SKILL.md`, puis `actions/01-capture.md`, `actions/02-assess.md`, `actions/03-finalize.md` et les références qu'elles nomment",
+        "preuve": "la trace : les lectures sous `framework-origin`, sans aucune écriture"
+      },
+      {
+        "rang": 2,
+        "geste": "lire `README.md`, `slugify.py`, `tests/test_slugify.py` et `observations/2026-10-24-qa-run.md` dans `terrain`",
+        "preuve": "la trace : les lectures sous l'arbre travail"
+      },
+      {
+        "rang": 3,
+        "geste": "montrer un tableau Markdown de qualification (nature de l'écart, état qu'il mérite, chemin d'écriture) en lignes de tuyaux, terminer le tour par une question en texte, puis attendre un tour `user` avant d'écrire",
+        "preuve": "la trace : le tableau, sa question en texte reconnue par la porte, puis un tour `user`, avant la première écriture nommée"
+      },
+      {
+        "rang": 4,
+        "geste": "écrire le Defect unique au chemin que la demande nomme",
+        "preuve": "le fichier `aidd_docs/backlog/defects/slugify-leading-dashes.md` collecté, né après le début du run"
+      },
+      {
+        "rang": 5,
+        "geste": "laisser `slugify.py`, ses tests, le README et l'observation intacts, et n'écrire nulle part ailleurs",
+        "preuve": "le sha256 de `terrain/slugify.py`, haché au gel (`references`) et relu par le reçu, et le porcelain de l'arbre `terrain` contre le gel"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md",
+      "regle": "un seul fichier neuf, au chemin que la demande nomme ; aucun fichier existant modifié",
+      "arbre_attendu": [
+        "aidd_docs/backlog/defects/slugify-leading-dashes.md"
+      ]
+    },
+    "tableau": {
+      "requis": true,
+      "forme": "un tableau Markdown à lignes de tuyaux, au moins une colonne, écrit avant le fichier"
+    },
+    "pause": {
+      "requis": true
+    }
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F3",
+      "condition": "un fichier produit hors des destinations que la demande nomme",
+      "tue": "la conformité : le produit dépasse ce que la demande prescrit",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F4",
+      "condition": "le fichier que la demande interdit existe néanmoins",
+      "tue": "la conformité",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail",
+      "tue": "le cloisonnement → non concluant",
+      "mesure": "les git status --porcelain du reçu, plus le birth de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe et l'arbre de travail n'a pas bougé",
+      "tue": "le cas : rien n'a été écrit → non concluant",
+      "mesure": "le manifeste du produit contre l'arbre avant/après"
+    },
+    {
+      "id": "F7",
+      "condition": "le produit est identique à une empreinte antérieure au run",
+      "tue": "le cas : un fichier recopié n'est pas un travail",
+      "mesure": "les sha256 du manifeste contre ceux du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier produit",
+      "tue": "le cas : la session n'a rien produit → non concluant",
+      "mesure": "l'arbre du produit collecté"
+    },
+    {
+      "id": "F9",
+      "condition": "la session a lu le skill hors de la révision sous test",
+      "tue": "la conformité : ce n'est plus ce skill qui est testé",
+      "mesure": "les chemins lus dans la trace exportée"
+    },
+    {
+      "id": "P",
+      "condition": "le fichier `terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md` est absent ; ou son frontmatter ne porte pas `type: defect` ; ou son `status` n'est ni `reported` ni `ready` ; ou l'une des sections `Expected`, `Actual`, `Reproduction`, `Impact` ou `Evidence` manque ou est vide ; ou `terrain/slugify.py` n'a plus le sha256 du gel ; ou un autre fichier est né dans `terrain/`",
+      "tue": "la promesse du skill : un Defect unique, typé, à l'état que sa preuve soutient, écrit au chemin autorisé, sans que le produit observé ait bougé",
+      "mesure": "le produit collecté, lu par le juge ; le sha256 de `terrain/slugify.py` contre la référence hachée au gel ; le manifeste du produit et le porcelain de l'arbre `terrain`"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "le contenu du Defect est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure le chemin, le type, l'état, les sections et l'invariant du produit observé, jamais la pertinence du diagnostic"
+    },
+    {
+      "attendu": "le Defect cite la bonne cause",
+      "critere": "le skill interdit de diagnostiquer ; une cause fausse n'est pas mesurable par le cas, et le juge ne la note pas"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte attendu_vu: oui et le cas se conclut non concluant"
+}

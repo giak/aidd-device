@@ -1,24 +1,29 @@
 {
   "cas": "2026-10-22-211800-task-config-manquante",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:37:58+01:00",
+    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot"
+  },
   "racine_espace_de_travail": "/home/giak/aidd-device-work",
-  "gele_le": "2026-10-22T21:13:21.168846454+0200",
-  "gele_le_epoch": 1792696401,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-211800-task-config-manquante --cases docs/device/CASES --refreeze --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/framework --arbre terrain=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain",
-  "empreinte": "95c42aa95e667e5767bc69626b9a9c11618c1458601cf5d7945ad09f0c688381",
+  "gele_le": "2026-10-25T17:37:58.591644610+0100",
+  "gele_le_epoch": 1792946278,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-211800-task-config-manquante --cases docs/device/CASES --refreeze --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/framework --arbre terrain=/home/giak/aidd-device-work/2026-10-22-211800-task-config-manquante/origine/terrain --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot\"",
+  "empreinte": "b2fe2159eda78302ee73bb26d83564989d6592fa6a838585cff9ee53d1f3dc9a",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-22-211800-task-config-manquante.expected.json",
-      "sha256": "a29320007991780088e1d8ae03a9d178d7896089a1d485e15c2a333d33c3ddc7",
-      "taille": 7326,
+      "sha256": "13090f68de1ce3877f2444af8ab7f0b40d665ecf3d6d297725c847f4c647da87",
+      "taille": 7452,
       "birth": "2026-10-22 21:11:34.760311483 +0200",
       "birth_epoch": 1792696294
     },
     {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-22-211800-task-config-manquante.request.md",
-      "sha256": "08378bfabf814c71df85342bd79a3f0b5c679a86b3f023b482b3ab21951a0a47",
-      "taille": 3312,
+      "sha256": "37fb96a0446517a97b25e2a78774a9a0541891677f0b805ecc2bb01ed50299ec",
+      "taille": 3435,
       "birth": "2026-10-22 21:11:34.758311400 +0200",
       "birth_epoch": 1792696294
     }

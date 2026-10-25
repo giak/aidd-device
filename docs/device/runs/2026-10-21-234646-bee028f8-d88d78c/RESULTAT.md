@@ -1,63 +1,56 @@
 ---
 name: Résultat — 2026-10-21-173843-plan-simple
-description: conforme ; 0 règle non tenue ; 5 gestes déclarés
+description: conforme ; 6 clauses, 5 tenues, 0 violée, 1 non jugée
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-21-173843-plan-simple, 2026-10-21
+# plan-simple — run du 2026-10-21
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 5 tenus, 0 violé, 0 non observé. Aucune règle mesurée n'a été violée.
+**Conforme.**
+La session n'a laissé aucun geste mesuré hors du cadre, et la procédure n'a pas été contredite.
+Le skill n'est pas condamné sur ce run ; ce que les mesures ne couvrent pas reste non jugé.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-21-173843-plan-simple`, session opencode, modèle minimax-m3.1-flash-free, audio-sync-tool, la copie du terrain sous `terrain/` avec son README et sa page Sync, et la révision sous test sous `framework-origin/`. Durée : 13 min 02 s, 2 échanges sur 3.
+La trace couvre 11 min 58 s, du premier message à 23:47 au dernier à 23:59.
+1. 23:47 elle fait 41 lectures, dont `SKILL.md` et ses 4 actions, et 28 fichiers sous `terrain`.
+2. 23:51 elle rend un tableau de 37 lignes sur 2 colonnes et pose sa question.
+3. 23:53 vous répondez « Continue : écris le plan et ses phases sous aidd_docs/tasks/, sans … », et elle écrit 4 fichiers, 31 Ko.
+4. 23:58 elle relit et retouche ces fichiers 2 fois.
+5. 23:59 elle rend son dernier message, qui nomme les 4 chemins écrits, et s'arrête.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.
-
-Produit attendu : un dossier `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/` contenant `plan.md` et un `phase-<n>.md` par phase ; aucun autre fichier sous cette racine.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire le skill 01-plan et ses actions | « skills/01-plan/SKILL.md » lu | tenu |
-| lire le README et les fichiers du terrain | « terrain/README.md » lu | tenu |
-| montrer un tableau et attendre l'accord | question posée ; aucune violation mesurée | tenu |
-| écrire le plan et ses phases sous aidd_docs/tasks/ | « plan.md » produit ; aucune violation mesurée | tenu |
-| rester dans le dossier du cas, sans réseau | aucune violation mesurée | tenu |
+| lire le skill 01-plan et les fichiers d'action qu'il nomme, dans `framework-origin` | « skills/01-plan/SKILL.md » lu du tour 2 | tenu |
+| lire le README et les fichiers du terrain utiles au plan | « terrain/README.md » lu du tour 6 | tenu |
+| rendre un tableau d'une ligne par fichier lu et attendre l'accord | question posée du tour 25 ; tableau rendu ; aucune écriture avant le tableau | tenu |
+| après la réponse figée, écrire le plan et ses phases sous `aidd_docs/tasks/` | « plan.md » produit ; aucun fichier hors produit | tenu |
+| terminer par un court rapport de ce qui a été écrit | texte du tour 46 : « plan.md » | tenu |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-## 5. Ce que ça veut dire
+## 4. Pourquoi ce verdict, et à qui la faute
 
-Rien de ce que le reçu mesure ne sort du cadre : les gestes attendus ont été faits dans l'ordre, et le fichier attendu est au bon endroit.
+Aucune règle mesurée ne sort du cadre. Les clauses que les pièces mesurent sont tenues. Celles qu'aucune mesure ne couvre restent non jugées, et la page ne les compte pas comme tenues. Cela ne prouve pas que le produit est juste : cela prouve qu'il est là, et que l'ordre n'a pas été contredit.
 
-## 6. Ce que tu peux décider
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-- **Utilisable en l'état ?** Oui pour ce cas : les gestes attendus sont tenus et rien de mesuré ne sort du cadre. Ce que ça ne couvre pas est à la section 7.
+**Dit :**
+- Le skill fait lire avant d'écrire : 41 lectures, la première à 23:47.
+- Le produit demandé est là : 4 fichiers, 31 Ko, sous `aidd_docs/tasks/`.
+- Aucune règle du cas n'a été violée sur ce run.
 
-**À corriger.**
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Si un agent ou une personne a conduit ce run : la conduite n'est pas déclarée.
 
-## 7. Ce que ce run ne dit pas
+## 6. Trois gestes au plus
 
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- Les gestes humains reposent sur le témoignage de la personne.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
+- **Protocole** : rejouer une fois, sans rien changer : un run conforme ne prouve pas que le suivant le sera.
 
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
-| Fichier produit | [tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-1.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-1.md) |
-| Fichier produit | [tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-2.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-2.md) |
-| Fichier produit | [tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-3.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_21_copier-tous-les-manquants/phase-3.md) |
-| Fichier produit | [tasks/2026_10/2026_10_21_copier-tous-les-manquants/plan.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_21_copier-tous-les-manquants/plan.md) |
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

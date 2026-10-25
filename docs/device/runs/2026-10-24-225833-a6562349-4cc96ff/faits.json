@@ -1,0 +1,36 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e904aa66dffe58yHFQeSju82eo",
+    "modele": "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "ouverte_par": "BuffY, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "ouverte_le": "2026-10-24T22:58:38+02:00"
+  },
+  "horodatage_debut": "2026-10-24T22:58:39+02:00",
+  "horodatage_fin": "2026-10-24T23:01:21+02:00",
+  "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-3/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-3/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-225833-a6562349-4cc96ff/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-225833-a6562349-4cc96ff/trace/export-brut.json",
+    "commande": "opencode session export ses_e904aa66dffe58yHFQeSju82eo"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "BuffY, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "quand": "2026-10-24T23:01:21+02:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-225833-a6562349-4cc96ff/raw/defect-ecart-signe-3/last-message.md",
+    "sha256": "4d16a4fb2ec780af3850f89be4c1dc631340996d2013c73623be4cae89ee376e",
+    "seq": 9,
+    "ts": 1792875558607
+  }
+}

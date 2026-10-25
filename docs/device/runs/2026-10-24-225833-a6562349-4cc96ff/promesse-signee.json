@@ -1,0 +1,16 @@
+{
+  "cas": "defect-ecart-signe-3",
+  "recu_sha256": "6bc8d84b1e30c7b3dddc1f9d9cfa72b782e076df79ec5f1787782fd3e347b1d8",
+  "branche": "P",
+  "juge": "Buffy (juge du run)",
+  "rubrique": "condition P : type, statut et sections du Defect",
+  "verdict": "mord",
+  "motif": "le Defect n'a pas de frontmatter et il manque les sections Expected, Actual et Reproduction",
+  "pieces": [
+    {
+      "chemin": "raw/defect-ecart-signe-3/slugify-leading-dashes.md",
+      "sha256": "9fa737fa3ce1ae79b22113a6b038d4c42bb4aba02a070eee9dc6dab26485033f"
+    }
+  ],
+  "le": "2026-10-25T07:27:42+01:00"
+}

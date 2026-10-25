@@ -1,27 +1,36 @@
 {
   "cas": "2026-10-22-092005-spike-annees",
   "type": "case-lecture",
-  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md. Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le dernier geste de l'attendu, conclure et rapporter, n'a pas d'assertion mécanique et reste hors de la page.",
+  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md. Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le champ `rang` rattache un geste à une clause de `attendu_details.ordre` ; un geste sans rang mesure le cadre, pas la promesse.",
   "depot": "audio-sync-tool, outil local de synchronisation musicale, à la révision 416ec1f",
   "gestes": [
     {
       "geste": "lire le skill 05-spike et les fichiers d'action qu'il nomme",
+      "rang": 1,
       "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "05-spike" }]
     },
     {
       "geste": "lire le dépôt audio-sync-tool",
+      "rang": 2,
       "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "/terrain/" }]
     },
     {
       "geste": "montrer ce qui est qualifié et attendre l'accord",
+      "rang": 3,
       "assertions": [{ "type": "pause" }]
     },
     {
       "geste": "écrire la spike sous aidd_docs/backlog/spikes/",
+      "rang": 4,
       "assertions": [
         { "type": "produit" },
         { "type": "falsificateur_vide", "nom": "hors_produit" }
       ]
+    },
+    {
+      "geste": "conclure la spike et nommer le chemin écrit",
+      "rang": 5,
+      "assertions": [{ "type": "trace_texte", "role": "assistant", "contient": "aidd_docs", "a_partir_du_tour": 1 }]
     },
     {
       "geste": "rester dans le dossier du cas, sans réseau",

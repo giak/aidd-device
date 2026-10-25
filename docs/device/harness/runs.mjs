@@ -26,7 +26,7 @@ const refuse = (m) => {
   process.exit(1);
 };
 const usage = (m) => {
-  console.error(`runs : ${m}\nusage : node docs/device/harness/runs.mjs --verifier|--index [--runs <dossier>]`);
+  console.error(`runs : ${m}\nusage : node docs/device/harness/runs.mjs --verifier|--index [--runs <dossier>] [--journal <fichier>]`);
   process.exit(2);
 };
 const texte = (v) => typeof v === "string" && v.trim() !== "";
@@ -36,6 +36,7 @@ const cellule = (v) => String(v).replace(/\|/g, "\\|");
 
 let action = null;
 let runs = DEFAUT;
+let journal = join(DEPOT, "docs/trace.md");
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--verifier" || args[i] === "--index") {
@@ -44,6 +45,9 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === "--runs") {
     if (i + 1 >= args.length) usage("--runs attend un dossier");
     runs = resolve(args[++i]);
+  } else if (args[i] === "--journal") {
+    if (i + 1 >= args.length) usage("--journal attend un fichier");
+    journal = resolve(args[++i]);
   } else {
     usage(`option inconnue : ${args[i]}`);
   }
@@ -179,6 +183,9 @@ function ficheRecu(nom, dir) {
   if (!texte(r.verdict)) refuse(`${nom} est un reçu sans verdict lisible`);
   const correction = lireCorrection(nom, dir, r.verdict);
   const limites = Array.isArray(r.limites) && r.limites.length ? `${r.limites.length}, reçu` : "0, aucune";
+  // Le reçu antérieur au champ n'est pas réécrit : l'index dit « non nommées », il ne devine pas.
+  const causes = Array.isArray(r.causes) ? r.causes.filter((c) => typeof c === "string" && c.trim() !== "") : [];
+  const nommees = causes.length ? causes.join(", ") : "non nommées";
   return {
     nom,
     date: nom.slice(0, 10),
@@ -186,7 +193,9 @@ function ficheRecu(nom, dir) {
     cas: texte(r.cas) ? r.cas : "inconnu",
     statut: correction
       ? `${r.verdict} (corrigé ${correction.verdict_retenu}, [note](${nom}/${correction.note}))`
-      : r.verdict,
+      : r.verdict === "non concluant"
+        ? `${r.verdict} (causes : ${nommees})`
+        : r.verdict,
     limites,
     pieces: piecesDossier(dir),
   };
@@ -256,6 +265,21 @@ const cheminIndex = join(runs, "INDEX.md");
 if (action === "--verifier") {
   if (!existsSync(cheminIndex)) refuse("INDEX.md diverge de la génération — régénérer");
   if (readFileSync(cheminIndex, "utf8") !== attendu) refuse("INDEX.md diverge de la génération — régénérer");
+  // A-04 du RETEX : un run indépendant à reçu que le journal ne cite pas ne se relit pas. Le journal
+  // nomme un run par son horodatage `YYYY-MM-DD-HHMMSS`, préfixe commun du dossier et de la citation ;
+  // les runs guidés et les runs avortés sortent de la règle, ils n'ont pas de reçu à citer.
+  if (!existsSync(journal)) refuse(`--journal ${journal} n'existe pas — un run se cite dans un journal lisible`);
+  const texteJournal = readFileSync(journal, "utf8");
+  const horodatage = (nom) => nom.match(/^\d{4}-\d{2}-\d{2}-\d{6}/)?.[0] ?? nom;
+  const nonCites = fiches
+    .filter((f) => f.mode === "indépendant" && !texteJournal.includes(horodatage(f.nom)))
+    .map((f) => f.nom);
+  if (nonCites.length) {
+    refuse(
+      `run(s) à reçu absent(s) : ${nonCites.join(", ")} — un run indépendant qui n'est pas cité au journal ` +
+        `${journal} ne se relit pas ; ajouter la section datée qui le cite (A-04 du RETEX)`,
+    );
+  }
   process.exit(0);
 }
 

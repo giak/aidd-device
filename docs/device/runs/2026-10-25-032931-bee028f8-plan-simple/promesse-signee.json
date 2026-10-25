@@ -1,0 +1,28 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "recu_sha256": "b9d4a595728bd433b846da3ba58793b661b9a1200aa68e0e317df57bd11e477e",
+  "branche": "P",
+  "juge": "Buffy (juge du run)",
+  "rubrique": "condition P : bouton et trois phases",
+  "verdict": "ne_mord_pas",
+  "motif": "le plan porte le bouton « copier tous les manquants » et ses trois phases",
+  "pieces": [
+    {
+      "chemin": "raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "sha256": "3760faa53a8532e4470e6c52289272badd58d22d8ecff3bb6590dc54a69e50b4"
+    },
+    {
+      "chemin": "raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "sha256": "d506fe6e370e83cf039ce0d88259436fbc50f5f1403ad57dc069ceb1e63372f0"
+    },
+    {
+      "chemin": "raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-2.md",
+      "sha256": "db54ce5e24bb23141009c9190fdfd01bec6633c9af8ed5b77c4b8f07bebc5d83"
+    },
+    {
+      "chemin": "raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-3.md",
+      "sha256": "656d63a187a56584378f28318c37d2764d13fc00f6c0cbe2cea8bb3ab3fdb0e1"
+    }
+  ],
+  "le": "2026-10-25T07:10:28+01:00"
+}

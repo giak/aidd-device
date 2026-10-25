@@ -1,0 +1,29 @@
+{
+  "cas": "plan-simple-cadre",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre",
+  "role": "produit",
+  "source": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain"
+  },
+  "collecte_le": "2026-10-25T04:22:33+01:00",
+  "fichiers": [
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "source": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "sha256": "e348490ac9ea6493d536e5b45ada0e7183176192e6d9fa4ea783535f1065dbb5",
+      "taille": 8263,
+      "birth": "2026-10-25 04:17:00.612395874 +0100",
+      "birth_epoch": 1792898220
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "source": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "sha256": "00b756c0ac69afa04ba594e39a0ca5e4126c3860c4354097b1788ef227ac3782",
+      "taille": 2923,
+      "birth": "2026-10-25 04:16:33.534312176 +0100",
+      "birth_epoch": 1792898193
+    }
+  ]
+}

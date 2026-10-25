@@ -145,7 +145,7 @@ ce qu'il empêche, puis reprend là où le parcours s'est arrêté.
   client, pas par une personne devant l'interface. Le guide décrit le parcours à tenir ; ce run ne le
   prouve pas au sens littéral.
 
-## Annexe — les huit commandes que l'agent conduit
+## Annexe — les neuf commandes que l'agent conduit
 
 Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin de les taper.
 
@@ -158,6 +158,7 @@ Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin
 | `suite` | dérive les faits du fil ou de la session opencode, exporte la trace par l'adaptateur du client, copie le produit | `faits.json`, `trace/`, `raw/<cas>/` |
 | `tracer` | exporte la trace d'un run guidé, sans reçu ni verdict ; `--depuis` et `--jusqu` la bornent au run, `--liste --depuis` nomme les fils actifs depuis cette date, sans leur contenu (`ADR-076`) | `trace/echange.jsonl`, `trace/fil.json` |
 | `fin` | demande à blanc le verdict que la preuve impose, puis écrit le reçu, l'output et le rapport utilisateur | `receipt.json`, `output.json`, `RAPPORT.md` |
+| `signer` | fait recopier au juge son verdict sur la branche P de la promesse, avec les empreintes des pièces qu'il a lues ; une pièce qui a changé depuis annule la signature | `promesse-signee.json` à côté du reçu, que la page recopie |
 | `rapport` | reconstruit le rapport d'un run déjà clos, sans toucher au reçu ni à l'output | `RAPPORT.md` seulement, avec `--remplacer` |
 | `lire` | relit le verdict, sans rien écrire | rien |
 

@@ -1,0 +1,56 @@
+{
+  "cas": "2026-10-24-213712-defect-racine-terrain",
+  "type": "case-lecture",
+  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « état » du RESULTAT.md (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le champ `rang` rattache un geste à une clause de `attendu_details.ordre` ; un geste sans rang mesure le cadre, pas la promesse.",
+  "depot": "slugify-cli, la copie du terrain sous `terrain/` avec son README, ses tests et son observation, et la révision sous test sous `framework-origin/`",
+  "gestes": [
+    {
+      "geste": "lire le skill 09-defect dans la révision sous test",
+      "rang": 1,
+      "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "skills/09-defect/SKILL.md" }]
+    },
+    {
+      "geste": "lire le README, les tests et l'observation du terrain",
+      "rang": 2,
+      "assertions": [
+        { "type": "trace_outil", "outil": "read", "chemin_contient": "README.md" },
+        { "type": "trace_outil", "outil": "read", "chemin_contient": "tests/test_slugify.py" },
+        { "type": "trace_outil", "outil": "read", "chemin_contient": "observations/2026-10-24-qa-run.md" }
+      ]
+    },
+    {
+      "geste": "montrer un tableau, poser la question et attendre un tour de la personne",
+      "rang": 3,
+      "assertions": [
+        { "type": "trace_texte", "role": "assistant", "contient": "Do you agree with this qualification" },
+        { "type": "falsificateur_vide", "nom": "tableau_absent" },
+        { "type": "falsificateur_vide", "nom": "ecriture_avant_tableau" },
+        { "type": "falsificateur_vide", "nom": "produit_ne_avant_le_tableau" },
+        { "type": "pause" }
+      ]
+    },
+    {
+      "geste": "écrire le Defect unique au chemin que la demande nomme",
+      "rang": 4,
+      "assertions": [{ "type": "produit", "chemin_exact": "slugify-keeps-separator-runs.md" }]
+    },
+    {
+      "geste": "n'écrire nulle part ailleurs et laisser les fichiers existants intacts",
+      "rang": 5,
+      "assertions": [
+        { "type": "falsificateur_vide", "nom": "hors_produit" },
+        { "type": "falsificateur_vide", "nom": "arbre_de_travail_inchange" },
+        { "type": "falsificateur_vide", "nom": "produit_identique_a_une_empreinte_anterieure" }
+      ]
+    },
+    {
+      "geste": "rester dans le dossier du cas, sans réseau",
+      "assertions": [
+        { "type": "falsificateur_vide", "nom": "lecture_hors_dossier" },
+        { "type": "falsificateur_vide", "nom": "shell_hors_dossier" },
+        { "type": "falsificateur_vide", "nom": "shell_ecriture_hors_produit" },
+        { "type": "falsificateur_vide", "nom": "reseau" }
+      ]
+    }
+  ]
+}

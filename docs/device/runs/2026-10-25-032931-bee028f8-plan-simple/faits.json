@@ -1,0 +1,36 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e8f1ade2effe6iLL5XZFSoZtYs",
+    "modele": "opencode/deepseek-v4.1-flash-free",
+    "ouverte_par": "opencode headless, modèle opencode/deepseek-v4.1-flash-free, agent build",
+    "ouverte_le": "2026-10-25T03:30:27+01:00"
+  },
+  "horodatage_debut": "2026-10-25T03:30:28+01:00",
+  "horodatage_fin": "2026-10-25T03:42:33+01:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+  "trace": {
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-032931-bee028f8-plan-simple/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-032931-bee028f8-plan-simple/trace/export-brut.json",
+    "commande": "opencode session export ses_e8f1ade2effe6iLL5XZFSoZtYs"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "opencode headless, modèle opencode/deepseek-v4.1-flash-free, agent build",
+    "quand": "2026-10-25T03:42:33+01:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-032931-bee028f8-plan-simple/raw/2026-10-21-173843-plan-simple/last-message.md",
+    "sha256": "7b009e736102d38123adc73e76e2fd3a901a19ed2217c50cf189ce7a22d1ae8f",
+    "seq": 49,
+    "ts": 1792895956717
+  }
+}

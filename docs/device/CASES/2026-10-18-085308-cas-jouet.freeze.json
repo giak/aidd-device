@@ -1,24 +1,37 @@
 {
   "cas": "2026-10-18-085308-cas-jouet",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:30:08+01:00",
+    "preuve": "choix « Corriger la demande d'abord » à la question du 2026-10-25 : nommer terrain dans le texte remis et aligner §5/§7 sur les racines de lecture ; libellé non relu mot à mot par la personne"
+  },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-22T00:44:03.002573734+0200",
-  "gele_le_epoch": 1792622643,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-18-085308-cas-jouet --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain --refreeze",
-  "empreinte": "27fb38ab393ce80e176a5b971d4a1d81299d96bbff8da06f04e42714fc5a55dd",
+  "gele_le": "2026-10-25T17:30:08.649512427+0100",
+  "gele_le_epoch": 1792945808,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-18-085308-cas-jouet --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/terrain --refreeze --confirme-par giak --confirme-preuve \"choix « Corriger la demande d'abord » à la question du 2026-10-25 : nommer terrain dans le texte remis et aligner §5/§7 sur les racines de lecture ; libellé non relu mot à mot par la personne\"",
+  "empreinte": "87a38ffcdacff1625e1cc4de6956003026da0017586b0057238aa7ab465cd7c5",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.expected.json",
-      "sha256": "1e0bc3edc082051e3b7d63c8aedd6a925934267f80be0901bbf1c93cc1b231b8",
-      "taille": 4928,
+      "sha256": "8e60d16bf6627eddf9c18685a185b45d95d65e4c2b21a509b6a233ac0891191e",
+      "taille": 5366,
       "birth": "2026-10-18 08:56:44.830664426 +0200",
       "birth_epoch": 1792306604
     },
     {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.lecture.json",
+      "sha256": "9720d8360e765c8a081962ef82265038318e6f8c9b7360c817c83c4498e99a66",
+      "taille": 1831,
+      "birth": "2026-10-22 07:35:19.288942793 +0200",
+      "birth_epoch": 1792647319
+    },
+    {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-18-085308-cas-jouet.request.md",
-      "sha256": "8defa94072611509ff32c1392f35082932a58f151e9a3dbb45da25dbefccfdff",
-      "taille": 2708,
+      "sha256": "3def72e1b9bdfb737c5cb7d916276046c71f3acd00c242b4f8d843f676989a7a",
+      "taille": 3071,
       "birth": "2026-10-18 08:53:37.855949504 +0200",
       "birth_epoch": 1792306417
     }

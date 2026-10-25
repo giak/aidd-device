@@ -28,6 +28,7 @@ status: ready
 Entre les deux lignes de garde, et rien d'autre :
 ```text
 <<<DEMANDE
+You work in the repository at $RACINE/2026-10-22-211800-task-config-manquante/terrain; that checkout is "this repository".
 Read the skill at $RACINE/2026-10-22-211800-task-config-manquante/framework-origin/plugins/aidd-pm/skills/10-task/SKILL.md and use it on this repository.
 Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README. Crée une Task interne pour ajouter un contrôle de démarrage qui échoue clairement quand `data/config.json` manque, sans implémenter ce contrôle. Montre d'abord le brouillon complet de la Task et attends mon accord sans avoir écrit un seul fichier. Après accord, écris la Task sous `aidd_docs/backlog/tasks/refuser-config-manquante.md`, et rien d'autre.
 >>>DEMANDE

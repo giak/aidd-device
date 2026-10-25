@@ -1,0 +1,107 @@
+{
+  "cas": "defect-ecart-signe-4",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-24T23:02:27+02:00",
+    "preuve": "consigne de l'opérateur du 2026-10-24 : rejouer 09-defect sur un cas neuf et écrire le verdict ecart signé par le juge"
+  },
+  "racine_espace_de_travail": "/home/giak/aidd-device-work-2026-10-24",
+  "gele_le": "2026-10-24T23:02:27.684149175+0200",
+  "gele_le_epoch": 1792875747,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case defect-ecart-signe-4 --cases docs/device/CASES --racine /home/giak/aidd-device-work-2026-10-24 --arbre framework-origin=/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/framework --arbre terrain=/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain --ref slugify.py --ref-root /home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain --confirme-par giak --confirme-preuve \"consigne de l'opérateur du 2026-10-24 : rejouer 09-defect sur un cas neuf et écrire le verdict ecart signé par le juge\"",
+  "empreinte": "2a170fcd3d88f90d8100aab08010f575f12b1d270f50a22d2b2588b4d512d4b3",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/defect-ecart-signe-4.expected.json",
+      "sha256": "ed3adc530cac2a22d84f5a4ad9eadc6c5ff63a02d18bc288cd67f4716516103d",
+      "taille": 9862,
+      "birth": "2026-10-24 23:02:18.558002741 +0200",
+      "birth_epoch": 1792875738
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/defect-ecart-signe-4.request.md",
+      "sha256": "affb47a9b37a2f93f07e8c2692710d7655f694b4c3e8ed849a340b5941c40211",
+      "taille": 5245,
+      "birth": "2026-10-24 23:02:23.579212522 +0200",
+      "birth_epoch": 1792875743
+    }
+  ],
+  "references": [
+    {
+      "arbre": "terrain",
+      "chemin": "slugify.py",
+      "sha256": "10cfeccf59e36531bd5bcd97647a845beff6eeca7bbb5ea46f4be84081da099a",
+      "taille": 259,
+      "birth": "2026-10-24 23:02:25.322442105 +0200",
+      "birth_epoch": 1792875745
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    }
+  ]
+}

@@ -4,7 +4,7 @@
   "statut": "attendu rempli le 2026-10-21T17:40:23+02:00 — le falsificateur de promesse est écrit ; le re-gel qui suit hache ces deux pièces avant l'ouverture (ADR-039)",
   "demande": {
     "fichier": "CASES/2026-10-21-173843-plan-simple.request.md",
-    "texte_verbatim": "Read the skill at $RACINE/2026-10-21-173843-plan-simple/framework-origin/plugins/aidd-dev/skills/01-plan/SKILL.md and use it on this repository. Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un plan d'ajout d'un bouton « copier tous les manquants » à sa page Sync. Lis le README et les fichiers utiles, montre d'abord un tableau d'une ligne par fichier lu, attends mon accord sans avoir écrit un seul fichier, puis écris le plan et ses phases sous aidd_docs/tasks/.",
+    "texte_verbatim": "You work in the repository at $RACINE/2026-10-21-173843-plan-simple/terrain; that checkout is \"this repository\".\nRead the skill at $RACINE/2026-10-21-173843-plan-simple/framework-origin/plugins/aidd-dev/skills/01-plan/SKILL.md and use it on this repository. Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un plan d'ajout d'un bouton « copier tous les manquants » à sa page Sync. Lis le README et les fichiers utiles, montre d'abord un tableau d'une ligne par fichier lu, attends mon accord sans avoir écrit un seul fichier, puis écris le plan et ses phases sous aidd_docs/tasks/.",
     "budget_echanges": 3,
     "reponses_figees": [
       "Continue : écris le plan et ses phases sous aidd_docs/tasks/, sans rien demander d'autre.",

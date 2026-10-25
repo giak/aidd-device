@@ -1,24 +1,29 @@
 {
   "cas": "2026-10-23-202011-test-analyse",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:37:58+01:00",
+    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot"
+  },
   "racine_espace_de_travail": "/home/giak/aidd-device-work",
-  "gele_le": "2026-10-24T04:55:29.782499268+0200",
-  "gele_le_epoch": 1792810529,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-23-202011-test-analyse --cases docs/device/CASES --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin --arbre terrain=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain --refreeze",
-  "empreinte": "9c8fd81c0fe4ec9015720d832bd36b37a7e7ac1172de319cb3e47c72764157a1",
+  "gele_le": "2026-10-25T17:37:58.732540214+0100",
+  "gele_le_epoch": 1792946278,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-23-202011-test-analyse --cases docs/device/CASES --refreeze --racine /home/giak/aidd-device-work --arbre framework-origin=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/framework --arbre terrain=/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot\"",
+  "empreinte": "6065d956f2a292792d8775ed1e3dc108e15881263bee8b618eaefbc6fd76aa59",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-23-202011-test-analyse.expected.json",
-      "sha256": "10cd895b251d33effa24fced4ffa3e3cedc178a47f89db923bfdeec396ade243",
-      "taille": 7668,
+      "sha256": "c100c123758e33905778ed2ece186c31d8fedbd392194bd97bd2bc075f993b1a",
+      "taille": 7785,
       "birth": "2026-10-23 20:20:12.116305313 +0200",
       "birth_epoch": 1792779612
     },
     {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-23-202011-test-analyse.request.md",
-      "sha256": "4bdd7452d3222904846d390a6f6b446173418b414ae07dc90490f1576cd68e30",
-      "taille": 3598,
+      "sha256": "31cd0e1aa9e14c5723b83714017bdf55337bf88e191457e569229101c232907c",
+      "taille": 3712,
       "birth": "2026-10-23 20:20:12.113305192 +0200",
       "birth_epoch": 1792779612
     }
@@ -27,14 +32,14 @@
   "arbres": [
     {
       "label": "framework-origin",
-      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/framework-origin",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/framework",
       "head": "fe48de12",
       "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
       "porcelain": [],
       "remotes": [
         {
           "nom": "origin",
-          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/framework"
+          "url": "/home/giak/projects/framework"
         }
       ],
       "refs_distants": [
@@ -43,17 +48,18 @@
     },
     {
       "label": "terrain",
-      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/terrain",
+      "chemin": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain",
       "head": "416ec1f",
       "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
       "porcelain": [],
       "remotes": [
         {
           "nom": "origin",
-          "url": "/home/giak/aidd-device-work/2026-10-23-202011-test-analyse/origine/terrain"
+          "url": "/home/giak/projects/audio-sync-tool"
         }
       ],
       "refs_distants": [
+        "origin/main",
         "origin/test/aidd-installation"
       ]
     },

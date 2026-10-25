@@ -1,24 +1,37 @@
 {
   "cas": "2026-10-21-173843-plan-simple",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:37:47+01:00",
+    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot"
+  },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-21T17:40:41.005579252+0200",
-  "gele_le_epoch": 1792597241,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md",
-  "empreinte": "bee028f8714ff4c80d98a2119af2bdef5315ec778c3990683dd2ca3c28a15d76",
+  "gele_le": "2026-10-25T17:37:47.650457402+0100",
+  "gele_le_epoch": 1792946267,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot\"",
+  "empreinte": "fc461c4f0e659c5ab8d916480ffc43be914a3a23ba70d8b9989c3a556b7970c9",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.expected.json",
-      "sha256": "81b7721354f041101fe2c7310520199a1257b5189b8ced6071a1c6a7bd275801",
-      "taille": 6403,
+      "sha256": "00b6b53174462b2263819f4d8bdd132e080901a6511f6f72d3372320e7b0833e",
+      "taille": 6519,
       "birth": "2026-10-21 17:38:55.098143517 +0200",
       "birth_epoch": 1792597135
     },
     {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.lecture.json",
+      "sha256": "3e69e012b4c004cc55fd9c39e8ac3ee4e32e732363aaaf1e38d6f50dcd7772ac",
+      "taille": 2336,
+      "birth": "2026-10-22 08:18:05.762418690 +0200",
+      "birth_epoch": 1792649885
+    },
+    {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.request.md",
-      "sha256": "610421c5dd3f76e7675b9fe2bbe393d6353c95c7d092819396a3d0d793840d92",
-      "taille": 2596,
+      "sha256": "1feaf7069dfe9f92a885598785bfe60a23febbaec000f728a70df5478deb3174",
+      "taille": 2709,
       "birth": "2026-10-21 17:38:55.096143435 +0200",
       "birth_epoch": 1792597135
     }

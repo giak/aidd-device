@@ -1942,6 +1942,21 @@ parce que le reçu ne mesure pas cet outil.
 dans son corps ; deux appels qui rendent deux fichiers ; une section qui manque ; un geste déclaré par le
 cas et absent du tableau.
 
+**Amendement du 2026-10-25 — la page devient une décision, pas un gabarit.** Lue sur un run réel, la page
+à huit sections ne répondait pas à la question de la personne : quatre sections de gabarit, un tableau qui
+mêlait les gestes promis par le skill et une sortie de cadre de la session, et aucun récit des huit minutes
+passées. La page porte désormais six sections, soixante lignes au plus : le verdict en trois phrases, le
+récit daté tiré de la trace, la promesse clause par clause, la faute séparée, ce que le run dit et ne dit
+pas, et trois gestes au plus ([spec](tasks/2026_10/2026-10-25-053320-page-de-decision/2026-10-25-053322-spec.md)).
+Deux ajouts changent le sens. `attendu_details.ordre[].rang` et le champ `rang` de `lecture.json` attachent
+chaque mesure à une clause : un geste hors promesse, comme une sonde `../../README.md`, n'est plus une
+ligne du tableau de la promesse, il est la faute nommée au §4 et attribuée à la session ou au skill selon
+la clé du falsificateur. La justesse du produit reste `non jugé` tant qu'aucun juge n'a signé, et la page
+le dit à chaque run. `RAPPORT.md` ne change pas : il devient l'annexe technique, citée une fois. Contrôles
+**327** (run non concluant, faute de session) et **328** (run conforme, aucune correction du skill
+inventée), chacun avec son mutant. Les contrôles **228** à **230** éprouvent la forme nouvelle ; la prose
+reste hors de leur portée.
+
 ## ADR-062 — Le produit se mesure fichier par fichier, et son parent n'est jamais un écart (2026-10-22)
 
 **Contexte.** Le run `2026-10-22-092354-0052c168-496fbe8` conclut `non concluant` avec, parmi ses six
@@ -2928,6 +2943,13 @@ un autre nombre de réponses que le §8 ; un `arbre_attendu` qui omet le fichier
 cité « sha256 du gel » accepté sans `--ref` ; un cas complet gelé sans confirmation ; une confirmation dont
 le `le` n'est pas ISO 8601 ; un `collect` qui accepte un produit dont une entrée d'`arbre_attendu` manque.
 
+**Mise à jour du 2026-10-24.** La phrase « sa réparation […] n'est pas faite » était vraie quand elle a été
+écrite. Le cas `03-shadow` a été réparé puis re-gelé sous `5b1e2724` (gel du 2026-10-24T12:05:28+02:00,
+confirmation recopiée), et rejoué deux fois : le run `2026-10-24-113143-868436ae-576c360` rend `ecart` sur
+l'ancien gel (reçu 11:37:35), puis le run `2026-10-24-120532-5b1e2724-6b24ca8` rend `conforme` sur le gel
+réparé (reçu 12:11:07, 15 limites). La phrase d'origine n'est pas réécrite ; cette note la date et la
+corrige.
+
 ## ADR-095 — Un scratch vide ne se collecte pas, et ne fait pas perdre le produit
 
 **Date** : 2026-10-24. **Statut** : accepté. **Défaut** : le run `2026-10-24-120532-5b1e2724-6b24ca8`, cas
@@ -3011,3 +3033,374 @@ ne recollecte pas une copie existante, ne réécrit ni les faits ni la trace, et
 
 **Falsificateur** : une `--reprendre` qui réexporte la trace ou redérive les faits ; une reprise acceptée
 sans `faits.json` ; une reprise acceptée sur un dernier message déjà écrit ; une seconde reprise acceptée.
+
+## ADR-098 — Un `non concluant` nomme sa cause, ou le reçu ne s'écrit pas (2026-10-24)
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : le RETEX du protocole (A-02) constate 18 verdicts
+`non concluant` sur 46 runs, dont aucun ne dit quelle couche a manqué. Le verdict dit ce que la preuve ne
+permet pas de conclure ; il ne dit pas si le cas, le dispositif, le modèle ou le skill en est la cause. Un
+run se relit donc sans savoir quoi corriger, et deux non concluants de même forme peuvent venir de couches
+opposées.
+
+**Décision.** `--cause` entre dans `fin` et `receipt`, domaine fermé : `cas`, `dispositif`, `modele`,
+`skill`, `inconnu`. `fin` refuse un `--verdict non concluant` sans aucune cause, avant la première pièce.
+Le reçu porte `causes` en liste, l'output la recopie, l'index l'affiche, et le rapport remplace sa phrase
+générique par les causes nommées. Un reçu direct sans cause écrit `inconnu` : la couche n'est pas
+déterminée, et la taire serait pire. Les reçus antérieurs au champ ne sont pas réécrits ; l'index dit
+`non nommées`, sans deviner.
+
+**Conséquences.** Contrôle **314** du banc, qui passe de **306** à **307** contrôles. Il rejoue le run de
+312, essuie le refus (`--cause est requis`, aucune pièce écrite), puis exige un reçu `causes: [dispositif,
+skill]` et un output qui les recopie. Trois contrôles qui jouaient `fin` sur un non concluant pour une autre
+raison — 143, 164, 170 — passent `--cause inconnu` : leurs fixtures ne nomment aucune couche. L'index est
+régénéré, ses 18 non concluants deviennent `non concluant (causes : non nommées)`, et `--verifier` sort en
+`0`.
+
+**Ce que ce n'est pas** : la preuve que la cause nommée est juste. Le domaine fermé empêche d'inventer un
+nom, pas de se tromper de nom ; `inconnu` reste une déclaration acceptée. Le refus vit dans `fin` : un appel
+direct à `receipt` sans cause écrit `inconnu` au lieu de refuser, et ce raccourci n'est pas fermé.
+
+**Falsificateur** : un `fin` qui écrit un reçu `non concluant` sans cause ; une cause hors domaine acceptée ;
+un reçu dont `causes` diverge de l'output ; un index qui devine une cause absente du reçu.
+
+## ADR-099 — Le gel contrôle le répertoire de travail, le journal doit citer chaque reçu (2026-10-24)
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : A-04 du RETEX. Le cas
+`2026-10-24-173346-defect-slugify-racine` portait, dans son attendu, un `contexte.repertoire_de_travail`
+figé sur `$RACINE/2026-10-24-172034-defect-slugify/`, la racine du cas précédent ; le gel l'a accepté, et
+aucun code ne lisait ce champ. Le run `173451` a produit un reçu sans être cité au journal, et rien ne le
+signalait : une omission ne se voyait qu'à la relecture.
+
+**Décision.** Deux refus mécaniques. `freeze` refuse un `contexte.repertoire_de_travail` qui commence par
+`$RACINE/` quand le dossier nommé n'est pas le cas ; une valeur en prose ou absolue reste hors du contrôle.
+`runs.mjs --verifier` refuse un run indépendant porteur d'un `receipt.json` dont l'horodatage
+`YYYY-MM-DD-HHMMSS` n'apparaît pas dans le journal, `docs/trace.md` par défaut ou le fichier nommé par
+`--journal`. Les runs guidés et avortés sortent de la règle.
+
+**Conséquences.** Contrôles **316** à **318**, le banc passant de **308** à **311** contrôles : **316** rejoue
+le cas jouet avec un répertoire de travail d'un autre cas ; **317** refuse un dossier de runs dont le journal
+ne cite pas l'horodatage ; **318** accepte le même dossier dès que la citation est là. Les contrôles **274**
+et **297** nomment `--journal` sur une fixture qui cite leurs runs, sinon la règle neuve les refuserait. Le
+journal du dépôt satisfait la règle : `055916` y est cité en séance 175, `070952` et `174021` par leur
+horodatage.
+
+**Ce que ce n'est pas** : la preuve que la citation décrit le run. La règle lit un horodatage, pas la qualité
+de la prose ; elle ne couvre pas les runs guidés ni les avortés, et un `--journal` nommé à la main peut citer
+n'importe quoi. Le contrôle du répertoire ne résout ni un chemin absolu ni une valeur en prose.
+
+**Falsificateur** : un gel accepté avec le répertoire d'un autre cas ; un `--verifier` qui accepte un reçu
+dont l'horodatage manque au journal ; un `--verifier` qui refuse un run cité.
+
+## ADR-100 — Un `ecart` peut être signé par le juge de la promesse, en nommant la branche qui mord (2026-10-24)
+
+**Date** : 2026-10-24. **Statut** : accepté. **Défaut** : run
+`2026-10-24-213727-0b91f5df-defect-racine-terrain` (séance 177). Le produit du skill `09-defect` violait
+trois branches du falsificateur `P` : aucun frontmatter, un état `capture` hors du domaine `reported|ready`,
+et les sections `Expected`, `Actual` et `Reproduction` absentes. `fin` a proposé `conforme`, parce que `P`
+relève du juge et qu'aucune mesure ne l'éprouve ; `fin --verdict ecart` a refusé faute de morsure mécanique.
+Le dispositif n'offrait donc aucun verdict pour un jugement négatif de la promesse, et le défaut du skill
+s'enregistrait comme un défaut de la couche (`non concluant`, causes `dispositif` et `cas`). L'audit v2, D2,
+avait nommé la conséquence : « un `ecart` peut être refusé faute de falsificateur alors que le produit est
+faux ».
+
+**Décision.** Un `ecart` se fonde sur trois sources, dans cet ordre de lecture : un fichier de produit hors
+du produit (`motifsEcart`), une vérification qui ne mord pas (`verification.mord === false`), ou un juge qui
+nomme la branche de la promesse qui mord, quand les deux premières sont absentes. La troisième voie exige
+`--juge`, `--rubrique` et `--morsure` non vides, et un cas dont `promesse.mode` vaut `juge_seul` ; le reçu
+recopie les trois champs sous `promesse`, et `compare` refuse un output qui ne les recopie pas à l'identique.
+Un cas dont la promesse est `non_mesuree` ne peut pas fonder d'écart jugé. Un écart mécanique n'exige rien et
+garde les trois champs nuls.
+
+**Conséquences.** Contrôles **319** à **321**, le banc passant de **311** à **314** contrôles : **319** accepte
+un écart signé et vérifie les trois champs du reçu, en refusant les signatures partielles et l'écart sans
+juge ; **320** refuse un output sans la branche, puis l'accepte et la recopie ; **321** refuse une signature
+sur un cas sans promesse nommée. Le contrôle **290** reste le garde du refus d'un écart sans morsure : la
+voie jugée est opt-in. `RAPPORT.md` nomme la branche recopiée avant la différence de l'output, et la commande
+proposée par `fin` sans `--verdict` nomme les deux issues, `conforme` signé ou `ecart` signé.
+
+**Ce que ce n'est pas** : une mesure de la promesse. Le reçu recopie un nom, une rubrique et une phrase ; il
+ne vérifie ni l'identité du juge, ni son indépendance, ni la fidélité de sa lecture, et il ne confronte pas la
+branche nommée au produit. Un juge qui nomme une branche fausse écrit un faux écart, et aucune pièce ne le
+contredit. `P` reste un texte.
+
+**Falsificateur** : un écart écrit sans morsure mécanique, sans juge ou avec deux des trois champs ; un
+`compare` qui accepte une `--morsure` différente de celle du reçu, ou qui en écrit une que le reçu ne porte
+pas ; un écart signé accepté sur une promesse `non_mesuree`.
+
+## ADR-101 — Une question en texte se lit sous sa mise en forme (2026-10-24)
+
+**Contexte.** Le 2026-10-24, le run `2026-10-24-223806-3e01c2a7-c446f80` s'est arrêté sur une question que
+le modèle avait bien posée : sa dernière ligne, `**Do you agree with this qualification and the proposed
+capture state and file path?**`, finit par `?**`, et `ouvrir` ne testait que `endsWith("?")`. La session est
+devenue inactive, aucune question n'a été vue, et la commande a refusé un arrêt que la règle d'ADR-077 ne
+visait pas : le texte demandait une réponse, au sens d'ADR-072. `PROTOCOLE.md` §2 dit la règle en clair (« quand sa dernière
+ligne hors bloc de code finit par `?` ») et ne dit nulle part que la mise en forme annule la demande.
+
+**Options** : lire toute ponctuation finale comme une demande (rejeté : deviner) · exiger de chaque cas une
+question sans mise en forme (rejeté : la mise en forme vient du modèle, pas du cas, et le cas 4 l'a demandée
+sans que le run `230230` en souffre) · retirer les délimiteurs d'emphase qui suivent le point d'interrogation,
+et rien d'autre (choisi).
+
+**Décision.** `orchestrer.mjs` lit une question par une fonction unique, `demandeUneReponse(ligne)` : elle
+retire les espaces de fin, retire la suite finale de `*` et `_`, retire de nouveau les espaces de fin, puis
+teste `?`. La ligne conservée pour le message, le compte et le reçu reste celle que le modèle a écrit ; les
+exclusions d'ADR-072 (bloc de code, `<system-reminder>`) et d'ADR-093 (`pause.requis: false`) sont
+inchangées, ainsi que le refus d'ADR-077, l'ordre des réponses figées et les textes de refus.
+
+**Conséquences.** Contrôle **322** : le serveur factice pose `**Would you like to proceed with the
+implementation plan?**`, et le contrôle exige `exit 0`, le texte de la porte puis la première réponse figée,
+aucun formulaire, « texte, question » et « 1 question(s) » ; il est vu **rouge** sur une copie du module où
+le test ancien est restauré (`exit 1`, « s'est arrêtée sans question »). Le banc passe de **314** à **315**
+contrôles ; `PROTOCOLE.md` §2 et `BANC.md` V0.66 disent la règle. Aucun cas, aucun gel, aucun reçu n'est
+réécrit : le correctif ne rend pas concluant un run déjà clos.
+
+**Ce que ce n'est pas** : une lecture de l'intention, ni une acceptation de toute ponctuation. `?` suivi d'un
+guillemet, d'un deux-points ou d'un point reste une clôture ; un `?` dans un bloc reste hors jeu ; et la
+fonction ne dit pas si la question est pertinente, seulement qu'elle demande une réponse.
+
+**Falsificateur** : une dernière ligne `**…?**` qui arrête `ouvrir` sans jouer la réponse figée ; un texte
+qui finit par `?` suivi d'un deux-points joué comme une question ; un `?` dans un bloc de code redevenu une
+question.
+
+## ADR-102 — Un cas peut interdire le formulaire, et le reçu le compte (2026-10-25)
+
+**Contexte.** Le cas `defect-ecart-signe-2` demande une question en texte avant toute écriture et l'écrit
+noir sur blanc : « do not use a form or any question tool ». Le rejeu du 2026-10-25
+(`docs/device/runs/2026-10-25-030817-3e01c2a7-replay2`) a produit les deux : une question en texte, puis un
+formulaire `question` que `ouvrir` a rempli. Le reçu n'avait aucun falsificateur pour cette interdiction :
+elle restait une phrase du cas, et le run n'a été `non concluant` que pour ses écritures hors cadre. Un cas
+qui interdit un geste doit pouvoir le mesurer, sinon la phrase ne pèse rien.
+
+**Options** : laisser l'interdiction en prose (rejeté : le reçu ne peut pas la compter, et un opérateur qui
+lit `conforme` ne saurait pas qu'elle a été violée) · refuser tout formulaire, partout (rejeté : le formulaire
+est le seul moyen de pause de certains clients, et aucun cas ne l'interdit par défaut) · déclarer
+l'interdiction cas par cas, et la mesurer quand elle est déclarée (choisi).
+
+**Décision.** Un attendu peut porter `attendu_details.pause.formulaire: "interdit"`. `run.mjs` lit ce champ,
+recopie `pause.formulaire` (`interdit` ou `libre`) dans le reçu, et retient comme `question_en_formulaire`
+chaque part d'outil dont le nom porte `question` ou `ask_user` : seq, index, instant et nom de l'outil. Une
+liste non vide est un **motif de refus** : le reçu refuse `conforme` et `ecart`, nomme la part et la règle du
+cas, et seul `non concluant` s'écrit. Le champ absent vaut `libre` : les cas figés avant lui, et tous ceux qui
+ne le déclarent pas, gardent leur lecture d'avant. Quand le cas déclare l'interdiction, le reçu ajoute une
+limite qui dit que seuls ces deux noms d'outil sont reconnus.
+
+**Conséquences.** Contrôle **323** : deux bacs du cas jouet, même trace avec une part `question` ; A déclare
+l'interdiction, B non. A refuse `conforme` en nommant `question par un formulaire` et écrit un reçu
+`non concluant` qui porte `question_en_formulaire` (seq 3, outil `question`) et une pause mesurée ; B reste
+`conforme`, sans morsure. Le contrôle est vu **rouge** sur une copie de `run.mjs` privée du motif de refus :
+`conforme` passe alors en `exit 0`. Le banc passe de **315** à **316** contrôles ; `PROTOCOLE.md` §2 et
+`BANC.md` V0.67 disent la règle. Aucun cas, aucun gel, aucun reçu n'est réécrit : `defect-ecart-signe-2` ne
+déclare pas encore le champ, et le re-geler est un geste de l'opérateur, pas du correctif.
+
+**Ce que ce n'est pas** : une lecture du contenu du formulaire, ni de la pertinence de la question, ni une
+preuve que la question en texte a été posée au même tour. La mesure ne voit que le nom de l'outil ; un client
+qui nomme autrement son formulaire n'est pas vu, et la limite le dit. Elle ne remplace pas les règles
+d'ADR-058 et d'ADR-069 : une question sans réponse reste `question_sans_reponse`, et une écriture sans tour
+reste `pause_non_tenue`.
+
+**Falsificateur** : un cas qui déclare `pause.formulaire: "interdit"`, une trace qui porte une part `question`,
+et un reçu `conforme` ; un reçu de ce cas sans `question_en_formulaire` ; un cas qui ne déclare rien et dont
+le reçu mord sur un formulaire.
+
+## ADR-103 — Une session terminée sur une erreur ne reçoit pas de verdict (2026-10-25)
+
+**Contexte.** Le run `2026-10-25-040729-f9ba2118-plan-simple-cadre` a été coupé par un `429` du fournisseur,
+au milieu de l'écriture de ses phases. `trace/export-brut.json` porte `info.outcome: "succeeded"` ; son
+dernier message, `msg_17110082e001…`, est de type `idle` et porte `outcome: "failed"`,
+`error.type: "provider.free-limit"`, `error.status: 429`. `normaliseOpencode` n'émet une ligne `idle` que si
+elle porte un texte : cet échec n'entrait pas dans `echange.jsonl`, et `cmdFaitsOpencode` n'écrivait ni
+`outcome` ni `error`. Le reçu du run a dû être écrit à la main, en `non concluant` cause `dispositif`, sans
+aucun falsificateur qui morde : le produit était pourtant incomplet (un `phase-1.md` sur trois).
+
+**Options** : croire `info.outcome` (rejeté : mesuré menteur le 2026-10-25) · refuser tout run dont la trace
+ne nomme pas sa fin (rejeté : une fin normale n'est pas un champ, et le refus tomberait sur tous les runs
+clos) · lire le dernier message porteur d'un `outcome`, le publier à côté de l'en-tête, et refuser tout
+verdict sauf `non concluant` (choisi).
+
+**Décision.** `sessionOpencode` (`clients.mjs`) publie `etat_terminal {outcome, seq, ts, erreur{type, message,
+statut}|null, declare}` : le dernier message porteur d'un `outcome` fait foi, `declare` recopie
+`info.outcome` pour que la divergence se lise au lieu de s'effacer. `cmdFaitsOpencode` l'écrit sous
+`session.etat_terminal`, comme les autres faits de session. `receipt` pousse `session_terminale_en_erreur`
+dès que `erreur` n'est pas nul ou que `outcome` vaut `failed`, en nommant type, statut et `seq` ; une entrée
+de `motifRefus` n'autorise que `non concluant` ([ADR-051](DECISIONS.md)). Un `faits.json` sans le champ ne
+mord pas : le reçu porte la limite `etat_terminal_non_mesure`, puisque le client Freebuff ne l'écrit pas
+aujourd'hui. *(Rectifié le 2026-10-25 par [ADR-107](DECISIONS.md) : Freebuff publie
+`threads.last_turn_outcome`, et `faits` le recopie sous `session.etat_terminal`.)*
+
+**Conséquences.** Contrôle **324** : un bac neuf du cas jouet, reçu `conforme` une première fois, puis copié
+avec le champ en erreur ; `conforme` et l'`ecart` signé sont refusés en nommant `provider.free-limit`, statut
+`429`, `non concluant` s'écrit et porte l'entrée, et la copie sans le champ reste `conforme` avec sa limite.
+Le contrôle est vu **rouge** quand `terminalEnErreur` est forcé à `false`. Le banc passe de **316** à **322**
+contrôles (les trois règles et leurs trois mutants) ; `PROTOCOLE.md` §4 et `BANC.md` V0.68 disent la règle.
+
+**Ce que ce n'est pas** : un jugement de la cause (`--cause` reste à l'opérateur), une preuve qu'une reprise
+au milieu de la session a réussi (seul le dernier état compte), ni une ligne de la trace normalisée : le fait
+vit dans `faits.json`, et `export-brut.json` reste la pièce brute. L'état terminal ne dit pas si le produit
+est complet ; c'est [ADR-104](DECISIONS.md) qui le compte.
+
+**Falsificateur** : un `faits.json` dont `session.etat_terminal` porte une erreur et un reçu `conforme` ; un
+reçu qui refuse en nommant la session sans nommer le type ni le statut ; un `faits.json` sans le champ dont
+le reçu mord sur l'état terminal.
+
+## ADR-104 — La complétude du produit se déclare, et le reçu la compte (2026-10-25)
+
+**Contexte.** `2026-10-21-173843-plan-simple.expected.json` écrit sa règle de produit en prose — « un
+`plan.md` et un `phase-<n>.md` par phase, aucun autre fichier » — et laisse `arbre_attendu: []`. `collect`
+confronte bien `arbre_attendu` au manifeste ([ADR-094](DECISIONS.md)), mais une liste vide ne confronte
+rien. Sur le run `f9ba2118`, le tableau `## Phases` du `plan.md` collecté nomme trois fichiers et la copie en
+contient un : aucun code ne compare les deux, et le produit incomplet passait pour un produit.
+
+**Options** : compter les fichiers sous `produit.racine` (rejeté : un compte fixe refuse un produit
+légitimement plus court, et le cas jouet n'en a qu'un) · lire un `plan.md` nommé en dur (rejeté : chaque cas
+nomme son fichier et sa section) · déclarer `{tableau, section}` dans l'attendu et compter les liens de la
+section (choisi).
+
+**Décision.** Un attendu peut porter `attendu_details.produit.completude: {tableau, section}`. `freeze`
+refuse un bloc mal formé : `completude` qui n'est pas un objet, `tableau` vide ou portant une barre oblique
+(la copie est relative à `produit.racine`, et le dossier daté du plan n'existe pas au gel), `section` vide,
+`produit.racine` absente. `receipt` mesure **sur la copie attestée**, après `verifierCopie` : il localise la
+section jusqu'au titre suivant de niveau égal ou supérieur, résout chaque cible de lien markdown relative
+depuis le dossier du tableau, et confronte le résultat aux chemins du manifeste ; une cible absente pousse
+`produit_incomplet`, qui nomme les chemins et refuse `conforme` et `ecart`. Une déclaration qui ne se mesure
+pas — aucun fichier de ce nom, plusieurs, section absente, section sans lien — donne la limite
+`completude_non_mesuree` avec son motif, et **aucune** morsure : une déclaration muette ne fabrique pas un
+refus.
+
+**Conséquences.** Contrôle **325** : un tableau `## Phases` de trois liens, une seule phase collectée, refus
+nommant `phase-2.md` et `phase-3.md`, reçu `non concluant` qui les porte sous `produit_incomplet` ; la même
+copie complétée passe `conforme`. Le contrôle est vu **rouge** quand `produit_incomplet` est forcé à `[]`.
+Aucun cas existant ne déclare le bloc : leur lecture ne change pas, et le re-gel reste une décision d'auteur.
+
+**Ce que ce n'est pas** : un jugement du contenu, un compte des fichiers en trop (F3 reste une prose), un
+suivi d'un lien qui sort de la racine du produit, ni un refus de `collect` — un refus de collecte arrête
+l'orchestrateur et le run perdrait son reçu, ce que la leçon du scratch vide a déjà coûté
+([ADR-095](DECISIONS.md)).
+
+**Falsificateur** : un tableau de trois liens, un fichier collecté, un reçu `conforme` ; un tableau dont la
+section manque et un reçu qui mord ; un produit complet dont le reçu porte `completude_non_mesuree`.
+
+## ADR-105 — Le cadre jugé se lit contre le texte remis, au reçu (2026-10-25)
+
+**Contexte.** `2026-10-21-173843-plan-simple.expected.json` juge `cloisonnement.lecture.autorisees:
+["terrain", "framework-origin"]` ; son §5, seul texte remis à la session, nomme `framework-origin` dans le
+chemin du skill et jamais `terrain`. Le premier run a mordu le cadre (`shell_hors_dossier`), la variante
+`plan-simple-cadre`, dont le §5 commence par « You are at the root of the repository under work: the
+`terrain/` directory… », n'a produit aucune morsure. Mesure sur les seize cas d'alors : **six** §5 ne
+nomment pas `terrain`. Refuser ces gels a été essayé : le contrôle **121** exige qu'une copie re-gelée du cas
+jouet rende l'empreinte committée, et son §5 ne nomme pas `terrain` non plus ; mesuré **121 FAIL** et onze
+contrôles en cascade, **304/316**.
+
+**Options** : refuser au gel tout §5 qui ne nomme pas ses racines (rejeté, mesuré : casse le banc et
+invalide des gels existants) · laisser le reçu mordre comme avant (rejeté : un geste que le texte ne
+interdisait pas reste imputé à la session) · lire la livraison au reçu et n'imputer que ce que le texte
+interdit (choisi).
+
+**Décision.** `receipt` écrit `cloisonnement.delivre {racines_jugees, racines_absentes,
+racine_du_cas_nommee, gestes_hors_cadre, gestes_non_imputes}`. Un geste hors des racines lues est imputé à la
+session s'il tombe hors de la racine du cas et que le texte nomme la racine du cas, ou s'il tombe dans cette
+racine et que le texte nomme **toutes** les racines lues ; sinon il est porté au cas : le reçu refuse
+`conforme` et `ecart` en disant « le cas juge un cadre que son §5 ne délivre pas … ne sont pas imputés à la
+session », et ajoute la limite `cadre_non_delivre`. Rien n'est réécrit : les gels et les reçus clos restent
+tels quels.
+
+**Conséquences.** Contrôle **326** : deux copies du jouet, l'une dont le §5 ajoute une phrase qui nomme
+`terrain/`, l'autre non ; le même `cat ../hors-cadre.md` est refusé au nom de la session dans la première,
+au nom du cas dans la seconde, avec `gestes_non_imputes: 1` et la limite. Le contrôle est vu **rouge** quand
+`nommeToutesLesRacines` est forcé à `true`. Les six cas du §1.3 restent à amender avant leur prochain re-gel
+— une tâche d'auteur, pas de code.
+
+**Ce que ce n'est pas** : une preuve que le texte énonce la règle (nommer `terrain` sans interdire le parent
+passe), une comparaison au `demande.texte_verbatim`, qui est une copie et peut dériver, ni une mesure des
+gestes d'un binaire opaque. Le reçu dit ce qu'il a imputé et ce qu'il a laissé au cas, jamais que le texte
+était juste.
+
+**Falsificateur** : un §5 muet sur une racine jugée, un geste hors cadre, et un reçu qui l'impute à la
+session ; un §5 complet dont un geste hors cadre ne mord pas ; une limite `cadre_non_delivre` sur un cas qui
+nomme toutes ses racines.
+
+## ADR-106 — Un run dont la session meurt sans réponse reçoit un reçu (2026-10-25)
+
+**Contexte.** Le run `2026-10-25-173022-87a38ffc-de83e13` a passé sa porte à 17:30:23, puis sa session
+opencode s'est arrêtée sur `provider.free-limit`, statut `429`, au `seq 3` : `trace/echange.jsonl` porte une
+seule ligne, le texte du cas, et `faits.json` porte `session.etat_terminal` en erreur. `suite` refuse
+d'écrire `raw/<cas>/last-message.md` quand aucun texte d'assistant n'existe, et `fin` exige ce fichier avant
+toute autre pièce (refus 9). Le run ne peut donc recevoir ni reçu, ni output, ni verdict : l'index le range
+« avorté, sans reçu », sous le même mot qu'un run abandonné. ADR-103 lit déjà l'état terminal, mais
+seulement quand un dernier message existe.
+
+**Options** : la note datée seule (rejeté : non attestée, non indexable, à réécrire à chaque mort) · un
+dernier message synthétique (rejeté : fabrique une pièce que la trace ne porte pas, et le juge lirait une
+invention) · la détection automatique dans `suite` (rejeté : le contrat changerait sans que la personne le
+demande, et une trace tronquée par le client se lirait comme une mort de session) · deux drapeaux explicites
+et quatre conditions mesurées (choisi).
+
+**Décision.** `suite --sans-reponse` exige `--sans-produit`, ne s'ouvre que si `faits.json` porte une erreur
+terminale, que la trace ne porte aucune part `text` d'assistant, qu'aucun dernier message n'existe et que la
+copie est la copie vide déclarée (`produit_absent: true`, `fichiers: []`) ; il écrit cette copie et rend
+`exit 0` avec l'erreur mesurée et la commande de clôture. `fin --sans-reponse` re-vérifie les mêmes
+conditions sur les pièces, impose `--verdict non concluant` et `--cause dispositif` (la couche qui a manqué
+est l'exécution du run, et `session` n'est pas une cause du vocabulaire fermé), refuse un cas qui déclare
+`verification` ou `mutations`, puis enchaîne `receipt` et `compare` comme aujourd'hui. Le reçu ne change pas
+de schéma : il porte la limite `dernier_message_non_atteste` et le falsificateur
+`session_terminale_en_erreur`, qui refuse `conforme` et l'`ecart` signé (ADR-103).
+
+**Conséquences.** Contrôle **333** : une fixture opencode d'une demande sans réponse et d'un `idle`
+`provider.free-limit` 429 ; le bac se clôt sur un reçu `non concluant`, `causes: [dispositif]`, avec le
+falsificateur et la limite ; une copie privée de son état terminal refuse ; le mutant qui retire la
+condition d'erreur écrit un reçu et le contrôle est vu rouge. Contrôle **334** : la page d'un tel run, quand
+le cas en déclare une, ne juge aucune clause du skill — une session morte avant toute réponse ne mesure
+rien — et le mutant qui retire la règle rend la faute au skill. Le banc passe de **334** à **338**
+contrôles ;
+`PROTOCOLE.md` §4 et `BANC.md` V0.72 disent la règle. Le run cité se clôt par la même règle, sans re-juger
+les reçus existants.
+
+**Ce que ce n'est pas** : un jugement du skill (le reçu dit `non concluant`, cause `dispositif`, rien du
+skill n'est mesuré) ; une authentification de l'export (le reçu hache la trace qu'on lui donne, et une trace
+vidée de ses parts d'assistant passerait les conditions) ; une règle pour Freebuff, dont `sessionFreebuff`
+ne publiait pas `etat_terminal` (ADR-103) — *(périmé le même jour par [ADR-107](DECISIONS.md))* ; un
+jugement du skill dans la page (elle est produite dès que le cas
+déclare une lecture, et dit alors que la session s'est arrêtée, que rien n'a été mesuré et qu'il reste à
+rejouer).
+
+**Falsificateur** : un run sans réponse clos `conforme` ou `ecart` ; un reçu sans le falsificateur
+`session_terminale_en_erreur` ou sans la limite `dernier_message_non_atteste` ; une trace qui porte un texte
+d'assistant et que les drapeaux laissent clore ; un cas qui déclare une vérification et dont le run sans
+réponse reçoit un reçu.
+
+## ADR-107 — Freebuff publie son état terminal, et le reçu le lit (2026-10-25)
+
+**Contexte.** ADR-103 a appris au reçu à refuser `conforme` sur une session terminée en erreur, et ADR-106 à
+clore un run mort avant toute réponse ; les deux lisent `session.etat_terminal`, que seul `sessionOpencode`
+publiait. Un run Freebuff portait donc la limite `etat_terminal_non_mesure`, et une session Freebuff tuée
+par une panne restait invisible. La base réelle du client le permet : `threads.last_turn_outcome` vaut
+`completed`, `stopped`, `error` ou rien (`select last_turn_outcome from threads` sur chaque `desktop-v2.db`
+lu le 2026-10-25, valeurs comptées : 34, 4, 1, 3), et le fil `d0a832b9` du 2026-10-13 y porte `error`,
+`attention_reason` `failed`, avec une part `notice` d'assistant « Your free session ran out while this turn
+was running… ». La base ne publie ni type d'erreur ni statut HTTP.
+
+**Options** : ne rien lire (rejeté : la limite nommée par ADR-106 reste) · déduire l'erreur du texte de la
+part `notice` (rejeté : de la prose, pas une mesure, et aucun type stable) · lire l'état du fil et n'en
+recopier que ce qu'il dit (choisi).
+
+**Décision.** `sessionFreebuff` et `faits` pour Freebuff publient
+`etat_terminal {outcome, seq: null, ts, erreur: null, declare}` : `outcome` recopie `last_turn_outcome`,
+`ts` recopie `last_turn_finished_at`, `seq` reste nul (aucun message ne porte l'état) et `erreur` reste nul
+(la base n'a ni type ni statut, et les fabriquer prêterait un fournisseur à une pièce qui n'en nomme aucun).
+Une seule règle lit les deux clients : `etatTerminalEnErreur` compte `failed` (opencode) et `error`
+(Freebuff). Une base sans les deux colonnes rend `null` au lieu d'échouer : le schéma ancien reste lisible,
+et `faits` garde alors la limite. Le reçu refuse `conforme` et l'`ecart` signé, et nomme l'`outcome` seul.
+
+**Conséquences.** Contrôle **335** : une base de bac porte `last_turn_outcome = 'error'`, `faits` recopie
+l'état sans inventer de type ni de statut, le reçu refuse `conforme` en nommant l'erreur et pousse le
+falsificateur `session_terminale_en_erreur` sans laisser la limite `etat_terminal_non_mesure` ; le mutant qui
+ramène la règle à `erreur != null` est vu rouge. Le banc passe de **338** à **340** contrôles.
+`PROTOCOLE.md` §4 et `BANC.md` V0.73 disent la règle.
+
+**Ce que ce n'est pas** : une taxonomie d'erreurs (le client ne publie ni type ni statut) · une garantie que
+tout échec Freebuff s'écrive `error` (le client décide ; un échec qu'il note `completed` reste invisible) ·
+un traitement de `stopped`, qui peut être un arrêt demandé par la personne et n'est pas une erreur ·
+un re-jugement des reçus existants.
+
+**Falsificateur** : un run Freebuff dont `last_turn_outcome` vaut `error` et qui reçoit `conforme` · un
+`faits.json` qui porte un `type` ou un `statut` que la base ne contient pas · une base qui porte les deux
+colonnes et dont le `faits` garde `etat_terminal_non_mesure` · un `stopped` compté comme une erreur.

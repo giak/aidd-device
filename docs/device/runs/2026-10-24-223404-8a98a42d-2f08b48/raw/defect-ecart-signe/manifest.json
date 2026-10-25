@@ -1,0 +1,21 @@
+{
+  "cas": "defect-ecart-signe",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-223404-8a98a42d-2f08b48",
+  "role": "produit",
+  "source": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain"
+  },
+  "collecte_le": "2026-10-24T22:35:27+02:00",
+  "fichiers": [
+    {
+      "chemin": "slugify-leading-dashes.md",
+      "source": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md",
+      "sha256": "a58339596484d2b6a0b0f493bfb3bab96d49937844815eeabf54efe595339aec",
+      "taille": 1005,
+      "birth": "2026-10-24 22:34:42.585134516 +0200",
+      "birth_epoch": 1792874082
+    }
+  ]
+}

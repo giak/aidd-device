@@ -1,24 +1,37 @@
 {
   "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:37:58+01:00",
+    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; ses deux origines sont les dépôts vivants (framework : 2 entrées non commitées, audio-sync-tool : .freebuff/), le gel les enregistre telles quelles ; le libellé n a pas été relu mot à mot"
+  },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-21T10:04:38.245995057+0200",
-  "gele_le_epoch": 1792569878,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-15-133423-promesse-memoire-avant-ecriture --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/framework --arbre terrain=/home/giak/projects/audio-sync-tool --ref-root /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin --ref plugins/aidd-context/skills/02-project-memory/SKILL.md --ref plugins/aidd-context/skills/02-project-memory/actions/01-scan.md --ref plugins/aidd-context/skills/02-project-memory/actions/02-write.md --ref plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md --ref plugins/aidd-context/skills/02-project-memory/references/structure.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-rules.md --ref plugins/aidd-context/skills/02-project-memory/references/reading-sources.md",
-  "empreinte": "ba1096aaf70502060cb63ae8d0d5b15d41c3e76e1cd267e5528b0d991b78b4e8",
+  "gele_le": "2026-10-25T17:37:58.895897003+0100",
+  "gele_le_epoch": 1792946278,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-15-133423-promesse-memoire-avant-ecriture --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/framework --arbre terrain=/home/giak/projects/audio-sync-tool --ref-root /home/giak/projects/aidd-device-work/2026-10-15-133423-promesse-memoire-avant-ecriture/framework-origin --ref plugins/aidd-context/skills/02-project-memory/SKILL.md --ref plugins/aidd-context/skills/02-project-memory/actions/01-scan.md --ref plugins/aidd-context/skills/02-project-memory/actions/02-write.md --ref plugins/aidd-context/skills/02-project-memory/assets/scan-summary.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-destinations.md --ref plugins/aidd-context/skills/02-project-memory/references/structure.md --ref plugins/aidd-context/skills/02-project-memory/references/memory-rules.md --ref plugins/aidd-context/skills/02-project-memory/references/reading-sources.md --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; ses deux origines sont les dépôts vivants (framework : 2 entrées non commitées, audio-sync-tool : .freebuff/), le gel les enregistre telles quelles ; le libellé n a pas été relu mot à mot\"",
+  "empreinte": "92fd2e15a5a884246ee318d0fc31c1b1c5e950f6983b530d66fc0bfe31d7b47b",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.expected.json",
-      "sha256": "c75e89ca2bbb9815f4bf4588bc1fad18135a9e3ef6dff049d9f5c727d8452663",
-      "taille": 15638,
+      "sha256": "90515b7bc43e29aff8367d7452c8eeea1f133e6b7ec7decb2f7ba51d5d19283b",
+      "taille": 15774,
       "birth": "2026-10-15 15:26:49.459553400 +0200",
       "birth_epoch": 1792070809
     },
     {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.lecture.json",
+      "sha256": "d54115a427fab42c768d26edc4de196d8d0792daf7706ff07eb88c67e0e084c0",
+      "taille": 2204,
+      "birth": "2026-10-22 08:18:01.067221440 +0200",
+      "birth_epoch": 1792649881
+    },
+    {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-15-133423-promesse-memoire-avant-ecriture.request.md",
-      "sha256": "5aac04fb06b8ba74234a59521048f80499f4b4079062e501ade07e9b55f36d76",
-      "taille": 13413,
+      "sha256": "295d343131e2049f0d63e9a7f78cb0108cf01b3144df686f2dc774c72e6d6a7d",
+      "taille": 13546,
       "birth": "2026-10-15 13:34:50.011401680 +0200",
       "birth_epoch": 1792064090
     }
@@ -96,7 +109,7 @@
       "head": "fe48de12",
       "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
       "porcelain": [
-        "?? .freebuff/",
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
         "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
       ],
       "remotes": [

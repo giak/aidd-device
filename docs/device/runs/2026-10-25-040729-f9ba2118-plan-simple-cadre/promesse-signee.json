@@ -1,0 +1,20 @@
+{
+  "cas": "plan-simple-cadre",
+  "recu_sha256": "2bd7bdcffa29c0bc0bc21c21bb717c47f32c7fa51f625e11ad9e224fe215c318",
+  "branche": "P",
+  "juge": "Buffy (juge du run)",
+  "rubrique": "condition P : le plan et ses trois phases",
+  "verdict": "mord",
+  "motif": "le plan annonce trois phases, mais phase-2.md et phase-3.md sont absents",
+  "pieces": [
+    {
+      "chemin": "raw/plan-simple-cadre/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "sha256": "00b756c0ac69afa04ba594e39a0ca5e4126c3860c4354097b1788ef227ac3782"
+    },
+    {
+      "chemin": "raw/plan-simple-cadre/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "sha256": "e348490ac9ea6493d536e5b45ada0e7183176192e6d9fa4ea783535f1065dbb5"
+    }
+  ],
+  "le": "2026-10-25T07:27:42+01:00"
+}

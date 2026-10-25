@@ -1,0 +1,41 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.4 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e8c0896b9ffelL8Pg7s1kOZbcW",
+    "modele": "opencode/deepseek-v4.1-flash-free",
+    "ouverte_par": "giak",
+    "ouverte_le": "2026-10-25T17:49:16+01:00",
+    "etat_terminal": {
+      "outcome": "failed",
+      "seq": 3,
+      "ts": "2026-10-25T17:49:18+01:00",
+      "erreur": {
+        "type": "provider.free-limit",
+        "message": "Free usage limit reached. Connect a provider or subscribe to OpenCode Go to keep going, or switch models.",
+        "statut": 429
+      },
+      "declare": "failed"
+    }
+  },
+  "horodatage_debut": "2026-10-25T17:49:18+01:00",
+  "horodatage_fin": "2026-10-25T17:49:43+01:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+  "trace": {
+    "source": "opencode 2.1.4 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-173022-87a38ffc-de83e13/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-173022-87a38ffc-de83e13/trace/export-brut.json",
+    "commande": "opencode session export ses_e8c0896b9ffelL8Pg7s1kOZbcW"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "giak",
+    "quand": "2026-10-25T17:49:43+01:00"
+  }
+}

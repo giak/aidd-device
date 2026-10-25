@@ -1,0 +1,89 @@
+{
+  "info": {
+    "id": "ses_e8c0896b9ffelL8Pg7s1kOZbcW",
+    "projectID": "62c48e1646d1a35d16a607198c9efdb2d577d8a3",
+    "agent": "build",
+    "model": {
+      "id": "deepseek-v4.1-flash-free",
+      "providerID": "opencode",
+      "variant": "default"
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "reasoning": 0,
+      "cache": {
+        "read": 0,
+        "write": 0
+      }
+    },
+    "outcome": "failed",
+    "time": {
+      "created": 1792946956635,
+      "updated": 1792946958521,
+      "idle": 1792946958524
+    },
+    "title": "run 2026-10-18-085308-cas-jouet",
+    "location": {
+      "directory": "/home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain"
+    }
+  },
+  "messages": [
+    {
+      "id": "msg_173f769b30016ZTJxh9vgeObKi",
+      "time": {
+        "created": 1792946958014
+      },
+      "text": "You work in the repository at /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain; that checkout is \"this repository\".\nRead the mini playbook at /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet.\nApart from that one file, stay inside the terrain checkout: never list or read /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/, /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin/, the case folder itself, its parent, its siblings, or anything above /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/.",
+      "type": "user"
+    },
+    {
+      "id": "msg_173f76eca001BsJaRAsC4hR3fX",
+      "time": {
+        "created": 1792946958044,
+        "completed": 1792946958521
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "deepseek-v4.1-flash-free",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [],
+      "snapshot": {
+        "start": "00f8ddde0a18539d16f6a6bfbef50519cbf624f9",
+        "end": "00f8ddde0a18539d16f6a6bfbef50519cbf624f9",
+        "files": []
+      },
+      "finish": "error",
+      "error": {
+        "type": "provider.free-limit",
+        "message": "Free usage limit reached. Connect a provider or subscribe to OpenCode Go to keep going, or switch models.",
+        "status": 429,
+        "response": {
+          "body": "{\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Free models work in OpenCode (https://opencode.ai); subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+        },
+        "retryAfterMs": 25842000
+      }
+    },
+    {
+      "id": "msg_173f770bc001Kgmw9GYxX2DBM4",
+      "time": {
+        "created": 1792946958524
+      },
+      "type": "idle",
+      "outcome": "failed",
+      "error": {
+        "type": "provider.free-limit",
+        "message": "Free usage limit reached. Connect a provider or subscribe to OpenCode Go to keep going, or switch models.",
+        "status": 429,
+        "response": {
+          "body": "{\"type\":\"error\",\"error\":{\"type\":\"FreeUsageLimitError\",\"message\":\"Free usage limit reached. Free models work in OpenCode (https://opencode.ai); subscribe to OpenCode Go to keep going: https://opencode.ai/go\"}}"
+        },
+        "retryAfterMs": 25842000
+      }
+    }
+  ]
+}

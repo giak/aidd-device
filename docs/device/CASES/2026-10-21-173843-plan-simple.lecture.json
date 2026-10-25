@@ -1,19 +1,22 @@
 {
   "cas": "2026-10-21-173843-plan-simple",
   "type": "case-lecture",
-  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Un geste sans assertion vérifiable ne s'écrit pas ici : le rapport final de l'attendu se lit dans le dernier message de la session, hors de ce vocabulaire.",
+  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le champ `rang` rattache un geste à une clause de `attendu_details.ordre` ; un geste sans rang mesure le cadre, pas la promesse.",
   "depot": "audio-sync-tool, la copie du terrain sous `terrain/` avec son README et sa page Sync, et la révision sous test sous `framework-origin/`",
   "gestes": [
     {
       "geste": "lire le skill 01-plan et ses actions",
+      "rang": 1,
       "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "skills/01-plan/SKILL.md" }]
     },
     {
       "geste": "lire le README et les fichiers du terrain",
+      "rang": 2,
       "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "terrain/README.md" }]
     },
     {
       "geste": "montrer un tableau et attendre l'accord",
+      "rang": 3,
       "assertions": [
         { "type": "trace_outil", "outil": "question" },
         { "type": "falsificateur_vide", "nom": "tableau_absent" },
@@ -24,10 +27,16 @@
     },
     {
       "geste": "écrire le plan et ses phases sous aidd_docs/tasks/",
+      "rang": 4,
       "assertions": [
         { "type": "produit", "chemin_exact": "plan.md" },
         { "type": "falsificateur_vide", "nom": "hors_produit" }
       ]
+    },
+    {
+      "geste": "terminer par un rapport qui nomme les chemins écrits",
+      "rang": 5,
+      "assertions": [{ "type": "trace_texte", "role": "assistant", "contient": "plan.md", "a_partir_du_tour": 26 }]
     },
     {
       "geste": "rester dans le dossier du cas, sans réseau",

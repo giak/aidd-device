@@ -1,0 +1,1 @@
+Accord noté. J'écris le plan et ses trois phases.

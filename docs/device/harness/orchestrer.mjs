@@ -13,13 +13,15 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
-import { exportTrace as exporterTraceClient, filsFreebuff, session as sessionClient } from "./clients.mjs";
+import { etatTerminalEnErreur, exportTrace as exporterTraceClient, filsFreebuff, session as sessionClient } from "./clients.mjs";
 import { ecrireRapport } from "./rapport.mjs";
 import { ecrireResultat, verifierLecture } from "./resultat.mjs";
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const DEPOT = resolve(ICI, "../../..");
 const HARNAIS = join(ICI, "run.mjs");
+// Les couches qu'un verdict peut nommer, dans l'ordre du domaine ferme de run.mjs.
+const CAUSES = ["cas", "dispositif", "modele", "skill", "inconnu"];
 
 const USAGE = `usage: orchestrer.mjs <commande> [options]
 
@@ -60,17 +62,29 @@ const USAGE = `usage: orchestrer.mjs <commande> [options]
          une suite arrêtée après ses faits, sans réexporter la trace
   fin    --cas <id> [--run <dir>] --difference <texte> --phrase <texte>
          [--verdict conforme|ecart|non concluant] [--limites <texte>]
-         [--juge <qui> --rubrique <texte>] [--cases <dir>]
+         [--cause <cas|dispositif|modele|skill|inconnu> ...]
+         [--juge <qui> --rubrique <texte> --morsure <texte>] [--cases <dir>]
          demande au reçu le verdict que les falsificateurs imposent (--sans-ecrire), le
          laisse trancher si --verdict est absent, sinon écrit receipt.json, puis
-         output.json (compare) en exigeant --juge et --rubrique pour « conforme » (D3),
-         RAPPORT.md, et RESULTAT.md quand CASES/<cas>.lecture.json
+         output.json (compare) en exigeant --juge et --rubrique pour « conforme » (D3) ;
+         un « ecart » sans morsure mécanique exige les trois champs de la branche de P
+         que le juge nomme, et compare les recopie (ADR-100) ; puis écrit RAPPORT.md, et
+         RESULTAT.md quand CASES/<cas>.lecture.json
          déclare la lecture qui apparie chaque geste attendu à une mesure (ADR-061), puis
-         réimprime le bloc de verdict. Quand l'attendu déclare un bloc verification, joue
+         réimprime le bloc de verdict. Un verdict « non concluant » exige au moins une
+         --cause : le reçu, l'output, l'index et le rapport nomment la couche qui a manqué.
+         Quand l'attendu déclare un bloc verification, joue
          d'abord verifier : un mutant survivant interdit conforme, sans empêcher un ecart
   lire   --cas <id> [--run <dir>]
          relit receipt.json et output.json et réimprime le bloc de verdict, sans rien
          écrire. Un reçu absent est refusé, son chemin nommé
+  signer --cas <id> --run <dir> --juge <qui> --rubrique <texte>
+         --verdict mord|ne-mord-pas --motif <texte> --piece <chemin-relatif> [--piece ...]
+         [--remplacer]
+         écrit promesse-signee.json à côté du reçu, pour un run non concluant dont la
+         promesse est juge_seul : chaque pièce est un fichier du produit collecté et garde
+         l'empreinte du reçu. Le reçu, l'output, le rapport et la page ne sont pas touchés :
+         la signature est une déclaration, pas une mesure
   rapport --cas <id> [--run <dir>] [--remplacer] [--cases <dir>]
          écrit RAPPORT.md à la racine du run, dérivé du reçu, de l'output et de la trace,
          sans modèle ni réseau. Un rapport déjà présent est refusé sans --remplacer ;
@@ -208,13 +222,21 @@ function blocVerdict(recu, sortie) {
     .map(([k]) => k);
   const p = recu.produit || {};
   const incomplet = (recu.limites || []).some((l) => String(l).includes("attendu_incomplet"));
+  // ADR-100 : un écart sans morsure mécanique porte la branche que le juge a nommée, et le bloc le dit
+  // au lieu de laisser lire « aucun falsificateur ne mord ».
+  const promesse = recu.promesse && typeof recu.promesse === "object" ? recu.promesse : null;
+  const branche = recu.verdict === "ecart" && promesse && typeof promesse.morsure === "string" && promesse.morsure.trim() !== ""
+    ? [`la branche de P nommée par le juge (${promesse.juge || "juge non nommé"}, rubrique ${promesse.rubrique || "non nommée"})`]
+    : [];
   const plafond = [
     ...mordent,
+    ...branche,
     ...(incomplet ? ["l'attendu incomplet (attendu_incomplet)"] : []),
   ];
   ecrit([
     `▸ VERDICT — ${recu.verdict}`,
     `  plafonné par        : ${plafond.length ? plafond.join(", ") : "aucun falsificateur ne mord"}`,
+    `  causes nommées      : ${(recu.causes || []).length ? recu.causes.join(", ") : "aucune"}`,
     `  ce que le reçu porte: porte ${(recu.porte || {}).sha256 ? (recu.porte.sha256 || "").slice(0, 8) : "—"}, ` +
       `échanges ${recu.echanges ? `${recu.echanges.utilises}/${recu.echanges.budget}` : "—"}, ` +
       `produit ${p.absent ? "absent" : `${(p.chemins || []).length} fichier(s)`}, ` +
@@ -242,6 +264,10 @@ function litOptions(argv, domaine) {
       continue;
     }
     if (i + 1 >= argv.length || argv[i + 1].startsWith("--")) usage(`${arg} attend une valeur`);
+    if (regle === "liste") {
+      (valeurs[nom] ||= []).push(argv[++i]);
+      continue;
+    }
     valeurs[nom] = argv[++i];
   }
   return valeurs;
@@ -518,6 +544,9 @@ function commandeCas(argv) {
   const texte = [
     "<<<DEMANDE",
     `Read the skill at $RACINE/${id}/framework-origin/${dedansFramework} and use it on this repository.`,
+    // ADR-105 : le squelette livre le cadre qu'il juge, sinon le gel refuserait le cas qu'il vient de
+    // fabriquer. Les deux arbres sont ceux que la racine dérive, et le texte le dit avant toute autre chose.
+    "Tu travailles à la racine du dépôt sous travail : le répertoire `terrain/`. Chaque chemin du dépôt est relatif à lui, tu peux lire `framework-origin/` un cran au-dessus, et rien ne se lit hors de ces deux arbres.",
     `<<<LIGNE À REMPLIR PAR LA PERSONNE : ce que ${basename(terrain || DEPOT)} est, et ce qu'il attend>>>`,
     // ADR-068 : the table is the only proof that the session showed before writing, so the request asks
     // for one. The case that does not want it declares `attendu_details.tableau.requis: false`.
@@ -835,7 +864,7 @@ function estInactive(messages, reference) {
 
 // Une question n'a pas toujours la forme d'un formulaire : le modèle écrit sa demande et rend la main.
 // La règle est mécanique et bornée — le dernier texte d'un message `assistant` postérieur à la
-// référence, sa dernière ligne non vide hors bloc de code, terminée par `?`.
+// référence, sa dernière ligne non vide hors bloc de code, terminée par `?`, mise en forme comprise.
 function derniereLigneHorsBloc(texte) {
   let dansBloc = false;
   let ligne = "";
@@ -847,6 +876,14 @@ function derniereLigneHorsBloc(texte) {
     if (!dansBloc && brute.trim() !== "") ligne = brute.trimEnd();
   }
   return ligne;
+}
+
+// Une question peut porter sa mise en forme : `**…?**` demande autant que « …? ». La règle retire les
+// délimiteurs d'emphase qui suivent le point d'interrogation, et rien d'autre ; la ligne citée, elle,
+// reste celle que le modèle a écrite (spec du 2026-10-24 23:09).
+function demandeUneReponse(ligne) {
+  const nue = String(ligne ?? "").trimEnd().replace(/[*_]+$/, "").trimEnd();
+  return nue.endsWith("?");
 }
 
 function derniereReponseEnTexte(messages, reference, dejaRepondu = null) {
@@ -1014,7 +1051,7 @@ async function commandeOuvrir(argv) {
       if (estInactive(messages, reference)) {
         const texte = derniereReponseEnTexte(messages, reference, dejaRepondu);
         if (!texte) break;
-        const question = texte.ligne.endsWith("?") ? texte : null;
+        const question = demandeUneReponse(texte.ligne) ? texte : null;
         if (!question) {
           // ADR-077 : une session arrêtée sur un texte qui ne demande rien n'est pas un run fini.
           // Tant qu'AUCUNE réponse figée n'a été jouée, la tenir pour un succès effacerait la pause.
@@ -1093,6 +1130,19 @@ function basesDuClient() {
   }
   return bases;
 }
+// ADR-106 : la copie vide qu'un run sans réponse déclare. Un manifeste absent, illisible, ou qui nomme
+// un fichier n'est jamais une absence : seule la déclaration expresse se reprend et se clôt.
+function manifesteSansProduit(dossier) {
+  const p = join(dossier, "manifest.json");
+  if (!existsSync(p)) return false;
+  let m;
+  try {
+    m = JSON.parse(readFileSync(p, "utf8"));
+  } catch {
+    return false;
+  }
+  return m !== null && typeof m === "object" && m.produit_absent === true && Array.isArray(m.fichiers) && m.fichiers.length === 0;
+}
 function filDansBase(base, fil) {
   const r = spawnSync("sqlite3", ["-readonly", base, `select 1 from threads where id = '${fil.replace(/'/g, "''")}' limit 1;`], { encoding: "utf8" });
   if (r.status !== 0) return false;
@@ -1127,7 +1177,7 @@ function runExiste(cas, valeurs, { requis = true } = {}) {
 function commandeSuite(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", conduite: "valeur",
-    produit: "valeur", "sans-produit": "drapeau", reprendre: "drapeau", cases: "valeur", client: "valeur", store: "valeur",
+    produit: "valeur", "sans-produit": "drapeau", "sans-reponse": "drapeau", reprendre: "drapeau", cases: "valeur", client: "valeur", store: "valeur",
   });
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
@@ -1150,6 +1200,12 @@ function commandeSuite(argv) {
   // écrit, et une seconde `suite` refusait sur ses propres pièces. `--reprendre` part de l'étape 3 : il
   // ne réexporte ni ne redérive rien, il refuse tout ce qui est déjà collecté, et n'écrit que le manquant.
   const reprendre = valeurs.reprendre === true;
+  // ADR-106 : une session peut mourir avant d'écrire quoi que ce soit. Le fait se déclare, il ne se devine
+  // pas : deux drapeaux vont ensemble, et le refus tombe avant tout appel client et toute écriture.
+  const sansReponse = valeurs["sans-reponse"] === true;
+  if (sansReponse && valeurs["sans-produit"] !== true) {
+    refuse("suite : --sans-reponse exige --sans-produit — une session qui n'a rien répondu ne produit rien, et les deux faits se déclarent ensemble (ADR-106)");
+  }
   if (reprendre) {
     if (!existsSync(faits)) {
       refuse(`suite : --reprendre sans ${faits} — rien n'a été dérivé, donc il n'y a rien à reprendre ; lancer suite sans --reprendre`);
@@ -1164,9 +1220,11 @@ function commandeSuite(argv) {
       refuse(`suite : --reprendre alors que ${dernierDeja} existe — l'étape 3 est déjà écrite, et un dernier message ne se réécrit pas`);
     }
     for (const [piece, chemin] of [["le produit", join(run, "raw", cas)], ["l'annexe", join(run, "annexe", cas)]]) {
-      if (existsSync(chemin)) {
-        refuse(`suite : --reprendre alors que ${piece} est déjà collecté (${chemin}) — une reprise ne recollecte pas une copie existante`);
-      }
+      if (!existsSync(chemin)) continue;
+      // ADR-106 : une reprise « sans réponse » retrouve la copie vide qu'elle a elle-même déclarée par
+      // `--sans-produit` ; seule cette absence nommée se reprend, jamais une copie qui porte un fichier.
+      if (sansReponse && piece === "le produit" && manifesteSansProduit(chemin)) continue;
+      refuse(`suite : --reprendre alors que ${piece} est déjà collecté (${chemin}) — une reprise ne recollecte pas une copie existante`);
     }
   } else {
     if (existsSync(faits)) refuse(`suite : ${faits} existe déjà — des faits écrits ne se réécrivent pas, ils se relisent ; --reprendre reprend à l'étape 3`);
@@ -1294,7 +1352,11 @@ function commandeSuite(argv) {
 
   const produit = option(valeurs, "produit", { defaut: null });
   let collecte;
-  if (valeurs["sans-produit"]) {
+  // ADR-106 : une reprise « sans réponse » retrouve la copie vide qu'elle a déclarée, et ne la recollecte
+  // pas ; une copie qui porte un fichier n'entre jamais dans cette branche.
+  if (reprendre && sansReponse && manifesteSansProduit(join(run, "raw", cas))) {
+    collecte = `la copie vide est déjà là (${join(run, "raw", cas)}) et la reprise ne la recollecte pas`;
+  } else if (valeurs["sans-produit"]) {
     collecte = harnaisOuRefus(["collect", "--run", run, "--case", cas, "--cases", cases, "--sans-produit"],
       "un run sans produit se dit, il ne se devine pas : le manifeste écrit fichiers: [] et le reçu peut le lire");
   } else {
@@ -1354,7 +1416,9 @@ function commandeSuite(argv) {
   // qu'il rejoue. Un fichier déjà là est refusé : une transcription manuelle ne se remplace pas en silence.
   const dernier = join(run, "raw", cas, "last-message.md");
   if (existsSync(dernier)) {
-    refuse(`suite : ${dernier} existe déjà — un dernier message transcrit à la main ne se remplace pas en silence ; le déplacer, puis relancer`);
+    refuse(sansReponse
+      ? `suite : --sans-reponse alors que ${dernier} existe — un dernier message existe, et la réponse se lit ; relancer sans --sans-reponse`
+      : `suite : ${dernier} existe déjà — un dernier message transcrit à la main ne se remplace pas en silence ; le déplacer, puis relancer`);
   }
   const morceaux = readFileSync(trace, "utf8").split(/\r?\n/).filter((l) => l.trim() !== "").map((l) => {
     try {
@@ -1364,8 +1428,35 @@ function commandeSuite(argv) {
     }
   }).filter(Boolean);
   const dernierTexte = morceaux.filter((p) => p.role === "assistant" && p.kind === "text" && typeof p.text === "string").pop() ?? null;
+  if (sansReponse && dernierTexte) {
+    refuse(`suite : --sans-reponse alors que la trace porte un texte d'assistant (seq ${dernierTexte.seq}) — un dernier message existe, et la réponse se lit ; relancer sans --sans-reponse`);
+  }
   if (!dernierTexte) {
-    refuse("suite : la trace exportée ne porte aucun texte d'assistant — sans dernier message, fin refuserait de toute façon, et rien ne s'invente");
+    if (!sansReponse) {
+      refuse("suite : la trace exportée ne porte aucun texte d'assistant — sans dernier message, fin refuserait de toute façon, et rien ne s'invente ; si la session s'est arrêtée sur une erreur terminale avant toute réponse, relancer avec --sans-reponse --sans-produit");
+    }
+    // ADR-106 : quatre conditions mesurées, jamais supposées. Une trace vide de texte ne suffit pas : sans
+    // erreur terminale, rien ne cause l'absence, et le harnais ne la suppose pas.
+    const faitsLus = JSON.parse(readFileSync(faits, "utf8"));
+    const etat = faitsLus.session?.etat_terminal ?? null;
+    const enErreur = etatTerminalEnErreur(etat);
+    if (!enErreur) {
+      refuse("suite : --sans-reponse sans erreur terminale — faits.json ne porte ni erreur ni outcome « failed » ou « error » : l'absence de réponse n'est causée par rien, et le harnais ne la suppose pas");
+    }
+    if (faitsLus.dernier_message) {
+      refuse(`suite : --sans-reponse alors que faits.json atteste un dernier message (${faitsLus.dernier_message.chemin ?? "(non nommé)"}) — une pièce existe, elle ne se remplace pas en silence`);
+    }
+    const dossierCopie = join(run, "raw", cas);
+    if (!existsSync(dossierCopie) || !manifesteSansProduit(dossierCopie)) {
+      refuse(`suite : --sans-reponse sans copie vide sous ${dossierCopie} — le produit absent se déclare par --sans-produit, et le manifeste doit le dire`);
+    }
+    const ou = etat.erreur ? `${etat.erreur.type ?? "erreur"}${etat.erreur.statut !== null && etat.erreur.statut !== undefined ? ` ${etat.erreur.statut}` : ""}` : String(etat.outcome);
+    blocFin({
+      etat: `le run ${cas} n'a aucune réponse : la session s'est arrêtée sur ${ou} au seq ${etat.seq} — rien n'est mesuré, et le reçu le dira`,
+      pieces: `${faits}, ${trace}, ${dossierCopie}`,
+      ensuite: `orchestrer.mjs fin --sans-reponse --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict non concluant`,
+    });
+    process.exit(0);
   }
   mkdirSync(dirname(dernier), { recursive: true });
   writeFileSync(dernier, dernierTexte.text, "utf8");
@@ -1407,16 +1498,20 @@ function commandeSuite(argv) {
 function commandeFin(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", run: "valeur", difference: "valeur", phrase: "valeur", verdict: "valeur",
-    limites: "valeur", juge: "valeur", rubrique: "valeur", cases: "valeur",
+    limites: "valeur", cause: "liste", juge: "valeur", rubrique: "valeur", morsure: "valeur", cases: "valeur",
+    "sans-reponse": "drapeau",
   });
   const cases = casesDir(valeurs);
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
   const run = runExiste(cas, valeurs);
   // La lecture est vérifiée avant le reçu : une pièce mal formée ne doit pas coûter un run.
   const lecture = lectureDe(cas, cases);
+  // ADR-106 : l'absence de dernier message n'est recevable que déclarée par --sans-reponse, et jamais
+  // supposee ; sans le drapeau, le refus 9 reste tel quel.
+  const sansReponse = valeurs["sans-reponse"] === true;
   const dernier = join(run, "raw", cas, "last-message.md");
-  if (!existsSync(dernier)) {
-    refuse(`fin : ${dernier} est absent — la trace ne dit pas ce que la session a répondu en dernier, et le reçu ne l'invente pas (refus 9)`);
+  if (!existsSync(dernier) && !sansReponse) {
+    refuse(`fin : ${dernier} est absent — la trace ne dit pas ce que la session a répondu en dernier, et le reçu ne l'invente pas (refus 9) ; si la session n'a rien répondu, le déclarer avec --sans-reponse`);
   }
   const faits = join(run, "faits.json");
   if (!existsSync(faits)) refuse(`fin : ${faits} est absent — sans faits, le reçu n'a rien à relire ; lancer suite d'abord`);
@@ -1426,13 +1521,76 @@ function commandeFin(argv) {
   const verdictDemande = option(valeurs, "verdict", { defaut: null, domaine: ["conforme", "ecart", "non concluant"] });
   const juge = option(valeurs, "juge", { defaut: null });
   const rubrique = option(valeurs, "rubrique", { defaut: null });
+  const morsure = option(valeurs, "morsure", { defaut: null });
+  // ADR-100 : les trois champs d'un écart signé vont ensemble au reçu comme à l'output ; un champ
+  // absent reste absent, et c'est le harnais qui refuse une signature incomplète.
+  const argsMorsure = [
+    ...(juge !== null ? ["--juge", juge] : []),
+    ...(rubrique !== null ? ["--rubrique", rubrique] : []),
+    ...(morsure !== null ? ["--morsure", morsure] : []),
+  ];
+  let causes = valeurs.cause ?? [];
+  for (const cause of causes) {
+    if (!CAUSES.includes(cause)) usage(`--cause « ${cause} » hors domaine : ${CAUSES.join(" | ")}`);
+  }
+  // ADR-106 : la cause d'un run sans réponse est mesurée, pas choisie. `session` n'est pas une cause du
+  // vocabulaire fermé : le falsificateur `session_terminale_en_erreur` la nomme, le reçu dit `dispositif`.
+  if (sansReponse) {
+    if (verdictDemande !== null && verdictDemande !== "non concluant") {
+      refuse(`fin : --sans-reponse refuse --verdict « ${verdictDemande} » — une session qui n'a rien répondu ne mesure rien, et le reçu ne peut dire que non concluant`);
+    }
+    const autres = causes.filter((c) => c !== "dispositif");
+    if (autres.length) {
+      refuse(`fin : --sans-reponse impose --cause dispositif — « ${autres.join(", ")} » ne se déclare pas : la couche qui a manqué est l'exécution du run, et elle se lit dans faits.json`);
+    }
+    causes = ["dispositif"];
+  }
+  // Un non concluant sans cause ne dit pas quelle couche a manqué : le refus tombe avant la première
+  // pièce, parce que le reçu s'écrit une fois et ne se corrige pas.
+  if (verdictDemande === "non concluant" && causes.length === 0) {
+    refuse(`fin : verdict « non concluant » refusé — --cause est requis pour nommer la couche qui a manqué : ${CAUSES.join(" | ")}`);
+  }
   // Le reçu s'écrit une fois : nommer le juge après coup n'est plus possible une fois `receipt.json`
   // posé. Un `conforme` sans juge est donc refusé ici, avant la première pièce (D3).
   if (verdictDemande === "conforme" && (!juge || !rubrique)) {
     refuse(`fin : verdict « conforme » refusé — --juge et --rubrique sont requis avant que le reçu s'écrive : le reçu dit ce que la promesse est, pas qui l'a jugée (D3)`);
   }
+  // ADR-106 : les quatre conditions se re-vérifient ici, sur les pièces, et jamais sur la parole de `suite`.
+  if (sansReponse) {
+    if (existsSync(dernier)) {
+      refuse(`fin : --sans-reponse alors que ${dernier} existe — un dernier message existe, et la réponse se lit ; relancer sans --sans-reponse`);
+    }
+    const faitsLus = JSON.parse(readFileSync(faits, "utf8"));
+    const etat = faitsLus.session?.etat_terminal ?? null;
+    if (!etatTerminalEnErreur(etat)) {
+      refuse("fin : --sans-reponse sans erreur terminale — faits.json ne porte ni erreur ni outcome « failed » ou « error » : l'absence de réponse n'est causée par rien");
+    }
+    if (faitsLus.dernier_message) {
+      refuse("fin : --sans-reponse alors que faits.json atteste un dernier message — une pièce existe, elle ne se remplace pas en silence");
+    }
+    const traceRejouee = join(run, "trace", "echange.jsonl");
+    if (!existsSync(traceRejouee)) refuse(`fin : --sans-reponse sans ${traceRejouee} — la trace rejouée est ce qui prouve qu'aucun texte d'assistant n'existe`);
+    const morceaux = readFileSync(traceRejouee, "utf8").split(/\r?\n/).filter((l) => l.trim() !== "").map((l) => {
+      try {
+        return JSON.parse(l);
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+    const texte = morceaux.find((p) => p.role === "assistant" && p.kind === "text" && typeof p.text === "string");
+    if (texte) {
+      refuse(`fin : --sans-reponse alors que la trace porte un texte d'assistant (seq ${texte.seq}) — un dernier message existe, et la réponse se lit`);
+    }
+    const dossierCopie = join(run, "raw", cas);
+    if (!existsSync(dossierCopie) || !manifesteSansProduit(dossierCopie)) {
+      refuse(`fin : --sans-reponse sans copie vide sous ${dossierCopie} — le manifeste doit porter produit_absent: true et fichiers: [], sinon un produit existe`);
+    }
+  }
   const attendu = expectedDe(cas, cases);
   const verifDeclaree = attendu.verification !== undefined || attendu.mutations !== undefined;
+  if (sansReponse && verifDeclaree) {
+    refuse(`fin : --sans-reponse refuse un cas qui déclare une vérification (${cas}) — sans produit il n'y a rien à vérifier, et le reçu d'un run sans réponse ne se décide pas ici (ADR-106)`);
+  }
   const totalFin = verifDeclaree ? 3 : 2;
 
   // C7 : le cas déclare sa vérification, et `fin` la joue avant le reçu. Un refus du harnais qui a
@@ -1468,6 +1626,23 @@ function commandeFin(argv) {
   }
 
   if (verdictDemande === null) {
+    if (sansReponse) {
+      const faitsLus = JSON.parse(readFileSync(faits, "utf8"));
+      const e = faitsLus.session?.etat_terminal ?? {};
+      const ou = `${e.erreur?.type ?? e.outcome ?? "(non mesuré)"}${e.erreur?.statut !== null && e.erreur?.statut !== undefined ? ` ${e.erreur.statut}` : ""}`;
+      ecrit([
+        "▸ VERDICT PROPOSÉ — non concluant",
+        `  ce qui l'impose    : la session s'est arrêtée sur ${ou} au seq ${e.seq ?? "?"}, sans aucun texte d'assistant : rien n'est mesuré`,
+        "  ce qui reste écrit : rien — la même commande avec --verdict non concluant écrirait le reçu, une seule fois",
+        "",
+      ]);
+      blocFin({
+        etat: "aucun verdict écrit — la personne tranche",
+        pieces: "à blanc, rien n'est écrit",
+        ensuite: `orchestrer.mjs fin --sans-reponse --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict non concluant`,
+      });
+      process.exit(0);
+    }
     const aBlanc = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", "conforme", "--sans-ecrire"]);
     const propose = aBlanc.code === 0 ? "conforme" : "non concluant";
     const raison = aBlanc.code === 0
@@ -1483,8 +1658,8 @@ function commandeFin(argv) {
       etat: `aucun verdict écrit — la personne tranche`,
       pieces: `à blanc, rien n'est écrit`,
       ensuite: propose === "conforme"
-        ? `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict conforme --juge « … » --rubrique « P »`
-        : `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict ${propose}`,
+        ? `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict conforme --juge « … » --rubrique « P » ; ou, si le juge lit que P mord, --verdict ecart --juge « … » --rubrique « P » --morsure « … »`
+        : `orchestrer.mjs fin --cas ${cas} --run ${run} --difference « … » --phrase « … » --verdict ${propose} --cause « … » ; ou, si le juge lit que P mord, --verdict ecart --juge « … » --rubrique « P » --morsure « … »`,
     });
     process.exit(0);
   }
@@ -1497,7 +1672,8 @@ function commandeFin(argv) {
   if (existsSync(cheminResultat)) {
     refuse(`fin : ${cheminResultat} existe déjà — le résultat d'un run ne se réécrit pas ; le déplacer, puis relancer`);
   }
-  const sortieReceipt = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", verdictDemande]);
+  const argsCause = causes.flatMap((cause) => ["--cause", cause]);
+  const sortieReceipt = harnais(["receipt", "--run", run, "--case", cas, "--cases", cases, "--faits", faits, "--verdict", verdictDemande, ...argsCause, ...argsMorsure]);
   if (sortieReceipt.code !== 0) {
     blocRefus({
       texte: sortieReceipt.err,
@@ -1510,14 +1686,14 @@ function commandeFin(argv) {
   blocEtape({
     rang: verifDeclaree ? 2 : 1, total: totalFin, titre: "le reçu",
     fait: "écrire le reçu unique du run, avec le verdict que la preuve autorise",
-    commande: commandeHarnais(["receipt", "--run", run, "--case", cas, "--faits", faits, "--verdict", verdictDemande]),
+    commande: commandeHarnais(["receipt", "--run", run, "--case", cas, "--faits", faits, "--verdict", verdictDemande, ...argsCause, ...argsMorsure]),
     attendu: `un receipt.json de verdict « ${verdictDemande} », limites dites`,
     obtenu: sortieReceipt.out,
     lit: "le reçu relie la porte, la trace, la copie et le budget : c'est la pièce qu'on relit après",
   });
   const sortieCompare = harnais(["compare", "--run", run, "--case", cas, "--cases", cases,
     "--difference", difference, "--phrase", phrase, "--verdict", recu.verdict, "--limites", limites,
-    ...(juge ? ["--juge", juge] : []), ...(rubrique ? ["--rubrique", rubrique] : [])]);
+    ...argsMorsure]);
   if (sortieCompare.code !== 0) {
     blocRefus({
       texte: sortieCompare.err,
@@ -1530,7 +1706,7 @@ function commandeFin(argv) {
     rang: totalFin, total: totalFin, titre: "l'output",
     fait: "écrire ce que le juge retient du run, à côté du reçu",
     commande: commandeHarnais(["compare", "--run", run, "--case", cas, "--difference", "…", "--phrase", "…", "--verdict", recu.verdict, "--limites", limites,
-      ...(juge ? ["--juge", juge] : []), ...(rubrique ? ["--rubrique", rubrique] : [])]),
+      ...argsMorsure]),
     attendu: "un output.json qui cite le reçu",
     obtenu: sortieCompare.out,
     lit: "l'output reprend le verdict du reçu : deux pièces, une seule décision",
@@ -1779,6 +1955,88 @@ function commandeLire(argv) {
   process.exit(0);
 }
 
+// signer — la promesse signée à côté du reçu (spec du 2026-10-25 06:24). Le reçu est scellé : la
+// signature est une pièce voisine, et elle ne vaut que pour les fichiers du produit qu'elle nomme.
+function commandeSigner(argv) {
+  const valeurs = litOptions(argv, {
+    cas: "valeur", run: "valeur", juge: "valeur", rubrique: "valeur", verdict: "valeur",
+    motif: "valeur", piece: "liste", remplacer: "drapeau", cases: "valeur",
+  });
+  const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
+  const run = runExiste(cas, valeurs);
+  const cheminRecu = join(run, "receipt.json");
+  if (!existsSync(cheminRecu)) refuse(`signer : ${cheminRecu} est absent — une signature sans reçu ne signe rien`);
+  let recu;
+  try {
+    recu = JSON.parse(readFileSync(cheminRecu, "utf8"));
+  } catch {
+    refuse(`signer : ${cheminRecu} est illisible — la signature ne se dérive pas d'un reçu qu'elle ne lit pas`);
+  }
+  if (recu.cas !== cas) refuse(`signer : le reçu nomme le cas ${recu.cas}, pas ${cas}`);
+  if (!recu.promesse || recu.promesse.mode !== "juge_seul") {
+    refuse(`signer : la promesse vaut « ${recu.promesse && recu.promesse.mode ? recu.promesse.mode : "absente"} » — seule une promesse juge_seul se signe`);
+  }
+  if (recu.verdict !== "non concluant") {
+    refuse(`signer : le reçu conclut « ${recu.verdict} » — la signature ne double pas un verdict déjà rendu`);
+  }
+  const juge = uneLigne(option(valeurs, "juge", { requis: true, question: "le nom du juge" }));
+  const rubrique = uneLigne(option(valeurs, "rubrique", { requis: true, question: "la rubrique lue par le juge" }));
+  const motif = uneLigne(option(valeurs, "motif", { requis: true, question: "ce que le juge a lu" }));
+  if (!juge || !rubrique || !motif) refuse("signer : le juge, sa rubrique et son motif ne peuvent pas être vides");
+  const brut = option(valeurs, "verdict", { requis: true, domaine: ["mord", "ne-mord-pas"] });
+  const verdict = brut === "mord" ? "mord" : "ne_mord_pas";
+  const demandees = valeurs.piece ?? [];
+  if (!demandees.length) refuse("signer : au moins une --piece est requise — une signature qui ne nomme aucun fichier ne couvre rien");
+  const fichiers = Array.isArray(recu.produit && recu.produit.fichiers) ? recu.produit.fichiers : [];
+  const racine = join(run, "raw", cas);
+  const vues = new Set();
+  const pieces = [];
+  for (const chemin of demandees) {
+    if (isAbsolute(chemin) || chemin.split(/[\\/]/).includes("..") || !chemin.startsWith(`raw/${cas}/`)) {
+      refuse(`signer : la pièce « ${chemin} » doit être un chemin relatif sous raw/${cas}/`);
+    }
+    const abs = resolve(run, chemin);
+    const rel = relative(racine, abs);
+    if (rel.startsWith("..") || isAbsolute(rel)) refuse(`signer : la pièce « ${chemin} » sort du produit collecté`);
+    if (!existsSync(abs) || !statSync(abs).isFile()) refuse(`signer : la pièce « ${chemin} » n'existe pas`);
+    const cheminProduit = rel.split(/[\\/]/).join("/");
+    const declare = fichiers.find((f) => f && f.chemin === cheminProduit);
+    if (!declare) refuse(`signer : « ${chemin} » n'est pas un fichier du produit que le reçu a collecté`);
+    const empreinte = createHash("sha256").update(readFileSync(abs)).digest("hex");
+    if (declare.sha256 !== empreinte) refuse(`signer : « ${chemin} » ne porte plus l'empreinte du reçu`);
+    if (vues.has(chemin)) continue;
+    vues.add(chemin);
+    pieces.push({ chemin, sha256: empreinte });
+  }
+  const sortie = join(run, "promesse-signee.json");
+  if (existsSync(sortie) && !valeurs.remplacer) {
+    refuse(`signer : ${sortie} existe déjà — une signature ne s'écrase pas sans --remplacer`);
+  }
+  const travail = join(run, `.signer-${process.pid}.json`);
+  const piece = {
+    cas,
+    recu_sha256: createHash("sha256").update(readFileSync(cheminRecu)).digest("hex"),
+    branche: "P",
+    juge,
+    rubrique,
+    verdict,
+    motif,
+    pieces,
+    le: dateIso(),
+  };
+  writeFileSync(travail, JSON.stringify(piece, null, 2) + "\n", "utf8");
+  renameSync(travail, sortie);
+  ecrit([
+    `▸ SIGNATURE — ${sortie}`,
+    `  juge                : ${juge}`,
+    `  verdict             : ${verdict === "mord" ? "la branche P mord" : "la branche P ne mord pas"}`,
+    `  pièces signées      : ${pieces.length}`,
+    `  reçu lié            : ${piece.recu_sha256.slice(0, 12)}…`,
+    "",
+  ]);
+  process.exit(0);
+}
+
 function commandeRapport(argv) {
   const valeurs = litOptions(argv, { cas: "valeur", run: "valeur", remplacer: "drapeau", cases: "valeur" });
   const cas = option(valeurs, "cas", { requis: true, question: "l'identifiant du cas" });
@@ -1806,7 +2064,7 @@ function commandeRapport(argv) {
 const [commande, ...reste] = process.argv.slice(2);
 const COMMANDES = {
   cas: commandeCas, porte: commandePorte, ouvrir: commandeOuvrir, suite: commandeSuite,
-  fin: commandeFin, lire: commandeLire, rapport: commandeRapport, tracer: commandeTracer,
+  fin: commandeFin, lire: commandeLire, signer: commandeSigner, rapport: commandeRapport, tracer: commandeTracer,
 };
 if (!commande || commande === "--help" || commande === "-h") {
   process.stdout.write(USAGE + "\n");

@@ -1,0 +1,15 @@
+You are at the root of the repository under work: the `terrain/` directory. It is `slugify-cli`, a small text utility the newsletter importer uses to build article URLs, and every repository path below is relative to it.
+
+Read the skill under test first: it sits beside this root, one level up, at `../framework-origin/plugins/aidd-pm/skills/09-defect/SKILL.md`. Use it on this repository.
+
+The promises live in `README.md` and `tests/test_slugify.py`; `observations/2026-10-24-qa-run.md` records two calls whose output differs from them. The second call is the one to report: `slugify("  Hello, World!  ")` keeps a leading and a trailing dash, while `README.md` promises a slug never starts or ends with `-`.
+
+Turn that observed mismatch into one backlog Defect, at `aidd_docs/backlog/defects/slugify-leading-dashes.md`.
+
+Your first turn is read-only: open the skill, the observation and the repository files, and write nothing at all. Then show, in that same first turn, your qualification as one Markdown table with pipe rows — not as a bullet list — with a column for what you qualify the mismatch as, a column for the lifecycle state it deserves, and a column for the path you will write.
+
+That first turn ends with one question in plain text asking for my agreement, written as a single line that ends with a question mark: no bold, no emphasis, no code formatting, and no form or question tool, so the pause reads.
+
+Once I agree, you have my authority to create that one Defect with the state your readiness check finds, and to ask no second question.
+
+Do not modify any existing file. Do not diagnose the cause or propose a fix.

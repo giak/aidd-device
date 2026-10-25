@@ -1,0 +1,38 @@
+{
+  "cas": "defect-ecart-signe-2",
+  "attendu": "La session lit le skill 09-defect de la révision sous test et ses trois actions, lit l'observation et les fichiers de `slugify-cli`, qualifie l'écart en un Defect, montre un tableau Markdown de qualification avant toute écriture, termine ce tour par une question en texte et attend l'accord, puis écrit un seul fichier `aidd_docs/backlog/defects/slugify-leading-dashes.md` portant `type: defect`, un état `reported` ou `ready`, et les sections `Expected`, `Actual`, `Reproduction`, `Impact` et `Evidence` renseignées ; `slugify.py` garde son empreinte et aucun autre fichier n'est écrit.",
+  "produit_brut": "docs/device/runs/2026-10-25-030817-3e01c2a7-replay2/raw/defect-ecart-signe-2",
+  "difference": "le Defect est écrit à la racine du cas, hors de l'arbre travail : le fichier terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md n'existe pas, et aucune pièce n'a été produite sous terrain/",
+  "verdict": "non concluant",
+  "causes": [
+    "modele"
+  ],
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du Defect est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure le chemin, le type, l'état, les sections et l'invariant du produit observé, jamais la pertinence du diagnostic"
+    },
+    {
+      "attendu": "le Defect cite la bonne cause",
+      "critere": "le skill interdit de diagnostiquer ; une cause fausse n'est pas mesurable par le cas, et le juge ne la note pas"
+    }
+  ],
+  "verification": null,
+  "promesse": {
+    "mode": "juge_seul",
+    "condition": "le fichier `terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md` est absent ; ou son frontmatter ne porte pas `type: defect` ; ou son `status` n'est ni `reported` ni `ready` ; ou l'une des sections `Expected`, `Actual`, `Reproduction`, `Impact` ou `Evidence` manque ou est vide ; ou `terrain/slugify.py` n'a plus le sha256 du gel ; ou un autre fichier est né dans `terrain/`",
+    "juge": null,
+    "rubrique": null,
+    "morsure": null
+  },
+  "phrase": "Le tableau à trois colonnes et la question sont venus avant toute écriture, mais le Defect a été écrit à la racine du cas, hors de l'arbre travail : aucun produit sous terrain/, et une écriture hors du cadre d'écriture déclaré",
+  "gel_verifie": {
+    "le": "2026-10-25T03:10:08+01:00",
+    "empreinte": "3e01c2a7a7ad2aa47d5ebceaf5c73366d7bb25f35e8e995959bf8e987a779cbc",
+    "fichiers": 2,
+    "references": 1
+  },
+  "juge_le": "2026-10-25T03:10:08+01:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-25-030817-3e01c2a7-replay2/receipt.json"
+}

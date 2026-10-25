@@ -7,9 +7,10 @@
 //
 // Les fonctions jettent une Error dont le message est le refus, sans préfixe : l'appelant le
 // préfixe de sa commande (`faits :`, `receipt :`, `suite :`) et garde son code de sortie.
-import { existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 const sha256Buf = (b) => createHash("sha256").update(b).digest("hex");
@@ -27,6 +28,14 @@ const isoDeMs = (ms, ou) => {
   if (!Number.isFinite(n) || n <= 0) throw new Error(`${ou} : « ${ms} » n'est pas un horodatage — la source ne dit pas quand`);
   return execFileSync("date", ["-d", "@" + Math.floor(n / 1000), "--iso-8601=seconds"], { encoding: "utf8" }).trim();
 };
+
+// Un échec terminal n'a pas le même mot chez les deux clients : opencode écrit `failed`, Freebuff
+// `error` (`threads.last_turn_outcome`). Une seule règle les lit, pour que le reçu n'ait pas deux
+// vocabulaires (ADR-103, ADR-107).
+export const outcomeEnErreur = (outcome) => outcome === "failed" || outcome === "error";
+export function etatTerminalEnErreur(etat) {
+  return !!etat && (etat.erreur != null || outcomeEnErreur(etat.outcome));
+}
 
 // ---------------------------------------------------------------------------
 // Freebuff — la requête d'export, écrite une fois (ADR-032)
@@ -93,8 +102,31 @@ export function trouveBase(fil) {
   return null;
 }
 
-const sqlThread = (fil) =>
-  `select json_object('id', id, 'project_path', project_path, 'execution_mode', execution_mode, 'branch', branch, 'worktree_path', worktree_path, 'harness_id', harness_id, 'model', model, 'created_at', created_at) from threads where id = '${fil}';`;
+// Les deux colonnes de l'état terminal sont récentes : une base antérieure (ou la fixture du banc) ne les
+// porte pas. La requête les lit quand elles existent, et rend `null` sinon, plutôt que d'échouer sur un
+// schéma plus ancien que le harnais.
+export function sqlEtatTerminal(base, ou = "faits") {
+  const noms = new Set(lireBase(base, "select json_group_array(name) from pragma_table_info('threads');", ou) ?? []);
+  const champ = (nom) => (noms.has(nom) ? nom : "null");
+  return `'last_turn_outcome', ${champ("last_turn_outcome")}, 'last_turn_finished_at', ${champ("last_turn_finished_at")}`;
+}
+const sqlThread = (fil, base) =>
+  `select json_object('id', id, 'project_path', project_path, 'execution_mode', execution_mode, 'branch', branch, 'worktree_path', worktree_path, 'harness_id', harness_id, 'model', model, 'created_at', created_at, ${sqlEtatTerminal(base)}) from threads where id = '${fil}';`;
+
+// Freebuff publie l'état terminal au niveau du fil, pas d'un message : `last_turn_outcome` vaut
+// `completed`, `stopped`, `error` ou rien, et la base ne porte ni type d'erreur ni statut. `seq` reste
+// donc nul, et `erreur` aussi : les fabriquer prêterait au reçu un fournisseur qu'aucune pièce ne nomme.
+export function etatTerminalFreebuff(f) {
+  const outcome = typeof f.last_turn_outcome === "string" && f.last_turn_outcome !== "" ? f.last_turn_outcome : null;
+  const fini = Number(f.last_turn_finished_at);
+  return {
+    outcome,
+    seq: null,
+    ts: Number.isFinite(fini) && fini > 0 ? isoDeMs(fini, "faits") : null,
+    erreur: null,
+    declare: outcome,
+  };
+}
 const sqlPremier = (fil) => `select json_object('ts', ts, 'seq', seq) from messages where thread_id = '${fil}' and role = 'user' order by seq limit 1;`;
 
 // ---------------------------------------------------------------------------
@@ -103,7 +135,7 @@ const sqlPremier = (fil) => `select json_object('ts', ts, 'seq', seq) from messa
 export function sessionFreebuff(fil, { base, cwd } = {}) {
   if (!base) throw new Error("la base Freebuff n'est pas nommée");
   if (!existsSync(base)) throw new Error(`la base « ${base} » n'existe pas — le dossier du client se lit sous .freebuff/project-id, il ne se devine pas`);
-  const f = lireBase(base, sqlThread(fil), "faits");
+  const f = lireBase(base, sqlThread(fil, base), "faits");
   if (!f) throw new Error(`aucun fil « ${fil} » dans « ${base} » — l'identifiant du fil se lit dans la base, il ne se devine pas`);
   if (!f.project_path) throw new Error(`le fil « ${fil} » ne nomme aucun project_path — le répertoire du run ne se devine pas`);
   if (!f.model) throw new Error(`le fil « ${fil} » ne nomme aucun modèle — le reçu refuse un champ vide, et le modèle est un fait`);
@@ -129,6 +161,7 @@ export function sessionFreebuff(fil, { base, cwd } = {}) {
     execution_mode: f.execution_mode,
     worktree: null,
     premier_message: { ts: debut, seq: premier.seq },
+    etat_terminal: etatTerminalFreebuff(f),
   };
 }
 
@@ -204,12 +237,25 @@ function binOpencode() {
 }
 function exportBrutOpencode(fil, { cwd } = {}) {
   if (!cwd) throw new Error("le répertoire de session opencode n'est pas nommé");
-  let sortie;
+  // Le CLI tronque son JSON quand stdout est un tube : sur un export de 800 Ko, la sortie s'arrête
+  // au milieu d'une valeur, toujours à une longueur différente, et le parseur refuse un document
+  // qui n'a pas fini d'être écrit. Rediriger stdout vers un fichier rend l'export entier et stable.
+  const temporaire = join(tmpdir(), `opencode-export-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+  const descripteur = openSync(temporaire, "w");
   try {
-    sortie = execFileSync("opencode", ["session", "export", fil], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    execFileSync("opencode", ["session", "export", fil], { cwd, stdio: ["ignore", descripteur, "pipe"], maxBuffer: 64 * 1024 * 1024 });
   } catch (e) {
+    closeSync(descripteur);
+    rmSync(temporaire, { force: true });
     if (e.code === "ENOENT") throw new Error("« opencode » est introuvable — le client opencode ne se devine pas");
     throw new Error(`l'export opencode du fil « ${fil} » a échoué dans ${cwd} — ${String(e.stderr ?? e.message).trim().split("\n")[0] || "sans message"}`);
+  }
+  closeSync(descripteur);
+  let sortie;
+  try {
+    sortie = readFileSync(temporaire, "utf8");
+  } finally {
+    rmSync(temporaire, { force: true });
   }
   try {
     return { brut: sortie, json: JSON.parse(sortie) };
@@ -319,6 +365,26 @@ export function sessionOpencode(fil, { store, cwd } = {}) {
     ? info.model
     : `${info.model.providerID ?? info.model.provider ?? info.model.providerId ?? "?"}/${info.model.id ?? info.model.modelID ?? "?"}`;
   const version = versionOpencode();
+  // ADR-103 : l'en-tête de session peut mentir. Le 2026-10-25, `info.outcome` disait `succeeded` sur une
+  // session coupée par un 429, et l'échec ne vivait que dans un message `idle` sans texte, donc absent de
+  // la trace normalisée. Le dernier message porteur d'un `outcome` fait foi, et `declare` garde la valeur
+  // de l'en-tête à côté : la divergence se lit au lieu de s'effacer.
+  const terminal = [...messages].reverse().find((m) => typeof m.outcome === "string") ?? null;
+  const erreur = terminal?.error && typeof terminal.error === "object"
+    ? {
+        type: typeof terminal.error.type === "string" ? terminal.error.type : null,
+        message: typeof terminal.error.message === "string" ? terminal.error.message : null,
+        statut: Number.isFinite(Number(terminal.error.status)) ? Number(terminal.error.status) : null,
+      }
+    : null;
+  const terminalTs = terminal ? tsOf(terminal) : null;
+  const etatTerminal = {
+    outcome: terminal?.outcome ?? null,
+    seq: terminal ? messages.indexOf(terminal) + 1 : null,
+    ts: terminalTs === null ? null : isoDeMs(terminalTs, "faits"),
+    erreur,
+    declare: typeof info.outcome === "string" ? info.outcome : null,
+  };
   return {
     outil: "opencode",
     application: `opencode ${version} (${binOpencode()}, agent ${info.agent ?? "?"})`,
@@ -329,6 +395,7 @@ export function sessionOpencode(fil, { store, cwd } = {}) {
     execution_mode: "local",
     worktree: null,
     premier_message: { ts: isoDeMs(ts, "faits"), seq: idx + 1 },
+    etat_terminal: etatTerminal,
   };
 }
 

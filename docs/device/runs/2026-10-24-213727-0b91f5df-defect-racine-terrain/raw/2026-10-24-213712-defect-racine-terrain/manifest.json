@@ -1,0 +1,21 @@
+{
+  "cas": "2026-10-24-213712-defect-racine-terrain",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-213727-0b91f5df-defect-racine-terrain",
+  "role": "produit",
+  "source": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-213712-defect-racine-terrain/terrain/aidd_docs/backlog/defects/slugify-keeps-separator-runs.md",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-213712-defect-racine-terrain/terrain"
+  },
+  "collecte_le": "2026-10-24T21:49:34+02:00",
+  "fichiers": [
+    {
+      "chemin": "slugify-keeps-separator-runs.md",
+      "source": "/home/giak/aidd-device-work-2026-10-24/2026-10-24-213712-defect-racine-terrain/terrain/aidd_docs/backlog/defects/slugify-keeps-separator-runs.md",
+      "sha256": "8211ae3afd1015ccda46afa97fae1db5a8bf1586e607fdf05aed029229960857",
+      "taille": 1610,
+      "birth": "2026-10-24 21:49:00.704866793 +0200",
+      "birth_epoch": 1792871340
+    }
+  ]
+}

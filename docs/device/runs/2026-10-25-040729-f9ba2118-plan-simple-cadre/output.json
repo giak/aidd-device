@@ -1,0 +1,34 @@
+{
+  "cas": "plan-simple-cadre",
+  "attendu": "La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre/raw/plan-simple-cadre",
+  "difference": "le reçu propose conforme, mais la session s'est arrêtée sur provider.free-limit (429) au milieu de l'écriture : plan.md annonce trois phases, seule phase-1.md existe ; le produit est incomplet et le run ne conclut pas sur le skill",
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif"
+  ],
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "verification": null,
+  "promesse": {
+    "mode": "juge_seul",
+    "condition": "aucun `plan.md` sous `terrain/aidd_docs/tasks/`, ou un plan qui ne porte pas le bouton « copier tous les manquants » demandé et ses phases",
+    "juge": null,
+    "rubrique": null,
+    "morsure": null
+  },
+  "phrase": "La session a écrit le plan et la première phase, puis le fournisseur a refusé la suite (free-limit, 429) ; le dispositif a traité cette session comme finie et a proposé conforme, alors que deux phases sur trois manquent : le run ne peut pas conclure sur le skill.",
+  "gel_verifie": {
+    "le": "2026-10-25T04:24:47+01:00",
+    "empreinte": "f9ba2118c2320f0b3c492c5f41e421b50752aca2cd0ef6fed41a725adcec9235",
+    "fichiers": 2,
+    "references": 9
+  },
+  "juge_le": "2026-10-25T04:24:47+01:00",
+  "depuis_le_recu": "docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre/receipt.json"
+}

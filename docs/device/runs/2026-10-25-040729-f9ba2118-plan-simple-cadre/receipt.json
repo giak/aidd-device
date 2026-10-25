@@ -1,0 +1,360 @@
+{
+  "cas": "plan-simple-cadre",
+  "recu_ecrit_le": "2026-10-25T04:24:47+01:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e8ef8c48bffe40DX0frc2ogIhb",
+    "modele": "opencode/deepseek-v4.1-flash-free",
+    "ouverte_par": "opencode headless, modèle opencode/deepseek-v4.1-flash-free, agent build",
+    "ouverte_le": "2026-10-25T04:07:41+01:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_e8ef8c48bffe40DX0frc2ogIhb",
+    "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+    "modele": "opencode/deepseek-v4.1-flash-free",
+    "ouverte_le": "2026-10-25T04:07:41+01:00",
+    "premier_message": "2026-10-25T04:07:43+01:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/plan-simple-cadre.request.md",
+    "sha256": "e88b3b2b86e42c001add783ab17bfa7ec523d36571365e760121c2f307d4ee4a",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/plan-simple-cadre.freeze.json",
+    "empreinte_gel": "f9ba2118c2320f0b3c492c5f41e421b50752aca2cd0ef6fed41a725adcec9235",
+    "gele_le": "2026-10-25T04:07:17.283357442+0100"
+  },
+  "gel_verifie": {
+    "le": "2026-10-25T04:24:47+01:00",
+    "empreinte": "f9ba2118c2320f0b3c492c5f41e421b50752aca2cd0ef6fed41a725adcec9235",
+    "fichiers": 2,
+    "references": 9
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/framework",
+  "terrain_rev": "416ec1f",
+  "terrain_rev_arbre": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/terrain",
+  "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+  "horodatage_debut": "2026-10-25T04:07:43+01:00",
+  "horodatage_fin": "2026-10-25T04:22:32+01:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre/trace/echange.jsonl",
+    "commande": "opencode session export ses_e8ef8c48bffe40DX0frc2ogIhb",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 92,
+    "lignes_dans_la_fenetre": 92,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "ee60c9ddef99c8406ae7ae9719494f4cfb25e185b4bf74554e71ab1e893ad5d3",
+    "rejoue_le": "2026-10-25T04:24:47+01:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_e8ef8c48bffe40DX0frc2ogIhb",
+    "cwd": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+    "sha256": "ee60c9ddef99c8406ae7ae9719494f4cfb25e185b4bf74554e71ab1e893ad5d3",
+    "brut_sha256": "254ce144ed72b49cf6004187ac028524d84bb7431a6df1afee833034327d33ce",
+    "rejoue_le": "2026-10-25T04:24:47+01:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": true,
+    "index": 80,
+    "seq": 26,
+    "ts": 1792898048971,
+    "lignes": 38,
+    "colonnes": 3,
+    "requis": true
+  },
+  "pause": {
+    "requise": false,
+    "formulaire": "libre",
+    "mesuree": true,
+    "seq_reponse": 27,
+    "seq_ecriture": 29,
+    "outil_ecriture": "write",
+    "attente_ms": 64528
+  },
+  "echanges": {
+    "budget": 3,
+    "utilises": 2,
+    "epuise_par": null
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-040729-f9ba2118-plan-simple-cadre/gate.json",
+    "sha256": "08e7a7c5f960f3ebca64168f23b1b56ca145752cc1578ff6c73e6aadb40ae82c",
+    "cas": "plan-simple-cadre",
+    "passe_le": "2026-10-25T04:07:29.411407151+0100",
+    "passe_le_epoch": 1792897649,
+    "repertoire": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+    "gel_empreinte": "f9ba2118c2320f0b3c492c5f41e421b50752aca2cd0ef6fed41a725adcec9235",
+    "gele_le_epoch": 1792897637,
+    "arbre": {
+      "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": []
+    },
+    "texte_sha256": "fda070bb5b50cbd400a5fece5c1dcdc4c6c955c0d47f73c43ed7c8bc08c33011"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [
+          "?? aidd_docs/"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": false,
+    "chemins": [
+      "raw/plan-simple-cadre/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "raw/plan-simple-cadre/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md"
+    ],
+    "fichiers": [
+      {
+        "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+        "source": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+        "sha256": "e348490ac9ea6493d536e5b45ada0e7183176192e6d9fa4ea783535f1065dbb5",
+        "taille": 8263,
+        "birth": "2026-10-25 04:17:00.612395874 +0100",
+        "birth_epoch": 1792898220
+      },
+      {
+        "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+        "source": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+        "sha256": "00b756c0ac69afa04ba594e39a0ca5e4126c3860c4354097b1788ef227ac3782",
+        "taille": 2923,
+        "birth": "2026-10-25 04:16:33.534312176 +0100",
+        "birth_epoch": 1792898193
+      }
+    ],
+    "verifie": {
+      "fichiers": 2,
+      "manifeste_sha256": "bb4e33180193aaaf30848688ffef17bfbb1a8c2d941671830ac2ff527dd11385",
+      "last_message_sha256": "99569f1c7915894daa246e2d224100058d3fae45aa39f25b16b298a15e97aea2"
+    }
+  },
+  "annexe": null,
+  "cloisonnement": {
+    "attendu_vu": "non",
+    "attendu_vu_mesure": {
+      "etat": "non",
+      "seq": null,
+      "chemin": null,
+      "motif": null
+    },
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain",
+        "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/framework-origin"
+      ],
+      "racine_du_cas": "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre"
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/terrain/aidd_docs"
+      ],
+      "scratch": null,
+      "scratch_resolu": null
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "opencode headless, modèle opencode/deepseek-v4.1-flash-free, agent build",
+    "quand": "2026-10-25T04:22:32+01:00"
+  },
+  "promesse": {
+    "mode": "juge_seul",
+    "declaree_par": "falsificateurs_du_run.P",
+    "condition": "aucun `plan.md` sous `terrain/aidd_docs/tasks/`, ou un plan qui ne porte pas le bouton « copier tous les manquants » demandé et ses phases",
+    "mesure": null,
+    "juge": null,
+    "raison": "la promesse est énoncée, mais aucune mesure ne l'éprouve : `compare` doit nommer le juge et sa rubrique",
+    "rubrique": null,
+    "morsure": null
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": false,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "question_sans_reponse": [],
+    "question_en_formulaire": [],
+    "pause_non_tenue": [],
+    "lecture_hors_dossier": [],
+    "ecriture_hors_dossier": [],
+    "code_hors_dossier": [],
+    "shell_hors_dossier": [],
+    "shell_ecriture_hors_produit": [],
+    "shell_invalide": [],
+    "shell_non_interpretable": [],
+    "reseau": [],
+    "hors_produit": []
+  },
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif"
+  ],
+  "limites": [
+    "la conduite (agent) est déclarée par « opencode headless, modèle opencode/deepseek-v4.1-flash-free, agent build » : le reçu ne prouve pas qui a répondu, et un run conduit par un agent n'est ni une faute ni un mérite (ADR-071)",
+    "le cas limite l'écriture à terrain/aidd_docs ; ce reçu compare les chemins nommés par les outils d'écriture, les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture, ADR-063)",
+    "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    "la promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, que `compare` doit nommer avec sa rubrique pour `conforme` — le reçu ne vérifie ni l'identité du juge ni sa lecture (audit du 2026-10-24, D2, D3)",
+    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée est l'intervalle entre la part précédente et ce tour, jamais une attente humaine, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069, ADR-078)",
+    "les commandes shell sont lues quand leur texte est littéral (shell) ; une commande construite dynamiquement n'est pas interprétée, et le reçu le dit",
+    "le répertoire initial d'une commande shell est le `travail` du gel ; le reçu suit le texte, donc un `cd` qui aurait échoué ne déplace pas la lecture (ADR-051)",
+    "`/dev/null` est un puits : il n'est ni une lecture ni une écriture, les autres fichiers de périphérique restent comptés (ADR-053)",
+    "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
+    "hors_produit ne retient que les chemins nouveaux du porcelain : une modification ou une suppression d'un fichier déjà présent hors du produit n'est pas attribuée au run (ADR-051)",
+    "la porte et le gel replient un dossier non suivi en une seule entrée du porcelain ; le reçu étend seulement son propre côté après-run (`--untracked-files=all`), saute un chemin sous un dossier déjà non suivi avant le run et un ancêtre de la racine du produit, et compare les entrées comme des chaînes, sans décoder les guillemets de git (ADR-062)"
+  ]
+}

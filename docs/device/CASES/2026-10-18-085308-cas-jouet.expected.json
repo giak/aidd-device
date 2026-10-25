@@ -4,7 +4,7 @@
   "statut": "écrit avant tout run — aucune session n'a reçu cette demande. Cas jouet : ses arbres sont deux dépôts de deux fichiers reconstruits par le script compagnon, publiés nulle part (le gel porte `refs_distants` vide sur les deux origines).",
   "demande": {
     "fichier": "CASES/2026-10-18-085308-cas-jouet.request.md",
-    "texte_verbatim": "Read the mini playbook at $RACINE/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet. Stay inside this repository: do not list or read its parent folder, its siblings, or anything above $RACINE/2026-10-18-085308-cas-jouet/.",
+    "texte_verbatim": "You work in the repository at $RACINE/2026-10-18-085308-cas-jouet/terrain; that checkout is \"this repository\". Read the mini playbook at $RACINE/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet. Apart from that one file, stay inside the terrain checkout: never list or read $RACINE/2026-10-18-085308-cas-jouet/origine/, $RACINE/2026-10-18-085308-cas-jouet/framework-origin/, the case folder itself, its parent, its siblings, or anything above $RACINE/2026-10-18-085308-cas-jouet/.",
     "budget_echanges": 2,
     "reponses_figees": [
       "Yes, that matches. Write the notes file at aidd_docs/NOTES.md, one line per rule. Nothing else.",
@@ -15,7 +15,7 @@
     "arbres": "deux dépôts jouets de deux fichiers, reconstruits par `2026-10-18-085308-cas-jouet-arbres.sh` ; `framework-origin` et `terrain` sont des clones détachés des origines, `origin` pointant le chemin local",
     "repertoire_de_travail": "$RACINE/2026-10-18-085308-cas-jouet/ — la valeur de la racine est celle que le gel déclare (`racine_espace_de_travail`)",
     "gel": "CASES/2026-10-18-085308-cas-jouet.freeze.json — aucune référence du framework : ce cas ne lit aucun fichier gelé hors de ses deux pièces",
-    "interdits": "les six du §7 de la demande, dont celui qui est né le 2026-10-22 : explorer le dossier parent du cas, ses voisins, ou tout chemin au-dessus de `$RACINE/<cas>/`"
+    "interdits": "les interdits du §7 de la demande, dont la lecture de `origine/`, de `framework-origin/` hors `PLAYBOOK.md`, et du dossier du cas lui-même, et l'exploration du dossier parent du cas, de ses voisins, ou de tout chemin au-dessus de `$RACINE/<cas>/` — le §5 les nomme depuis le 2026-10-25, faute de quoi `origine/` se lisait sans mordre"
   },
   "cloisonnement": {
     "lecture": { "autorisees": ["terrain", "framework-origin"] },

@@ -1,24 +1,37 @@
 {
   "cas": "2026-10-22-092005-spike-annees",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-25T17:37:47+01:00",
+    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot"
+  },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-22T09:23:34.434047516+0200",
-  "gele_le_epoch": 1792653814,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-092005-spike-annees --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/framework-origin --ref plugins/aidd-pm/skills/05-spike/SKILL.md --ref plugins/aidd-pm/skills/05-spike/actions/01-create.md --ref plugins/aidd-pm/skills/05-spike/actions/02-investigate.md --ref plugins/aidd-pm/skills/05-spike/actions/03-conclude.md --ref plugins/aidd-pm/skills/05-spike/assets/spike-template.md --ref plugins/aidd-pm/skills/05-spike/references/capabilities.md --ref plugins/aidd-pm/skills/05-spike/references/investigation.md --ref plugins/aidd-pm/skills/05-spike/references/lifecycle.md --ref plugins/aidd-pm/skills/05-spike/references/persistence.md --ref plugins/aidd-pm/skills/05-spike/references/qualification.md --ref plugins/aidd-pm/skills/05-spike/references/relations.md",
-  "empreinte": "0052c168abdbdb8be1ffbcf0135698cdd9586d7e3717c966a403f4d519facd66",
+  "gele_le": "2026-10-25T17:37:47.812603864+0100",
+  "gele_le_epoch": 1792946267,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-22-092005-spike-annees --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-22-092005-spike-annees/framework-origin --ref plugins/aidd-pm/skills/05-spike/SKILL.md --ref plugins/aidd-pm/skills/05-spike/actions/01-create.md --ref plugins/aidd-pm/skills/05-spike/actions/02-investigate.md --ref plugins/aidd-pm/skills/05-spike/actions/03-conclude.md --ref plugins/aidd-pm/skills/05-spike/assets/spike-template.md --ref plugins/aidd-pm/skills/05-spike/references/capabilities.md --ref plugins/aidd-pm/skills/05-spike/references/investigation.md --ref plugins/aidd-pm/skills/05-spike/references/lifecycle.md --ref plugins/aidd-pm/skills/05-spike/references/persistence.md --ref plugins/aidd-pm/skills/05-spike/references/qualification.md --ref plugins/aidd-pm/skills/05-spike/references/relations.md --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot\"",
+  "empreinte": "5778f063633ad455cc0ca1a201502170cfd155e45e044d392d1d957c03cfbc03",
   "fichiers": [
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.expected.json",
-      "sha256": "aac9c7f779ce02ba7c7d418ae222449b8dccebb63fb8e310388262280e2d8ece",
-      "taille": 6890,
+      "sha256": "0ed33beac66e3e7adae1ed215faca445052c589b708c4f138610132e940cf008",
+      "taille": 7007,
       "birth": "2026-10-22 09:21:07.193751241 +0200",
       "birth_epoch": 1792653667
     },
     {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.lecture.json",
+      "sha256": "ca6865993eafa396f27b86756556bb16c28243bc7279901c43ce391e00a0f331",
+      "taille": 1894,
+      "birth": "2026-10-22 09:24:35.530683655 +0200",
+      "birth_epoch": 1792653875
+    },
+    {
       "role": "demande",
       "chemin": "docs/device/CASES/2026-10-22-092005-spike-annees.request.md",
-      "sha256": "4bf58e7b41fcc3802b1c174ff9fd558b50814c001a2164d13811688d1009f248",
-      "taille": 2961,
+      "sha256": "eb1b963d24f25a9e617caf3eb99abbb2c4507d23031028d1953a67fe0045cf6f",
+      "taille": 3075,
       "birth": "2026-10-22 09:21:07.191751154 +0200",
       "birth_epoch": 1792653667
     }

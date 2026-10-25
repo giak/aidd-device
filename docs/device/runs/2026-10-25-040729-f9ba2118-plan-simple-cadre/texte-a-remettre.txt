@@ -1,0 +1,4 @@
+You are at the root of the repository under work: the `terrain/` directory. Every repository path below is relative to it. You may read `framework-origin/`, one level up. Do not read or write outside these two trees, not in the rest of `$HOME`, not in `/tmp`. No git write, no network, no AI context files.
+
+Read the skill at /home/giak/aidd-device-work-2026-10-25/plan-simple-cadre/framework-origin/plugins/aidd-dev/skills/01-plan/SKILL.md and use it on this repository.
+Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un plan d'ajout d'un bouton « copier tous les manquants » à sa page Sync. Lis le README et les fichiers utiles, montre d'abord un tableau d'une ligne par fichier lu, attends mon accord sans avoir écrit un seul fichier, puis écris le plan et ses phases sous aidd_docs/tasks/.

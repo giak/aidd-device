@@ -1,0 +1,346 @@
+{
+  "cas": "defect-ecart-signe-4",
+  "recu_ecrit_le": "2026-10-24T23:05:50+02:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.1.2 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e90470d35ffez82IEpsey8hixe",
+    "modele": "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "ouverte_par": "BuffY, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "ouverte_le": "2026-10-24T23:02:34+02:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_e90470d35ffez82IEpsey8hixe",
+    "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+    "modele": "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "ouverte_le": "2026-10-24T23:02:34+02:00",
+    "premier_message": "2026-10-24T23:02:35+02:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/defect-ecart-signe-4.request.md",
+    "sha256": "affb47a9b37a2f93f07e8c2692710d7655f694b4c3e8ed849a340b5941c40211",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/defect-ecart-signe-4.freeze.json",
+    "empreinte_gel": "2a170fcd3d88f90d8100aab08010f575f12b1d270f50a22d2b2588b4d512d4b3",
+    "gele_le": "2026-10-24T23:02:27.684149175+0200"
+  },
+  "gel_verifie": {
+    "le": "2026-10-24T23:05:50+02:00",
+    "empreinte": "2a170fcd3d88f90d8100aab08010f575f12b1d270f50a22d2b2588b4d512d4b3",
+    "fichiers": 2,
+    "references": 1
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/framework",
+  "terrain_rev": "6c42d4d",
+  "terrain_rev_arbre": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain",
+  "repertoire_de_travail": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+  "horodatage_debut": "2026-10-24T23:02:35+02:00",
+  "horodatage_fin": "2026-10-24T23:05:24+02:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.1.2 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-230230-2a170fcd-0f67558/trace/echange.jsonl",
+    "commande": "opencode session export ses_e90470d35ffez82IEpsey8hixe",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-230230-2a170fcd-0f67558/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 13,
+    "lignes_dans_la_fenetre": 13,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "a82ab52e728d07a27a5d2fdd0ed0d7fc87e49f5bd52f88c916ed4f6daeb04528",
+    "rejoue_le": "2026-10-24T23:05:50+02:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_e90470d35ffez82IEpsey8hixe",
+    "cwd": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+    "sha256": "a82ab52e728d07a27a5d2fdd0ed0d7fc87e49f5bd52f88c916ed4f6daeb04528",
+    "brut_sha256": "24ea005389545469ba725cf3e4c69b728a76c82d7b7732dab7c9e867cda181bd",
+    "rejoue_le": "2026-10-24T23:05:50+02:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": true,
+    "index": 7,
+    "seq": 4,
+    "ts": 1792875758944,
+    "lignes": 3,
+    "colonnes": 3,
+    "requis": true
+  },
+  "pause": {
+    "requise": true,
+    "mesuree": true,
+    "seq_reponse": 6,
+    "seq_ecriture": 7,
+    "outil_ecriture": "write",
+    "attente_ms": 34799
+  },
+  "echanges": {
+    "budget": 3,
+    "utilises": 2,
+    "epuise_par": null
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-24-230230-2a170fcd-0f67558/gate.json",
+    "sha256": "e3e613f644306734815cf36b19b8effde28a024de1e7764d3cbd0eef56ecd635",
+    "cas": "defect-ecart-signe-4",
+    "passe_le": "2026-10-24T23:02:30.631493007+0200",
+    "passe_le_epoch": 1792875750,
+    "repertoire": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+    "gel_empreinte": "2a170fcd3d88f90d8100aab08010f575f12b1d270f50a22d2b2588b4d512d4b3",
+    "gele_le_epoch": 1792875747,
+    "arbre": {
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": []
+    },
+    "texte_sha256": "b61edfc719d980f6e148d4f45b86ca99199f5c6827dcbb6eea512ea0cb990db6"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain",
+        "head": "6c42d4d",
+        "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+        "head": "6c42d4d",
+        "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/origine/terrain",
+        "head": "6c42d4d",
+        "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+        "porcelain": [],
+        "remotes": [],
+        "refs_distants": []
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [
+          "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+          "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+        ],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "https://github.com/giak/framework.git"
+          },
+          {
+            "nom": "upstream",
+            "url": "https://github.com/ai-driven-dev/framework.git"
+          }
+        ],
+        "refs_distants": [
+          "origin/gel/2026-10-15-fe48de12"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+        "head": "6c42d4d",
+        "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+        "porcelain": [
+          "?? aidd_docs/"
+        ],
+        "remotes": [],
+        "refs_distants": []
+      }
+    ]
+  },
+  "produit": {
+    "absent": false,
+    "chemins": [
+      "raw/defect-ecart-signe-4/slugify-leading-dashes.md"
+    ],
+    "fichiers": [
+      {
+        "chemin": "slugify-leading-dashes.md",
+        "source": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md",
+        "sha256": "eb801a1baa26ffde0cc22121c45f94f3c51f482edb4b4c9b0970704e4fcabd82",
+        "taille": 878,
+        "birth": "2026-10-24 23:03:19.180534956 +0200",
+        "birth_epoch": 1792875799
+      }
+    ],
+    "verifie": {
+      "fichiers": 1,
+      "manifeste_sha256": "2cb73fd28a8697d05a5183f9415441c4f3770bd7a01c44c1043df3d7e9b7723f",
+      "last_message_sha256": "ac686d9babad2e2cff604ffa04176f6a16e3c6091a159e5ff32128acdd00588d"
+    }
+  },
+  "annexe": null,
+  "cloisonnement": {
+    "attendu_vu": "non",
+    "attendu_vu_mesure": {
+      "etat": "non",
+      "seq": null,
+      "chemin": null,
+      "motif": null
+    },
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain",
+        "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/framework-origin"
+      ],
+      "racine_du_cas": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4"
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "resolues": [
+        "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain/aidd_docs"
+      ],
+      "scratch": "terrain/.scratch",
+      "scratch_resolu": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe-4/terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "BuffY, agent de l'opérateur giak, sur sa consigne du 2026-10-24",
+    "quand": "2026-10-24T23:05:24+02:00"
+  },
+  "promesse": {
+    "mode": "juge_seul",
+    "declaree_par": "falsificateurs_du_run.P",
+    "condition": "le fichier `terrain/aidd_docs/backlog/defects/slugify-leading-dashes.md` est absent ; ou son frontmatter ne porte pas `type: defect` ; ou son `status` n'est ni `reported` ni `ready` ; ou l'une des sections `Expected`, `Actual`, `Reproduction`, `Impact` ou `Evidence` manque ou est vide ; ou `terrain/slugify.py` n'a plus le sha256 du gel ; ou un autre fichier est né dans `terrain/`",
+    "mesure": null,
+    "juge": "BuffY, agent de l'opérateur giak, lisant le produit collecté le 2026-10-24",
+    "raison": "la promesse est énoncée, et le juge a nommé la branche qui mord : la mesure ne l'éprouve pas",
+    "rubrique": "assets/defect-template.md : frontmatter type: defect et status, sections Context, Expected, Actual, Reproduction, Impact, Evidence ; references/lifecycle.md : reported | ready",
+    "morsure": "P mord sur le type et l'état : aucun frontmatter type: defect, status capture qui n'est pas un état du cycle de vie, et les sections Expected, Actual et Reproduction du gabarit sont absentes"
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "tableau_absent": false,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "question_sans_reponse": [],
+    "pause_non_tenue": [],
+    "lecture_hors_dossier": [],
+    "ecriture_hors_dossier": [],
+    "code_hors_dossier": [],
+    "shell_hors_dossier": [],
+    "shell_ecriture_hors_produit": [],
+    "shell_invalide": [],
+    "shell_non_interpretable": [],
+    "reseau": [],
+    "hors_produit": []
+  },
+  "verdict": "ecart",
+  "causes": [],
+  "limites": [
+    "la conduite (agent) est déclarée par « BuffY, agent de l'opérateur giak, sur sa consigne du 2026-10-24 » : le reçu ne prouve pas qui a répondu, et un run conduit par un agent n'est ni une faute ni un mérite (ADR-071)",
+    "le cas limite l'écriture à terrain/aidd_docs et à son scratch terrain/.scratch ; ce reçu compare les chemins nommés par les outils d'écriture, les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture, ADR-063)",
+    "le scratch terrain/.scratch est lisible et scriptible, jamais compté comme produit ; il est collecté sous annexe/<cas>/ et le reçu le vérifie (ADR-067)",
+    "le cas déclare un scratch, mais le run n'a aucune annexe collectée : les scripts et les sorties qu'il cite ne sont pas dans le reçu (ADR-067)",
+    "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    "la promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, que `compare` doit nommer avec sa rubrique pour `conforme` — le reçu ne vérifie ni l'identité du juge ni sa lecture (audit du 2026-10-24, D2, D3)",
+    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée est l'intervalle entre la part précédente et ce tour, jamais une attente humaine, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069, ADR-078)",
+    "le produit est comparé par sha256 aux fichiers lus hors du produit, relus au reçu ; un fichier lu puis modifié ou supprimé ne peut plus être reconnu (ADR-054)",
+    "hors_produit ne retient que les chemins nouveaux du porcelain : une modification ou une suppression d'un fichier déjà présent hors du produit n'est pas attribuée au run (ADR-051)",
+    "la porte et le gel replient un dossier non suivi en une seule entrée du porcelain ; le reçu étend seulement son propre côté après-run (`--untracked-files=all`), saute un chemin sous un dossier déjà non suivi avant le run et un ancêtre de la racine du produit, et compare les entrées comme des chaînes, sans décoder les guillemets de git (ADR-062)"
+  ]
+}

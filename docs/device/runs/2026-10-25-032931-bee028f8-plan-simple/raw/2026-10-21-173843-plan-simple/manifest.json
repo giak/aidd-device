@@ -1,0 +1,45 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-10-25-032931-bee028f8-plan-simple",
+  "role": "produit",
+  "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain"
+  },
+  "collecte_le": "2026-10-25T03:42:34+01:00",
+  "fichiers": [
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-1.md",
+      "sha256": "d506fe6e370e83cf039ce0d88259436fbc50f5f1403ad57dc069ceb1e63372f0",
+      "taille": 4937,
+      "birth": "2026-10-25 03:37:45.663047970 +0100",
+      "birth_epoch": 1792895865
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-2.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-2.md",
+      "sha256": "db54ce5e24bb23141009c9190fdfd01bec6633c9af8ed5b77c4b8f07bebc5d83",
+      "taille": 11229,
+      "birth": "2026-10-25 03:37:45.663047970 +0100",
+      "birth_epoch": 1792895865
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-3.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/phase-3.md",
+      "sha256": "656d63a187a56584378f28318c37d2764d13fc00f6c0cbe2cea8bb3ab3fdb0e1",
+      "taille": 4700,
+      "birth": "2026-10-25 03:37:45.663719348 +0100",
+      "birth_epoch": 1792895865
+    },
+    {
+      "chemin": "tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain/aidd_docs/tasks/2026_10/2026_10_25_copier-tous-les-manquants/plan.md",
+      "sha256": "3760faa53a8532e4470e6c52289272badd58d22d8ecff3bb6590dc54a69e50b4",
+      "taille": 3048,
+      "birth": "2026-10-25 03:37:45.663047970 +0100",
+      "birth_epoch": 1792895865
+    }
+  ]
+}

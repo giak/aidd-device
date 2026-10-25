@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 306 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 340 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -126,6 +126,100 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > pas retouché ; le faux binaire ne quitte pas le bac.
 > Aucun contrôle existant n'est renuméroté.
 
+> V0.72 — 2026-10-25 : **338** contrôles ; **333** éprouve le **run sans réponse** (ADR-106). Une fixture
+> opencode ne porte qu'une demande et un message `idle` `provider.free-limit` 429, sans texte : `suite
+> --sans-reponse --sans-produit` écrit le manifeste `produit_absent: true` sans dernier message, et `fin
+> --sans-reponse` écrit un reçu `non concluant`, `causes: [dispositif]`, avec le falsificateur
+> `session_terminale_en_erreur` et la limite `dernier_message_non_atteste`. Le même bac privé de son état
+> terminal refuse, et le mutant qui retire la condition écrit un reçu : le contrôle meurt sur « fin sans
+> erreur terminale ». Deux refus voisins restent mesurés : `--sans-reponse` sans `--sans-produit`, et
+> `suite` sans `--sans-reponse` sur une trace sans texte d'assistant. **334** éprouve la **page d'une session
+> morte avant toute réponse** : le même bac copié, sa page ne juge aucune clause du skill, et le mutant qui
+> retire la règle rend la faute au skill sur un tableau que la session n'a jamais eu l'occasion de rendre.
+
+> V0.73 — 2026-10-25 : **340** contrôles ; **335** éprouve l'**état terminal de Freebuff** (ADR-107) : une base de bac porte `last_turn_outcome =
+> 'error'`, `faits` recopie l'état sans type ni statut, le reçu refuse `conforme` et pousse le falsificateur
+> `session_terminale_en_erreur` ; le mutant qui ramène la règle à `erreur != null` est vu rouge.
+> V0.71 — 2026-10-25 : **334** contrôles ; **331** éprouve la **faute du dispositif** dans la page de
+> décision. Sur une copie du run `2026-10-24-213727`, dont le reçu porte `causes: [dispositif, cas]`, aucun
+> geste mesuré hors cadre, et dont la promesse est signée `mord` par le juge, la page nomme la cause et
+> rend la faute au dispositif : son §1 ne dit plus « ni le skill ni la session ne sont jugés » alors que
+> sa dernière clause est `violé`, et son §4 ne dit plus « c'est le run qui manque ». Le mutant neutralise
+> la branche, la page retombe sur la phrase du run, et le contrôle meurt sur « §1 ne nomme pas le
+> dispositif ». **332** éprouve le dossier du produit : un produit d'un seul fichier, sans sous-dossier,
+> s'écrit « sous `aidd_docs/` » et non « sous `aidd_docs/<fichier>.md/` » ; le mutant qui prend le fichier
+> pour un dossier meurt sur « §5 prend le fichier pour un dossier ». Le cas
+> `2026-10-24-213712-defect-racine-terrain` gagne sa `lecture.json`, donc sa page. Aucun contrôle existant
+> n'est renuméroté.
+>
+> V0.70 — 2026-10-25 : **330** contrôles ; **329** et **330** éprouvent la **promesse signée** (spec du
+> 2026-10-25 06:24). **329** signe une copie du run non concluant `2026-10-25-032931` avec les quatre
+> pièces du produit : la page dont la dernière clause passe de `non jugé` à `tenu` nomme le juge, et une
+> seconde copie signée `mord` rend `violé` et le geste « reprendre la branche P ». **330** ajoute un octet
+> à `phase-2.md` après la signature : la page reste `non jugé`, dit « signature non lue », et `signer`
+> refuse une promesse mesurée, un verdict hors domaine, une pièce hors produit, une pièce qui a changé et
+> un second appel sans `--remplacer`. Mutants : une page qui ignore la pièce signée est arrêtée par le
+> contrat, et une page qui la lit sans re-hacher les pièces écrit `tenu` et meurt sur « non jugé ». Aucun
+> contrôle existant n'est renuméroté.
+>
+> V0.69 — 2026-10-25 : **326** contrôles ; **327** et **328** éprouvent la **page de décision** réécrite
+> (ADR-061, amendé) sur deux copies de runs réels : le run non concluant `2026-10-25-032931` porte six
+> sections, soixante lignes au plus, nomme la sonde `../../README.md` au §4 en la rendant à la session, et
+> sa dernière clause de promesse est `non jugé` (327) ; un run `conforme` ne porte aucune ligne `violé`,
+> aucun défaut au §4, et ne propose aucune correction du skill (328). Chaque contrôle a son mutant : retirer
+> la distinction session/skill fait tomber le 327 par le §4, faire dériver les gestes d'une cause absente
+> fait tomber le 328. Les contrôles 228 à 230 sont nommés pour la forme nouvelle : six sections, et le
+> cadre de la session n'est pas une clause de la promesse.
+> V0.68 — 2026-10-25 : **322** contrôles ; **324** à **326** éprouvent les trois règles de **recevabilité
+> d'un run** (ADR-103 à ADR-105), et chacune est vue **rouge** sur un mutant du harnais où sa règle est
+> neutralisée. **324** part d'un bac neuf du cas jouet, dont le reçu `conforme` est écrit une fois et le
+> dossier de run copié deux fois ; l'une des copies reçoit un `session.etat_terminal` en erreur (`provider.free-limit`, statut `429`) : `conforme` et l'`ecart` signé
+> sont refusés en nommant le fournisseur, `non concluant` s'écrit et porte l'entrée, et la copie sans le
+> champ reste `conforme` avec la limite `etat_terminal_non_mesure`. **325** déclare
+> `produit.completude {tableau: "NOTES.md", section: "Phases"}` sur un tableau qui annonce trois phases :
+> la copie qui n'en porte qu'une est refusée en nommant `phase-2.md` et `phase-3.md`, le reçu `non concluant`
+> les porte sous `produit_incomplet`, et la copie complétée passe `conforme`. **326** joue le même geste hors
+> cadre (`cat ../hors-cadre.md`) sur deux copies du jouet, dont l'une a une phrase de plus au §5 qui nomme
+> `terrain/` : la première le refuse au nom de la session, la seconde au nom du cas, avec
+> `cloisonnement.delivre {racines_absentes: ["terrain"], gestes_non_imputes: 1}` et la limite
+> `cadre_non_delivre`. Les mutants forcent `terminalEnErreur` à `false`, `produit_incomplet` à `[]` et
+> `nommeToutesLesRacines` à `true` ; chacun meurt sur la raison attendue, jamais sur une autre. Aucun
+> contrôle existant n'est renuméroté.
+>
+> V0.67 — 2026-10-25 : **316** contrôles ; **323** éprouve le formulaire **interdit par le cas**
+> (ADR-102). Deux bacs du cas jouet, même trace avec une part `question` : A déclare
+> `attendu_details.pause.formulaire: "interdit"` et B ne déclare rien. A refuse `conforme` en nommant le
+> formulaire, puis écrit un reçu `non concluant` qui porte `question_en_formulaire` (seq 3, outil
+> `question`) et une pause mesurée ; B reste `conforme`, sans morsure. Le contrôle est vu **rouge** sur une
+> copie de `run.mjs` privée du motif de refus : `conforme` passe alors en `exit 0`. Aucun contrôle existant
+> n'est renuméroté.
+>
+> V0.66 — 2026-10-24 : **315** contrôles ; **322** éprouve la question en texte **sous sa mise en forme**
+> (ADR-101) : le serveur factice pose `**Would you like to proceed with the implementation plan?**`, et le
+> contrôle exige `exit 0`, le texte de la porte, la première réponse figée, aucun formulaire, « texte,
+> question » et `1 question(s)`. Le même contrôle rend `exit 1` et « s'est arrêtée sans question » sur une
+> copie du module où le test ancien `endsWith("?")` est restauré. Aucun contrôle existant n'est renuméroté.
+>
+> V0.65 — 2026-10-24 : **314** contrôles ; **319** accepte un écart signé par le juge de la promesse et
+> refuse les signatures partielles ; **320** exige la recopie de la branche par `compare` ; **321** refuse
+> une signature sur un cas sans promesse nommée (ADR-100). **290** reste le garde du refus d'un écart sans
+> morsure. Les trois fixtures ne touchent ni le dépôt ni le terrain du jouet.
+>
+> V0.64 — 2026-10-24 : **311** contrôles ; **316** refuse un répertoire de travail d'un autre cas, **317** et
+> **318** mesurent des deux côtés la règle du journal. **274** et **297** nomment `--journal` sur une fixture
+> qui cite leurs runs. La règle lit l'horodatage, pas la qualité de la citation.
+>
+> V0.63 — 2026-10-24 : **308** contrôles ; **315** exige la citation du run `173451` au journal et la note
+> datée d'ADR-094. Le contrôle mesure les deux côtés : une copie du journal privée de la citation doit
+> échouer, sinon il ne mesure rien. Il ne prouve pas la règle « tout reçu est cité » : deux autres runs
+> restent absents du journal ou cités par leur seule heure, et il ne les voit pas.
+>
+> V0.62 — 2026-10-24 : **307** contrôles ; **314** refuse un verdict `non concluant` sans `--cause`.
+> La fixture copie le run gelé du banc, lui ajoute le `last-message.md` que `fin` exige, et attend
+> `exit 1` avec « --cause est requis » avant toute pièce. Le contrôle prouve le refus, pas la justesse
+> des causes nommées : un `inconnu` déclaré est accepté, et le banc ne juge pas s'il est vrai.
+> Aucun contrôle existant n'est renuméroté.
+>
 > V0.61 — 2026-10-24 : **306** contrôles ; **312** et **313** éprouvent `suite --reprendre` (ADR-097).
 > **312** arrête d'abord une `suite` sur un produit nommé et absent, ce qui laisse `faits.json` et la trace
 > sans dernier message ; la reprise doit sortir en `0`, écrire `raw/<cas>/last-message.md`, l'attester par
@@ -337,7 +431,7 @@ discriminant par un message unique fait tomber l'un des deux. Une trace recopié
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 306 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 340 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -369,7 +463,7 @@ texte sans question, et la durée de la pause.
 ## 1. Le lancer
 
 ```text
-bash docs/device/harness/banc-harnais.sh          → 301/301 PASS, exit 0
+bash docs/device/harness/banc-harnais.sh          → 322/322 PASS, exit 0
 node docs/device/harness/liens.mjs                → 0 lien mort, exit 0 (le compte des liens s'imprime)
 bash docs/device/harness/banc-harnais.sh <cas>    → le même banc sur un autre cas gelé
 ```
@@ -447,6 +541,7 @@ une panne d'outil se voir dans un `FAIL`.
 | 175 | la durée de `porte` lue dans les reçus réels du cas jouet : le terrain propre est recopié sous `$B`, le gel du dépôt n'est pas touché, et la sortie doit nommer le nombre de runs, le minimum, le maximum et la fourchette arrondie **recalculés depuis les `receipt.json`** (`ouverte_le` → `recu_ecrit_le`) — un run réel de plus ne fait pas rougir le banc (ADR-053). Le contrôle a nommé en dur « 9 min 42 s à 15 min 50 s » et « 10 à 20 min » jusqu'au 2026-10-22 : deux runs de plus l'ont fait rougir sans qu'aucun code ne change | [ADR-053](DECISIONS.md) |
 | 176 à 178 | la **lecture hors du cadre déclaré** : un `read` de `$RACINE/autre-cas/kit.md` avant le tableau fait refuser `conforme` (176, refus nommé), et un reçu `non concluant` nomme la lecture, son `seq` et son chemin (177) ; une lecture de `$W/terrain/README.md` n'est pas signalée quand `terrain` est déclaré (178, `non concluant` pour la condition 3, pas pour la lecture). Les racines autorisées sont `cloisonnement.lecture.autorisees`, relatives à la racine du cas (ADR-052) ; les commandes `shell` restent hors de la trace normalisée et sont dites en limite | [ADR-049](DECISIONS.md), [ADR-052](DECISIONS.md) |
 | 179 à 190 | le **rapport utilisateur** (ADR-050) : sur une copie du reçu `conforme`, `rapport` écrit un `RAPPORT.md` qui nomme le verdict, le produit, les liens et les preuves (179) ; sur le reçu `non concluant`, il nomme `tableau_absent` et le chemin produit (180) ; un rapport existant est refusé sans `--remplacer` et garde ses octets (181), `--remplacer` le réécrit (182) ; un run sans reçu est refusé sans écrire (183) ; `fin` écrit le rapport automatiquement et refuse une seconde fois quand il est déjà là (184) ; un reçu qui porte `lecture_hors_dossier` est nommé avec son `seq`, son outil et son chemin, et la piste du bac propre (185) ; un reçu qui n'a pas le champ dit qu'il précède l'ADR-049 et ajoute la limite, sans prétendre que les lectures sont propres (186) ; un reçu `ecart` sans falsificateur recopie `output.difference` et en dérive une piste, au lieu de « Aucune action dérivée » (187) ; le même reçu `ecart` porte aussi un falsificateur `tableau_absent`, et la morsure n'efface ni la différence recopiée ni sa piste (188) ; un reçu `ecart` sans falsificateur, sans limite et sans différence garde le repli `Aucune action dérivée ; relire le reçu et le produit.` (189) ; un reçu `non concluant` avec une différence non vide la tait au §5 et ne dérive pas sa piste au §7 (190). Deux appels de 179 rendent le même fichier (`cmp` par empreinte) | [ADR-050](DECISIONS.md) |
+| 324 à 326 | les **trois règles de recevabilité d'un run** (ADR-103, ADR-104, ADR-105), chacune sur un bac neuf du cas jouet — produit remis à zéro, gel et porte propres — puis sur un mutant du harnais dont sa règle est neutralisée, qui doit mourir sur la raison attendue. **324** : un `faits.json` dont `session.etat_terminal` porte `{outcome: "failed", erreur: {type: "provider.free-limit", statut: 429}}` fait refuser `conforme` et `ecart` en nommant le fournisseur, accepte `non concluant`, et la copie sans le champ reste `conforme` avec la limite `etat_terminal_non_mesure`. **325** : un produit dont le tableau `## Phases` de `NOTES.md` annonce `phase-2.md` et `phase-3.md` absents est refusé par `conforme`, le reçu `non concluant` porte les deux sous `produit_incomplet`, et la copie complétée passe. **326** : `cat ../hors-cadre.md` est refusé au nom de la session quand le §5 nomme `terrain/`, au nom du cas quand il ne le nomme pas (`gestes_non_imputes: 1`, limite `cadre_non_delivre`). Mutants : `terminalEnErreur` à `false`, `produit_incomplet` à `[]`, `nommeToutesLesRacines` à `true` | ADR-103, ADR-104, ADR-105 |
 | 191 à 193 | le **bloc `cloisonnement`**, le cadre lu au lieu d'être supposé (ADR-052) : le reçu de 178 porte `lecture.autorisees` avec `terrain` et `framework-origin`, `reseau: interdit` et `fichiers_de_contexte: interdits` (191) ; un cas recopié et re-gelé dont `lecture.autorisees` ne garde que `framework-origin` fait mordre une lecture de `terrain/README.md`, pourtant dans le dossier du cas, et le reçu porte le cadre rétréci (192) ; un cas recopié sans bloc est refusé par `receipt` — « ne déclare aucun bloc cloisonnement » —, sans reçu écrit (193). Le 192 prouve que la liste blanche est lue, le 193 qu'un bloc absent n'est pas remplacé par l'ancien défaut | [ADR-052](DECISIONS.md) |
 | 194 à 201 | les **effets hors cadre**, lus dans le texte des commandes `shell` (ADR-051) : `cat <ailleurs>/projet-brief.md` fait refuser `conforme` et le reçu nomme `shell_hors_dossier` avec la commande et son chemin, puis un `non concluant` s'écrit et `lecture_hors_dossier` reste vide (194) ; `echo x > <ailleurs>/ecrit.txt` donne `shell_ecriture_hors_produit` (195) ; `curl -s http://localhost:8010/mcp` donne `reseau` motif `curl` (196) ; `P=/tmp; echo x > $P/x` donne `shell_non_interpretable` motif « référence non quotée » et la limite qui dit les effets non mesurés (197) ; un `AGENTS.md` neuf sous `terrain` donne `hors_produit` `nature:"contexte"`, `conforme` refusé et `non concluant` accepté (198) ; un `aidddocs/NOTES.md` neuf donne `nature:"produit"`, `conforme` refusé et `ecart` accepté (199) ; `git status`, `cat aidd_docs/memory/api.md`, `true; echo $?`, `echo '$HOME'` et `echo \$HOME` ne mordent pas et laissent `conforme` (200) ; une affectation `T=<playbook>` suivie de `cp "$T" …` et `cp "${T}" …` est résolue dans les deux formes, aucun falsificateur ne mord, et la trace porte les deux `commande` (201). Chaque refus est relu par `rapport` : la morsure au §5, la piste au §7. Les 198 et 199 écrivent dans l'arbre du **jouet** sous `$B`, jamais dans le dépôt | [ADR-051](DECISIONS.md) |
 | 202 à 203 | le **puits `/dev/null`** (ADR-053) : `head -n 2 README.md 2>/dev/null; cp README.md /dev/null; ls -la` ne laisse aucune entrée dans `shell_hors_dossier` ni dans `shell_ecriture_hors_produit`, `conforme` est accepté et la limite nomme le puits (202) ; `cat /dev/nullx; echo x > /dev/nullx` laisse une entrée par chemin dans les deux listes — le nom qui commence par le puits n'est pas le puits —, `conforme` est refusé en nommant `shell_hors_dossier`, et `non concluant` s'écrit (203). Le 203 est le garde-fou du 202 : la règle compare le chemin entier, pas un préfixe | [ADR-053](DECISIONS.md) |
@@ -457,7 +552,11 @@ une panne d'outil se voir dans un `FAIL`.
 | 218 à 221 | **`xargs` et `find -exec` littéraux** (ADR-057) : `echo x | xargs grep -n plan README.md` laisse `conforme` passer — les options d'`xargs` sont sautées et sa commande interne est lue (218) ; `find . -exec cat ../hors-cadre.md ;` fait mordre `shell_hors_dossier`, qui nomme la lecture interne (219) ; `find . -exec cat {} ;` est refusé avec le motif « valeur inconnue » — `{}` n'est pas un chemin (220) ; `find . -exec cat` est refusé avec le motif « non terminée » — le bloc doit se fermer (221). Rétablir le refus d'un bloc fait tomber les quatre ; ignorer les effets internes fait tomber le 219 et le 220 | [ADR-057](DECISIONS.md) |
 | 224 à 227 | **`ouvrir`**, la session ouverte par l'API et la pause jouée par le cas (ADR-059) : sans `gate.json`, `ouvrir` refuse en nommant la porte (224) ; avec un `PATH` vide et aucun `--api`, elle refuse en nommant `opencode` (225) ; contre un serveur factice, elle envoie le texte de `texte-a-remettre.txt` **verbatim** — comparé octet pour octet —, puis la réponse figée du cas comme message **avant** de répondre au formulaire, dont la réponse est l'option `(Recommended)` ; `exit 0`, le fil est imprimé avec « inactive », et le dossier du run est **inchangé** (226) ; un serveur qui pose trois questions pour deux réponses figées fait refuser la troisième (« n'en fige que 2 »), après deux réponses envoyées (227). Le serveur est en `node:http` : aucune session réelle, aucun réseau | [ADR-059](DECISIONS.md) |
 | 254 à 258 | la **question en texte** (spec du 2026-10-22 15:26, ADR-072) : contre le serveur factice des contrôles 224 à 227, un texte `assistant` dont la dernière ligne finit par `?` reçoit la réponse figée **une fois**, `exit 0`, et le bloc nomme la question (254) ; un formulaire répond d'abord, puis une question en texte reçoit la réponse suivante : trois messages, un formulaire, aucune réponse deux fois (255) ; trois questions en texte pour deux réponses figées font refuser la troisième (« n'en fige que 2 »), `exit 1`, sans envoyer de réponse de plus (256) ; un `?` présent seulement dans un bloc de code ne déclenche aucun envoi et le bloc compte zéro question (257) ; un rappel système qui finit par `?` est écarté et le bloc compte zéro question (258). Le serveur factice ne parle à aucun réseau | ADR-072 |
-| 228 à 230 | la **page utilisateur** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les huit sections, une ligne par geste (5), et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](DECISIONS.md) |
+| 228 à 230 | la **page de décision** (`RESULTAT.md`, ADR-061) : sur un reçu synthétique du cas jouet et une lecture déclarée, `rapport` écrit un fichier qui porte les **six sections**, une ligne par clause, et aucun mot du dedans dans le corps — `morsure`, `falsificateur`, `porcelain`, `seq`, `raw/` sont refusés par un contrôle de forme (228) ; un reçu dont `reseau` n'est pas vide et dont `question_sans_reponse` manque affiche **violé** pour le cadre et **non observé** pour l'attente, jamais « tenu » (229) ; deux appels rendent le même octet, et un `RESULTAT.md` déjà présent refuse l'écrasement sans `--remplacer` (230). Le cadre de la session ne se compte plus comme une clause : le `rang` de `lecture.json` rattache chaque mesure à sa clause, et un geste sans rang est la faute du §4. La prose n'est pas éprouvée : le contrat est la forme, les trois états et le déterminisme | [ADR-061](DECISIONS.md) |
+| 327 à 328 | **la page de décision**, sur deux copies de runs réels (spec du 2026-10-25 05:33) : le run non concluant `2026-10-25-032931` rend six sections, soixante lignes au plus, aucun mot interdit, un §4 qui nomme la sonde `../../README.md` et rend la faute à la session, et un §3 dont la dernière ligne est `non jugé` (327) ; un run `conforme` ne porte aucune ligne `violé`, aucun défaut au §4, et son §6 ne corrige pas le skill (328). Mutants : `FAITS_SESSION` renvoyant `skill` fait tomber le 327 par le §4, et une correction du skill dérivant d'une cause absente fait tomber le 328 | [ADR-061](DECISIONS.md), amendé |
+| 331 | **la faute du dispositif dans la page** : sur une copie du run `2026-10-24-213727`, reçu `non concluant`, `causes: [dispositif, cas]`, aucun geste mesuré hors cadre, promesse signée `mord` et `lecture.json` du cas `2026-10-24-213712-defect-racine-terrain`, la page nomme la cause au §1, lui rend la faute (« le dispositif n'a pas mesuré ce run jusqu'au bout »), ne dit plus que personne n'est jugé alors que sa dernière clause est `violé`, et son §4 dit « c'est le dispositif qui n'a pas conclu, pas la session ». Le mutant neutralise la branche : la page retombe sur « ni le skill ni la session ne sont jugés » et meurt sur « §1 ne nomme pas le dispositif » | ADR-061, amendé |
+| 332 | **le dossier du produit, sans sous-dossier** : sur la même copie du run `2026-10-24-213727`, dont le produit est un seul fichier à la racine d'écriture, la page dit « sous `aidd_docs/` » au §5 et n'écrit jamais le nom du fichier suivi d'une barre oblique. Le mutant qui reprend le premier segment du chemin sans distinguer le fichier du dossier écrit `aidd_docs/slugify-keeps-separator-runs.md/` et meurt sur « §5 prend le fichier pour un dossier » | ADR-061, amendé |
+| 329 à 330 | **la promesse signée** (spec du 2026-10-25 06:24) : sur une copie du run non concluant `2026-10-25-032931`, `signer` écrit `promesse-signee.json` avec les quatre pièces du produit, et la page dont la dernière clause est `tenu` nomme le juge ; une seconde copie signée `mord` rend `violé` et « reprendre la branche P » (329). La même copie signée puis `phase-2.md` augmenté d'un octet laisse la page `non jugé`, sa cellule dit « signature non lue », et `signer` refuse une promesse mesurée, un verdict hors domaine, une pièce hors produit, une pièce qui a changé et un second appel sans `--remplacer` (330). Mutants : une page qui ignore la signature tombe sur le contrat, et une page qui la lit sans re-hacher les pièces écrit `tenu` et tombe sur « non jugé » | spec du 2026-10-25 06:24 |
 | 231 à 233 | les **lectures des deux autres cas gelés** (spec du 2026-10-22 08:17, ADR-061) : sur une copie du run promesse `2026-10-21-081957`, la page porte une ligne par geste (5) et les trois états y coexistent — « violé » pour la lecture hors dossier du reçu, « non observé » pour la question qu'il ne mesure pas, et la page sous 80 lignes malgré ses 22 fichiers produits (231) ; sur une copie du run `plan-simple` `2026-10-21-234646`, les cinq gestes sont tenus et aucun n'est violé : toutes les assertions se résolvent sur le reçu réel (232) ; chaque `CASES/*.lecture.json` nomme un cas dont l'attendu existe, déclare au moins un geste et n'emploie que les cinq types du vocabulaire fermé (233). Retirer `lecture.json` au cas promesse fait tomber le 231 seul ; élargir `chemin_contient` au-delà du fichier fait tomber le 232 seul | [ADR-061](DECISIONS.md) |
 | 234 | **une phrase et un conseil par règle** : un reçu synthétique du cas jouet porte les seize clés que les reçus du dépôt portent, `pause_non_tenue` et `shell_invalide` comprises, toutes non tenues ; la page nomme chaque règle en clair, sans identifiant à tiret bas, et rend dix-sept lignes de conseil (une par règle plus celle du second run), tirées du fichier de clés de la fixture. Retirer une phrase de `PHRASES_RECU` fait tomber le contrôle par l'identifiant qui apparaît ; retirer une correction le fait tomber par le compte | spec du 2026-10-22 08:36 |
 | 259 à 262 | **les traces de texte et de commande** (spec du 2026-10-22 22:12, ADR-075) : sur un reçu synthétique et une `lecture.json` de banc, `trace_texte` trouve une décision, cite le tour et la chaîne bornée, rend `violé` sur une chaîne absente ou une autre casse, et `non observé` sans texte assistant (259) ; `finit_par` rend `tenu` sur une question hors bloc, `violé` sur un `?` présent seulement dans un bloc, et `non observé` sur un rappel `<system-reminder>` seul (260) ; `commande_contient` rend `tenu` sur la commande attendue, avec `chemin_contient` quand les deux sont déclarés, `violé` sur une autre commande, et `non observé` sur une part `shell` sans commande (261) ; `verifierLecture` accepte `trace_texte` et `commande_contient`, refuse une assertion sans critère, avec les deux, un critère vide, un `role` hors domaine, un `a_partir_du_tour` nul ou fractionnaire, et le contrôle 233 inclut `trace_texte` (262). Le harnais ne valide pas le contenu d'un JSON, d'un code ou d'un rapport : c'est le travail du juge | ADR-075 |
@@ -495,6 +594,13 @@ le dernier mot change. Trois règles, tenues par les contrôles existants :
   deux se lisent dans le même passage.
 - **Un fait de la machine se lit au gel**, jamais en dur : un contrôle qui écrit `/home/…` en clair cesse
   de suivre un espace de travail déplacé.
+- **Une règle neuve se prouve aussi par mutation.** `mut-harnais <n> <cherché> <remplacé>` construit sous
+  `$B/mutants/<n>/docs/device/harness/` une copie de `run.mjs` où le texte cherché — unique — est remplacé,
+  les autres modules liés : le mutant vit hors du dépôt, et le harnais y dérive la racine du dépôt de son
+  propre chemin, donc l'arborescence `docs/device/harness/` est nécessaire pour que son gel ne refuse pas
+  pour une raison étrangère à la règle. Le contrôle passe au vert quand le fixture, lancé sur le mutant en
+  mode `mutant`, trouve des raisons et que l'une nomme la confrontation attendue. Un contrôle qui survit à
+  la règle retirée ne mesure rien : le mutant qui meurt ailleurs est signalé, avec la liste de ses raisons.
 - **Un échec se nomme**, quand il a des raisons à donner : `controle` attribue à chaque contrôle un
   fichier de détail (`$B/detail.<n>`, qu'un contrôle peut nommer autrement en posant `DETAIL` **avant**
   l'appel), sa commande y écrit une raison par ligne, et `controle` les imprime sous son `FAIL`, préfixées
@@ -576,5 +682,10 @@ le dernier mot change. Trois règles, tenues par les contrôles existants :
   énumère.
   La liste des commandes d'écriture, des clients réseau et des fichiers de contexte n'est pas
   exhaustive : un effet non listé passe, et le reçu le dit en limite.
+- **Les trois règles de recevabilité mesurent ce qu'elles déclarent.** La complétude ne compte que les
+  liens d'une section nommée, l'état terminal ne se lit que chez le client qui l'écrit (opencode), et la
+  livraison du cadre se lit au mot, jamais à l'énoncé de la règle : un §5 qui nomme `terrain` sans interdire
+  d'en sortir passe, et un geste hors du dossier du cas reste imputé. Les mutants prouvent que les contrôles
+  réagissent à la ligne qui porte la règle, pas que la règle est complète.
 - **Rien du dépôt.** Ce n'est ni un crochet, ni une CI, ni un contrôle de l'arbre : rien ne le déclenche
   seul, et il ne vérifie que le harnais (ADR-022). Une dérive du dépôt ne le réveille pas.

@@ -1,65 +1,58 @@
 ---
 name: Résultat — 2026-10-21-173843-plan-simple
-description: non concluant ; 1 règle non tenue ; 5 gestes déclarés
+description: non concluant ; 6 clauses, 5 tenues, 0 violée, 1 non jugée
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-21-173843-plan-simple, 2026-10-22
+# plan-simple — run du 2026-10-22
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 4 tenus, 1 violé, 0 non observé. Le run ne permet pas de conclure.
+**Non concluant.**
+La session a tenu toutes les clauses mesurées du skill, puis un de ses gestes est sorti du cadre ; ce fait ne dit rien du skill.
+Le skill n'est donc ni confirmé ni condamné : il faut rejouer dans un bac clos.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-21-173843-plan-simple`, session opencode, modèle glm-5.3-flash-free, audio-sync-tool, la copie du terrain sous `terrain/` avec son README et sa page Sync, et la révision sous test sous `framework-origin/`. Durée : 12 min 40 s, 3 échanges sur 3, conduite par un agent (Buffy, agent de l'opérateur giak, sur sa consigne du 2026-10-22).
+La trace couvre 9 min 52 s, du premier message à 17:40 au dernier à 17:50.
+1. 17:40 elle fait 24 lectures, dont `SKILL.md` et ses 4 actions, et 14 fichiers sous `terrain`.
+2. 17:41 une commande regarde hors du dossier.
+3. 17:42 elle rend un tableau de 24 lignes sur 2 colonnes et pose sa question.
+4. 17:44 vous répondez « Continue : écris le plan et ses phases sous aidd_docs/tasks/, sans … », et elle écrit 4 fichiers, 17 Ko.
+5. 17:49 elle relit et retouche ces fichiers 10 fois.
+6. 17:50 elle rend son dernier message, qui nomme les 4 chemins écrits, et s'arrête.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-La session lit le skill 01-plan de la révision sous test et le README du terrain, rend un tableau d'une ligne par fichier lu et attend l'accord de l'opérateur sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/` un `plan.md` et un `phase-<n>.md` par phase pour un bouton « copier tous les manquants » de la page Sync, et rien d'autre.
-
-Produit attendu : un dossier `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/` contenant `plan.md` et un `phase-<n>.md` par phase ; aucun autre fichier sous cette racine.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire le skill 01-plan et ses actions | « skills/01-plan/SKILL.md » lu | tenu |
-| lire le README et les fichiers du terrain | « terrain/README.md » lu | tenu |
-| montrer un tableau et attendre l'accord | question posée ; aucune violation mesurée | tenu |
-| écrire le plan et ses phases sous aidd_docs/tasks/ | « plan.md » produit ; aucune violation mesurée | tenu |
-| rester dans le dossier du cas, sans réseau | une lecture est sortie du dossier autorisé ; aucune violation mesurée | **violé** |
+| lire le skill 01-plan et les fichiers d'action qu'il nomme, dans `framework-origin` | « skills/01-plan/SKILL.md » lu du tour 2 | tenu |
+| lire le README et les fichiers du terrain utiles au plan | « terrain/README.md » lu du tour 7 | tenu |
+| rendre un tableau d'une ligne par fichier lu et attendre l'accord | question posée du tour 15 ; tableau rendu ; aucune écriture avant le tableau | tenu |
+| après la réponse figée, écrire le plan et ses phases sous `aidd_docs/tasks/` | « plan.md » produit ; aucun fichier hors produit | tenu |
+| terminer par un court rapport de ce qui a été écrit | texte du tour 31 : « plan.md » | tenu |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-## 5. Ce que ça veut dire
+## 4. Pourquoi ce verdict, et à qui la faute
 
-Règles non tenues : une lecture est sortie du dossier autorisé.
-Le reçu ne peut pas trancher : ce que le cas attend n'a pas pu être constaté, ou une règle bloque le verdict.
+Une lecture est sortie du dossier autorisé (`templates/index.html`). C'est un fait de session : ce que le run mesure ne condamne pas le skill. Une seule sortie interdit le verdict favorable.
 
-## 6. Ce que tu peux décider
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-- **Utilisable en l'état ?** Non : ce run ne démontre ni que le skill tient, ni qu'il échoue. Il faut rejouer.
+**Dit :**
+- Le skill fait lire avant d'écrire : 24 lectures, la première à 17:40.
+- Le produit demandé est là : 4 fichiers, 17 Ko, sous `aidd_docs/tasks/`.
 
-**À corriger.**
-- une lecture est sortie du dossier : le cas doit nommer les racines permises, ou le skill doit dire où lire
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Ce qu'une personne aurait fait à la place de l'agent qui a conduit ce run.
 
-## 7. Ce que ce run ne dit pas
+## 6. Trois gestes au plus
 
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- La conduite est déclarée par un agent : ce run ne dit rien de ce qu'une personne aurait fait.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
+- **Skill** : rien à corriger de ce run ; à éprouver, une ligne qui dise de ne pas lire hors du dossier de travail.
+- **Cas** : nommer le répertoire de travail dans le texte remis, pour que la session sache où elle travaille.
+- **Protocole** : rejouer le même cas sur un second run.
 
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
-| Fichier produit | [tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-1.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-1.md) |
-| Fichier produit | [tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-2.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-2.md) |
-| Fichier produit | [tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-3.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_22_copier-tous-les-manquants/phase-3.md) |
-| Fichier produit | [tasks/2026_10/2026_10_22_copier-tous-les-manquants/plan.md](raw/2026-10-21-173843-plan-simple/tasks/2026_10/2026_10_22_copier-tous-les-manquants/plan.md) |
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

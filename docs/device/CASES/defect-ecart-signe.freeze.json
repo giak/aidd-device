@@ -1,0 +1,107 @@
+{
+  "cas": "defect-ecart-signe",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-10-24T22:33:54+02:00",
+    "preuve": "consigne de l'opérateur du 2026-10-24 : rejouer 09-defect sur un cas neuf et écrire l'écart signé"
+  },
+  "racine_espace_de_travail": "/home/giak/aidd-device-work-2026-10-24",
+  "gele_le": "2026-10-24T22:33:54.372546130+0200",
+  "gele_le_epoch": 1792874034,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case defect-ecart-signe --cases docs/device/CASES --racine /home/giak/aidd-device-work-2026-10-24 --arbre framework-origin=/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/origine/framework --arbre terrain=/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/origine/terrain --ref slugify.py --ref-root /home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/origine/terrain --confirme-par giak --confirme-preuve \"consigne de l'opérateur du 2026-10-24 : rejouer 09-defect sur un cas neuf et écrire l'écart signé\"",
+  "empreinte": "8a98a42d45840a8f29f0b9e6e56d0884a301c1b4ab1cd05dcb8f6a699d1851e9",
+  "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/defect-ecart-signe.expected.json",
+      "sha256": "4cf69e80cd1a813fa124afd7d65b46e57a507c4118be5f493e760c2d2b91f840",
+      "taille": 9088,
+      "birth": "2026-10-24 22:32:32.862772262 +0200",
+      "birth_epoch": 1792873952
+    },
+    {
+      "role": "demande",
+      "chemin": "docs/device/CASES/defect-ecart-signe.request.md",
+      "sha256": "2842969f6fb48519469e364ceda506d5f3e57c0b9dd78c43910b37d0e6a683c4",
+      "taille": 4554,
+      "birth": "2026-10-24 22:32:32.859772138 +0200",
+      "birth_epoch": 1792873952
+    }
+  ],
+  "references": [
+    {
+      "arbre": "terrain",
+      "chemin": "slugify.py",
+      "sha256": "10cfeccf59e36531bd5bcd97647a845beff6eeca7bbb5ea46f4be84081da099a",
+      "taille": 259,
+      "birth": "2026-10-24 22:32:30.003000572 +0200",
+      "birth_epoch": 1792873950
+    }
+  ],
+  "arbres": [
+    {
+      "label": "framework-origin",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/origine/framework",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "terrain",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/origine/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    },
+    {
+      "label": "revision-sous-test",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/framework-origin",
+      "head": "fe48de12",
+      "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+      "porcelain": [
+        "M plugins/aidd-refine/skills/03-shadow-areas/actions/02-render-report.md",
+        "?? aidd_docs/MEGA-PROMPT-TEST-AIDD-v6.md"
+      ],
+      "remotes": [
+        {
+          "nom": "origin",
+          "url": "https://github.com/giak/framework.git"
+        },
+        {
+          "nom": "upstream",
+          "url": "https://github.com/ai-driven-dev/framework.git"
+        }
+      ],
+      "refs_distants": [
+        "origin/gel/2026-10-15-fe48de12"
+      ]
+    },
+    {
+      "label": "travail",
+      "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain",
+      "head": "6c42d4d",
+      "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+      "porcelain": [],
+      "remotes": [],
+      "refs_distants": []
+    }
+  ]
+}

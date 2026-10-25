@@ -1,0 +1,26 @@
+{
+  "type": "gate",
+  "cas": "defect-ecart-signe",
+  "passe_le": "2026-10-24T22:34:04.800392660+0200",
+  "passe_le_epoch": 1792874044,
+  "repertoire": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain",
+  "gel": {
+    "chemin": "docs/device/CASES/defect-ecart-signe.freeze.json",
+    "empreinte": "8a98a42d45840a8f29f0b9e6e56d0884a301c1b4ab1cd05dcb8f6a699d1851e9",
+    "gele_le_epoch": 1792874034
+  },
+  "arbre": {
+    "label": "travail",
+    "chemin": "/home/giak/aidd-device-work-2026-10-24/defect-ecart-signe/terrain",
+    "head": "6c42d4d",
+    "head_complet": "6c42d4d8c7e0c6369bc488669f8d1953ba7297f7",
+    "porcelain": [],
+    "remotes": [],
+    "refs_distants": []
+  },
+  "texte": {
+    "chemin": "docs/device/runs/2026-10-24-223404-8a98a42d-2f08b48/texte-a-remettre.txt",
+    "sha256": "db8f94cfe31bcffd9379d4408cb34646f4895150a3896b965a2b1b079e8fd4a5",
+    "octets": 1259
+  }
+}

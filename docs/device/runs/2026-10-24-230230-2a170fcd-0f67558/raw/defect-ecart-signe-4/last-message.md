@@ -1,0 +1,1 @@
+Defect recorded at `aidd_docs/backlog/defects/slugify-leading-dashes.md` with state **capture**. No further questions.

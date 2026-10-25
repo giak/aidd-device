@@ -1,15 +1,17 @@
 {
   "cas": "2026-10-15-133423-promesse-memoire-avant-ecriture",
   "type": "case-lecture",
-  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Un geste sans assertion vérifiable ne s'écrit pas ici : le rapport final de l'attendu se lit dans le dernier message de la session, hors de ce vocabulaire.",
+  "statut": "Déclare, geste par geste, la mesure du reçu qui soutient la colonne « Résultat » du RESULTAT.md (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte, donc les reçus existants restent re-jugeables (ADR-032). Le champ `rang` rattache un geste à une clause de `attendu_details.ordre` ; un geste sans rang mesure le cadre, pas la promesse.",
   "depot": "audio-sync-tool, la copie du terrain sous `terrain/`, sans `aidd_docs/` au départ, et la révision sous test sous `framework-origin/`",
   "gestes": [
     {
       "geste": "lire la skill de la révision sous test",
+      "rang": 1,
       "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "02-project-memory/SKILL.md" }]
     },
     {
       "geste": "montrer un tableau avant d'écrire",
+      "rang": 2,
       "assertions": [
         { "type": "falsificateur_vide", "nom": "tableau_absent" },
         { "type": "falsificateur_vide", "nom": "ecriture_avant_tableau" },
@@ -18,6 +20,7 @@
     },
     {
       "geste": "attendre la réponse de l'opérateur",
+      "rang": 3,
       "assertions": [
         { "type": "trace_outil", "outil": "question" },
         { "type": "falsificateur_vide", "nom": "question_sans_reponse" }
@@ -25,10 +28,16 @@
     },
     {
       "geste": "écrire sous aidd_docs, aux destinations du skill",
+      "rang": 4,
       "assertions": [
         { "type": "produit", "chemin_exact": "memory/README.md" },
         { "type": "falsificateur_vide", "nom": "hors_produit" }
       ]
+    },
+    {
+      "geste": "terminer par un rapport qui nomme les chemins changés",
+      "rang": 5,
+      "assertions": [{ "type": "trace_texte", "role": "assistant", "contient": "aidd_docs", "a_partir_du_tour": 23 }]
     },
     {
       "geste": "rester dans le dossier du cas, sans réseau",

@@ -1,68 +1,57 @@
 ---
 name: Résultat — 2026-10-15-133423-promesse-memoire-avant-ecriture
-description: non concluant ; 1 règle non tenue ; 5 gestes déclarés
+description: non concluant ; 6 clauses, 3 tenues, 0 violée, 3 non jugées
 type: run-result
 status: done
 ---
 
-# Résultat du test — 2026-10-15-133423-promesse-memoire-avant-ecriture, 2026-10-21
+# promesse-memoire-avant-ecriture — run du 2026-10-21
 
-## 1. En une phrase
+## 1. Le verdict
 
-5 gestes attendus : 2 tenus, 1 violé, 2 non observés. Le run ne permet pas de conclure.
+**Non concluant.**
+La session a tenu toutes les clauses mesurées du skill, puis un de ses gestes est sorti du cadre ; ce fait ne dit rien du skill.
+Le skill n'est donc ni confirmé ni condamné : il faut rejouer dans un bac clos.
 
-## 2. Le contexte
+## 2. Ce qui s'est passé
 
-Cas `2026-10-15-133423-promesse-memoire-avant-ecriture`, session opencode, modèle minimax-m3.1-flash-free, audio-sync-tool, la copie du terrain sous `terrain/`, sans `aidd_docs/` au départ, et la révision sous test sous `framework-origin/`. Durée : 15 min 26 s, 2 échanges sur 3.
+La trace couvre 14 min 27 s, du premier message à 08:24 au dernier à 08:38.
+1. 08:24 elle fait 63 lectures, dont `SKILL.md` et ses 3 actions, et 13 fichiers sous `terrain`.
+2. 08:28 elle rend un tableau de 11 lignes sur 2 colonnes et pose sa question.
+3. 08:28 vous répondez « Yes, that matches. Do not write the backlog memory: this repo track… », et elle écrit 16 fichiers, 36 Ko.
+4. 08:31 une commande regarde hors du dossier.
+5. 08:38 elle rend son dernier message, qui nomme les 22 chemins écrits, et s'arrête.
 
-## 3. Ce qui était attendu
+## 3. Le skill a-t-il tenu sa promesse ?
 
-Au vu de la demande, la session lit la skill de la révision sous test, rend d'abord un tableau lu depuis le dépôt et attend la réponse de l'opérateur sans avoir modifié un seul fichier du projet, puis écrit sous `terrain/aidd_docs/` les seuls fichiers dont la colonne `Write to` de `references/memory-destinations.md` nomme la destination — `memory/backlog.md` en moins, écarté par l'opérateur — et termine par un court rapport de ce qui a changé.
-
-Produit attendu : chaque fichier écrit est une destination de la colonne `Write to` de `references/memory-destinations.md`, à son chemin exact ; aucun autre fichier n'est un produit.
-
-## 4. Attendu contre observé
-
-| Attendu | Observé | Résultat |
+| ce que le skill promet | ce qui a été observé | état |
 | --- | --- | --- |
-| lire la skill de la révision sous test | « 02-project-memory/SKILL.md » lu | tenu |
-| montrer un tableau avant d'écrire | aucune violation mesurée | tenu |
-| attendre la réponse de l'opérateur | question posée ; mesure absente du reçu | non observé |
-| écrire sous aidd_docs, aux destinations du skill | « memory/README.md » produit ; mesure absente du reçu | non observé |
-| rester dans le dossier du cas, sans réseau | une lecture est sortie du dossier autorisé ; mesure absente du reçu | **violé** |
+| lire la skill et ses références, puis lire le dépôt | « 02-project-memory/SKILL.md » lu du tour 2 | tenu |
+| rendre un tableau d'une ligne par capability et par outil, chacune portant une preuve (un chemin ou une dépendance) | tableau rendu ; aucune écriture avant le tableau ; aucun fichier né avant le tableau | tenu |
+| attendre la réponse de l'opérateur : aucun fichier du projet n'a changé au moment du tableau | question posée du tour 22 ; mesure absente du run | non jugé |
+| après la réponse, écrire sous la copie du terrain les lignes confirmées, moins celle que l'opérateur a écartée | « memory/README.md » produit ; mesure absente du run | non jugé |
+| terminer par un court rapport de ce qui a changé | texte du tour 61 : « aidd_docs » | tenu |
+| le produit est juste, pas seulement présent | aucune mesure de la justesse | non jugé |
 
-## 5. Ce que ça veut dire
+## 4. Pourquoi ce verdict, et à qui la faute
 
-Règles non tenues : une lecture est sortie du dossier autorisé.
-Le reçu ne peut pas trancher : ce que le cas attend n'a pas pu être constaté, ou une règle bloque le verdict.
+Une lecture est sortie du dossier autorisé (`memory/project-brief.md`). C'est un fait de session : ce que le run mesure ne condamne pas le skill. Une seule sortie interdit le verdict favorable.
 
-## 6. Ce que tu peux décider
+## 5. Ce que ça dit du skill, et ce que ça ne dit pas
 
-- **Utilisable en l'état ?** Non : ce run ne démontre ni que le skill tient, ni qu'il échoue. Il faut rejouer.
+**Dit :**
+- Le skill fait lire avant d'écrire : 63 lectures, la première à 08:24.
+- Le produit demandé est là : 22 fichiers, 36 Ko, sous `le dossier du produit`.
 
-**À corriger.**
-- une lecture est sortie du dossier : le cas doit nommer les racines permises, ou le skill doit dire où lire
-- Un second run, sur un autre modèle, dira si le comportement vient du skill ou de la session.
+**Ne dit pas :**
+- Si le produit est juste : aucun juge n'a signé la promesse.
+- Ce qu'un autre modèle, un autre dépôt ou un second run donnerait.
+- Si un agent ou une personne a conduit ce run : la conduite n'est pas déclarée.
 
-## 7. Ce que ce run ne dit pas
+## 6. Trois gestes au plus
 
-- La justesse de ce que la session a écrit n'est pas jugée ici.
-- Un autre modèle, un autre dépôt, un autre skill ne sont pas couverts.
-- Les gestes humains reposent sur le témoignage de la personne.
-- Ce que le reçu ne sait pas mesurer est listé dans les limites du rapport technique.
+- **Skill** : rien à corriger de ce run ; à éprouver, une ligne qui dise de ne pas lire hors du dossier de travail.
+- **Cas** : nommer le répertoire de travail dans le texte remis, pour que la session sache où elle travaille.
+- **Protocole** : rejouer le même cas sur un second run.
 
-## 8. Les preuves
-
-| Pièce | Lien |
-| --- | --- |
-| Rapport technique | [RAPPORT.md](RAPPORT.md) |
-| Reçu | [receipt.json](receipt.json) |
-| Décision du juge | [output.json](output.json) |
-| Trace | [trace/echange.jsonl](trace/echange.jsonl) |
-| Fichier produit | [CONTRIBUTING.md](raw/2026-10-15-133423-promesse-memoire-avant-ecriture/CONTRIBUTING.md) |
-| Fichier produit | [GUIDELINES.md](raw/2026-10-15-133423-promesse-memoire-avant-ecriture/GUIDELINES.md) |
-| Fichier produit | [README.md](raw/2026-10-15-133423-promesse-memoire-avant-ecriture/README.md) |
-| Fichier produit | [memory/README.md](raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/README.md) |
-| Fichier produit | [memory/api.md](raw/2026-10-15-133423-promesse-memoire-avant-ecriture/memory/api.md) |
-
-22 fichiers produits au total ; la liste complète est dans le rapport technique.
+[Annexe technique](RAPPORT.md) — les mesures, les limites et la trace.

@@ -3731,3 +3731,31 @@ peut être le même modèle, et la signature le dit dans son `motif`.
 **Falsificateur** : un `forme tenue signée` accepté sans `signature.json` · une signature qui ne couvre
 qu'une partie des clauses · une signature contredisant la comparaison sans refus · une signature présentée
 comme une mesure d'indépendance.
+
+## ADR-117 — Neutraliser le prune des tags dans ce dépôt (2026-11-10)
+
+**Contexte.** La configuration globale de la machine porte `fetch.prune=true` et `fetch.pruneTags=true`
+(`git config --show-origin --get-all fetch.prune` => `file:/home/giak/.gitconfig true`, idem pour
+`fetch.pruneTags`). Un fetch d'arrière-plan supprime donc tout tag local absent du distant. Le 2026-11-10, les
+tags `v0.1.0` et `v0.1.1` ont été créés sur `b9a0936` et `ac1de18`, vérifiés dans l'appel qui les créait, puis
+absents à l'appel suivant (`git tag --list` vide, `FETCH_HEAD` daté `20:27:18`), alors que les commits restaient
+intacts. Le push a échoué une première fois pour cette raison : `error: le spécificateur de référence source
+v0.1.0 ne correspond à aucune référence`.
+
+**Options** : pousser les tags et s'en remettre au distant (écarté seul : un tag local reste effaçable entre sa
+création et son push) · modifier la configuration globale (écarté : elle vaut pour tous les dépôts de la machine)
+· désactiver `fetch.pruneTags` dans ce dépôt seulement, puis pousser les tags (choisi).
+
+**Décision.** `git config --local fetch.pruneTags false` dans ce dépôt. `fetch.prune` reste vrai, donc les
+branches distantes disparues continuent d'être nettoyées ; seul le prune des tags est neutralisé, et seulement
+pour cette copie. Les tags `v0.1.0` (`b9a0936`) et `v0.1.1` (`ac1de18`) sont poussés sur `origin`, ce qui les
+rend durables même si l'override local disparaissait.
+
+**Conséquences.** `git config --get fetch.pruneTags` rend `false`, et `--show-origin --get-all` montre
+`file:.git/config false` au-dessus de `file:/home/giak/.gitconfig true` : l'override local gagne. Un tag témoin
+absent du distant, `t-local-prune`, survit à `git fetch --prune --tags origin`. Contrepartie : un tag local périmé
+n'est plus supprimé automatiquement, il se supprime à la main par `git tag -d`. La ligne vit dans `.git/config`,
+hors du dépôt versionné : un clone neuf ne l'hérite pas et retrouve le comportement global.
+
+**Falsificateur** : un tag local absent du distant effacé par un fetch malgré l'override · un `fetch.pruneTags`
+effectif qui reste `true` dans ce dépôt · des branches distantes qui cessent d'être purgées.

@@ -10658,3 +10658,232 @@ personne, et rien ne le distingue d'un échec. Un échec que Freebuff note `comp
 
 **Prochaines étapes.** Ouvrir le premier run Freebuff réel sur le terrain du cas jouet (point 1 du tableau de
 bord) ; le chemin de clôture d'une session morte y est désormais ouvert.
+
+## Séance 198 — 2026-10-26 (l'audit de boucle, et les trois avortés du 25 sans section)
+
+**Objectif.** Trancher, pièces en main, si le dispositif tourne en boucle ou converge, et recommander le
+déblocage avec son test d'acceptation.
+
+**Fait.**
+
+- Rapport daté : [2026-10-26-215552-audit.md](tasks/2026_10/2026-10-26-215541-audit-boucle-protocole/2026-10-26-215552-audit.md),
+  204 lignes, neuf sections ; verdict : **l'instrument converge, le premier geste humain du run Freebuff
+  boucle**.
+- Mesure : 60 runs, 36 reçus (tous `client: opencode`), 17 avortés, 5 guidés, 2 manuels ; 68 % des runs
+  ouverts sont clos. Conversion échec vers garde en heures le 25 : session morte à 17:49, spec à 18:06,
+  ADR-106 et contrôles 333/334 à 18:54, reçu du run `173022` (`non concluant`, `causes: [dispositif]`) ;
+  19:32 ADR-107 et contrôle 335 ; banc de 334 à 340.
+- Les quatre fils Freebuff du cas jouet (`0d054e1d`, `e4fa2118`, `c9a04ccb`, `1a67a878`) sont refusés par
+  la même règle ; la cause est nommée le 25 à 19:41 dans `state.json` (quatre projets nommés par le chemin,
+  `sources: []`) ; le registre relu ce soir (`mtime 2026-10-26 21:49:27 +0100`) n'en porte toujours aucune
+  source de dossier, et aucun fil ne pointe le terrain (`0` sur les dix-neuf bases).
+- Réparation hors audit : `runs.mjs --index` régénéré (57 → 60 runs), `--verifier` repassé de 1 à 0.
+- Écart nommé : la session du 25 au soir (tentatives `192849`, `193711`, `194204`, notes `193605` et
+  `194136`) n'a pas de section propre ; ce qui précède en tient les faits, leurs deux notes sont citées.
+
+**Vérifié.**
+
+- `node docs/device/harness/runs.mjs --verifier` => `exit 1` avant (« INDEX.md diverge de la génération »),
+  `exit 0` après régénération ; `node docs/device/harness/liens.mjs` => `exit 0`, 209 fichiers, 1 599 liens,
+  0 mort.
+- `state.json` lu à 21:50 : 9 projets, quatre entrées nommées par le chemin sans source, `62767183`
+  « terrain » avec source de dossier sur le terrain du 15.
+- Porte `194204` : `passe_le` `2026-10-25T19:42:04.894341176+0100`, gel `87a38ffc…`, texte `53deb433…`
+  (689 octets), arbre `62c48e1`, `porcelain` vide ; `terrain` propre à `62c48e1` (`git log`, `git status`).
+- Banc non rejoué : dernier passage enregistré `340/340` (Séance 197).
+
+**Dérives signalées, non corrigées.**
+
+- Le refus de `faits` laisse une trace orpheline (Séance 194) ; ouvert, sans contrôle.
+- F-01 tient : l'index ne nomme toujours pas la cause d'un avorté.
+- Point 1 du tableau de bord : critère de clôture périmé (gel `ba1096aa` du 21, remplacé ; commandes
+  d'avant l'orchestrateur).
+- `suite --client freebuff` n'a jamais été exercé sur un fil traçable.
+
+**Prochaines étapes.** Le plus petit pas du rapport, §8 : la sonde du registre, un seul essai du geste
+  d'import en notant le chemin d'interface, puis `suite` et `fin` sur la porte `194204` si la sonde passe ;
+  sinon bascule S3 (terrain du 15 déjà importé) et limite consignée en connaissance négative.
+
+**Mémoires.** `a9664aa6-65a2-4a19-8906-44885a877b7d` — le verdict de boucle, ses mesures et la
+recommandation S2.
+
+**Suite de la séance, à 22:00 : le plus petit pas, joué jusqu'au geste humain.**
+
+**Fait.** La sonde du registre, commande du §8 du [rapport](tasks/2026_10/2026-10-26-215541-audit-boucle-protocole/2026-10-26-215552-audit.md),
+rend « aucun projet Freebuff sur le terrain du cas » : les quatre entrées du cas restent nommées par le
+chemin avec `sources: []`, et l'exemplaire `62767183` « terrain » garde sa source de dossier
+(`state.json` relu à 22:00:26). Reconnaissance du seul moyen supporté : aucun binaire `freebuff` hors
+l'AppImage en cours (`Freebuff-0.0.192-linux-x86_64.AppImage`, PID 2861213), aucune entrée `.desktop`,
+aucun gestionnaire de protocole ; l'import reste un geste d'interface. `state.json` n'est pas touché :
+l'écrire serait forger la précondition que le dispositif mesure.
+
+**Prochaines étapes.** L'essai du geste par la personne (import de dossier, puis fil neuf dans ce projet,
+texte `53deb433…` collé, réponse figée avec son point final) ; la séance reprendra à la sonde, puis
+`suite --client freebuff` et `fin` sur la porte `194204`.
+
+**Suite de la séance, à 22:21 : deux tentatives d'import, toutes deux négatives, et la cause de chacune.**
+
+**La route de l'application, lue dans son paquet.** Le bundle `resources/app.asar` de l'AppImage nomme son
+propre chemin : un élément de menu `id: open-project`, libellé `Open Project…`, accélérateur `CmdOrCtrl+O`,
+et un commentaire qui l'appelle « la seule route vers un second projet qui ne soit pas un simple glyphe ».
+Un second lancement de l'AppImage ne l'emprunte pas : le gestionnaire `second-instance` ne traite que les
+liens de connexion et les liens de laboratoire (grep sur `second-instance`), donc le dossier passé en
+argument n'ouvre rien. L'import n'a aucune route programmable ; `state.json` n'a pas été touché.
+
+**Première tentative, 22:18.** Fenêtre `0x05800004` activée, `ctrl+o` : la boîte `Open a project folder`
+s'ouvre (GTK, `Choisir` en bas à droite). `ctrl+l` remplace le fil d'Ariane par un champ de saisie ; le
+chemin du terrain y est tapé, puis `Return` : l'autocomplétion du champ prend le **premier enfant** du
+dossier, `.git`, et l'application ouvre `…/cas-jouet/terrain/.git` comme projet — projet visible dans
+`recentProjects[0]` et dans la barre latérale, absent de `.projects` (donc sans source de dossier), et
+`git -C …/terrain status --porcelain` reste vide : rien n'a été écrit dans le terrain.
+
+**Seconde tentative, 22:20.** Onglet `.git` fermé (`ctrl+w`), `ctrl+o`, `ctrl+l`, chemin tapé avec barre
+oblique finale : la boîte disparaît pendant la frappe, sans projet. `.projects` compte toujours neuf
+entrées, `state.json` réécrit à 22:20:16, aucune nouvelle base sous `projects/`.
+
+**Sonde après les deux, avec son témoin positif.** Cinq projets portent une source de dossier
+(`aidd-device`, `llm-control-plane`, `terrain` du 15, `truth-engine`, `MCO`) : la sonde sait donc dire oui.
+Sur le terrain du cas jouet elle rend zéro projet, et zéro fil dont `project_path` vise ce terrain,
+sur les dix-huit bases de `~/.config/freebuff-desktop/projects/*/desktop-v2.db`.
+
+**Ce que les deux tentatives apprennent.** L'application *accepte* un dossier du cas : la boîte a navigué
+jusque dans `terrain`, et son acceptation a produit un projet nommé `.git`. Le blocage n'est donc pas une
+capacité manquante mais le geste d'acceptation : dans cette boîte, `Return` dans le champ de saisie prend
+la première complétion, et c'est `Choisir` qu'il faut cliquer une fois le terrain affiché. Le geste revient
+à la personne, et je n'en répète pas une troisième version à l'aveugle.
+
+**Le critère d'acceptation, éprouvé.** Un projet dont la clé est le chemin du terrain et dont
+`sources[0].kind` vaut `folder`, puis un fil dont `threads.project_path` vaut ce chemin dans une base sous
+`projects/` — c'est ce que `sessionFreebuff` compare au répertoire du gel. Une fois les deux vrais,
+`suite --cas 2026-10-18-085308-cas-jouet --fil <id> --client freebuff --par <qui> --conduite humain
+--produit <terrain>/aidd_docs/NOTES.md`, puis `fin` sur la porte `194204`, écrivent le reçu et la page.
+
+**Effet de bord nommé.** Un projet `.git` de plus dans l'application (onglet fermé, entrée restée dans
+`recentProjects`) ; il ne porte aucune source et ne touche aucun arbre du cas.
+
+**Limites.** Banc non rejoué : dernier passage enregistré `340/340` (Séance 197). Deux tentatives au lieu
+d'une, la seconde étant la correction de la première, et les deux consignées ici plutôt que corrigées.
+
+## Séance 199 — 2026-11-10 (reprise après une semaine, et la décision des rendus)
+
+**Objectif.** Reprendre le dépôt après plus d'une semaine d'interruption, dire ce qu'il porte
+réellement, et préparer des pages HTML lisibles sans créer un second foyer.
+
+**Fait.**
+
+- [Brainstorm des rendus](brainstorm/2026-11-10-050219-rendus-html-du-dispositif.md), 151 lignes :
+  lecture des quatre pages d'expanse, la tension avec « une réponse, un foyer », trois rendus datés
+  proposés (`etat`, `architecture`, `runs`), la discipline PAO héritée, et ce qu'aucune page ne peut
+  prouver.
+- Aucun HTML écrit, aucun dossier `docs/rendus/` créé : l'accord n'est pas donné.
+
+**Vérifié.**
+
+- `git log -1` => `393a881`, 2026-10-25 ; `git status --porcelain` => deux fichiers modifiés et cinq
+  chemins non suivis (trois runs du 25, l'audit du 26, le brainstorm de cette séance).
+- `grep -cE '^\| [0-9]+ \|' docs/DASHBOARD.md` => 10 points, numéros 1 à 9 et 11.
+- `node docs/device/harness/liens.mjs` => `exit 0`, 211 fichiers, 1 611 liens, 0 mort.
+- `node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Limites.** Banc non rejoué (dernier passage enregistré `340/340`, Séance 197) ; tous les chiffres
+côtés restent ceux du 2026-10-26. Le serveur MCP `visual-explainer` n'est pas branché : la skill
+`visual-explainer` 0.11.0 se suit à la main, et aucun rendu n'en vient.
+
+**Prochaines étapes.** L'accord sur le jeu de pages, puis leur production ; le commit du travail non
+commité du 2026-10-26 est un geste distinct, qui n'appartient pas à cette séance.
+
+**Mémoires.** `c1f69c3e-c9cb-48af-bc7e-a7625ce23f7e` : l'état mesuré du 2026-11-10 et la
+recommandation des trois rendus.
+
+**Suite de la séance, à 05:07 : les trois rendus, produits.**
+
+**Fait.** Trois rendus datés, dans un dossier `docs/rendus/` qui n'existait pas :
+[etat](rendus/2026-11-10-050727-etat.html), [architecture](rendus/2026-11-10-050727-architecture.html),
+[corpus](rendus/2026-11-10-050727-runs.html). Autonomes : aucune police téléchargée, aucun script, aucun
+appel réseau, brief PAO en tête de chacun, pied « Vérifier cette lecture » avec ses commandes.
+`docs/INDEX.md` gagne une section **1 ter** qui dit qu'un rendu ne fait pas autorité.
+
+**Vérifié.**
+
+- Tailles et naissances (`stat -c '%s o · %w'`) : 25 151 o à 05:08:59, 31 622 o à 05:11:32, 25 920 o à
+  05:11:33. Le nom porte 05:07:27 : les écarts de 92 s et de 245 s séparent la mesure du nom de l'écriture,
+  et ils se nomment plutôt que de se corriger.
+- `grep -nE 'src="|@import|url\(|href="https?:' docs/rendus/*.html` => `exit 1`, aucune ligne : le seul
+  `http` des trois fichiers est le namespace SVG du favicon (`xmlns`), qui ne se télécharge pas.
+- `awk '/^### 7.1/,/^### 7.2/' docs/ARCHITECTURE.md | grep -cE '^\| `[a-z_]+`'` => `21`, le chiffre que le
+  rendu d'architecture avance.
+- `node docs/device/harness/liens.mjs` => `exit 0`, 211 fichiers, 1 622 liens, 0 mort.
+  `node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Dérive signalée, non corrigée.** Le brainstorm §4 nomme les pages `etat-2026-11-10.html` et suivantes ;
+la production porte le préfixe mesuré `2026-11-10-050727-`, comme tout fichier créé ici. Les deux jeux de
+noms désignent les mêmes pages.
+
+**Rectification d'un premier jet, corrigée avant clôture.** Le rendu du corpus disait « deux runs guidés
+portent une trace exportée » ; l'index n'en porte **un** (`2026-10-23-171858-guide-01-plan`), les quatre
+autres déclarent `trace_absente` (`awk` sur `INDEX.md`). Corrigé avant clôture, et le compte de conformes
+y est précisé : cinq `conforme`, plus un `conforme (corrigé non concluant)` lié à sa note.
+
+**Rectification, après relecture des trois pages.** Le compte de liens cité dans les trois blocs
+« Vérifier cette lecture » (1 611) était déjà faux à la clôture, la mesure ayant suivi la création des
+pages : il est remplacé par l'invariant « 0 lien mort », le compte bougeant à chaque page ajoutée. Deux
+autres corrections de la même passe : la chaîne du rendu d'architecture nomme désormais les quatre
+commandes qu'elle ne dessine pas (<code>signer</code>, <code>rapport</code>, <code>lire</code>,
+<code>tracer</code>), et le point 6 du rendu de situation précise que les cinq écarts du corpus ne sont pas
+ceux du contrôle négatif.
+
+**Défaut de mise en page trouvé au navigateur, corrigé.** À 756 px de large, la colonne latérale du rendu
+d'architecture forçait 818 px : le `<nav>` du rail débordait sans `min-width:0`. Après correction,
+`scrollWidth - clientWidth` vaut 0 à 756 px et à 405 px (fenêtre de 420 px, barre de défilement déduite) ;
+les rendus de situation et du corpus valent 0 aux mêmes largeurs. Le mode sombre du rendu d'architecture a
+été relevé appliqué : fond `rgb(14, 22, 20)`, texte `rgb(231, 236, 232)`.
+
+**Dérive signalée, non corrigée.** Le libellé du point 6 du [tableau de bord](DASHBOARD.md) (« aucun
+produit n'a été jugé `ecart` ») se lit, hors contexte, comme contredit par les cinq verdicts `ecart` de
+l'index généré. Le sens voulu porte sur le contrôle négatif seul ; la formulation du foyer reste à
+corriger, et cette séance ne la corrige pas.
+
+**Suite de la séance, après la relecture : le libellé du point 6, corrigé au foyer.**
+
+**Fait.** La ligne 6 du [tableau de bord](DASHBOARD.md) disait « aucun produit n'a été jugé `écart` », ce qui
+se lit comme contredit par les cinq verdicts `écart` du corpus. Elle nomme désormais le contrôle négatif pour
+ce qu'il est : la casse d'une phrase de skill fait refuser `preflight`, mais aucun produit écrit sous la
+règle retournée n'a encore été soumis au juge, donc aucun `écart` ne vient de ce contrôle. Aucun compte n'y
+est recopié (règle du §2 de cette page), le numéro et le foyer restent les mêmes.
+
+**Vérifié.** Les cinq `ecart` de l'index portent sur `2026-10-18-085308-cas-jouet` (deux),
+`2026-10-23-202011-test-analyse`, `2026-10-24-055310-shadow-areas-design` et `defect-ecart-signe-4`
+(`awk` sur `docs/device/runs/INDEX.md`) : aucun ne vient du banc du contrôle négatif, qui vit hors des
+quatre arbres et n'a jamais produit. `node docs/device/harness/liens.mjs` => `exit 0`, 0 lien mort ;
+`node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Effet sur les rendus.** Aucun : les trois rendus gardent le texte de leur date, et celui de situation dit
+déjà « de ce contrôle » puis « d'autres cas ». Un rendu ne s'édite pas.
+
+**Mémoires.** `68423647-ac87-4b33-9aa4-613e32e296e8` : le libellé avant et après, les cinq écarts qui
+l'ont motivé, et les commandes du contrôle.
+
+**Suite de la séance : le périmètre réel du contrôle de liens, audité.**
+
+**Fait.** `liens.mjs` (129 lignes) balaie tous les `.md` sous la racine du dépôt, écarte tout nom commençant
+par `.` et tout dossier `raw` sous `device/runs`, puis lit les motifs `](…)` après retrait des blocs clôturés
+et des segments entre backticks. Rien de plus : aucun `.html` n'est jamais ouvert. Les trois rendus portent
+désormais cette limite au lieu de laisser croire qu'ils sont couverts.
+
+**Vérifié.** L'égalité tombe juste : **318** `.md` hors dossiers cachés, moins **107** copies verbatim sous
+`runs/*/raw`, égale **211**, le compte que l'outil imprime ; les 209 `.md` de `docs/` plus `AGENTS.md` et
+`README.md`. Huit pièges écrits puis retirés dans une seule commande : le compte passe à 216 fichiers et
+deux morts seulement, `a-mort.md` (prose) et `c-indente.md` (bloc indenté), tandis que l'ancre inexistante,
+le lien contenant une espace, le bloc clôturé, le `.html`, la copie `raw/` et le fichier caché ne produisent
+rien ; `exit 1` avec les pièges, `exit 0` après retrait, `git status` revenu à son état antérieur.
+
+**Ce que « 0 lien mort » ne garantit pas, nommé.** Les `.html` (les trois rendus), les `.md` sous dossier
+caché (`.agents/skills`, donc les trois skills de ce dépôt), les ancres `#…`, les cibles contenant une
+espace (la regex ne les reconnaît pas), la nature de la cible (`existsSync` accepte un dossier) et
+l'appartenance au dépôt.
+
+**Mémoires.** `cc8f841b-6bc9-4ec9-bd10-72777f91ad8a` : le périmètre mesuré du contrôle de liens,
+l'égalité 318 − 107 = 211, les huit pièges et ce que « 0 lien mort » ne garantit pas.
+
+**Prochaines étapes.** Les rendus ne se mettent pas à jour : au prochain mouvement d'état, ils se
+régénèrent sous un nouveau nom. Rien n'est commité.

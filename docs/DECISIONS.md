@@ -3404,3 +3404,113 @@ un re-jugement des reçus existants.
 **Falsificateur** : un run Freebuff dont `last_turn_outcome` vaut `error` et qui reçoit `conforme` · un
 `faits.json` qui porte un `type` ou un `statut` que la base ne contient pas · une base qui porte les deux
 colonnes et dont le `faits` garde `etat_terminal_non_mesure` · un `stopped` compté comme une erreur.
+
+## ADR-108 — Le gué d'une session Freebuff se sonde avant le geste humain (2026-11-10)
+
+**Contexte.** Aucun reçu du corpus ne vient de Freebuff : les 36 portent `"client": "opencode"`
+(`grep -ho '"client" *: *"[a-z]*"' docs/device/runs/*/receipt.json | sort | uniq -c`). Le geste d'import de
+dossier a échoué quatre fois de la même façon, et la cause est lue depuis le 2026-10-25 19:41 :
+l'application inscrit au registre (`~/.config/freebuff-desktop/state.json`, clé `projects`) une entrée dont le
+**nom** est le chemin du terrain et dont `sources` est vide, au lieu d'un projet dont la source `folder`
+nomme ce dossier. Le critère d'acceptation est écrit (Séance 198, 22:21) et rien ne le contrôle : à chaque
+essai, le registre est relu par un `node -e` jetable, et quatre sessions humaines ont été dépensées sur un
+geste que rien ne jugeait avant de le tenter.
+
+**Options** : ne rien faire (rejeté : le critère reste dans une séance, et chaque essai coûte une session) ·
+lire la base du client (rejeté : elle ne porte pas le gué, un projet raté a bien une base, c'est le registre
+qui dit si le dossier est indexé) · un instrument séparé que l'opérateur doit connaître (rejeté : hors du
+runbook, il serait trouvé par ceux qui l'ont déjà appris) · une commande de l'orchestrateur, en lecture
+seule, qui lit le registre par la frontière des clients et refuse (choisi) · importer le dossier par script
+(rejeté : aucune interface de ligne de commande n'ouvre un projet dans l'application, et la fabriquer
+serait un second geste non attesté).
+
+**Décision.** `gue --terrain <dossier>` lit `$HOME/.config/freebuff-desktop/state.json` par
+`registreFreebuff` (`clients.mjs`, la frontière des clients) et répond sur un seul critère : un projet dont
+une source porte `kind: "folder"` et un `localPath` qui résout sur le terrain. Elle affiche le registre, le
+projet trouvé, la base qui nomme le terrain dans sa table `projects` (`sqlite3 -readonly`) et le compte de
+ses fils ; elle n'écrit rien et n'ouvre aucune session. Sans projet, elle refuse en `1` et compte les
+entrées qui nomment ce chemin avec `sources: []`, leurs identifiants à l'appui : le mode d'échec observé est
+mesuré, pas supposé. Un terrain absent, un registre absent ou illisible refusent aussi ; une commande mal
+formée sort en `2`. Le runbook du [PROTOCOLE](PROTOCOLE.md) et l'annexe du guide nomment la commande, ce qui
+la soumet à la confrontation des pages au code (contrôle 153 du [banc](BANC.md)) ; quatre contrôles du banc
+l'éprouvent sur un registre fabriqué, sous un `HOME` en bac.
+
+**Ce que la sonde n'atteste pas** : que le geste réussira, ni qu'un fil sera ouvrable, ni le schéma de
+l'application. `state.json` est un fichier interne : une forme absente rend un fait absent, jamais une
+valeur inventée, et un changement de schéma fera refuser la sonde, pas mentir.
+
+**Falsificateur** : un terrain dont le seul projet est nommé par son chemin, `sources: []`, et que la sonde
+accepterait · une sonde qui lit le registre réel pendant le banc · une sonde qui écrit dans le registre, la
+base ou le terrain · une sonde qui accepte un terrain absent ou qui compte comme indexé un `localPath`
+d'`une autre cas`.
+
+## ADR-109 — Un chiffre de taille dans une page vivante se recalcule, ou le banc rougit (2026-11-10)
+
+**Contexte.** `ARCHITECTURE` §2 annonçait `run.mjs` à 3 745 lignes et `resultat.mjs` à 1 013 ; `wc -l`
+rendait 4 230 et 1 071. Le guide d'explication annonçait 3 169 lignes pour le même `run.mjs`. Trois chiffres
+faux dans trois pages, sans qu'aucun contrôle ne les regarde : une taille n'est pas une propriété du
+dispositif, c'est la trace d'un instant, et une page vivante qui la garde ment dès qu'un fichier grandit.
+
+**Options** : retirer les chiffres des pages (rejeté : ils situent l'instrument pour qui le lit, et les
+retirer abîmerait trois pages pour un problème de fraîcheur) · les corriger à la main (rejeté : c'est ce qui
+a produit les trois faux, et rien n'empêchera le quatrième) · un contrôle qui recalcule et nomme l'écart
+(choisi).
+
+**Décision.** Le contrôle 340 du [banc](BANC.md) lit les pages vivantes — `ARCHITECTURE`, `BANC`,
+`PROTOCOLE`, `REPLAY`, `INDEX`, `DASHBOARD`, `guide/*.md`, `README`, `AGENTS` —, extrait chaque motif
+« `docs/device/harness/<fichier>.mjs|.sh`, N lignes », compte le fichier par ses fins de ligne et rougit sur
+un écart, en nommant la page, le chiffre annoncé et le chiffre mesuré. Les pages datées — journal,
+brainstorms, specs, rendus — restent hors périmètre : un chiffre y décrit un instant, et le réécrire
+fausserait un compte rendu. Zéro chiffre trouvé est un échec : un contrôle qui ne mesure plus rien ne doit
+pas passer.
+
+**Falsificateur** : un chiffre faux dans une page vivante qui ne fait pas rougir le banc · un contrôle qui
+passe parce qu'il ne trouve plus aucun chiffre · un chiffre du journal qui le fait rougir.
+
+## ADR-110 — Un cas s'étalonne sur deux produits de référence, sans session (2026-11-10)
+
+**Contexte.** Rien n'établissait qu'un cas sache dire non. Les 21 falsificateurs plafonnent le verdict à
+`non concluant`, le seul discriminant effectif du corpus est `hors_produit`, et 8 reçus sur 36 seulement
+nomment leurs causes : un cas qui accepterait n'importe quel produit mesurerait exactement autant qu'un cas
+qui refuse le bon, et le corpus ne le distinguerait pas. La question posée le 2026-11-10 était de savoir
+si le test est testé ; la réponse était non.
+
+**Options** : ne rien faire et lire les verdicts (rejeté : ils mélangent la session, le skill et le cas) ·
+étalonner sur les runs réels du cas, un `conforme` et un `ecart` (rejeté : sur les trois cas qui portent les
+deux, deux écarts sur trois viennent d'un juge et non d'une règle mécanique, qu'aucune commande sans session
+ne rejoue) · un étalon par cas sur deux produits de référence déclarés et deux règles mécaniques relues
+dans le cas (choisi).
+
+**Décision.** `CASES/<cas>.etalon.json` déclare exactement deux références, une `conforme` et une `ecart`,
+chacune un dossier de fichiers. `etalonner --case <id> [--cases <dir>]` applique à chacune le contrat de
+produit que le cas déclare : une entrée de `attendu_details.produit.arbre_attendu` absente (ce que `collect`
+refuse à la collecte, ADR-094) et un fichier hors de `produit.racine` (le cadre que le reçu compte comme
+hors produit) rendent `ecart` ; aucune morsure rend `conforme`. Un écart entre l'issue déclarée et l'issue
+mesurée refuse en `1`, nomme la référence, les deux issues et la règle qui a (ou n'a pas) mordu. Un cas sans
+étalon, un étalon sans une référence de chaque issue, ou un cas qui ne déclare aucun contrat de produit,
+sont refusés : une seule référence ne prouve aucune discrimination, et un étalon vide passerait toujours.
+Le cas jouet est étalonné le premier (contrôles 341 et 342 du [banc](BANC.md)) ; les autres cas n'ont pas
+encore de références, et la commande le dit au lieu de passer.
+
+**Ce que l'étalon n'atteste pas** : il ne rejoue ni `collect` ni le reçu, il relit leurs déclarations ; il ne
+dit rien des falsificateurs de trace (tableau, ordre écriture/tableau, naissance du produit), ni de la
+séance ; et deux références ne prouvent pas qu'un cas discrimine un skill, seulement que son contrat de
+produit n'est pas vide.
+
+**Falsificateur** : un étalon dont la référence `ecart` vit sous `produit.racine` et qui passe · un étalon
+qui accepte deux références `conforme` · un cas sans contrat de produit que la commande étalonnerait
+quand même · un étalon dont le dossier déclaré n'existe pas et qui passerait.
+
+**Rectification du même jour — les références se dérivent, elles ne s'écrivent plus à la main.** Un étalon
+écrit à la main prouve que la règle s'applique, pas que le produit d'une session est accepté. `etalonner
+--derive-de <run>` lit le `raw/<cas>/manifest.json` d'un run que le reçu a conclu `conforme`, recopie le
+produit verbatim sous `reel` (chaque chemin ramené au terrain : le manifeste compte depuis la racine
+collectée, et le préfixe se déduit de `produit.racine` seul), et écrit `reel-hors-racine` en y ajoutant
+`HORS-RACINE.md` à la racine de référence. L'étalon produit porte sa provenance — run, verdict, `sha256` du
+manifeste, compte des fichiers — et la dérivation mesure ses deux références avant de garder quoi que ce
+soit : une référence qui ne rend pas l'issue attendue fait effacer le dossier et refuser. Un étalon écrit à
+la main (sans `derive_de`) n'est jamais écrasé. Quatre cas sont dérivés le 2026-11-10 — cas jouet,
+plan-simple, test-analyse, shadow-areas-design —, les seuls dont un reçu `conforme` porte un produit
+collecté ; `etalonner` passe sur les quatre, et les deux références du cas jouet ont été écrites à la main
+puis remplacées par la dérivation. Falsificateur : une dérivation qui garde une référence conforme mesurée
+`ecart` · une dérivation qui écrase un étalon sans `derive_de` · un chemin de référence préfixé deux fois.

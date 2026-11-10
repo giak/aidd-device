@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 340 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 347 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -137,6 +137,28 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > morte avant toute réponse** : le même bac copié, sa page ne juge aucune clause du skill, et le mutant qui
 > retire la règle rend la faute au skill sur un tableau que la session n'a jamais eu l'occasion de rendre.
 
+> V0.77 — 2026-11-10 : le compte ne bouge pas, **347** ; les deux références de l'étalon ne sont plus
+> écrites à la main : `etalonner --derive-de <run>` les dérive du produit réellement collecté d'un run
+> conclu `conforme` (ADR-110, rectification du même jour). Quatre cas sont étalonnés — cas jouet,
+> plan-simple, test-analyse, shadow-areas-design —, et les 341 et 342 lisent les références dérivées.
+> V0.76 — 2026-11-10 : **347** contrôles ; 341 et 342 éprouvent l'**étalon des cas** (ADR-110) :
+> `etalonner` applique le contrat de produit du cas jouet à deux références, et le banc exige qu'il
+> accepte celle qui vit sous `aidd_docs/` et refuse celle qui porte un fichier hors de `produit.racine`.
+> La mutation travaille sur une copie des cas sous `$B` et retire le fichier fautif : le cas accepte
+> alors les deux produits, et le contrôle exige un refus qui nomme la référence et les deux issues.
+> Un étalon qui ne saurait pas refuser ne mesurerait rien, et le banc le dit.
+> V0.75 — 2026-11-10 : **345** contrôles ; le 340 recalcule les **chiffres de taille** des pages
+> vivantes (ADR-109) : une page qui annonce « `fichier`, N lignes » est confrontée au fichier lui-même,
+> et l'écart est nommé avec les deux nombres. Il a été écrit parce que trois chiffres avaient vieilli sans
+> que rien ne le signale : `run.mjs` annoncé à 3 745 lignes pour 4 230, `resultat.mjs` à 1 013 pour 1 071,
+> et le guide d'explication à 3 169. Zéro chiffre trouvé est un échec : un contrôle qui ne mesure plus rien
+> ne passe pas.
+> V0.74 — 2026-11-10 : **344** contrôles ; 336 à 339 éprouvent la **sonde du gué** (`gue`, ADR-108) :
+> sur un registre de Freebuff fabriqué et un `HOME` en bac, un terrain indexé comme source `folder` est
+> accepté avec son projet et sa base, un terrain seulement nommé par son chemin (`sources: []`) est refusé
+> et le refus compte les entrées qui le portent, `--terrain` absent sort en `2`, et un `HOME` sans registre
+> refuse en nommant le fichier absent. Née de quatre imports ratés qu'aucune commande ne jugeait avant le
+> geste humain ; le registre réel de la machine n'est jamais lu.
 > V0.73 — 2026-10-25 : **340** contrôles ; **335** éprouve l'**état terminal de Freebuff** (ADR-107) : une base de bac porte `last_turn_outcome =
 > 'error'`, `faits` recopie l'état sans type ni statut, le reçu refuse `conforme` et pousse le falsificateur
 > `session_terminale_en_erreur` ; le mutant qui ramène la règle à `erreur != null` est vu rouge.
@@ -431,7 +453,7 @@ discriminant par un message unique fait tomber l'un des deux. Une trace recopié
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 340 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 347 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -521,6 +543,9 @@ une panne d'outil se voir dans un `FAIL`.
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
+| 341 à 342 | **l'étalon des cas** (ADR-110) : `etalonner` relit le contrat de produit du cas (`produit.arbre_attendu`, `produit.racine`) et l'applique à deux produits de référence déclarés dans `CASES/<cas>.etalon.json`, sans aucune session. Les deux références sont **dérivées** d'un produit réellement collecté (`--derive-de <run>`, reçu `conforme`) : `reel` le recopie verbatim, `reel-hors-racine` le même plus un `HORS-RACINE.md` à la racine de référence. Le 341 exige que le cas jouet accepte l'un et refuse l'autre ; le 342 retire ce `HORS-RACINE.md` d'une copie des cas sous `$B` et exige un refus qui nomme la référence, l'issue attendue et l'issue mesurée. Un étalon sans une référence de chaque issue est refusé : une seule référence ne prouve aucune discrimination | ADR-110 |
+| 340 | **les chiffres de taille des pages vivantes** (ADR-109) : chaque « `fichier`, N lignes » des pages vivantes — `ARCHITECTURE`, `BANC`, `PROTOCOLE`, `REPLAY`, `INDEX`, `DASHBOARD`, `guide/*.md`, `README`, `AGENTS` — est recalculé sur le fichier qu'il nomme, et l'écart est nommé avec les deux nombres. Zéro chiffre trouvé est un échec. Les pages datées (journal, brainstorms, specs, rendus) sont hors périmètre : un chiffre y décrit un instant, pas un état | ADR-109 |
+| 336 à 339 | **la sonde du gué** (`gue`, ADR-108) : sur un registre fabriqué et un `HOME` en bac, un terrain indexé comme source `folder` est accepté en `0` et la sortie nomme son projet, sa base et son compte de fils (336) ; un terrain seulement nommé par son chemin avec `sources: []` est refusé en `1`, et le refus compte les entrées qui le portent (337) ; `--terrain` absent sort en `2` (338) ; un `HOME` sans registre refuse en `1` et nomme le fichier absent (339). Le registre réel de la machine n'est jamais lu | ADR-108 |
 | 1 à 13 | la porte, `preflight` : le dossier que le gel nomme, huit mauvais, et le `gate.json` qu'elle écrit dans `--run` | ADR-018, ADR-034 |
 | 14 à 20 | non-régression du reste : le reçu sur le dossier gelé, les refus d'origine, `--help` | — |
 | 21 à 31 | la racine déclarée : gel, garde du cas, texte substitué | ADR-019 |

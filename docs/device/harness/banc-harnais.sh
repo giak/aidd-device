@@ -5759,6 +5759,68 @@ ln -s "$REPO/docs/device/CASES" "$B/mutants/335/docs/device/CASES"
 controle "335 faits freebuff, etat terminal error" 0 node "$O/freebuff-335.mjs" "$H" "$JOUET" "$REPO/docs/device/CASES" "$P/r334" "$B"
 controle "335 morsure, erreur freebuff non lue" 0 node "$O/freebuff-335.mjs" "$B/mutants/335/docs/device/harness/run.mjs" "$JOUET" "$REPO/docs/device/CASES" "$P/r334" "$B" mutant "le falsificateur ne nomme pas l'erreur du client"
 
+# 336-339 : la sonde du gué (`gue`, ADR-108). Le registre réel de la machine n'est jamais lu : `HOME`
+# est un bac, et la base fabriquée ne porte que les deux tables que la sonde nomme. Le terrain indexé et le
+# terrain seulement nommé vivent sous le même registre, pour que le refus compte le bon et pas un voisin.
+GUE="$B/gue"
+mkdir -p "$GUE/home/.config/freebuff-desktop/projects/terrain-gue" "$GUE/terrain" "$GUE/nomme"
+printf 'x\n' > "$GUE/terrain/fichier.txt"
+printf 'x\n' > "$GUE/nomme/fichier.txt"
+sqlite3 "$GUE/home/.config/freebuff-desktop/projects/terrain-gue/desktop-v2.db" \
+  "create table projects(root_path text); create table threads(id text); insert into projects values('$GUE/terrain');"
+node -e '
+const fs=require("fs");
+const [chemin, terrain, nomme]=process.argv.slice(1);
+fs.writeFileSync(chemin, JSON.stringify({projects:{
+  [terrain]: {id:"11111111-2222-3333-4444-555555555555", name:"terrain", location:"local", sources:[{id:"s",kind:"folder",localPath:terrain,destinationPath:".",position:0}]},
+  "/bac/local-projects/66666666": {id:"66666666-7777-8888-9999-000000000000", name:nomme, location:"local", sources:[]}
+}}));
+' "$GUE/home/.config/freebuff-desktop/state.json" "$GUE/terrain" "$GUE/nomme"
+controle "336 gue, terrain indexé comme source folder" 0 refus-nomme 0 "11111111-2222-3333-4444-555555555555" env HOME="$GUE/home" node "$ORCH" gue --terrain "$GUE/terrain"
+controle "337 gue, terrain seulement nommé par son chemin" 0 refus-nomme 1 "a nommé le chemin" env HOME="$GUE/home" node "$ORCH" gue --terrain "$GUE/nomme"
+controle "338 gue, terrain absent de l'option" 2 bash -c "env HOME='$GUE/home' node '$ORCH' gue </dev/null"
+controle "339 gue, registre absent" 0 refus-nomme 1 "n'existe pas" env HOME="$B/gue-vide" node "$ORCH" gue --terrain "$GUE/terrain"
+
+# 340 : les chiffres de taille des pages vivantes (ADR-109). Une page qui annonce « `fichier.mjs`,
+# N lignes » est recalculée sur le fichier lui-même : une ligne de plus dans l'instrument fait rougir le
+# banc tant que la page n'a pas suivi (dérive mesurée le 2026-11-10 : `run.mjs` annoncé à 3 745 lignes
+# pour 4 230, `resultat.mjs` à 1 013 pour 1 071, `explication.md` à 3 169). Les pages datées — journal,
+# brainstorms, specs, rendus — sont hors périmètre : un chiffre y décrit un instant, pas un état.
+controle "340 foyer, les chiffres de taille recalculés" 0 node -e "
+const fs=require('fs');
+const q=String.fromCharCode(96);
+const nl=String.fromCharCode(10);
+const pages=['docs/ARCHITECTURE.md','docs/BANC.md','docs/PROTOCOLE.md','docs/REPLAY.md','docs/INDEX.md','docs/DASHBOARD.md','README.md','AGENTS.md'].concat(fs.readdirSync('docs/guide').filter(function(f){return f.endsWith('.md')}).map(function(f){return 'docs/guide/'+f}));
+const re=new RegExp(q+'(docs/device/harness/[a-z-]+[.](mjs|sh))'+q+'[^\\n]{0,60}?([0-9][0-9 \\u00a0\\u202f]*) lignes','g');
+const raisons=[];
+let mesures=0;
+for(const page of pages){
+  if(!fs.existsSync(page)){raisons.push(page+' : page annoncée introuvable');continue;}
+  const texte=fs.readFileSync(page,'utf8');
+  for(const m of texte.matchAll(re)){
+    const fichier=m[1], chiffre=m[3];
+    mesures++;
+    if(!fs.existsSync(fichier)){raisons.push(page+' : '+fichier+' n existe pas');continue;}
+    const reel=(fs.readFileSync(fichier,'utf8').match(/[\\n]/g)||[]).length;
+    const annonce=Number(chiffre.replace(/[^0-9]/g,''));
+    if(annonce!==reel)raisons.push(page+' annonce '+annonce+' lignes pour '+fichier+', qui en a '+reel);
+  }
+}
+if(mesures===0)raisons.push('aucun chiffre de taille trouvé : ce contrôle ne mesure plus rien');
+if(raisons.length){fs.writeFileSync(process.env.DETAIL,raisons.join(nl)+nl);process.exit(1);}
+process.exit(0)
+"
+
+# 341-342 : l'étalon des cas (ADR-110). Les références sont celles du dépôt ; la mutation travaille sur
+# une copie sous $B et retire le fichier hors racine de la référence « ecart » : le cas accepte alors
+# les deux produits, et le contrôle exige qu'il rougisse au lieu de passer.
+ETC="$B/etalon-cases"
+rm -rf "$ETC"
+cp -R "$REPO/docs/device/CASES" "$ETC"
+controle "341 étalon, le cas accepte l'un et refuse l'autre" 0 node "$H" etalonner --case 2026-10-18-085308-cas-jouet --cases "$ETC"
+rm -f "$ETC/etalons/2026-10-18-085308-cas-jouet/reel-hors-racine/HORS-RACINE.md"
+controle "342 étalon, une référence qui ne mord plus" 0 refus-nomme 1 "mesuré conforme" node "$H" etalonner --case 2026-10-18-085308-cas-jouet --cases "$ETC"
+
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 
 echo

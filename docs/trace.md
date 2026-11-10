@@ -10899,3 +10899,161 @@ sixième commit, sans quoi la phrase « rien n'est commité » resterait fausse 
 avant ce paragraphe ; `node docs/device/harness/liens.mjs` => `exit 0`, 211 fichiers, 0 mort ;
 `node docs/device/harness/runs.mjs --verifier` => `exit 0`. Aucun `git push` : le relecteur a demandé
 les commits, pas la publication.
+
+## Séance 200 — la sonde du gué d'import Freebuff (2026-11-10)
+
+**Question.** « Que pouvons-nous faire pour faire avancer et améliorer le protocole de test ? »
+
+**Mesures avant de proposer.** Les 21 falsificateurs du §7.1 d'`ARCHITECTURE` sont tous nommés dans
+`banc-harnais.sh` et tous portés par au moins un reçu ; le contrôle « protocole documenté contre CLI »
+existait déjà (contrôle 153, qui confronte le runbook du `PROTOCOLE` et l'annexe du guide à l'usage réel).
+Les manques sont ailleurs : 8 reçus sur 36 portent `causes` (les 18 non concluants « non nommées »
+précèdent l'ADR-098, daté du 2026-10-24), 17 avortés sur 53 runs ouverts (32 %) n'ont aucune cause dans
+l'index, et deux chiffres de taille d'`ARCHITECTURE` §2 étaient périmés (`run.mjs` annoncé à 3 745 lignes,
+mesuré à 4 230 ; `resultat.mjs` à 1 013, mesuré à 1 071).
+
+**Choix.** La sonde du gué, et non l'étalonnage des cas : le corpus ne porte encore aucun reçu Freebuff, et
+le geste d'import a coûté quatre sessions humaines sur un critère qu'aucune commande ne jugeait avant de le
+tenter. L'étalonnage (deux produits de référence par cas) reste la seule option qui touche la validité du
+corpus ; elle est nommée, non faite.
+
+**Le registre, observé.** `~/.config/freebuff-desktop/state.json`, clé `projects` : 11 projets, dont 7 avec
+une source `{kind: "folder", localPath}` et 4 dont le `name` est le chemin du terrain du cas jouet avec
+`sources: []`. Les bases `desktop-v2.db` nomment leur dossier par `projects.root_path`, ce qui relie un
+terrain à sa base sans deviner de nom de dossier.
+
+**Livré.** `gue --terrain <dossier>` (`orchestrer.mjs`) lit le registre par `registreFreebuff`
+(`clients.mjs`, la frontière des clients), affiche le registre, le projet, la base et le compte de fils, ne
+crit rien et n'ouvre aucune session ; elle refuse en `1` un terrain dont le seul projet est nommé par son
+chemin, et le refus compte les entrées qui le portent. Spec :
+[2026-11-10-053306-spec.md](tasks/2026_11/2026-11-10-053306-sonde-du-gue/2026-11-10-053306-spec.md).
+Décision : ADR-108. Les pages qui comptent les commandes suivent (`PROTOCOLE` front matter et §2, annexe du
+guide, `ARCHITECTURE` §166, `README`) : dix, et non plus huit ni neuf.
+
+**Vérifié sur la machine réelle.** `gue --terrain /home/giak/projects/aidd-device` => `exit 0`,
+projet `aff3cf9f…`, base `aidd-device-ca79e757…`, 6 fils. `gue --terrain <cas-jouet>/terrain` => `exit 1`,
+`REFUS — gue : aucun projet Freebuff n'indexe … comme source folder — 4 entrées nomment ce chemin avec
+sources vides (f31e5171…, 15220bb0…, a35fecd8…, 1f9e15c0…)`. Les quatre identifiants sont ceux des quatre
+fils refusés de la Séance 198 : le mode d'échec est désormais mesuré en une commande.
+
+**Banc.** Quatre contrôles neufs (336 à 339) sur un registre fabriqué et un `HOME` en bac :
+`bash docs/device/harness/banc-harnais.sh` => **344/344 PASS**, `exit 0`, contrôle 153 compris.
+`node docs/device/harness/liens.mjs` => `exit 0`, 212 fichiers, 0 lien mort ;
+`node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Ce que la sonde n'atteste pas.** Que le geste réussira, ni qu'un fil sera ouvrable, ni le schéma de
+l'application : forme absente rend un fait absent, et un changement de schéma fera refuser la sonde, pas
+mentir. Le geste humain reste non attesté (`PROTOCOLE` §2).
+
+**Dette nommée, puis refermée dans la séance : le contrôle des chiffres de taille.**
+
+**Mesure.** Trois pages vivantes portaient un chiffre faux : `ARCHITECTURE` §2 annonçait `run.mjs` à
+3 745 lignes (`wc -l` : 4 230) et `resultat.mjs` à 1 013 (1 071), et le guide d'explication annonçait
+3 169 lignes pour le même `run.mjs`.
+
+**Livré.** Contrôle 340 : chaque motif « `docs/device/harness/<fichier>.mjs|.sh`, N lignes » des pages
+vivantes (`ARCHITECTURE`, `BANC`, `PROTOCOLE`, `REPLAY`, `INDEX`, `DASHBOARD`, `guide/*.md`, `README`,
+`AGENTS`) est recompté sur le fichier qu'il nomme, et l'écart est nommé avec les deux nombres. Zéro chiffre
+trouvé est un échec : un contrôle qui ne mesure plus rien ne passe pas. Les pages datées (journal,
+brainstorms, specs, rendus) sont hors périmètre : un chiffre y décrit un instant, et le réécrire fausserait
+un compte rendu. Décision : ADR-109. Les trois chiffres sont corrigés (`grep -c '4 230 lignes'` => 1 dans
+`ARCHITECTURE`, 1 dans `explication.md`).
+
+**Morsure éprouvée, le contrôle extrait et rejoué seul.** Vert (`rc=0`) ; `4 230` remplacé par `4 231`
+=> `rc=1`, `detail : docs/ARCHITECTURE.md annonce 4231 lignes pour docs/device/harness/run.mjs, qui en
+a 4230` ; restauré, vert à nouveau. Le contrôle nomme les deux nombres, et ne rougit ni pour un chiffre daté
+ni pour un nombre qui parle d'autre chose que d'un fichier du harnais.
+
+**Banc.** `bash docs/device/harness/banc-harnais.sh` => **345/345 PASS**, `exit 0` ;
+`node docs/device/harness/liens.mjs` => `exit 0`, 212 fichiers, 0 lien mort ;
+`node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Rien n'est commité** : aucun commit ni `git push` n'a été demandé.
+
+## Séance 201 — l'étalon des cas (2026-11-10)
+
+**Question.** « Spec et implémente l'étalonnage des cas : deux produits de référence par cas, l'un qui doit
+rendre conforme et l'autre écart, passés sans aucune session. »
+
+**Mesure avant d'écrire.** Aucun cas ne déclarait `produit.completude` (la règle d'ADR-104), et sur les
+trois cas qui portent à la fois un reçu `conforme` et un reçu `ecart` — cas jouet, test-analyse,
+shadow-areas-design — deux écarts sur trois portent `falsif=[]` : ils viennent d'un juge, qu'aucune
+commande sans session ne rejoue. Un étalon branché sur les verdicts d'hier n'aurait donc mesuré que le cas
+`shadow-areas-design`. Les deux produits de référence sont donc écrits pour l'étalon, et les règles
+appliquées sont celles que le cas déclare déjà.
+
+**Livré.** `CASES/<cas>.etalon.json` déclare exactement deux références, une `conforme` et une `ecart`,
+chacune un dossier de fichiers nommé relativement au dossier des cas. `etalonner --case <id> [--cases <dir>]`
+(run.mjs) y applique le contrat de produit du cas : une entrée de `produit.arbre_attendu` absente (ce que
+`collect` refuse à la collecte) et un fichier hors de `produit.racine` rendent `ecart` ; aucune morsure rend
+`conforme`. Un désaccord entre l'issue déclarée et l'issue mesurée refuse en `1` et nomme la référence, les
+deux issues et la règle. Un cas sans contrat de produit, un cas sans étalon, ou un étalon sans une référence
+de chaque issue sont refusés : une seule référence ne prouve aucune discrimination. Cas jouet étalonné :
+`juste` (`aidd_docs/NOTES.md`, le fichier d'un run conforme) et `hors-racine` (le même, plus un `README.md`
+à la racine du terrain). Décision : ADR-110. Spec :
+[2026-11-10-054819-spec.md](tasks/2026_11/2026-11-10-054819-etalonnage-des-cas/2026-11-10-054819-spec.md).
+
+**Deux défauts trouvés par les contrôles, pas par la relecture.** 1) Le contrôle 340, écrit la séance
+précédente, a rougi au premier passage : `run.mjs` était passé de 4 230 à 4 328 lignes avec la commande
+neuve, et les deux pages annonçaient encore l'ancien chiffre. C'est exactement la dérive qu'il devait
+empêcher, détectée une heure après sa naissance ; les deux chiffres sont maintenant à 4 328. 2) Le contrôle
+342 a refusé de passer parce que les dossiers de référence se résolvaient contre le dépôt et non contre
+`--cases` : la copie du banc n'était jamais lue, et la mutation ne mesurait rien. Un étalon dont la
+mutation ne mord pas est un étalon qui ne mesure rien ; la résolution se fait désormais contre `--cases`,
+le champ est écrit dans le fichier de l'étalon, et le contrôle passe.
+
+**Vérifié.** `node docs/device/harness/run.mjs etalonner --case 2026-10-18-085308-cas-jouet` => `exit 0`,
+`juste : 1 fichier(s), attendu conforme, mesuré conforme` et `hors-racine : 2 fichier(s), attendu ecart,
+mesuré ecart`, `ce qui mord : hors de aidd_docs/ : README.md`. Sur une copie amputée de ce `README.md` =>
+`exit 1`, `REFUS — etalonner : hors-racine : attendu ecart, mesuré conforme — aucune règle du contrat ne
+mord`. `bash docs/device/harness/banc-harnais.sh` => **347/347 PASS**, `exit 0` ; `liens.mjs` => `exit 0`,
+216 fichiers, 0 mort ; `runs.mjs --verifier` => `exit 0`.
+
+**Ce que l'étalon n'atteste pas, nommé.** Il ne rejoue ni `collect` ni le reçu : il relit leurs
+déclarations. Il ne dit rien des falsificateurs de trace, ni de la séance. Et deux références prouvent que
+le contrat de produit d'un cas n'est pas vide, pas qu'il discrimine un skill.
+
+**Reste ouvert.** Les autres cas n'ont pas d'étalon et la commande le dit au lieu de passer. Le pas suivant,
+non fait ici, est de dériver les deux références d'un `raw/<cas>/` réellement collecté plutôt que de les
+écrire à la main : un étalon écrit à la main prouve que la règle s'applique, pas que le produit des
+sessions est accepté.
+
+**Rien n'est commité** : 15 fichiers modifiés ou neufs, aucun commit ni `git push` demandé.
+
+## Séance 202 — les étalons se dérivent d'un run réel (2026-11-10)
+
+**Question.** « Dérive les deux références d'étalon de chaque cas depuis un produit réellement collecté,
+au lieu de les écrire à la main. »
+
+**Ce qui a changé de nature.** La séance précédente avait écrit à la main les deux références du cas jouet :
+un `NOTES.md` recopié d'un run et un `README.md` ajouté. Un étalon écrit à la main prouve que la règle
+s'applique, pas que le produit d'une session est accepté. `etalonner --case <id> --derive-de <run>` remplace
+l'écriture : il lit le `raw/<cas>/manifest.json` d'un run que le reçu a conclu `conforme`, recopie le
+produit verbatim sous `reel`, et écrit `reel-hors-racine` en y ajoutant un `HORS-RACINE.md` à la racine de
+référence. Les deux références du cas jouet écrites à la main ont été retirées, et les quatre étalons sont
+maintenant dérivés.
+
+**Le détail qui a demandé deux essais.** Les chemins du manifeste comptent depuis la racine collectée
+(`aidd_docs/NOTES.md` s'y écrit `NOTES.md`), alors que `produit.racine` et `arbre_attendu` décrivent le
+terrain. Le préfixe se déduit de la seule déclaration du cas : une racine de dossier préfixe par elle-même,
+une racine de fichier préfixe par son dossier. Ma première règle (racine de fichier, aucun préfixe) a fait
+refuser `shadow-areas-design`, dont la racine est un fichier sous trois dossiers : la dérivation a mesuré
+`reel` comme `ecart` et s'est effacée au lieu de garder un étalon qui ne mesure rien. C'est le garde-fou de
+la commande qui a parlé, pas une relecture.
+
+**Dérivés.** Cas jouet (`2026-10-20-222845`, 1 fichier), plan-simple (`2026-10-21-234646`, 4 fichiers),
+test-analyse (`2026-10-24-045529`, 1 fichier), shadow-areas-design (`2026-10-24-120532`, 1 fichier).
+`etalonner` passe sur les quatre : `reel` mesuré `conforme`, `reel-hors-racine` mesuré `ecart`, `ce qui
+mord : hors de aidd_docs/ : HORS-RACINE.md` (ou de l'arbre du cas).
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **347/347 PASS**, `exit 0`, contrôle 340 compris
+(`run.mjs` est passé à 4 450 lignes avec la dérivation, et les deux pages qui annoncent sa taille ont suivi
+avant que le banc ne rougisse) ; `node docs/device/harness/liens.mjs` => `exit 0`, 229 fichiers, 0 mort ;
+`node docs/device/harness/runs.mjs --verifier` => `exit 0`.
+
+**Ce que ça ne prouve pas, nommé.** La référence fautive est une faute injectée : elle prouve que le contrat
+refuse un fichier hors de l'arbre, pas qu'il reconnaît une faute qu'une session aurait commise. Et seuls les
+cas qui portent un reçu `conforme` avec un produit collecté peuvent être étalonnés : les autres n'ont rien
+à dériver, et `etalonner` refuse au lieu de passer.
+
+**Rien n'est commité** : aucun commit ni `git push` demandé.

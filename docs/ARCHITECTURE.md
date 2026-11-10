@@ -45,9 +45,9 @@ Sept positions, définies par ce qu'elles ne doivent pas voir (ce tableau, et le
 | auteur de l'attendu | le relecteur | écrit `CASES/<cas>.request.md` et `.expected.json`, fait geler l'empreinte | le produit |
 | opérateur | le relecteur | déclare la racine, gèle, passe la porte, ouvre la session, remet le texte, collecte, écrit le reçu, exporte la trace | rien : il tient le cas. Ce qu'il en dit reste **déclaré** (`faits.json`), jamais une preuve : la **conduite** du run, agent ou humain, en fait partie ([ADR-071](DECISIONS.md)) |
 | session sous test | la session IA ouverte par l'opérateur ; en mode guidé, la conversation courante ([ADR-074](DECISIONS.md)) | lit la révision sous test, écrit dans `terrain/` | en run indépendant : `CASES/*.expected.json`, cette page, le journal ; en mode guidé : elle voit tout, et c'est la limite dite |
-| harnais | `docs/device/harness/run.mjs`, 3 745 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff, `opencode` pour l'autre client et `bash` pour la vérification) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, vérifie, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
+| harnais | `docs/device/harness/run.mjs`, 4 450 lignes, aucune dépendance (il appelle `git`, `date`, `sqlite3` pour Freebuff, `opencode` pour l'autre client et `bash` pour la vérification) ; `clients.mjs` est la frontière des deux | gèle, contrôle, copie, reçoit, vérifie, compare | aucune session : il n'en ouvre pas, il ne décide rien seul |
 | rapport | `docs/device/harness/rapport.mjs`, 723 lignes, aucune dépendance | lit le reçu, l'output, la trace et la signature de la promesse, écrit `RAPPORT.md` | aucun verdict : il recopie celui du reçu et ne relit pas les falsificateurs ([ADR-050](DECISIONS.md)) |
-| page de décision | `docs/device/harness/resultat.mjs`, 1013 lignes, aucune dépendance | lit le reçu, l'output, la trace, l'attendu, la lecture déclarée du cas et, quand elle existe, la signature voisine qu'il re-hache, écrit `RESULTAT.md` | aucun verdict nouveau : il range chaque clause sous `tenu`, `violé` ou `non jugé`, sépare la faute de session, celle du skill et celle du dispositif que le reçu nomme, et n'invente aucun geste ([ADR-061](DECISIONS.md)) |
+| page de décision | `docs/device/harness/resultat.mjs`, 1 071 lignes, aucune dépendance | lit le reçu, l'output, la trace, l'attendu, la lecture déclarée du cas et, quand elle existe, la signature voisine qu'il re-hache, écrit `RESULTAT.md` | aucun verdict nouveau : il range chaque clause sous `tenu`, `violé` ou `non jugé`, sépare la faute de session, celle du skill et celle du dispositif que le reçu nomme, et n'invente aucun geste ([ADR-061](DECISIONS.md)) |
 | juge | l'agent | lit le **reçu seul** et re-hache les pièces qu'il cite, écrit `output.json` ; quand la promesse est `juge_seul`, écrit aussi `promesse-signee.json` par `signer` | la session ([spec](tasks/2026_10/2026-10-15-130103-run-par-session-operateur/2026-10-15-130103-spec.md) §8) |
 
 L'orchestrateur n'est pas une position de plus : c'est la **main de l'opérateur**, un exécutable qui
@@ -163,7 +163,7 @@ refuse arrête l'orchestrateur, et la commande qui a refusé n'est pas relancée
 le seul endroit du dispositif qui ouvre une session et parle par le réseau, en local (`ouvrir`,
 [ADR-059](DECISIONS.md)).
 
-Les huit commandes de l'orchestrateur, leurs options, leurs refus et les quatre blocs qu'elles impriment
+Les dix commandes de l'orchestrateur, leurs options, leurs refus et les quatre blocs qu'elles impriment
 sont au [PROTOCOLE](PROTOCOLE.md) §2 à §5 : cette page dit de quoi les deux couches sont faites, pas
 comment on s'en sert.
 

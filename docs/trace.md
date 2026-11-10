@@ -10886,4 +10886,16 @@ l'appartenance au dépôt.
 l'égalité 318 − 107 = 211, les huit pièges et ce que « 0 lien mort » ne garantit pas.
 
 **Prochaines étapes.** Les rendus ne se mettent pas à jour : au prochain mouvement d'état, ils se
-régénèrent sous un nouveau nom. Rien n'est commité.
+régénèrent sous un nouveau nom.
+
+**Clôture, à la demande du relecteur : cinq commits, aucun `git push`.**
+
+**Actes.** `5dd1b12` les trois runs du 25 et l'index régénéré (57 → 60) ; `02da26b` l'audit du
+2026-10-26 ; `2abcf92` le brainstorm et les trois rendus avec la section 1 ter de l'INDEX ; `54c8849`
+les séances 198 et 199 au journal ; `08913a4` le libellé du point 6. Ce paragraphe les rejoint par un
+sixième commit, sans quoi la phrase « rien n'est commité » resterait fausse ici.
+
+**Vérifié.** `git log -5 --format='%h %s'` rend les cinq sujets ; `git status --porcelain` était vide
+avant ce paragraphe ; `node docs/device/harness/liens.mjs` => `exit 0`, 211 fichiers, 0 mort ;
+`node docs/device/harness/runs.mjs --verifier` => `exit 0`. Aucun `git push` : le relecteur a demandé
+les commits, pas la publication.

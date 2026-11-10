@@ -1,0 +1,12 @@
+{
+  "geste": {
+    "par": "buffy (agent), sur instruction de giak",
+    "le": "2026-11-10T06:39:40.649Z",
+    "preuve": "instruction du 2026-11-10 : « Installe AIDD à partir de la révision fe48de12 elle-même, pour que le terrain porte la révision mesurée et non la 5.13.0 » ; installation faite depuis le clone de travail du dépôt ai-driven-dev/framework arrêté à fe48de12a8b615ec4c456b63945b7e9dfc7835ca, arbre propre, par la recette que la révision déclare elle-même (scripts/dev-sync.sh) : npx @ai-driven-dev/cli@5.4.0 translate <clone> --to opencode --out <dir> --as flat --force, puis copie de .opencode et opencode.json à la racine du terrain ; aucun fichier de l’archive 5.13.0 ne subsiste, le dossier .opencode a été remplacé en entier. Le hook prompt-gate.cjs que la 5.13.0 installait n’existe pas à cette révision : son entrée opencode est le plugin .opencode/plugin/aidd-telemetry.js, déclaré à sa place."
+  },
+  "fichiers": [
+    "opencode.json",
+    ".opencode/skills/aidd-orchestrator/00-async-dev/SKILL.md",
+    ".opencode/plugin/aidd-telemetry.js"
+  ]
+}

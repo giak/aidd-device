@@ -1,6 +1,6 @@
 <!-- généré par runs.mjs — ne pas éditer -->
 
-60 runs : 36 indépendants, 5 guidés, 17 avortés, 2 manuels.
+61 runs : 36 indépendants, 6 guidés, 17 avortés, 2 manuels.
 
 | Run | Date | Mode | Cas / skill | Statut ou verdict | Limites | Pièces |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -64,3 +64,4 @@
 | 2026-10-25-192849-87a38ffc-8a4ca25 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
 | 2026-10-25-193711-87a38ffc-70ca7d0 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
 | 2026-10-25-194204-87a38ffc-9150802 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
+| 2026-11-10-060906-guide-04-fact-check | 2026-11-10 | guide | 04-fact-check | forme non tenue | 3, session_non_independante, attendu_non_gele, trace_absente | run-guide.md |

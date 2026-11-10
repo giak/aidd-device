@@ -2,15 +2,44 @@
   "cas": "2026-10-21-173843-plan-simple",
   "confirmation": {
     "par": "giak",
-    "le": "2026-10-25T17:37:47+01:00",
-    "preuve": "instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot"
+    "le": "2026-11-10T07:43:50+01:00",
+    "preuve": "instruction du 2026-11-10 : installer AIDD depuis fe48de12 pour que le terrain porte la revision mesuree"
   },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-10-25T17:37:47.650457402+0100",
-  "gele_le_epoch": 1792946267,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md --confirme-par giak --confirme-preuve \"instruction du 2026-10-25 : « Amende le §5 des cinq cas qui ne nomment pas encore terrain, fais-les re-geler avec confirmation, et prouve chaque re-gel par son empreinte » ; terrain ramené à l état gelé (produit du run précédent retiré, sa copie est sous raw/ ou produit-2026-10-22-211337) ; le libellé n a pas été relu mot à mot\"",
-  "empreinte": "fc461c4f0e659c5ab8d916480ffc43be914a3a23ba70d8b9989c3a556b7970c9",
+  "gele_le": "2026-11-10T07:43:50.994019210+0100",
+  "gele_le_epoch": 1794293030,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md --confirme-par giak --confirme-preuve \"instruction du 2026-11-10 : installer AIDD depuis fe48de12 pour que le terrain porte la revision mesuree\"",
+  "empreinte": "7e7fe3e2c744f7e2f45c3bf07fb4cf6e6893c762f736f0601d66763af11a74b9",
+  "installation": {
+    "arbre": "travail",
+    "revision": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+    "fichiers": [
+      {
+        "chemin": "opencode.json",
+        "sha256": "e01e511ddab2a6b085dada20ac897550d832afed0ff1dd8dbdfb142011da3972",
+        "taille": 105
+      },
+      {
+        "chemin": ".opencode/skills/aidd-orchestrator/00-async-dev/SKILL.md",
+        "sha256": "1ce19df01f4986fe1eb15f2adcf53d855b0be0a6f49d703be9d16232972228d3",
+        "taille": 9843
+      },
+      {
+        "chemin": ".opencode/plugin/aidd-telemetry.js",
+        "sha256": "f8ed37d0a89be928f6b0e777236ba831cbf2df657b5391e8274d0982dc55a94c",
+        "taille": 8694
+      }
+    ]
+  },
   "fichiers": [
+    {
+      "role": "attendu",
+      "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.etalon.json",
+      "sha256": "20319c3b828a7851148dd2330a9c36adeda50b13986b913c117ffeade459c68b",
+      "taille": 1119,
+      "birth": "2026-11-10 05:56:05.481424726 +0100",
+      "birth_epoch": 1794286565
+    },
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.expected.json",
@@ -18,6 +47,14 @@
       "taille": 6519,
       "birth": "2026-10-21 17:38:55.098143517 +0200",
       "birth_epoch": 1792597135
+    },
+    {
+      "role": "installation",
+      "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.installation.json",
+      "sha256": "5da1e56b3ced7c8e23d22c49a3ed1ceda09d9a25e43f7bfc150439065622cd63",
+      "taille": 1099,
+      "birth": "2026-11-10 07:08:10.416481831 +0100",
+      "birth_epoch": 1794290890
     },
     {
       "role": "attendu",
@@ -165,7 +202,10 @@
       "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/terrain",
       "head": "416ec1f",
       "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
-      "porcelain": [],
+      "porcelain": [
+        "?? .opencode/",
+        "?? opencode.json"
+      ],
       "remotes": [
         {
           "nom": "origin",

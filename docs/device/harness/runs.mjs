@@ -16,6 +16,11 @@ const MODES = ["guide", "manuel"];
 const STATUTS = ["forme tenue", "forme non tenue", "non observé"];
 const VERDICTS = ["conforme", "ecart", "non concluant"];
 const CORRECTION = "correction.json";
+// ADR-111 : le jour où un run guidé doit déclarer son intention et sa comparaison. Avant, un journal ne
+// portait que la forme des pièces, et l'instrument ne réclame pas rétroactivement un champ qu'une décision
+// postérieure crée.
+const EXIGE_INTENTION = Date.parse("2026-11-10T00:00:00+01:00");
+const ETATS_COMPARAISON = ["tenu", "violé"];
 const CODES = new Set([
   "session_non_independante", "trace_absente", "terrain_non_propre", "attendu_non_gele",
   "revision_non_consignee", "run_non_observe", "protocole_anterieur",
@@ -123,6 +128,29 @@ function validerRun(nom, r, dir) {
   if (r.mode === "guide") {
     if (!r.pieces.includes("run-guide.md")) refuse(`${nom} ne cite pas run-guide.md dans pieces`);
     if (!existsSync(join(dir, "run-guide.md"))) refuse(`${nom} n'a pas run-guide.md — pieces le cite, le fichier manque`);
+  }
+  // ADR-111 : un run guidé se juge sur ce qu'il produit, comparé à l'intention déclarée. Sans cette
+  // comparaison, son statut dit la forme des pièces, jamais le travail du skill. L'antériorité de
+  // `intention` reste déclarée : deux horodatages écrits à la main ne prouvent aucun ordre.
+  if (r.mode === "guide" && Date.parse(r.consigne_le) >= EXIGE_INTENTION) {
+    if (!texte(r.intention)) {
+      refuse(`${nom} : guidé sans intention — ce que le skill est censé faire se déclare, sinon le run ne compare rien`);
+    }
+    if (!Array.isArray(r.comparaison) || r.comparaison.length === 0) {
+      refuse(`${nom} : guidé sans comparaison — un statut de forme ne remplace pas l'écart au produit de l'intention`);
+    }
+    for (const [i, c] of r.comparaison.entries()) {
+      if (!c || !texte(c.clause) || !texte(c.produit) || !ETATS_COMPARAISON.includes(c.etat)) {
+        refuse(`${nom} : comparaison ${i + 1} incomplète — clause, produit et etat (tenu ou violé)`);
+      }
+    }
+    const etats = r.comparaison.map((c) => c.etat);
+    if (r.statut === "forme tenue" && etats.includes("violé")) {
+      refuse(`${nom} : forme tenue avec une comparaison violée — les deux se contredisent`);
+    }
+    if (r.statut === "forme non tenue" && !etats.includes("violé")) {
+      refuse(`${nom} : forme non tenue sans comparaison violée — un écart se nomme`);
+    }
   }
   for (const p of r.pieces) {
     if (!existsSync(join(dir, p))) refuse(`${nom} cite une pièce absente : ${p}`);

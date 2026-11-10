@@ -5821,6 +5821,103 @@ controle "341 étalon, le cas accepte l'un et refuse l'autre" 0 node "$H" etalon
 rm -f "$ETC/etalons/2026-10-18-085308-cas-jouet/reel-hors-racine/HORS-RACINE.md"
 controle "342 étalon, une référence qui ne mord plus" 0 refus-nomme 1 "mesuré conforme" node "$H" etalonner --case 2026-10-18-085308-cas-jouet --cases "$ETC"
 
+# 343-345 : l'intention et la comparaison d'un run guidé (ADR-111). Un statut de forme ne remplace pas
+# l'écart au produit de l'intention : l'instrument refuse un guidé qui n'en porte pas, et refuse une forme
+# tenue dont une comparaison dit « violé ». La mutation travaille sur des copies du run de référence.
+GRUN="$REPO/docs/device/runs/2026-11-10-060906-guide-04-fact-check"
+GB="$B/guide-adr111"
+rm -rf "$GB"
+mkdir -p "$GB/base" "$GB/sans" "$GB/tenue"
+cp -R "$GRUN" "$GB/base/run"
+cp -R "$GRUN" "$GB/sans/run"
+cp -R "$GRUN" "$GB/tenue/run"
+node -e 'const fs=require("fs");const p=process.argv[1];const d=JSON.parse(fs.readFileSync(p,"utf8"));delete d.intention;delete d.comparaison;fs.writeFileSync(p,JSON.stringify(d,null,2)+"\n")' "$GB/sans/run/run.json"
+node -e 'const fs=require("fs");const p=process.argv[1];const d=JSON.parse(fs.readFileSync(p,"utf8"));d.statut="forme tenue";fs.writeFileSync(p,JSON.stringify(d,null,2)+"\n")' "$GB/tenue/run/run.json"
+for d in base sans tenue; do node "$RUNS" --index --runs "$GB/$d" >/dev/null; done
+controle "343 runs, un guidé dont la comparaison est déclarée" 0 node "$RUNS" --verifier --runs "$GB/base"
+controle "344 runs, un guidé sans intention ni comparaison" 0 refus-nomme 1 "sans intention" node "$RUNS" --verifier --runs "$GB/sans"
+controle "345 runs, une forme tenue contredite par sa comparaison" 0 refus-nomme 1 "se contredisent" node "$RUNS" --verifier --runs "$GB/tenue"
+
+
+# ---------------------------------------------------------------------------------------------
+# 351-355 : l'installation déclarée (ADR-112). Un cas déclare dans CASES/<cas>.installation.json les fichiers
+# que l'installation laisse dans le terrain ; le gel les hache et les porte dans son empreinte, la porte les
+# relit. Chaque contrôle part d'un bac neuf sous $B ; aucun n'écrit dans les quatre arbres réels.
+inst_bac() { # nom — un cas gelable et un terrain qui porte une installation
+  local r="$B/$1"
+  rm -rf "$r"; mkdir -p "$r/cas-test" "$r/cases"
+  cp -a "$O/cas-test/terrain" "$r/cas-test/terrain"
+  cp -a "$O/cas-test/framework-origin" "$r/cas-test/framework-origin"
+  cp "$O/cases/cas-test.request.md" "$r/cases/"
+  cp "$O/cases/cas-test.expected.json" "$r/cases/"
+  mkdir -p "$r/cas-test/terrain/.aidd"
+  printf 'installation déclarée\n' > "$r/cas-test/terrain/.aidd/installation.json"
+  cat > "$r/cases/cas-test.installation.json" <<'JSON'
+{
+  "geste": { "par": "banc", "le": "2026-11-10T00:00:00+01:00", "preuve": "banc" },
+  "fichiers": [".aidd/installation.json"]
+}
+JSON
+}
+inst_gel() { # nom — gèle le bac, confirmation du banc
+  node "$H" freeze --case cas-test --cases "$B/$1/cases" --racine "$B/$1" \
+    --arbre framework-origin="$B/$1/cas-test/framework-origin" --arbre terrain="$B/$1/cas-test/terrain" \
+    --confirme-par banc --confirme-preuve banc
+}
+inst_bac r351
+inst_gel r351 >/dev/null 2>&1 || { echo "ARRET — le gel de 351"; exit 2; }
+controle "351 installation déclarée, le gel la mesure et la porte l'accepte" 0 node "$H" preflight --case cas-test --cases "$B/r351/cases" --run "$B/r351/run" --repertoire "$B/r351/cas-test/terrain"
+inst_bac r352
+rm -f "$B/r352/cas-test/terrain/.aidd/installation.json"
+controle "352 installation déclarée absente du terrain, le gel refuse" 0 refus-nomme 1 "absent du terrain" inst_gel r352
+inst_bac r353
+inst_gel r353 >/dev/null 2>&1 || { echo "ARRET — le gel de 353"; exit 2; }
+printf 'installation changée\n' > "$B/r353/cas-test/terrain/.aidd/installation.json"
+controle "353 installation changée après le gel, la porte refuse" 0 refus-nomme 1 "a changé depuis le gel" node "$H" preflight --case cas-test --cases "$B/r353/cases" --run "$B/r353/run" --repertoire "$B/r353/cas-test/terrain"
+inst_bac r354
+inst_gel r354 >/dev/null 2>&1 || { echo "ARRET — le gel de 354"; exit 2; }
+node -e 'const fs=require("fs");const p=process.argv[1];const g=JSON.parse(fs.readFileSync(p,"utf8"));g.installation.fichiers[0].sha256="0".repeat(64);fs.writeFileSync(p,JSON.stringify(g,null,2)+"\n")' "$B/r354/cases/cas-test.freeze.json"
+controle "354 champ installation réécrit, le gel ne concorde plus" 0 refus-nomme 1 "ne concorde pas avec lui-même" node "$H" preflight --case cas-test --cases "$B/r354/cases" --run "$B/r354/run" --repertoire "$B/r354/cas-test/terrain"
+inst_bac r355
+rm -f "$B/r355/cases/cas-test.installation.json"
+inst_gel r355 >/dev/null 2>&1 || { echo "ARRET — le gel de 355"; exit 2; }
+node "$H" preflight --case cas-test --cases "$B/r355/cases" --run "$B/r355/run" --repertoire "$B/r355/cas-test/terrain" >/dev/null 2>&1 || { echo "ARRET — la porte de 355"; exit 2; }
+controle "355 sans déclaration, aucun champ installation et l'empreinte reste propre" 0 node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const b=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));process.exit(a.installation===undefined&&b.installation!==undefined&&a.empreinte!==b.empreinte?0:1)' "$B/r355/cases/cas-test.freeze.json" "$B/r351/cases/cas-test.freeze.json"
+
+# ---------------------------------------------------------------------------------------------
+# 356-357 : la remise a zero (ADR-113), le geste que le PROTOCOLE documente : reset --hard sur la tete
+# gelee, clean -fd, reinstallation des fichiers declares, puis la porte. Aucune commande nouvelle ; ces
+# deux controles prouvent que le geste rend la porte verte, et que le clean seul la fait refuser.
+inst_suivi() { # nom — un fichier suivi commite, pour que la derive du 356 ait une cible
+  local r="$B/$1/cas-test/terrain"
+  printf 'base\n' > "$r/suivi.txt"
+  git -C "$r" add suivi.txt
+  git -C "$r" -c user.name=banc -c user.email=banc@example commit -qm "banc : un fichier suivi"
+}
+inst_tete() { # nom — la tete gelee du bac, telle que le gel l'a enregistree
+  node -e 'const g=require(process.argv[1]);console.log(g.arbres.find(a=>a.label==="travail").head_complet)' "$B/$1/cases/cas-test.freeze.json"
+}
+inst_bac r356
+# le terrain de la fixture porte des restes non suivis (aidd_docs, skill-terrain) : ils fausseraient la
+# comparaison du porcelain, donc le bac part sans eux et le gel ne decrit que l installation a remettre.
+rm -rf "$B/r356/cas-test/terrain/aidd_docs" "$B/r356/cas-test/terrain/skill-terrain"
+inst_suivi r356
+inst_gel r356 >/dev/null 2>&1 || { echo "ARRET — le gel de 356"; exit 2; }
+TETE356=$(inst_tete r356)
+cp "$B/r356/cas-test/terrain/.aidd/installation.json" "$B/r356/installe.json"
+printf 'derive\n' >> "$B/r356/cas-test/terrain/suivi.txt"
+printf 'rebut\n' > "$B/r356/cas-test/terrain/residu.txt"
+git -C "$B/r356/cas-test/terrain" reset --hard "$TETE356" >/dev/null
+git -C "$B/r356/cas-test/terrain" clean -fdq
+mkdir -p "$B/r356/cas-test/terrain/.aidd"
+cp "$B/r356/installe.json" "$B/r356/cas-test/terrain/.aidd/installation.json"
+controle "356 remise a zero, reset puis clean puis reinstallation" 0 node "$H" preflight --case cas-test --cases "$B/r356/cases" --run "$B/r356/run" --repertoire "$B/r356/cas-test/terrain"
+inst_bac r357
+rm -rf "$B/r357/cas-test/terrain/aidd_docs" "$B/r357/cas-test/terrain/skill-terrain"
+inst_suivi r357
+inst_gel r357 >/dev/null 2>&1 || { echo "ARRET — le gel de 357"; exit 2; }
+git -C "$B/r357/cas-test/terrain" clean -fdq
+controle "357 clean sans reinstallation, la porte refuse" 0 refus-nomme 1 "n'est plus celui du gel" node "$H" preflight --case cas-test --cases "$B/r357/cases" --run "$B/r357/run" --repertoire "$B/r357/cas-test/terrain"
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
 
 echo

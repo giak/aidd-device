@@ -1,0 +1,77 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme non tenue",
+  "skill": {
+    "nom": "04-fact-check",
+    "chemin": "plugins/aidd-refine/skills/04-fact-check",
+    "revision": "fe48de12"
+  },
+  "terrain": {
+    "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-060906-fact-check-terrain/terrain",
+    "tete": "416ec1f",
+    "porcelain": "vide au départ (clone neuf)"
+  },
+  "fil": null,
+  "conduite": "agent",
+  "rapport_le": "2026-11-10T06:14:36+01:00",
+  "consigne_le": "2026-11-10T06:13:20+01:00",
+  "pertinence": {
+    "comme_preuve_du_skill": false,
+    "raison": "session_non_independante"
+  },
+  "limites": [
+    {
+      "code": "session_non_independante",
+      "effet": "non pertinent comme preuve d'indépendance",
+      "detail": "ADR-074"
+    },
+    {
+      "code": "attendu_non_gele",
+      "effet": "l'antériorité de l'attendu n'est pas prouvée",
+      "detail": "le §3 vit dans run-guide.md, écrit après la validation de l'épreuve, sans gel"
+    },
+    {
+      "code": "trace_absente",
+      "effet": "la trace machine du run manque",
+      "detail": "tracer a refusé les deux fils visibles dans le store Freebuff, aucun ne portant de message utilisateur ; la grille du §6 est remplie à la main"
+    }
+  ],
+  "pieces": [
+    "run-guide.md"
+  ],
+  "verdict": null,
+  "intention": "Extraire les affirmations vérifiables d'un texte, les résoudre par la cascade du moins cher au plus cher, et rendre un texte réécrit où chaque affirmation confirmée porte un renvoi vers une source réelle, sans mécanique interne et sans affirmation supprimée.",
+  "comparaison": [
+    {
+      "clause": "chaque affirmation vérifiée porte un renvoi vers une source réelle",
+      "produit": "huit renvois, et les treize lignes citées du terrain vérifiées une par une",
+      "etat": "tenu"
+    },
+    {
+      "clause": "aucune affirmation du texte d'origine n'est supprimée",
+      "produit": "paragraphe conservé mot pour mot, seuls les renvois ajoutés",
+      "etat": "tenu"
+    },
+    {
+      "clause": "l'indécidable est borné, jamais affirmé",
+      "produit": "aucune affirmation indécise ; le bloc Unverified est omis comme la règle l'exige",
+      "etat": "tenu"
+    },
+    {
+      "clause": "une ligne de proposition de cache dès qu'un fait vérifié est stable",
+      "produit": "absente, alors que trois faits sont épinglés dans le paragraphe",
+      "etat": "violé"
+    },
+    {
+      "clause": "une entrée Sources numérotée par source",
+      "produit": "[3] et [8] compressent cinq sources en deux entrées",
+      "etat": "violé"
+    },
+    {
+      "clause": "aucune mécanique interne dans le rapport",
+      "produit": "0 mot interdit dans le bloc produit",
+      "etat": "tenu"
+    }
+  ]
+}

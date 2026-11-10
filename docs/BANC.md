@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 347 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 357 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -137,6 +137,14 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > morte avant toute réponse** : le même bac copié, sa page ne juge aucune clause du skill, et le mutant qui
 > retire la règle rend la faute au skill sur un tableau que la session n'a jamais eu l'occasion de rendre.
 
+> V0.80 — 2026-11-10 : **357** contrôles ; 356 et 357 éprouvent la **remise à zéro** (ADR-113) : le geste documenté (reset --hard sur la tête gelée, clean -fd, réinstallation des fichiers déclarés) rend la porte verte, et le clean seul la fait refuser.
+
+> V0.79 — 2026-11-10 : **355** contrôles ; 351 à 355 éprouvent l'**installation déclarée** (ADR-112) : le cas déclare les fichiers que l'installation laisse dans le terrain, le gel les hache et les porte dans son empreinte, la porte les relit. Sans déclaration, aucun champ et l'empreinte est inchangée.
+
+> V0.78 — 2026-11-10 : **350** contrôles ; 343 à 345 éprouvent l'**intention et la comparaison** d'un run
+> guidé (ADR-111) : un guidé consigné à partir du 2026-11-10 sans `intention` ni `comparaison` est refusé,
+> une `forme tenue` dont une comparaison dit `violé` aussi, et les cinq runs guidés antérieurs gardent leur
+> journal, l'instrument ne réclamant pas rétroactivement un champ qu'une décision postérieure crée.
 > V0.77 — 2026-11-10 : le compte ne bouge pas, **347** ; les deux références de l'étalon ne sont plus
 > écrites à la main : `etalonner --derive-de <run>` les dérive du produit réellement collecté d'un run
 > conclu `conforme` (ADR-110, rectification du même jour). Quatre cas sont étalonnés — cas jouet,
@@ -453,7 +461,7 @@ discriminant par un message unique fait tomber l'un des deux. Une trace recopié
 > `exit 0` et un dossier de run intact, et un serveur qui pose trois questions pour deux réponses figées
 > fait refuser la troisième. Rien n'ouvre de vraie session, rien ne touche au réseau.
 
-**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 347 contrôles, sans ouvrir
+**En une phrase.** Il rejoue à blanc les refus et les acceptations du harnais, 357 contrôles, sans ouvrir
 aucune session et sans écrire dans le dépôt. Il éprouve quatre instruments du dossier `harness/` :
 `run.mjs`, le harnais du run (contrôles 1 à 60, puis 64 à 118, puis 119 à 130 — les douze derniers
 traversent un cas entier) ; `liens.mjs`, le contrôle de liens des documents du dépôt (contrôles 61 à 63) ;
@@ -543,6 +551,9 @@ une panne d'outil se voir dans un `FAIL`.
 
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
+| 351 à 355 | **l'installation déclarée** (ADR-112) : un cas nomme dans `CASES/<cas>.installation.json` les fichiers que l'installation laisse dans le terrain, et le gel les mesure au lieu de les croire. Le 351 gèle un bac qui déclare `.aidd/installation.json` et la porte l'accepte ; le 352 retire le fichier et exige un refus du gel qui dit « absent du terrain » ; le 353 modifie le fichier après le gel et exige le refus de la porte, empreintes nommées ; le 354 réécrit le `sha256` du champ `installation` et exige « ne concorde pas avec lui-même » ; le 355 gèle le même bac sans déclaration, vérifie qu'aucun champ n'apparaît, que l'empreinte diffère de celle du 351 et que la porte passe. Les cinq tournent sous `$B`, jamais dans les quatre arbres | ADR-112 |
+| 356 à 357 | **la remise à zéro** (ADR-113) : le terrain revient à l'état gelé par `git reset --hard <tête gelée>`, `git clean -fd`, réinstallation des fichiers déclarés, puis la porte. Le 356 part d'un bac gelé, ajoute une dérive (un fichier suivi modifié, un rebut non suivi), joue le geste et exige la porte verte ; le 357 joue le `clean` sans réinstallation et exige « n'est plus celui du gel », parce que l'installation non suivie a disparu | ADR-113 |
+| 343 à 345 | **l'intention et la comparaison d'un run guidé** (ADR-111) : un guidé consigné à partir du 2026-11-10 déclare ce que le skill est censé faire (`intention`) et, clause par clause, ce que le produit fait contre elle (`comparaison` : `clause`, `produit`, `etat` `tenu` ou `violé`). Le 343 vérifie qu'un guidé qui porte les deux passe ; le 344 les retire et exige un refus qui nomme l'intention manquante ; le 345 force `forme tenue` sur une comparaison qui dit `violé` et exige le refus. L'antériorité de l'intention reste **déclarée**, jamais mesurée : deux horodatages écrits à la main ne prouvent aucun ordre | ADR-111 |
 | 341 à 342 | **l'étalon des cas** (ADR-110) : `etalonner` relit le contrat de produit du cas (`produit.arbre_attendu`, `produit.racine`) et l'applique à deux produits de référence déclarés dans `CASES/<cas>.etalon.json`, sans aucune session. Les deux références sont **dérivées** d'un produit réellement collecté (`--derive-de <run>`, reçu `conforme`) : `reel` le recopie verbatim, `reel-hors-racine` le même plus un `HORS-RACINE.md` à la racine de référence. Le 341 exige que le cas jouet accepte l'un et refuse l'autre ; le 342 retire ce `HORS-RACINE.md` d'une copie des cas sous `$B` et exige un refus qui nomme la référence, l'issue attendue et l'issue mesurée. Un étalon sans une référence de chaque issue est refusé : une seule référence ne prouve aucune discrimination | ADR-110 |
 | 340 | **les chiffres de taille des pages vivantes** (ADR-109) : chaque « `fichier`, N lignes » des pages vivantes — `ARCHITECTURE`, `BANC`, `PROTOCOLE`, `REPLAY`, `INDEX`, `DASHBOARD`, `guide/*.md`, `README`, `AGENTS` — est recalculé sur le fichier qu'il nomme, et l'écart est nommé avec les deux nombres. Zéro chiffre trouvé est un échec. Les pages datées (journal, brainstorms, specs, rendus) sont hors périmètre : un chiffre y décrit un instant, pas un état | ADR-109 |
 | 336 à 339 | **la sonde du gué** (`gue`, ADR-108) : sur un registre fabriqué et un `HOME` en bac, un terrain indexé comme source `folder` est accepté en `0` et la sortie nomme son projet, sa base et son compte de fils (336) ; un terrain seulement nommé par son chemin avec `sources: []` est refusé en `1`, et le refus compte les entrées qui le portent (337) ; `--terrain` absent sort en `2` (338) ; un `HOME` sans registre refuse en `1` et nomme le fichier absent (339). Le registre réel de la machine n'est jamais lu | ADR-108 |

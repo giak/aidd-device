@@ -11057,3 +11057,613 @@ cas qui portent un reçu `conforme` avec un produit collecté peuvent être éta
 à dériver, et `etalonner` refuse au lieu de passer.
 
 **Rien n'est commité** : aucun commit ni `git push` demandé.
+
+## Séance 203 — un skill jamais exercé : `04-fact-check` (2026-11-10)
+
+**Question.** « Il faut tester. Trouve un skill à tester. »
+
+**Le skill trouvé.** `plugins/aidd-refine/skills/04-fact-check`, révision `fe48de12`, huit fichiers dans
+l'arbre de cette révision et un dossier propre : `ls docs/device/runs | grep -c fact-check` → `0`, aucun run
+ne l'avait exercé. Écarté, `02-implement`, le plus gros angle mort mais sans plan à implémenter :
+`find /home/giak/projects/aidd-device-work -path '*aidd_docs/tasks*' -name 'plan.md'` ne rend rien.
+
+**L'épreuve.** Run guidé ([ADR-074](DECISIONS.md)), six champs au §0 du journal. Terrain : clone neuf de
+`audio-sync-tool`, tête `416ec1f`, porcelain vide. Texte cible : le paragraphe « Stack » du `README.md`,
+lignes 10 à 12, huit affirmations toutes résolubles par le dépôt. Le skill est joué sans écrire aucun
+fichier.
+
+**Le produit.** Les huit affirmations conservées mot pour mot, chacune suivie d'un renvoi `[1]` à `[8]`, un
+`## Sources` de huit entrées portant un chemin repo-relatif, et aucun `## Unverified claims` puisque tout se
+résout.
+
+**Vérifié.** Les treize lignes citées, une par une sur le terrain, portent ce que le renvoi prétend
+(`ci.yml:29` → `python-version: '3.12'`, `requirements.txt:1` → `Flask==3.1.3`, `app.py:18` → `from mutagen
+import File as MutagenFile`, etc.) ; huit numéros de renvoi distincts ; **0** mot interdit dans le bloc
+produit (`grep -E` borné au §4) ; `git status --porcelain` dans le terrain → **0** ligne.
+
+**Le refus qui compte.** `tracer` a refusé les deux fils visibles dans le store Freebuff, `6972de9d…` et
+`3e6da3fa…`, avec le même motif : « ne porte aucun message utilisateur ». La trace machine de cette
+conversation n'existe pas ; `run.json` déclare `trace_absente` et la grille des quatre familles est remplie
+à la main. C'est une limite nommée, jamais un contournement : la commande a refusé et n'a rien écrit.
+
+**Ce que ce run n'a pas exercé.** Aucune affirmation du texte n'était démentie par le dépôt : la branche
+« corriger une affirmation fausse » et le marqueur `(unverified - no source found)` restent non exercés, et
+le run ne dit rien d'eux. Il ne prouve pas non plus l'indépendance de la session.
+
+**Rien n'est commité** : aucun commit ni `git push` demandé.
+
+**Rectification du même jour, à la question « le skill a-t-il produit ce qu'il est censé faire ? ».** Non,
+pas entièrement, et le statut passe de « forme tenue » à **forme non tenue**. Deux règles du skill ne sont
+pas tenues : `actions/03-report.md:22` exige une ligne de proposition de cache dès qu'un fait vérifié est
+stable, et le paragraphe porte trois faits épinglés (`Flask==3.1.3`, `pytest==9.1.1`, `python-version:
+'3.12'`) ; elle est absente (`grep -c "Cache suggestion"` → `0`). `actions/03-report.md:20` exige une entrée
+numérotée par source, et deux renvois en compressent cinq (`[3]` : `package.json:27`, `package.json:30`,
+`build.js:12` ; `[8]` : `.gitignore:3`, `app.py:34`, `app.py:2283`). Le produit reste tel quel : c'est le
+jugement qui change, jamais la pièce.
+
+Ce que la rectification dit du protocole : le premier jugement avait vérifié la forme extérieure (huit
+renvois, sources existantes, mots interdits) et pas les obligations conditionnelles du skill. Une conformité
+constatée par `grep` sur ce que l'attendu nommait ne couvre pas les règles que l'attendu n'a pas recopiées.
+
+**Deuxième rectification, même jour, à la question « mais le protocole de test fonctionne ? ».** Il prescrit,
+il ne contrôle pas. Le run a violé deux clauses écrites, sans qu'aucune commande ne bronche :
+[l'ADR-082](DECISIONS.md) exige une ligne par action déclarée par le `SKILL.md` avant les quatre familles et
+la borne du terrain, et la grille du §6 n'en portait que quatre, sans les trois actions ; la même décision ne
+compte une validation que suivie d'un tour `user`, et les deux validations de ce run sont venues d'un outil de
+question. Les deux sont corrigées au journal : §0 et §6, états `non observé`, avec la raison. L'ADR-082 le dit
+déjà de son propre chef : « Aucun code, aucun contrôle de banc : elles changent ce qu'un run a le droit
+d'écrire, pas ce que le harnais calcule ». Ce run en est la démonstration, et sa propre dérive en est la
+mesure : le protocole tient si le joueur tient, et rien ne le lui rappelle.
+
+Ce que cela laisse ouvert, nommé : aucun contrôle ne confronte une grille au `SKILL.md` de sa révision, ni une
+validation au tour qui la suit ; et `runs.mjs` vérifie le schéma de `run.json`, jamais le contenu du journal.
+
+## Séance 204 — l'instrument refuse un run guidé jugé sur la forme (2026-11-10)
+
+**Demande.** « Fais refuser par l'instrument un run guidé jugé sur la forme sans comparaison au produit de
+l'intention. »
+
+**Ce qui change.** `runs.mjs` exige désormais, pour un run guidé consigné à partir du 2026-11-10, deux champs
+que la forme ne remplace pas : `intention`, ce que le skill est censé faire, et `comparaison`, une liste de
+clauses `{clause, produit, etat}` où `etat` vaut `tenu` ou `violé`. Il refuse quatre cas : un guidé sans
+intention, un guidé sans comparaison, une comparaison incomplète, une `forme tenue` dont une clause dit
+`violé`. Il refuse aussi l'inverse, une `forme non tenue` sans aucune clause violée : un écart se nomme.
+
+**Le run de référence est complété, pas réécrit.** `2026-11-10-060906-guide-04-fact-check` porte son
+intention (extraire les affirmations vérifiables, les résoudre, rendre un texte réécrit où chaque
+affirmation confirmée porte un renvoi) et six clauses comparées : quatre `tenu`, deux `violé` (la ligne de
+cache absente, les entrées `## Sources` qui en compressent cinq en deux). Son statut reste `forme non tenue`,
+et il passe désormais l'instrument par la comparaison, non par la forme seule.
+
+**Les cinq runs guidés antérieurs gardent leur journal.** L'instrument ne réclame pas rétroactivement un
+champ qu'une décision postérieure crée : `EXIGE_INTENTION` borne la règle au 2026-11-10, et `--verifier` passe
+sur les dix-huit autres runs sans les toucher.
+
+**Vérifié.** `bash docs/device/harness/banc-harnais.sh` => **350/350 PASS**, `exit 0`, contrôles 343 à 345
+compris : le 343 accepte le run qui porte sa comparaison ; le 344 retire `intention` et `comparaison` et
+obtient le refus « guidé sans intention » ; le 345 force `forme tenue` sur une comparaison violée et obtient
+« les deux se contredisent ». `runs.mjs --index` puis `--verifier` => `exit 0` ; `liens.mjs` => 0 mort.
+
+**Ce que cela ne mesure pas, nommé.** L'antériorité de `intention` reste **déclarée** : deux horodatages
+écrits à la main ne prouvent aucun ordre. La comparaison est écrite par le joueur, donc un joueur peut
+déclarer `tenu` sur une clause que le produit viole ; l'instrument rend cette déclaration obligatoire et
+contradictoire avec le statut, il ne la juge pas.
+
+**Rien n'est commité** : aucun commit ni `git push` demandé.
+
+## Séance 205 — le protocole dit son objet : le skill et son intention (2026-11-10)
+
+**Demande.** « Relis le PROTOCOLE à la lumière de l'ADR-111 et corrige les pages qui parlent encore du
+dispositif plutôt que du skill. »
+
+**Ce qui restait de la dérive.** Trois pages vivantes disaient encore l'objet comme une modification du
+framework. `README.md` ouvrait sur « il fait exécuter une modification du framework par une session ». Le
+« En une phrase » d'[ARCHITECTURE](ARCHITECTURE.md) et son §1 disaient la même chose, et le PROTOCOLE
+lui-même ne nommait nulle part la boucle de l'ADR-111 : son « En une phrase » partait de « test ça »
+sans dire ce qui est déclaré, mis en situation, produit et comparé.
+
+**Corrigé.** `README.md` : le dispositif teste **des skills**, déclare ce que le skill est censé faire, le
+met en situation, note le produit et nomme l'écart. ARCHITECTURE : même boucle au « En une phrase », avec le
+renvoi à l'ADR-111, et §1 dit « si un skill du framework fait ce qu'il déclare quand un modèle le lit ».
+PROTOCOLE : l'« En une phrase » porte les quatre temps ; la ligne du mode guidé dit ce qu'il prouve
+(« la comparaison du produit à l'intention déclarée, la forme, les chemins, les écritures ») ; le §6 gagne un
+fait qu'il n'attestait pas : **l'intention n'est pas mesurée**, elle est déclarée, sa comparaison est écrite
+par le joueur, et `runs.mjs` n'en juge que la présence et la cohérence avec le statut.
+
+**Vérifié.** `grep -rn "modification du framework"` sur les pages vivantes (README, ARCHITECTURE, PROTOCOLE,
+VISION, guide, INDEX, DASHBOARD) → aucun résultat ; `liens.mjs` → `0` ; `bash docs/device/harness/banc-harnais.sh`
+→ **350/350 PASS**, `exit 0` ; `runs.mjs --verifier` → `0`.
+
+**Ce qui n'est pas fait.** Aucune page n'a été ajoutée : la boucle vit là où la question se pose, sans second
+foyer. Les brainstorm et les specs datées gardent « une modification du framework » : ils décrivent un
+instant, et un chiffre ou une formule datée ne se réécrit pas.
+
+**Rien n'est commité** : aucun commit ni `git push` demandé.
+
+## Séance 206 — la VISION reprend la boucle entière (2026-11-10)
+
+**Décision de la personne, reprise telle quelle.** L'idée est de tester un skill de l'AIDD, ajouté ou
+modifié. On déclare une intention, ce que ce skill est censé faire, et le skill doit être assez explicite en
+lui-même pour qu'on écrive cette intention sans deviner. On met le skill en situation dans un AIDD installé
+dans un projet local, on l'y fait tourner, on note ce qu'il produit, puis on compare avec l'intention de
+départ. On écrit un rapport intelligible sur ce skill : approche pédagogique, aide à la décision, guide,
+explications. L'utilisateur en prend connaissance, modifie le skill de l'AIDD selon le résultat, on met à jour
+le skill dans le projet, on remet git à un AIDD fraîchement installé, et on relance : la boucle se répète.
+
+**Ce que VISION porte maintenant.** Version 0.4. « Le projet en une phrase » porte les six temps ; une
+section « La boucle, dans l'ordre » les détaille, le skill explicite compris ; une section « La boucle ne
+s'arrête pas au rapport » nomme la mise à jour, le `git reset` vers un AIDD fraîchement installé et la
+répétition, avec la règle qu'une intention qui change se déclare avant le passage suivant. « La dérive
+qu'elle interdit » garde la dérive constatée le 2026-11-10 et en ajoute une seconde : un rapport qui décrit
+des pièces au lieu d'aider l'utilisateur à décider. « Pour qui » nomme celui qui ajoute ou modifie un skill.
+Les non-objectifs gagnent « pas un rapport de machine », et la phase 2 du tableau porte le rapport et la
+boucle.
+
+**Vérifié.** Les repères du nouveau texte sont sur disque (`grep -c` des trois formules) ; `liens.mjs` → 0
+mort ; `runs.mjs --verifier` → 0 ; `bash docs/device/harness/banc-harnais.sh` → **350/350 PASS**.
+
+**Ce que cela ne change pas, et une erreur corrigée.** Aucun code, aucun cas, aucun contrôle : la VISION dit
+l'intention du dépôt, elle ne l'implémente pas. Ma première rédaction affirmait que trois pièces de la boucle
+manquaient ; c'est faux pour deux d'entre elles, constaté à la question « mais on l'avait déjà fait tout ça ? ».
+Le **rapport à l'utilisateur existe** : `RESULTAT.md`, la page de décision de l'[ADR-061](DECISIONS.md), « celle
+que lit la personne qui a demandé le test », six sections, soixante lignes au plus, vocabulaire de la personne,
+mots du dedans interdits, vingt-deux produites ; `RAPPORT.md` en est la vue déterministe. La **situation
+existe** : le terrain d'un cas est un projet où AIDD est installé (les terrains portent `aidd_docs/`), et l'état
+frais se retrouve par le gel et le clone, un terrain déjà « ramené à l'état gelé » à chaque re-gel (freeze du
+plan-simple, confirmation du 2026-10-25). Ce qui manque vraiment : aucune commande n'installe AIDD dans un
+projet, le PROTOCOLE ne nomme pas ce geste, et la boucle n'a ni `git reset` ni répétition outillée ; le rejeu du
+2026-10-24 (`rejeu-06-test`) et les deux runs guidés de `10-task` ont tenu la boucle à la main.
+
+**Rien n'est commité** : aucun commit ni `git push` demandé.
+
+## Séance 207 — le protocole confronté à la VISION (2026-11-10)
+
+**Demandé.** Un brainstorm pour que le protocole corresponde à la VISION, après la constatation que le test
+s'était déjà fait dans un projet local, `/home/giak/projects/audio-sync-tool`.
+
+**Constaté.** Ce projet est bien la situation des cas : 5 des 16 gels le nomment comme `terrain`, et le
+clone de `plan-simple` y est à `416ec1f` ; le projet lui-même ne porte ni `aidd_docs` ni `AGENT.md`, et les
+runs se font sur ses clones. L'instrument tient déjà quatre des six temps (situation, run, note, comparaison,
+rapport) ; il n'a aucun geste pour l'installation déclarée ni pour la série de passages.
+
+**Écrit.** [Le brainstorm](brainstorm/2026-11-10-065357-protocole-aligne-sur-la-vision.md) : six temps
+confrontés pièce par pièce, sept écarts, quatre options par écart, et trois specs dans l'ordre du coût :
+installation déclarée et vérifiée par `preflight` (A2), remise à zéro documentée dont la porte mesure déjà le
+refus (B1), campagne par skill portant la synthèse et le geste suivant (C1 avec D1).
+
+**Décidé.** Rien. Un brainstorm n'engage pas : la spec attend l'accord de la personne, selon le contrat du
+dépôt.
+
+**Vérifié.** `liens.mjs` 0 ; `runs.mjs --verifier` 0 ; banc 350/350.
+
+## Séance 208 — l'installation déclarée, sa spec (2026-11-10)
+
+**Objectif.** Écrire la spec que le brainstorm du jour recommande en premier : faire entrer l'installation
+d'AIDD dans le protocole, sans dupliquer l'installeur du framework.
+
+**Fait.** Spec écrite à
+[`docs/tasks/2026_11/2026-11-10-070043-installation-declaree/2026-11-10-070043-spec.md`](tasks/2026_11/2026-11-10-070043-installation-declaree/2026-11-10-070043-spec.md),
+`status: pending`. Elle définit : une déclaration de cas `CASES/<cas>.installation.json` (geste humain cité,
+fichiers du terrain) ; un champ `installation` du gel (arbre `travail`, `revision` = `head_complet` du
+terrain, `sha256` par fichier) dont les lignes entrent dans `empreinteDeGel` de façon conditionnelle, pour que
+les seize gels existants gardent leur empreinte ; une règle de `preflight` qui relit chaque fichier déclaré
+dans l'espace de travail et refuse absent, changé, ou incohérent ; un `gate.json` qui enregistre révision,
+empreinte et compte ; cinq contrôles de banc, `351` à `355`.
+
+**Vérifié.** `liens.mjs` → `0` ; `runs.mjs --verifier` → `0`. Rien n'a été implémenté : aucun code, aucun
+contrôle, aucun cas touché, le banc reste à 350.
+
+**Dérives signalées.** Le nom du dossier et de la spec a d'abord été écrit `2026-11-10-07:00:43-…`, parce que
+`stat -c %w` rend l'heure avec des deux-points et que je l'ai recopiée telle quelle ; renommé en
+`2026-11-10-070043-…`, la seconde de naissance étant conservée. Le nommage impose `YYYY-MM-DD-HHMMSS-` : la
+règle a été enfreinte une minute, puis rétablie.
+
+**Rectifications.** Aucune sur les faits : la vérification du jour a confirmé que cinq des seize gels nomment
+`/home/giak/projects/audio-sync-tool` et que la branche `origin/test/aidd-installation` de son clone porte
+`AGENT.md`, tandis que le projet lui-même n'a ni `aidd_docs` ni `AGENT.md`.
+
+**Prochaines étapes.** L'accord de la personne sur la spec, puis la mise en œuvre : `run.mjs`, cinq contrôles
+de banc, les pages vivantes, l'ADR-112.
+
+**Mémoires.** `eff165ab-09d7-4ad5-bda5-b7990dc22cad` — la spec de l'installation déclarée, ses mesures et ses
+cinq contrôles.
+
+## Séance 209 — la campagne par skill, sa spec (2026-11-10)
+
+**Objectif.** Écrire la spec de l'objet qui relie les passages d'un même skill, demandée sous condition que
+C1 passe avant A2. Je ne le juge pas : l'ordre du brainstorm reste A2, B1, C1, et la spec est écrite parce
+qu'elle ne dépend pas des deux autres.
+
+**Fait.** Spec à
+[`docs/tasks/2026_11/2026-11-10-070358-campagne-par-skill/2026-11-10-070358-spec.md`](tasks/2026_11/2026-11-10-070358-campagne-par-skill/2026-11-10-070358-spec.md),
+`status: pending`. Elle définit `docs/device/campagnes/<skill>/campagne.json` : `skill`, `passages[]`
+chronologiques, `geste` au vocabulaire fermé (`corriger`, `garder`, `relancer`, `abandonner`), et **aucun
+champ recopié du run**. Un `campagnes.mjs` sur le modèle de `runs.mjs` écrit `CAMPAGNE.md` : une ligne par
+passage (date, run lié, statut, clauses tenues et violées, `skill.revision`, geste), ce que la série montre
+sans le juger, et deux blocs fixes sur ce qu'elle établit et n'établit pas. Sept refus, dont le run non guidé,
+le run d'un autre skill, l'ordre non chronologique et le geste daté avant le rapport. Quatre contrôles,
+`356` à `359`.
+
+**Vérifié.** `liens.mjs` → `0` ; `runs.mjs --verifier` → `0` ; le nom porte la seconde de naissance mesurée
+(`stat -c %w` → `2026-11-10-070358`, aucun renommage nécessaire). Banc inchangé, aucun code touché.
+
+**Dérives signalées.** Aucune.
+
+**Rectifications.** Le `description` de la spec annonce quatre contrôles et sept refus, alors qu'une première
+rédaction parlait de cinq refus : le texte final en porte sept, et c'est le texte qui fait foi.
+
+**Prochaines étapes.** L'accord de la personne, puis la mise en œuvre dans l'ordre A2, B1, C1 : `campagnes.mjs`,
+quatre contrôles, les pages vivantes, l'ADR.
+
+**Mémoires.** `281d6d2d-0de5-4e82-94e4-da7d0b2064ab` — la campagne par skill, son objet, ses refus et ses
+quatre contrôles.
+
+## Séance 210 — la déclaration d'installation de plan-simple, et sa rectification (2026-11-10)
+
+**Objectif.** Écrire la déclaration d'installation du terrain `audio-sync-tool` et l'éprouver contre le gel de
+`plan-simple`.
+
+**Fait.** Déclaration écrite à
+[`docs/device/CASES/2026-10-21-173843-plan-simple.installation.json`](device/CASES/2026-10-21-173843-plan-simple.installation.json),
+au format de la spec `pending` : un fichier, `AGENT.md` ; `geste` déclaré `inconnu`, daté `null`, avec sa
+preuve et sa limite. Six mesures, dans l'ordre de la spec :
+
+1. le fichier déclaré existe dans l'arbre de travail du gel ;
+2. son `sha256` au disque égale celui inscrit :
+   `f4a968b7d2d64bc4c46d2117dcefded96abbe970d3a8d53cf8fb935bc2b9328f`, 21 441 octets ;
+3. l'arbre est celui du gel : `HEAD` `416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde`, `porcelain` `[]`, des deux
+   côtés ;
+4. le fichier est **suivi** au `HEAD` gelé (`blob 6def7bd5`, `hash-object` identique) : la porte le couvre déjà
+   par `HEAD` et `porcelain`, la déclaration n'ajoute rien pour ce fichier ;
+5. le gel ne porte aucun champ `installation` : la déclaration n'est donc pas encore mesurée ;
+6. aucun script du harnais ne lit `installation.json`.
+
+**Vérifié.** `liens.mjs` → `0` ; `runs.mjs --verifier` → `0`.
+
+**Rectifications.** J'avais écrit, séances 206 à 208 et dans deux pièces vivantes, que
+`/home/giak/projects/audio-sync-tool` ne portait ni `aidd_docs` ni `AGENT.md`. C'est faux : il porte `AGENT.md`
+(21 441 octets, `HEAD` `416ec1f`), et le `grep` qui l'avait écarté cherchait `agents`, pas `AGENT`. Les deux
+pièces vivantes sont corrigées ([brainstorm](brainstorm/2026-11-10-065357-protocole-aligne-sur-la-vision.md),
+[spec de l'installation déclarée](tasks/2026_11/2026-11-10-070043-installation-declaree/2026-11-10-070043-spec.md)) ;
+la séance 208, close, reste telle quelle et sa ligne « aucune rectification sur les faits » est fausse.
+
+**Limites.** La déclaration tient mécaniquement, elle ne prouve pas qu'AIDD soit installé : `AGENT.md` est le
+document d'agent du projet lui-même (« DSL COMPRESSION: Audio Sync Tool »), identique sur `origin/main` et
+`origin/test/aidd-installation`, et le terrain n'a ni `aidd_docs` ni `.aidd`. Pour que la déclaration soit
+mesurée, il faut un re-gel avec confirmation, et le gel porterait alors un champ que rien encore ne relit.
+
+**Prochaines étapes.** L'implémentation de la spec A2, qui donne un lecteur à cette déclaration, puis une
+déclaration qui déclare une vraie trace, si le terrain en reçoit une.
+
+**Mémoires.** `41c745d2-e540-405d-a176-23f149da0d40` — la déclaration de plan-simple, les six mesures, et la
+rectification sur `AGENT.md`.
+
+## Séance 211 — AIDD installé dans le terrain de plan-simple, re-gel confirmé (2026-11-10)
+
+**Objectif.** Donner au terrain de `plan-simple` une vraie trace d'installation, puis re-geler le cas avec
+confirmation.
+
+**Fait.** Installation par la recette que le framework documente pour opencode, « Flat only : dézipper
+l'archive `opencode-flat` à la racine du projet, dans `.opencode/` » : archive de release
+`aidd-framework-opencode-flat-5.13.0.zip`, `sha256`
+`1d71f6a0671ca73429c1b777f86d6bf23b9561e705d8f6dc91203713d33dc1f4`, 688 entrées dont 466 fichiers. Résultat
+dans le terrain : `.opencode/` (466 fichiers, 2,9 Mo) et `opencode.json` (105 octets), non suivis, le
+`porcelain` passant de `[]` à `["?? .opencode/", "?? opencode.json"]`, `HEAD` inchangé `416ec1f`.
+
+Déclaration réécrite : trois fichiers, `opencode.json`, `.opencode/skills/aidd-orchestrator/00-async-dev/SKILL.md`,
+`.opencode/hooks/aidd-telemetry/prompt-gate.cjs` ; `geste` à `buffy (agent), sur instruction de giak`, daté, et
+une preuve qui nomme l'archive, son empreinte et l'écart de révision.
+
+Re-gel deux fois, la seconde après correction du compte : `--refreeze --confirme-par giak`, les neuf
+références du cas reprises telles quelles. Gel obtenu : empreinte `84070e50`, 5 fichiers du cas, 9 références,
+4 arbres, `travail` `416ec1f`, `porcelain` deux entrées, confirmation `giak`.
+
+**Vérifié.** `HEAD` gelé égal au disque, `porcelain` gelé égal au disque, les trois fichiers déclarés présents
+et non suivis ; `liens.mjs` → `0` ; `runs.mjs --verifier` → `0` ; banc → **350/350 PASS**, `banc=0`.
+
+**Dérives signalées.** Ma première vérification comparait chaque fichier à lui-même (`h(p) === h(p)`), donc ne
+vérifiait rien ; refaite sur les deux seules choses que la déclaration et le gel permettent : `HEAD` et
+`porcelain`. Le compte « 688 fichiers » écrit d'abord dans la déclaration et dans la confirmation était le
+nombre d'entrées de l'archive, pas de fichiers : corrigé en « 688 entrées dont 466 fichiers », et le cas re-gelé.
+
+**Rectifications.** La déclaration précédente, qui déclarait `AGENT.md`, est remplacée : `AGENT.md` est le
+document d'agent du projet, pas une trace d'installation, et la preuve le disait déjà. Elle n'avait donc rien
+à prouver ; la nouvelle déclare des fichiers que l'installateur a réellement écrits.
+
+**Limites.** L'archive installée est la version publiée `5.13.0`, alors que la révision sous test est
+`fe48de12`, non étiquetée et sans archive de release : le terrain porte une AIDD plus récente que la révision
+mesurée, et c'est écrit dans la preuve. Le gel couvre la déclaration par son empreinte, sous le rôle `attendu`,
+mais ne porte aucun champ `installation` et ne re-hache aucun fichier du terrain : rien encore ne confronte la
+déclaration au disque. Enfin le terrain n'est plus un clone nu, ce qui change la prémisse des passages à venir :
+la porte l'acceptera tel quel, installation comprise.
+
+**Prochaines étapes.** L'implémentation de la spec A2, qui relit ces trois fichiers à chaque ouverture, puis la
+vérification qu'un `preflight` refuse bien un terrain dont l'installation a bougé.
+
+**Mémoires.** `fa291005-2498-41eb-8a9d-76b7cbcdd850` — l'installation, ses mesures, les deux re-gels et la
+rectification sur `AGENT.md`.
+
+## Séance 212 — l'installation déclarée, relue par le gel et par la porte (2026-11-10)
+
+**Objectif.** Mettre en œuvre la `spec` du `2026-11-10-070043` : qu'une déclaration d'installation soit
+mesurée par `freeze` et re-hachée par `preflight`, sans que les seize gels existants bougent d'un octet.
+
+**Fait.** Dans `docs/device/harness/run.mjs`, la déclaration `CASES/<cas>.installation.json`
+(`geste{par, le, preuve}`, `fichiers` relatifs au terrain) entre dans `fichiers` sous le rôle
+`installation` ; `freeze` la mesure (taille et `sha256` de chaque fichier, `revision` du terrain) et écrit
+`installation{arbre, revision, fichiers}` ; les lignes `installation\t<chemin>\t<sha256>` et
+`installation-revision\t<revision>` n'entrent dans l'empreinte du gel que si le champ existe, ce qui laisse les
+gels antérieurs identiques. `preflight` re-hache chaque fichier déclaré dans l'espace de travail, refuse un
+fichier absent ou changé, et écrit dans `gate.json` la révision, l'empreinte de l'installation et le compte.
+
+Cinq contrôles ajoutés, 351 à 355, chacun sur un bac neuf sous `$B` : acceptation d'une déclaration mesurée ;
+fichier retiré avant le gel, refus « absent du terrain » ; fichier modifié après le gel, refus de la porte
+« a changé depuis le gel » ; `sha256` du champ réécrit, refus « ne concorde pas avec lui-même » ; bac sans
+déclaration, aucun champ et empreinte différente de celle du bac avec.
+
+Pages suivies : `BANC.md` (355 contrôles, `V0.79`, ligne de groupe 351 à 355), `ARCHITECTURE.md` (lignes
+`freeze` et `preflight`, refus compris), `PROTOCOLE.md` (sous-section « L'installation déclarée » dans le
+§2), `DECISIONS.md` (`ADR-112`, six blocs). La `spec` passe à `done`.
+
+**Vérifié.** `banc` → **355/355 PASS**, `banc=0` ; `liens.mjs` → `0` ; `runs.mjs --verifier` → `0` ;
+`node --check run.mjs` → `0` ; `bash -n banc-harnais.sh` → `0`. Smoke test sur le terrain réel de
+`plan-simple` : re-gel empreinte `20251079`, `installation.revision` `416ec1fa`, trois fichiers, rôles
+`attendu, installation, demande` ; `preflight` → « installation 3 fichier(s), révision `416ec1fa` »,
+`gate.installation` empreinte `6e330d98…` ; gel falsifié refusé (`exit 1`), puis restauré ; `cas-jouet`,
+qui ne déclare rien, garde son empreinte `87a38ffc`.
+
+**Dérives signalées.** Le contrôle 340 a rougi après l'insertion du banc : `ARCHITECTURE.md` et
+`guide/explication.md` annonçaient encore `4 450 lignes` pour `run.mjs`, qui en a `4 570` depuis ce code.
+Corrigés. Premier passage d'édition fautif : mes ancres cherchaient « 4450 lignes » alors que les pages écrivent
+« 4 450 lignes », espace comprise ; le script avait déjà écrit les trois autres fichiers quand il a constaté
+l'échec, d'où une seconde passe ciblée sur les seuls chiffres plutôt qu'une reprise entière.
+
+**Limites.** L'archive installée reste la version publiée `5.13.0` alors que la révision sous test est
+`fe48de12`, sans archive de release : l'écart est déclaré dans la preuve du cas. `installation.revision`
+mesure le `HEAD` du terrain, pas l'identité de l'archive. Les contrôles 351 à 355 éprouvent un bac synthétique
+qui déclare `.aidd/installation.json` ; le seul témoin réel est le terrain de `plan-simple`, re-gelé et passé
+une fois par la porte, pas rejoué par le banc.
+
+**Prochaines étapes.** La spec de la campagne par skill reste `pending`, et la remise à zéro documentée avant
+elle ; côté installation, il reste à éprouver un refus réel sur `plan-simple` en faisant bouger un de ses
+trois fichiers, geste qui n'a pas été fait ici.
+
+**Mémoires.** `cca59d70-189e-4b3d-839a-3d833754644b` — le code de l'installation déclarée, ses cinq
+contrôles, ses pages et l'écart de révision.
+
+## Séance 213 — la porte refuse une installation qui a bougé, sur le terrain réel (2026-11-10)
+
+**Objectif.** Prouver, hors du bac synthétique, que `preflight` relit les trois fichiers déclarés à chaque
+ouverture et refuse un terrain dont l'installation a bougé depuis le gel ([ADR-112](DECISIONS.md), spec du
+`2026-11-10-070043`).
+
+**Fait.** Le code n'a pas changé cette séance : il était déjà en place (`run.mjs`, lignes 1068 à 1087, la porte
+re-hache chaque fichier du champ `installation`, puis écrit `gate.installation`). La preuve porte donc sur le
+terrain de `plan-simple`, cas `2026-10-21-173843-plan-simple`, gel `20251079`, `installation.revision`
+`416ec1fa`, trois fichiers déclarés : `opencode.json`,
+`.opencode/skills/aidd-orchestrator/00-async-dev/SKILL.md`, `.opencode/hooks/aidd-telemetry/prompt-gate.cjs`.
+Trois ouvertures successives, sans re-gel entre elles.
+
+**Vérifié.** Ouverture 1, terrain intact : `preflight` → `exit 0`, « installation 3 fichier(s), révision
+`416ec1fa` », `gate.installation` = `{revision 416ec1fa…, empreinte 6e330d98c51274a4…, fichiers 3}`. Une ligne
+de commentaire ajoutée au hook : `sha256` `bec0f5ad…` → `9a2c5156…`, et le `porcelain` du terrain reste à deux
+lignes, `?? .opencode/` et `?? opencode.json`, donc git ne voit rien du changement. Ouverture 2 : `exit 1`,
+refus « l'installation déclarée de `2026-10-21-173843-plan-simple` a changé depuis le gel — «
+`.opencode/hooks/aidd-telemetry/prompt-gate.cjs` » `9a2c5156` au disque, `bec0f5ad` gelé », et aucun
+`gate.json` écrit. Ouverture 3, après restauration du fichier à l'octet depuis une copie prise avant le geste :
+`sha256` de nouveau `bec0f5ad…`, `preflight` → `exit 0`, `gate.installation` identique à celui de l'ouverture
+1. Le fichier de gel n'a pas bougé : `sha256` `f549c093…` avant et après.
+
+**Dérives signalées.** Aucune dérive du harnais. Ma première rédaction de cette séance a échoué à s'écrire : le
+texte passait par un littéral gabarit JavaScript et un accent grave non échappé l'a terminé au milieu ; écrit
+par un heredoc cité, puisqu'un journal n'a pas à dépendre d'un échappement. La preuve, elle, a failli être
+tautologique : comparer un fichier à lui-même n'établit rien, donc le contrôle utile est le `sha256` gelé
+confronté à celui du disque, plus l'invariance du `porcelain` entre les ouvertures 1 et 2, sans quoi on ne
+saurait pas si c'est la porte ou git qui a parlé.
+
+**Limites.** Le geste n'a déplacé qu'un fichier sur trois : `opencode.json` et le `SKILL.md` n'ont pas bougé,
+même si la porte les hache par le même code. Le retrait d'un fichier déclaré sur le terrain réel n'a pas été
+essayé ; seul le contrôle 352 du banc le couvre, sur un bac. La preuve ne dit rien de l'usage réel de
+l'installation par une session : elle dit qu'une installation qui bouge ne passe plus.
+
+**Prochaines étapes.** Le retrait d'un fichier déclaré sur le terrain réel, si giak veut la preuve complète,
+puis la remise à zéro documentée et la campagne par skill.
+
+**Mémoires.** `6ec48454-d5a4-45cd-91fa-f7594eaad456` — les trois ouvertures, les empreintes, le refus cité et
+l'invariance du `porcelain`.
+
+## Séance 214 — le terrain porte fe48de12, la 5.13.0 remplacée (2026-11-10)
+
+**Objectif.** Que le terrain de `plan-simple` porte l'AIDD de la révision sous test, `fe48de12`, et non plus
+l'archive publiée `5.13.0`.
+
+**Fait.** Le clone de travail `$W/framework-origin` (`HEAD` `fe48de12a8b6`, `porcelain` vide) a été traduit par
+la recette que la révision déclare elle-même (`scripts/dev-sync.sh`, mode `flat`) :
+`npx --yes @ai-driven-dev/cli@5.4.0 translate <clone> --to opencode --out /tmp/aidd-flat --as flat --force`,
+« Flat-installed 9 plugins, 465 files written ». L'ancien `.opencode` a été sauvegardé sous `/tmp/aidd-old`
+puis remplacé en entier, et `opencode.json` recopié. Le terrain est identique à la sortie de traduction
+(`diff -r` vide), `464` fichiers sous `.opencode`, `opencode.json` inchangé (`e01e511d`, le même qu'en
+`5.13.0`).
+
+Écart de structure découvert : la `5.13.0` installait des hooks Claude, `hooks/aidd-telemetry/prompt-gate.cjs`,
+`session-start.cjs`, `catch-up.cjs` et quatorze bibliothèques, qui n'existent pas à `fe48de12` ; l'entrée
+opencode y est le plugin `.opencode/plugin/aidd-telemetry.js`. Cinquante-deux fichiers n'existaient que dans la
+`5.13.0`, cinquante que dans la neuve. La déclaration déclare donc `opencode.json`,
+`.opencode/skills/aidd-orchestrator/00-async-dev/SKILL.md` (`1ce19df0`) et
+`.opencode/plugin/aidd-telemetry.js` (`f8ed37d0`), et son geste dit pourquoi ce dernier remplace le hook.
+
+**Vérifié.** Re-gel `9954a986` : 5 fichiers du cas, 9 références, 4 arbres, `installation` trois fichiers,
+`revision` `416ec1fa`, `porcelain` deux entrées. `preflight` → `exit 0`, « gel `9954a986` re-haché …
+installation 3 fichier(s), révision `416ec1fa` ». `banc` → **355/355 PASS**, `banc=0` ; `liens.mjs` → `0` ;
+`runs.mjs --verifier` → `0`.
+
+**Dérives signalées.** Le premier `freeze --refreeze` a refusé, à juste titre, « nomme
+`.opencode/hooks/aidd-telemetry/prompt-gate.cjs`, absent du terrain ». Mais j'avais déjà réécrit la déclaration,
+donc le cas était incohérent et `preflight` refusait « le installation a changé depuis le gel — `eeba2e47` au
+disque, `6a937dae` gelé » : l'ordre était mauvais, il fallait corriger la liste avant de toucher au geste, ou
+re-geler dans le même geste. Réparé en corrigeant la liste puis en re-gelant. Le reste de l'écart entre les
+deux installations n'est pas un défaut : c'est la révision qui a retiré ses hooks Claude.
+
+**Limites.** La traduction utilise le CLI `5.4.0`, celui que la révision déclare dans `cli/package.json`, et non
+la version de CLI qui a produit l'archive `5.13.0`, inconnue. `translate` est la transformation du dépôt, pas
+le pipeline de release : l'égalité avec une hypothétique archive `flat` officielle de `fe48de12` reste non
+vérifiée, et elle n'existe pas. `installation.revision` mesure le `HEAD` du terrain, `416ec1fa`, pas le
+framework : la provenance `fe48de12` vit dans `geste.preuve`, pas dans le champ mesuré. Enfin le comportement du
+`prompt-gate`, disparu à cette révision, n'a pas été éprouvé, et rien ne dit encore qu'une session ouverte sur ce
+terrain se sert correctement de l'installation.
+
+**Prochaines étapes.** Ouvrir une session sur ce terrain pour vérifier que l'installation `fe48de12` fonctionne,
+puis la remise à zéro documentée et la campagne par skill.
+
+**Mémoires.** `84bbb360-350a-4eab-8bd4-e5126cfd3507` — la traduction, la substitution du hook par le plugin,
+l'incident d'ordre et les écarts entre les deux installations.
+
+## Séance 215 — la preuve d'installation réécrite en français accentué, re-gel 7e7fe3e2 (2026-11-10)
+
+**Objectif.** Réparer la preuve de la déclaration d'installation, rédigée en séance 214 sans accents ni
+apostrophes typographiques, donc contraire au contrat de prose du dépôt.
+
+**Fait.** `geste.preuve` réécrit en français accentué, sans changer un fait : même instruction citée, même clone
+`fe48de12a8b615ec4c456b63945b7e9dfc7835ca`, même recette `npx @ai-driven-dev/cli@5.4.0 translate … --as flat`,
+même substitution du hook `prompt-gate.cjs` par `.opencode/plugin/aidd-telemetry.js`. Le fichier de déclaration
+entre dans les fichiers du cas, donc son `sha256` nouveau (`5da1e56b…`) rend le gel `9954a986` caduc : re-gel
+dans le même geste.
+
+**Vérifié.** Gel `7e7fe3e2c744` : 5 fichiers du cas, 9 références, 4 arbres, `installation` trois fichiers
+(`opencode.json` `e01e511d`, `SKILL.md` `1ce19df0`, `plugin/aidd-telemetry.js` `f8ed37d0`), `revision`
+`416ec1fa`. `preflight` → `exit 0`, « gel `7e7fe3e2` re-haché … installation 3 fichier(s) ». `banc` →
+**355/355 PASS** ; `liens.mjs` → `0` ; `runs.mjs --verifier` → `0`.
+
+**Dérives signalées.** La séance 214 a laissé une empreinte `9954a986` qui ne décrit plus l'état : elle décrit
+l'instant où elle a été écrite, et cette séance la remplace. La leçon est mécanique : réécrire un fichier de cas
+sans re-geler dans le même geste laisse la porte refuser entre les deux.
+
+**Limites.** Rien de neuf sur l'installation elle-même : cette séance ne change que la prose de la preuve, et
+l'installation `fe48de12` n'a toujours pas été éprouvée par une session ouverte.
+
+**Prochaines étapes.** Ouvrir une session sur le terrain pour vérifier l'installation, puis la remise à zéro
+documentée et la campagne par skill.
+
+**Mémoires.** `43c9ca32-1e4f-4f90-8ab7-be1e96bad161` — la rectification d'accentuation, le nouveau gel et la
+leçon sur l'ordre `déclaration` puis `re-gel`.
+
+## Séance 216 — deux refus réels sur plan-simple : fichier déclaré modifié, puis retiré (2026-11-10)
+
+**Objectif.** Éprouver sur le terrain réel de `plan-simple`, dans son état courant (installation `fe48de12`,
+gel `7e7fe3e2`), le refus de la porte quand un fichier déclaré bouge, puis quand il disparaît, et la remise en
+état gelée.
+
+**Fait.** Fichier choisi : `.opencode/plugin/aidd-telemetry.js`, déclaré, `sha256` `f8ed37d0`. Quatre
+ouvertures, une copie prise avant le premier geste, aucun re-gel entre elles.
+
+Ouverture 1, terrain intact : `preflight` → `exit 0`, « gel `7e7fe3e2` re-haché … installation 3 fichier(s),
+révision `416ec1fa` », `gate.installation` = `{revision 416ec1fa…, empreinte 942f052cc5dc9e6b…, fichiers 3}`.
+Une ligne de commentaire ajoutée au plugin : `sha256` `f8ed37d0` → `148f759d`, et le `porcelain` du terrain
+reste à deux entrées, inchangé. Ouverture 2 : `exit 1`, refus « l'installation déclarée de
+`2026-10-21-173843-plan-simple` a changé depuis le gel — « `.opencode/plugin/aidd-telemetry.js` »
+`148f759d` au disque, `f8ed37d0` gelé », aucun `gate.json` écrit. Restauration à l'octet depuis la copie :
+`sha256` de nouveau `f8ed37d0`, ouverture 3 → `exit 0`. Fichier retiré du terrain (`mv` hors de l'arbre) :
+ouverture 4 → `exit 1`, refus « nomme « `.opencode/plugin/aidd-telemetry.js` », qui n'est plus dans l'espace
+de travail — la session lirait un AIDD que le gel n'a pas mesuré », aucun `gate.json` écrit. Fichier remis en
+place, ouverture 5 → `exit 0`.
+
+**Vérifié.** Les portes des ouvertures 1, 3 et 5 sont égales au champ près (`installation` identique). Le
+fichier de gel n'a pas bougé : `sha256` `4625308b0f80…` avant et après. Le `porcelain` du terrain est identique
+au départ et à l'arrivée. `banc` → **355/355 PASS** ; `liens.mjs` → `0` ; `runs.mjs --verifier` → `0`.
+
+**Dérives signalées.** Aucune : la porte fait exactement ce que l'ADR-112 décrit, y compris ne rien écrire
+quand elle refuse. La preuve comble la limite que la séance 213 laissait ouverte, le retrait d'un fichier
+déclaré sur le terrain réel, qui n'était couvert que par le contrôle 352 du banc.
+
+**Limites.** Le geste n'a porté que sur un fichier sur trois : `opencode.json` et le `SKILL.md` suivent le même
+code sans avoir été déplacés ici. La preuve ne dit rien du comportement d'une session réellement ouverte sur
+cette installation, ni de ce qu'AIDD `fe48de12` fait pendant un run.
+
+**Prochaines étapes.** Ouvrir une session sur le terrain pour éprouver l'installation elle-même, puis la remise
+à zéro documentée et la campagne par skill.
+
+**Mémoires.** `49e761c2-5cf7-43fa-af58-bd4880d365e7` — les cinq ouvertures, les deux refus cités, les empreintes
+égales et l'invariance du gel.
+
+## Séance 217 — la remise à zéro documentée, contrôles 356 et 357 (2026-11-10)
+
+**Objectif.** Mettre en œuvre B1 du brainstorm du matin : que le temps de remise à zéro ait un nom dans le
+protocole, sans ajouter de commande, et qu'un contrôle prouve le refus qu'il évite.
+
+**Fait.** `ADR-113` : le `PROTOCOLE` nomme le geste, `git reset --hard <tête gelée>`, `git clean -fd`,
+réinstallation d'AIDD depuis la révision mesurée, puis `preflight`. Le `clean` retire l'installation, qui n'est
+pas suivie : le geste se termine donc par la réinstallation, sinon la porte refuse un terrain que le gel ne
+décrit plus. Les options d'une commande `remettre` et du geste implicite sont rejetées, la première pour son
+coût, la seconde parce qu'elle laisse un temps de la boucle sans nom.
+
+Deux contrôles, 356 et 357, sur des bacs sous `$B` avec la fixture du cas jouet : bacs sans les restes non
+suivis de la fixture (`aidd_docs/`, `skill-terrain/`), un fichier suivi commité, une installation déclarée
+`.aidd/installation.json`. Le 356 ajoute une dérive (fichier suivi modifié, rebut non suivi), joue le geste
+complet et exige la porte verte ; le 357 joue le `clean` sans réinstallation et exige le refus « n'est plus
+celui du gel ».
+
+Pages : `PROTOCOLE` (sous-section « La remise à zéro entre deux passages » dans le §2), `VISION` (la phrase
+« Deux temps n'ont pas d'instrument … Le PROTOCOLE ne nomme ni l'une ni l'autre » était devenue fausse après
+l'ADR-112, elle est réécrite), `ARCHITECTURE` (refus de la porte, et son remède), `BANC` (357 contrôles,
+`V0.80`, ligne de groupe 356 à 357), `DECISIONS` (ADR-113).
+
+**Vérifié.** `banc` → **357/357 PASS**, `banc=0`, dont « 356 remise a zero, reset puis clean puis reinstallation
+exit=0 » et « 357 clean sans reinstallation, la porte refuse exit=0 ». `bash -n` → `0` ; `node --check run.mjs`
+→ `0` ; `liens.mjs` → `0` ; `runs.mjs --verifier` → `0`. Le terrain de `plan-simple` n'a pas été touché : son
+`porcelain` reste `?? .opencode/`, `?? opencode.json`, et le gel garde son `sha256` `4625308b0f80…`.
+
+**Dérives signalées.** Le premier 356 a échoué, à raison : le terrain de la fixture portait des restes non
+suivis que le gel avait enregistrés dans son `porcelain` ; le `clean` les retirait, donc la porte refusait sur
+le `porcelain` et non sur l'installation. Corrigé en retirant ces restes du bac avant le gel. La leçon est
+générale : un bac de remise à zéro ne vaut que si son `porcelain` gelé ne porte que ce que le geste sait
+restaurer.
+
+**Limites.** Les contrôles tournent sur un bac, pas sur le terrain de `plan-simple` : la remise à zéro réelle de
+ce terrain n'a pas été jouée, seulement son geste simulé sur une copie. Le geste reste humain, et la porte
+n'atteste que l'état où il aboutit, pas l'ordre des commandes. Rien ne remet à zéro les bases ni les caches du
+client.
+
+**Prochaines étapes.** Jouer la remise à zéro sur le terrain réel avant le premier passage de la campagne, puis
+mettre en œuvre la spec de la campagne par skill.
+
+**Mémoires.** `8e093932-b94a-4804-955e-50465ce64241` — l'ADR-113, les deux contrôles, la dérive du premier 356 et
+les limites du geste.
+
+## Séance 218 — la remise à zéro jouée sur le terrain réel, porte verte après réinstallation (2026-11-10)
+
+**Objectif.** Jouer le geste de l'ADR-113 sur le terrain de `plan-simple` lui-même, et montrer que la porte
+repasse verte avec l'installation réinstallée, sans re-gel.
+
+**Fait.** Gel `7e7fe3e2c744`, tête gelée `416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde`, installation déclarée
+`opencode.json` (`e01e511d`), `SKILL.md` (`1ce19df0`), `.opencode/plugin/aidd-telemetry.js` (`f8ed37d0`).
+
+Ouverture 0, terrain tel quel : `preflight` → `exit 0`, « installation 3 fichier(s), révision `416ec1fa` »,
+`gate.installation` = `{revision 416ec1fa…, empreinte 942f052cc5dc9e6b…, fichiers 3}`. La réinstallation est
+préparée d'avance par la traduction de la révision mesurée, depuis le clone de travail : « Flat-installed 9
+plugins, 465 files written ». Une dérive suivie ajoutée à `README.md` : `porcelain` à trois entrées, ouverture
+1 → `exit 1`, refus « l'espace de travail n'est plus celui du gel — HEAD `416ec1f` contre `416ec1f` gelé,
+porcelain […] contre […] ». Le geste : `git reset --hard 416ec1fa08b7…`, qui restaure `README.md`, puis
+`git clean -fd`, qui retire les 464 fichiers de `.opencode/` et `opencode.json` ; `porcelain` vide, ouverture
+2 → `exit 1`, refus « porcelain `[]` contre `["?? .opencode/","?? opencode.json"]` ». Réinstallation par copie
+de la traduction fraîche ; ouverture 3 → `exit 0`.
+
+**Vérifié.** Le terrain est identique à la sortie de traduction (`diff -r` vide), `HEAD` `416ec1fa`, `porcelain`
+revenu à ses deux entrées gelées, et les trois `sha256` sont ceux du gel, à l'octet. Les `installation` des
+portes 0 et 3 sont égales à celle de la séance 216 (`942f052cc5dc9e6b…`). Aucune porte écrite pendant les deux
+refus (`/tmp/raz/p1` et `/tmp/raz/p2` vides). Le gel n'a pas bougé : `sha256` `4625308b0f80…` avant et après.
+`liens.mjs` → `0` ; `runs.mjs --verifier` → `0`.
+
+**Dérives signalées.** Aucune. Le geste a produit exactement ce que le PROTOCOLE annonce, y compris le point
+qui surprend : `git clean -fd` emporte l'installation, qui n'est pas suivie, donc le `reset` seul ne rend pas un
+terrain ouvrable, et c'est la réinstallation qui referme la boucle.
+
+**Limites.** La dérive éprouvée était volontaire et suivie ; le geste n'a pas eu à effacer de fichier non suivi
+laissé par une session, ce que le `clean` ferait de la même façon. Les fichiers ignorés du terrain, dont le
+dossier `data/` des gabarits de mémoire, ne sont pas touchés par `clean -fd`, ce qui est cohérent avec un gel
+qui les ignore aussi. Le `reset --hard` n'a pas eu à revenir sur un commit, seulement sur un fichier modifié.
+
+**Prochaines étapes.** Le terrain est prêt pour le premier passage : mettre en œuvre la spec de la campagne par
+skill.
+
+**Mémoires.** `5091a944-3927-44a7-b6ad-519fd065956d` — les quatre ouvertures, les deux refus cités, les
+empreintes égales et les fichiers ignorés.

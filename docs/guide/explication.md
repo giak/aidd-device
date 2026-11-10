@@ -128,7 +128,7 @@ sequenceDiagram
   Note over Dis: étape 7, verdict conforme, écart ou non concluant
 ```
 
-Le harnais — `docs/device/harness/run.mjs`, 4 450 lignes, aucune dépendance, et `clients.mjs` pour la
+Le harnais — `docs/device/harness/run.mjs`, 4 570 lignes, aucune dépendance, et `clients.mjs` pour la
 frontière des deux clients — n'a que six
 commandes : `freeze` (avant, qui déclare la racine des espaces de travail une seule fois et en dérive
 les deux copies du cas), `preflight` (la porte, juste avant d'ouvrir, qui vérifie le dossier et le texte

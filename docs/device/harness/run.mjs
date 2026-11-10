@@ -546,10 +546,31 @@ function gitTree({ label, chemin }) {
 }
 // The fingerprint of a case: roles, base names and hashes, never the paths — so the same
 // case fingerprints identically from any clone, and a receipt can cite it anywhere.
-const empreinteDeGel = (fichiers, references) =>
+const empreinteDeGel = (fichiers, references, installation = null) =>
   sha256Text(
-    [...fichiers.map((f) => `${f.role}\t${basename(f.chemin)}\t${f.sha256}`), ...references.map((r) => `reference\t${r.chemin}\t${r.sha256}`)].sort().join("\n") + "\n",
+    [
+      ...fichiers.map((f) => `${f.role}\t${basename(f.chemin)}\t${f.sha256}`),
+      ...references.map((r) => `reference\t${r.chemin}\t${r.sha256}`),
+      // ADR-112 : les lignes d'une installation déclarée n'entrent que si le gel la porte, donc un gel
+      // d'avant le champ garde son empreinte à l'octet près, et un gel qui le porte ne peut plus le perdre
+      // ni le réécrire sans que la recalculée change.
+      ...(installation
+        ? [
+            `installation-revision\t${installation.revision ?? ""}`,
+            ...installation.fichiers.map((f) => `installation\t${f.chemin}\t${f.sha256}`),
+          ]
+        : []),
+    ]
+      .sort()
+      .join("\n") + "\n",
   );
+// ADR-112 : l'empreinte de l'installation seule, telle que la porte l'écrit dans son gate.
+const empreinteInstallation = (installation) =>
+  sha256Text(
+    [`revision\t${installation.revision ?? ""}`, ...installation.fichiers.map((f) => `${f.chemin}\t${f.sha256}`)].sort().join("\n") + "\n",
+  );
+const ROLE_INSTALLATION = "installation";
+const DECLARATION_INSTALLATION = ".installation.json";
 // The inverse of cheminPortable: a case file is named from the repository root, or by its
 // base name alone when the case sits beside its freeze (a throwaway bench).
 const cheminDuCas = (chemin, casesDir) => (chemin.includes(sep) ? resolve(REPO, chemin) : join(casesDir, chemin));
@@ -621,14 +642,32 @@ function verifierLeGel(gel, casesDir, ou) {
     }
     return { arbre: r.arbre, chemin: r.chemin, sha256 };
   });
-  const empreinte = empreinteDeGel(fichiers, references);
+  // ADR-112 : la déclaration d'installation et sa mesure vont ensemble. Un gel qui porte l'une sans l'autre
+  // s'est écrit à moitié, et un champ recopié à la main ne concorde plus avec son empreinte.
+  const installationGelee = gel.installation ?? null;
+  const rolesInstallation = (gel.fichiers ?? []).filter((f) => f.role === ROLE_INSTALLATION);
+  if (installationGelee === null && rolesInstallation.length) {
+    refuse(`${ou} : le gel porte un fichier de rôle « installation » et aucun champ installation — la déclaration existe, sa mesure manque ; re-geler le cas (ADR-112)`);
+  }
+  if (installationGelee !== null) {
+    if (typeof installationGelee !== "object" || Array.isArray(installationGelee) || !Array.isArray(installationGelee.fichiers) || installationGelee.fichiers.length === 0) {
+      refuse(`${ou} : le champ installation du gel n'est pas {arbre, revision, fichiers} — il ne se relit pas (ADR-112)`);
+    }
+    if (typeof installationGelee.revision !== "string" || installationGelee.revision === "") {
+      refuse(`${ou} : le champ installation du gel ne nomme aucune révision — il ne dit pas quel AIDD il a mesuré (ADR-112)`);
+    }
+    if (rolesInstallation.length === 0) {
+      refuse(`${ou} : le gel porte un champ installation et aucun fichier de rôle « installation » — sa déclaration a disparu du cas (ADR-112)`);
+    }
+  }
+  const empreinte = empreinteDeGel(fichiers, references, installationGelee);
   if (gel.empreinte && empreinte !== gel.empreinte) {
     refuse(
       `${ou} : le gel ne concorde pas avec lui-même — empreinte recalculée ${empreinte.slice(0, 8)}, empreinte écrite ${gel.empreinte.slice(0, 8)} ; ` +
         `des empreintes et des fichiers ont été réécrits ensemble, le gel n'atteste plus l'instant qu'il déclare`,
     );
   }
-  return { le: localIso(), empreinte, fichiers: fichiers.length, references: references.length };
+  return { le: localIso(), empreinte, fichiers: fichiers.length, references: references.length, installation: installationGelee ? installationGelee.fichiers.length : 0 };
 }
 
 // The full hash when both sides carry it: a short hash is abbreviated per clone, so two
@@ -636,6 +675,47 @@ function verifierLeGel(gel, casesDir, ou) {
 const memeArbre = (a, b) =>
   (a.head_complet ?? a.head) === (b.head_complet ?? b.head) && JSON.stringify(a.porcelain) === JSON.stringify(b.porcelain);
 const casesDirOf = (a) => resolve(a.one("cases") ?? CASES_DEFAULT);
+
+// ADR-112 : une installation se déclare dans un fichier de cas, `CASES/<cas>.installation.json`, et le gel
+// la mesure au lieu de la croire. Le terrain n'est pas le dépôt du dispositif : la déclaration nomme des
+// fichiers de l'arbre de travail, que le gel hache et que la porte re-hache — le seul moyen de voir une
+// installation que git ignore, ou que `HEAD` couvre sans la nommer.
+function lireDeclarationInstallation(casesDir, cas, ou) {
+  const chemin = join(casesDir, `${cas}${DECLARATION_INSTALLATION}`);
+  if (!existsSync(chemin)) return null;
+  const d = lireJson(chemin, ou);
+  if (!d || typeof d !== "object" || Array.isArray(d)) {
+    refuse(`${ou} : ${cas}${DECLARATION_INSTALLATION} n'est pas un objet — {geste, fichiers} (ADR-112)`);
+  }
+  if (!Array.isArray(d.fichiers) || d.fichiers.length === 0) {
+    refuse(`${ou} : ${cas}${DECLARATION_INSTALLATION} ne déclare aucun fichier — une installation sans trace ne se mesure pas (ADR-112)`);
+  }
+  if (!d.geste || typeof d.geste !== "object" || typeof d.geste.preuve !== "string" || d.geste.preuve.trim() === "") {
+    refuse(`${ou} : ${cas}${DECLARATION_INSTALLATION} ne porte pas de geste.preuve — le geste est déclaré, et une déclaration sans preuve ne dit rien (ADR-112)`);
+  }
+  return d;
+}
+function mesurerInstallation(declaration, arbreTravail, cas, ou) {
+  const fichiers = declaration.fichiers.map((rel) => {
+    if (typeof rel !== "string" || rel.trim() === "") {
+      refuse(`${ou} : l'installation déclarée de ${cas} porte une entrée qui n'est pas un chemin — {fichiers: ["…"]} (ADR-112)`);
+    }
+    const abs = resolve(arbreTravail.chemin, rel);
+    if (abs !== arbreTravail.chemin && !abs.startsWith(arbreTravail.chemin + sep)) {
+      refuse(`${ou} : l'installation déclarée de ${cas} nomme « ${rel} », qui sort de l'arbre « travail » (${arbreTravail.chemin}) (ADR-112)`);
+    }
+    if (!existsSync(abs)) {
+      refuse(`${ou} : l'installation déclarée de ${cas} nomme « ${rel} », absent du terrain (${display(arbreTravail.chemin)}) — une trace déclarée qui n'existe pas ne se mesure pas (ADR-112)`);
+    }
+    if (!statSync(abs).isFile()) {
+      refuse(`${ou} : l'installation déclarée de ${cas} nomme « ${rel} », qui n'est pas un fichier — le gel hache des fichiers, pas des dossiers (ADR-112)`);
+    }
+    return { chemin: rel, sha256: sha256File(abs), taille: statSync(abs).size };
+  });
+  const revision = arbreTravail.head_complet ?? arbreTravail.head ?? null;
+  if (!revision) refuse(`${ou} : l'arbre « travail » de ${cas} n'a pas de HEAD lisible — une installation sans révision ne dit pas quel AIDD elle a posé (ADR-112)`);
+  return { arbre: "travail", revision, fichiers };
+}
 
 // ---------------------------------------------------------------------------
 // freeze — the pre-run snapshot
@@ -839,7 +919,11 @@ function cmdFreeze(a) {
   }
 
   const fichiers = noms
-    .filter((n) => !n.endsWith(".freeze.json"))      .map((n) => ({ role: n.endsWith(".request.md") ? "demande" : "attendu", chemin: cheminPortable(join(casesDir, n)), ...empreinteDe(join(casesDir, n)) }));
+    .filter((n) => !n.endsWith(".freeze.json"))      .map((n) => ({
+        role: n.endsWith(".request.md") ? "demande" : n.endsWith(DECLARATION_INSTALLATION) ? ROLE_INSTALLATION : "attendu",
+        chemin: cheminPortable(join(casesDir, n)),
+        ...empreinteDe(join(casesDir, n)),
+      }));
 
   const references = [];
   for (const rel of a.all("ref")) {
@@ -876,7 +960,18 @@ function cmdFreeze(a) {
       }
     }
   }
-  const empreinte = empreinteDeGel(fichiers, references);
+  // ADR-112 : la déclaration d'installation, si le cas en porte une, se mesure dans l'arbre où la session
+  // s'ouvre. Sans arbre « travail » elle ne se mesure nulle part, et le gel refuse plutôt que de croire.
+  const declarationInstallation = lireDeclarationInstallation(casesDir, cas, "freeze");
+  let installation = null;
+  if (declarationInstallation) {
+    const arbreTravail = arbres.find((t) => t.label === "travail");
+    if (!arbreTravail) {
+      refuse(`freeze : ${cas} déclare une installation et le gel ne décrit aucun arbre « travail » — une installation se mesure là où la session s'ouvre (ADR-112)`);
+    }
+    installation = mesurerInstallation(declarationInstallation, gitTree(arbreTravail), cas, "freeze");
+  }
+  const empreinte = empreinteDeGel(fichiers, references, installation);
   const objet = {
     cas,
     ...(confirmation === null ? {} : { confirmation }),
@@ -886,6 +981,7 @@ function cmdFreeze(a) {
     ...nowStamp(), // taken once the case files are hashed: the freeze marks the fingerprint, not its beginning
     commande: process.argv.slice(1).map((v) => (v.includes(" ") ? JSON.stringify(v) : v)).join(" "),
     empreinte,
+    ...(installation === null ? {} : { installation }),
     fichiers,
     references,
     arbres: arbres.map(gitTree),
@@ -969,6 +1065,28 @@ function cmdPreflight(a) {
     );
   }
 
+  // ADR-112 : la porte relit l'installation déclarée dans le dossier où la session va s'ouvrir. Le gel en
+  // porte l'empreinte, donc le champ ne se réécrit pas ; ce que la porte ajoute, c'est le disque — un fichier
+  // de l'installation qui a bougé depuis le gel ferait lire un AIDD que le gel n'a pas mesuré.
+  let installationMesuree = null;
+  if (gel.installation) {
+    const fichiers = gel.installation.fichiers.map((f) => {
+      const p = resolve(declare, f.chemin);
+      if (p !== declare && !p.startsWith(declare + sep)) {
+        refuse(`preflight : l'installation déclarée de ${cas} nomme « ${f.chemin} », qui sort de l'espace de travail (${declare}) (ADR-112)`);
+      }
+      if (!existsSync(p)) {
+        refuse(`preflight : l'installation déclarée de ${cas} nomme « ${f.chemin} », qui n'est plus dans l'espace de travail — la session lirait un AIDD que le gel n'a pas mesuré (ADR-112)`);
+      }
+      const sha256 = sha256File(p);
+      if (sha256 !== f.sha256) {
+        refuse(`preflight : l'installation déclarée de ${cas} a changé depuis le gel — « ${f.chemin} » ${sha256.slice(0, 8)} au disque, ${f.sha256.slice(0, 8)} gelé ; la session lirait un AIDD qui n'est pas celui du gel (ADR-112)`);
+      }
+      return { chemin: f.chemin, sha256 };
+    });
+    installationMesuree = { revision: gel.installation.revision, empreinte: empreinteInstallation(gel.installation), fichiers: fichiers.length };
+  }
+
   // The text handed to the session is the case's §5 with $RACINE substituted: the case stays
   // portable, the session still receives an absolute path — the one lesson of the first run. It is
   // checked here, at the same moment as the folder, because both are what the operator does just
@@ -1002,6 +1120,7 @@ function cmdPreflight(a) {
     repertoire: declare,
     gel: { chemin: display(gelPath), empreinte: gel.empreinte, gele_le_epoch: gel.gele_le_epoch },
     arbre: mesure,
+    ...(installationMesuree === null ? {} : { installation: installationMesuree }),
     texte,
   };
   writeJson(gatePath, porte);
@@ -1009,6 +1128,7 @@ function cmdPreflight(a) {
   console.log(
     `preflight ok — ${cas} : ouverture autorisée dans ${declare} (HEAD ${mesure.head}, porcelain ${mesure.porcelain.length} ligne(s)) ; ` +
       `gel ${String(gel.empreinte).slice(0, 8)} re-haché, ${gelVerifie.fichiers} fichier(s) du cas et ${gelVerifie.references} référence(s)` +
+      (installationMesuree ? ` ; installation ${installationMesuree.fichiers} fichier(s), révision ${String(installationMesuree.revision).slice(0, 8)}` : "") +
       (texte ? ` ; texte ${texte.sha256.slice(0, 8)} (${texte.octets} octets) conforme au §5 substitué` : "") +
       ` ; porte ${display(gatePath)}`,
   );

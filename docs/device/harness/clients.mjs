@@ -185,6 +185,53 @@ export function exportFreebuff(fil, { base, dest, depuis = null, jusqu = null } 
   };
 }
 
+// ---------------------------------------------------------------------------
+// Freebuff — le registre de l'application, avant toute session (`gue`)
+// ---------------------------------------------------------------------------
+// Le gué d'une session Freebuff ne se lit pas dans la base du client : il se lit dans le registre de
+// l'application. Un projet sain y porte une source `folder` qui nomme le dossier ; un import raté porte
+// le chemin comme *nom* et `sources: []`, et aucune session ne s'ouvre dessus (quatre refus identiques,
+// Séance 198). Rien n'est deviné : ni le projet, ni la base, ni le fil, et rien n'est écrit.
+export function registreFreebuff(terrain) {
+  const home = process.env.HOME;
+  if (!home) throw new Error("HOME est absent — le registre de l'application se lit sous le dossier de l'utilisateur, il ne se devine pas");
+  const chemin = join(home, ".config/freebuff-desktop/state.json");
+  if (!existsSync(chemin)) throw new Error(`le registre ${chemin} n'existe pas — l'application n'a jamais ouvert de projet sur cette machine`);
+  let state;
+  try {
+    state = JSON.parse(readFileSync(chemin, "utf8"));
+  } catch (e) {
+    throw new Error(`le registre ${chemin} est illisible — ${String(e.message).split("\n")[0]}`);
+  }
+  const projets = Object.values(state?.projects ?? {}).filter((p) => p && typeof p === "object");
+  const cible = resolve(terrain);
+  const sources = (p) => (Array.isArray(p.sources) ? p.sources : []);
+  const projet = projets.find((p) =>
+    sources(p).some((s) => s && s.kind === "folder" && typeof s.localPath === "string" && resolu(s.localPath) === cible)) ?? null;
+  // Un nom qui commence par « / » est un chemin : c'est ainsi que l'import raté nomme le dossier.
+  const nommes = projets.filter((p) =>
+    sources(p).length === 0 && typeof p.name === "string" && p.name.startsWith("/") && resolu(p.name) === cible);
+  const base = projet ? baseDuTerrain(cible) : null;
+  return { chemin, projets: projets.length, projet, nommes_par_chemin: nommes, base, fils: base ? compteFils(base) : null };
+}
+// La base qui nomme le terrain est celle dont la table `projects` le porte : le nom du dossier ne se
+// devine pas, et une base muette ou d'un autre schéma ne rend pas de base du tout.
+function baseDuTerrain(cible) {
+  for (const base of basesDuClient()) {
+    const r = spawnSync("sqlite3", ["-readonly", base, "select root_path from projects;"], { encoding: "utf8" });
+    if (r.status !== 0) continue;
+    const lignes = String(r.stdout ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lignes.some((l) => resolu(l) === cible)) return base;
+  }
+  return null;
+}
+function compteFils(base) {
+  const r = spawnSync("sqlite3", ["-readonly", base, "select count(*) from threads;"], { encoding: "utf8" });
+  if (r.status !== 0) return null;
+  const n = Number(String(r.stdout ?? "").trim());
+  return Number.isFinite(n) ? n : null;
+}
+
 // ADR-076 : la liste qui aide à choisir un fil — des métadonnées seulement, aucun contenu de message.
 // L'identifiant d'un fil ne se devine pas ; il se lit dans la base du client, borné par son activité.
 // L'activité est le dernier message écrit, jamais `created_at` : une conversation reprise garde sa date

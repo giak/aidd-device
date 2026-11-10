@@ -1,6 +1,6 @@
 ---
 name: PROTOCOLE — conduire un test de bout en bout
-description: "les deux modes de run et ce qu'ils prouvent, les huit commandes de l'orchestrateur dans l'ordre avec ce que chacune dérive et écrit, les trois gestes humains, les quatre blocs, les refus, et ce que le protocole n'atteste pas"
+description: "les deux modes de run et ce qu'ils prouvent, les dix commandes de l'orchestrateur dans l'ordre avec ce que chacune dérive et écrit, les trois gestes humains, les quatre blocs, les refus, et ce que le protocole n'atteste pas"
 type: protocole
 status: done
 question: Comment conduit-on un test, et que prouve chaque étape ?
@@ -71,12 +71,13 @@ flowchart TD
   G -.->|"hors gabarit, seance 127"| H["5 implementer et eprouver<br/>Done When, preuves, suite verte"]
 ```
 
-## 2. Le run indépendant : les neuf commandes, dans l'ordre
+## 2. Le run indépendant : les dix commandes, dans l'ordre
 
 Chaque commande imprime son bloc d'étape avant de passer à la suivante ; une étape qui refuse arrête
 l'orchestrateur (`exit 1`), une commande mal formée sort en `2` sans rien écrire.
 
 ```text
+node docs/device/harness/orchestrer.mjs gue --terrain <dossier>
 node docs/device/harness/orchestrer.mjs cas --skill <chemin-du-skill> [--terrain <dépôt>] [--id <slug>]
 node docs/device/harness/orchestrer.mjs porte --cas <id> --run <dossier>
 node docs/device/harness/orchestrer.mjs ouvrir --cas <id> --run <dossier> [--cases <dir>] [--api <url>] [--modele <fournisseur/modèle>] [--delai <minutes>]
@@ -91,6 +92,7 @@ node docs/device/harness/orchestrer.mjs tracer --run <dossier> --liste --depuis 
 
 | Commande | Ce qu'elle dérive, jamais de la personne | Ce qu'elle écrit |
 | --- | --- | --- |
+| `gue` | le projet qui indexe le terrain, sa base et son compte de fils, lus dans le registre de Freebuff en lecture seule ; un terrain seulement nommé par son chemin est refusé | rien : aucune session, aucun fichier ([ADR-108](DECISIONS.md)) |
 | `cas` | la demande, le squelette d'attendu, les deux origines et leurs clones | `--cases` (deux pièces et le gel), `<racine>/<cas>/` |
 | `porte` | le texte substitué, l'empreinte du gel, le dossier autorisé | `gate.json`, `texte-a-remettre.txt` dans `--run` |
 | `ouvrir` | le fil de la session, la réponse figée de chaque question, l'option marquée Recommandé | rien : elle imprime le fil |
@@ -118,7 +120,7 @@ mutants sont déclarés à la main : ce sont des limites dites, pas des proprié
 fichier doit être présent. Un run-guide d'avant la centralisation, sans `run.json`, est refusé ; les trois
 guides existants ont été migrés sous `docs/device/runs/`.
 
-**Trois gestes restent humains**, et aucun n'est attesté par une pièce :
+**Trois gestes restent humains**, et aucun n'est attesté par une pièce ; `gue` dit seulement si le premier peut se faire :
 
 1. **ouvrir le fil** dans l'application, au répertoire que `porte` imprime, ou laisser `ouvrir` le faire
    pour opencode ;

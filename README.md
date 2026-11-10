@@ -11,7 +11,7 @@ rejouable. Il garde de quoi refaire le départ, jamais la réponse.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : **la vue d'ensemble** du dispositif, ce qu'il fait et ne
   fait pas, les acteurs et ce que chacun ne voit jamais, les quatre arbres et leurs preuves, la vie des
   artefacts, les falsificateurs et le plafond du verdict.
-- [docs/PROTOCOLE.md](docs/PROTOCOLE.md) : la conduite d'un test, les deux modes, les huit commandes, les
+- [docs/PROTOCOLE.md](docs/PROTOCOLE.md) : la conduite d'un test, les deux modes, les dix commandes, les
   quatre blocs, les refus.
 - [docs/guide/guide-utilisateur.md](docs/guide/guide-utilisateur.md) : pour qui ne tape aucune commande.
   [docs/guide/guide-du-test-de-bout-en-bout.md](docs/guide/guide-du-test-de-bout-en-bout.md) : le même

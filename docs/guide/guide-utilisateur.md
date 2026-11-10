@@ -145,12 +145,13 @@ ce qu'il empêche, puis reprend là où le parcours s'est arrêté.
   client, pas par une personne devant l'interface. Le guide décrit le parcours à tenir ; ce run ne le
   prouve pas au sens littéral.
 
-## Annexe — les neuf commandes que l'agent conduit
+## Annexe — les dix commandes que l'agent conduit
 
 Pour ta curiosité, ou pour vérifier ce qu'il te raconte. Tu n'as jamais besoin de les taper.
 
 | Étape | Ce qu'elle fait | Ce qu'elle laisse |
 | --- | --- | --- |
+| `gue` | lit le registre de Freebuff avant d'ouvrir une session et dit si ton dossier de terrain y est indexé comme un vrai dossier ; sinon elle refuse, et dit ce que l'import a fait à la place (`ADR-108`) | rien : elle ne fait que lire |
 | `cas` | copie ton skill et ton dépôt sous une racine, écrit la demande et le squelette d'attendu, puis gèle l'ensemble ; `--tel-quel` porte tes modifications non commitées au lieu de les refuser (`ADR-042`) | trois pièces du cas, deux origines, leurs deux copies |
 | (confirmation) | rien à taper : l'agent écrit la promesse et le produit que tu as confirmés, puis re-gèle | une empreinte neuve |
 | `porte` | écrit le texte à coller et autorise l'ouverture dans la copie du dépôt | `gate.json`, `texte-a-remettre.txt` |

@@ -13,7 +13,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
-import { etatTerminalEnErreur, exportTrace as exporterTraceClient, filsFreebuff, session as sessionClient } from "./clients.mjs";
+import { etatTerminalEnErreur, exportTrace as exporterTraceClient, filsFreebuff, registreFreebuff, session as sessionClient } from "./clients.mjs";
 import { ecrireRapport } from "./rapport.mjs";
 import { ecrireResultat, verifierLecture } from "./resultat.mjs";
 
@@ -25,6 +25,12 @@ const CAUSES = ["cas", "dispositif", "modele", "skill", "inconnu"];
 
 const USAGE = `usage: orchestrer.mjs <commande> [options]
 
+  gue    --terrain <dossier>
+         lit le registre de l'application Freebuff (~/.config/freebuff-desktop/state.json) en
+         lecture seule et dit si le dossier du terrain y est indexé comme source folder, le seul
+         état sur lequel une session Freebuff peut s'ouvrir. Ne devine rien — ni le projet, ni la
+         base, ni le fil — et n'écrit rien. Un terrain seulement nommé par son chemin, sources
+         vides, est refusé : c'est le mode d'échec de l'import observé quatre fois (ADR-108)
   cas    --skill <chemin> [--terrain <dépôt>] [--id <slug>] [--racine <chemin>]
          [--budget <n>] [--cases <dir>] [--tel-quel]
          fabrique le cas : la demande et le squelette d'attendu dans --cases, les deux
@@ -1174,6 +1180,44 @@ function runExiste(cas, valeurs, { requis = true } = {}) {
   const runs = join(DEPOT, "docs/device/runs");
   refuse(`orchestrer : --run est obligatoire quand aucun dossier n'est déductible — ${runs} en porte plusieurs, et deviner le mauvais ferait lire un autre run`);
 }
+// La sonde du gué : ce que le registre de l'application porte avant qu'une session s'ouvre. Elle ne
+// devine rien et n'écrit rien ; elle lit `state.json` par la frontière des clients et dit si le terrain
+// du cas y est indexé comme source folder. Un terrain seulement nommé par son chemin, `sources: []`,
+// est le mode d'échec observé quatre fois : le refus le nomme, et compte les entrées qui le portent
+// (ADR-108).
+function commandeGue(argv) {
+  const valeurs = litOptions(argv, { terrain: "valeur" });
+  const terrain = option(valeurs, "terrain", { requis: true, question: "le dossier du terrain du cas" });
+  const chemin = resolve(terrain);
+  if (!existsSync(chemin)) refuse(`gue : le terrain ${chemin} n'existe pas — le gel le nomme, et le registre ne se devine pas`);
+  if (!statSync(chemin).isDirectory()) refuse(`gue : « ${chemin} » n'est pas un répertoire — le terrain d'un cas est un dossier`);
+  let registre;
+  try {
+    registre = registreFreebuff(chemin);
+  } catch (e) {
+    refuse(`gue : ${e.message}`);
+  }
+  const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+  const { projet, nommes_par_chemin: nommes, base, fils } = registre;
+  const lignes = [
+    `▸ GUÉ — ${chemin}`,
+    `  registre            : ${registre.chemin} (${pluriel(registre.projets, "projet")})`,
+    `  projet              : ${projet ? `${projet.id}${projet.name ? ` « ${projet.name} »` : ""}` : "aucun projet n'indexe ce dossier"}`,
+  ];
+  if (projet) {
+    lignes.push(`  base                : ${base ? `${base} (${fils === null ? "threads illisibles" : pluriel(fils, "fil")})` : "aucune base ne nomme ce terrain"}`);
+    lignes.push("  ce que ça veut dire : l'import a indexé le dossier comme source folder ; le geste d'ouverture peut se faire", "");
+    ecrit(lignes);
+    process.exit(0);
+  }
+  const detail = nommes.length
+    ? `${pluriel(nommes.length, "entrée")} ${nommes.length > 1 ? "nomment" : "nomme"} ce chemin avec sources vides (${nommes.map((p) => p.id).join(", ")}) : l'import a nommé le chemin, il n'a pas indexé le dossier`
+    : "aucune entrée du registre ne nomme ce chemin, ni comme source folder, ni par son chemin";
+  lignes.push(`  ce que ça veut dire : ${detail}`, "");
+  ecrit(lignes);
+  refuse(`gue : aucun projet Freebuff n'indexe ${chemin} comme source folder — ${detail}`);
+}
+
 function commandeSuite(argv) {
   const valeurs = litOptions(argv, {
     cas: "valeur", fil: "valeur", run: "valeur", par: "valeur", conduite: "valeur",
@@ -2063,7 +2107,7 @@ function commandeRapport(argv) {
 
 const [commande, ...reste] = process.argv.slice(2);
 const COMMANDES = {
-  cas: commandeCas, porte: commandePorte, ouvrir: commandeOuvrir, suite: commandeSuite,
+  gue: commandeGue, cas: commandeCas, porte: commandePorte, ouvrir: commandeOuvrir, suite: commandeSuite,
   fin: commandeFin, lire: commandeLire, signer: commandeSigner, rapport: commandeRapport, tracer: commandeTracer,
 };
 if (!commande || commande === "--help" || commande === "-h") {

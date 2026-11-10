@@ -70,4 +70,4 @@
 | 2026-11-10-104020-04-audit | 2026-11-10 | indépendant | 2026-11-10-104020-04-audit | non concluant (causes : dispositif) | 12, reçu | RAPPORT.md, RESULTAT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
 | 2026-11-10-141654-rejeu-04-audit | 2026-11-10 | indépendant | 2026-11-10-104020-04-audit | non concluant (causes : modele) | 20, reçu | RAPPORT.md, RESULTAT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
 | 2026-11-10-173121-rejeu-pause | 2026-11-10 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
-| 2026-11-10-200210-guide-04-audit | 2026-11-10 | guide | 04-audit | forme tenue | 3, session_non_independante, attendu_non_gele, trace_absente | run-guide.md |
+| 2026-11-10-200210-guide-04-audit | 2026-11-10 | guide | 04-audit | forme tenue signée (signature : giak, 5 clause(s)) | 3, session_non_independante, attendu_non_gele, trace_absente | run-guide.md, signature.json |

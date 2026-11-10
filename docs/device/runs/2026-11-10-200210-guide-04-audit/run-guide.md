@@ -87,4 +87,14 @@ Le skill tient sa promesse de forme : huit fichiers au chemin qu'il déclare, le
 
 ## 8. Décision
 
-**Forme tenue.** Ce run ne rend pas un verdict `conforme` : il n'a ni reçu ni opérateur indépendant. La personne peut accepter le produit, ou demander un run indépendant en bac clos, qui seul dirait si un autre agent produit les mêmes constats.
+**Forme tenue signée.** Ce run ne rend pas un verdict `conforme` : il n'a ni reçu ni opérateur indépendant. La personne peut accepter le produit, ou demander un run indépendant en bac clos, qui seul dirait si un autre agent produit les mêmes constats.
+
+## 9. Signature
+
+Signé par `giak` le 2026-11-10T20:24:39+01:00, sur présentation des cinq clauses et du produit du §5 : les cinq
+clauses sont `tenu`, avec la pièce du §4 ou du §5 citée pour chacune. La signature vit dans
+`signature.json`, citée dans `pieces` et lue par `runs.mjs`.
+
+Ce que cette signature ne dit pas : elle ne rend pas le run indépendant (l'auteur a lu l'attendu,
+ADR-074), elle ne prouve pas l'antériorité de l'attendu, elle ne juge pas la justesse des 35 constats, et
+elle ne remplace pas une trace machine absente.

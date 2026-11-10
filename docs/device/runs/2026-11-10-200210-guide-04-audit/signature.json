@@ -1,0 +1,34 @@
+{
+  "type": "signature-guide",
+  "juge": "giak",
+  "quand": "2026-11-10T20:24:39+01:00",
+  "rubrique": "les cinq clauses de comparaison du run, contre run-guide.md §4 et §5",
+  "motif": "signature humaine sur présentation du produit déclaré ; elle ne rend pas le run indépendant (l'auteur a lu l'attendu, ADR-074), ne prouve pas l'antériorité de l'attendu, ne juge pas la justesse des 35 constats et ne remplace pas la trace machine absente",
+  "clauses": [
+    {
+      "clause": "lire le skill 04-audit et les sept actions qu'il nomme, dans framework-origin",
+      "etat": "tenu",
+      "preuve": "run-guide.md §1 et §4, ligne « lire le skill et les sept actions »"
+    },
+    {
+      "clause": "lire le README et les fichiers du terrain utiles à l'audit",
+      "etat": "tenu",
+      "preuve": "run-guide.md §1 et §4, ligne « lire le README et les fichiers du terrain »"
+    },
+    {
+      "clause": "rendre un tableau d'une ligne par pilier avec le chemin visé et attendre l'accord sans avoir écrit un seul fichier",
+      "etat": "tenu",
+      "preuve": "run-guide.md §0 et §4, ligne « montrer le tableau et attendre l'accord »"
+    },
+    {
+      "clause": "après la réponse figée, écrire les sept fichiers de pilier et le rapport fusionné",
+      "etat": "tenu",
+      "preuve": "run-guide.md §5 : huit fichiers, 314 lignes, sections vérifiées par grep"
+    },
+    {
+      "clause": "terminer par une synthèse qui nomme les chemins écrits",
+      "etat": "tenu",
+      "preuve": "run-guide.md §5 et dernier message du run, empreintes sha256 nommées"
+    }
+  ]
+}

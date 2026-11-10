@@ -1,7 +1,7 @@
 {
   "type": "run",
   "mode": "guide",
-  "statut": "forme tenue",
+  "statut": "forme tenue signée",
   "skill": {
     "nom": "04-audit",
     "chemin": "plugins/aidd-dev/skills/04-audit",
@@ -38,7 +38,8 @@
     }
   ],
   "pieces": [
-    "run-guide.md"
+    "run-guide.md",
+    "signature.json"
   ],
   "verdict": null,
   "intention": "Auditer un dépôt en lecture seule sur sept piliers et rendre un rapport classé : un fichier par pilier sous aidd_docs/tasks/<yyyy_mm>/<yyyy_mm_dd>_audit/, un report.md fusionné, chaque ligne portant sévérité, pilier, fichier:ligne, correctif et effort, et rien d'autre sous cette racine.",

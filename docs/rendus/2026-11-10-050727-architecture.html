@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aidd-device · architecture, 2026-11-10</title>
+<meta name="description" content="Rendu daté de l'architecture du dispositif : la contrainte du gel, les sept positions et ce qu'elles ne voient pas, les quatre arbres et leurs copies, neuf commandes et trois gestes humains, vingt et une mesures et le plafond du verdict.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2317211e'/%3E%3Cpath d='M16 20h14v10H16zM34 20h14v10H34zM25 38h14v10H25z' fill='none' stroke='%2375c3b2' stroke-width='3'/%3E%3Cpath d='M23 30v8M41 30v8' stroke='%23dfae69' stroke-width='3'/%3E%3C/svg%3E">
+<!--
+  Brief PAO, avant la première balise.
+  THÈSE : tout le dispositif découle d'une seule contrainte, le gel antérieur au run ; ce qui en sort est un
+          reçu qui ne peut que refuser de conclure, et un écart nommé.
+  GENRE : carte d'atelier, grille de fond, sans et mono, aucune dépendance distante.
+  LECTEUR : celui qui revient au dépôt et veut voir la mécanique avant de lire les 534 lignes de la page.
+  MOUVEMENT : la contrainte, puis qui voit quoi, puis qui écrit où, puis la chaîne des commandes, puis le
+          plafond de la mesure.
+  PREUVE : sept positions, quatre labels gelés plus le dispositif, neuf commandes, vingt et une mesures.
+  LIMITE : le mode guidé défait la séparation des positions et le dit ; un run guidé prouve la forme,
+          jamais que le skill seul produit le geste. Un rendu n'est pas un foyer : ARCHITECTURE l'est.
+-->
+<style>
+  :root{
+    --bg:#f2f0e8; --surface:#fbfaf4; --card:#fffdf8; --card2:#f5f1e7;
+    --ink:#16211e; --dim:#5a6762; --faint:#8a958f;
+    --line:#d8d3c3; --line2:#c3bcaa;
+    --teal:#1c6b60; --teal-soft:#e0eee9; --teal-line:#8fc4b8;
+    --amber:#a96b16; --amber-soft:#f7ecd9; --amber-line:#d8b270;
+    --clay:#a8452c; --clay-soft:#f6e6e0; --clay-line:#d59a86;
+    --blue:#2f5f88; --blue-soft:#e5edf4; --blue-line:#9db8ce;
+    --sans:"IBM Plex Sans","Fira Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","Fira Code",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0e1614; --surface:#141e1b; --card:#17221f; --card2:#1c2825;
+      --ink:#e7ece8; --dim:#9faca6; --faint:#7d8a85;
+      --line:#2a3934; --line2:#3a4b45;
+      --teal:#75c3b2; --teal-soft:#17302b; --teal-line:#3d665c;
+      --amber:#dfae69; --amber-soft:#2c2518; --amber-line:#6d5731;
+      --clay:#e09379; --clay-soft:#2e211c; --clay-line:#754a3d;
+      --blue:#9ec0da; --blue-soft:#182733; --blue-line:#3f5b70;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{font-size:16px;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  body{
+    margin:0;color:var(--ink);background:var(--bg);font-family:var(--sans);font-size:1rem;line-height:1.6;
+    background-image:
+      linear-gradient(color-mix(in srgb,var(--line) 34%,transparent) 1px,transparent 1px),
+      linear-gradient(90deg,color-mix(in srgb,var(--line) 34%,transparent) 1px,transparent 1px);
+    background-size:48px 48px;-webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--teal);text-underline-offset:.16em;text-decoration-thickness:1px}
+  a:focus-visible,:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+  code{font-family:var(--mono);font-size:.84em;background:var(--teal-soft);color:var(--teal);padding:.05em .3em;overflow-wrap:anywhere}
+  .skip{position:absolute;left:-9999px;top:0;padding:.7rem 1rem;background:var(--teal);color:#fff;z-index:9}
+  .skip:focus{left:1rem;top:1rem}
+  .wrap{max-width:78rem;margin:0 auto;padding:0 clamp(1rem,3.4vw,2.4rem)}
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+  .topbar .wrap{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding-top:.5rem;padding-bottom:.5rem}
+  .brand{font-family:var(--mono);font-size:.73rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0;white-space:nowrap}
+  .brand b{color:var(--teal)}
+  .topnav{display:flex;gap:.1rem;flex-wrap:wrap}
+  .topnav a{font-size:.76rem;color:var(--dim);text-decoration:none;padding:.22rem .45rem}
+  .topnav a:hover{background:var(--surface);color:var(--teal)}
+  .badge{margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;
+    padding:.2rem .45rem;border:1px solid var(--line2);color:var(--dim);white-space:nowrap}
+  /* shell */
+  .shell{display:grid;grid-template-columns:13rem minmax(0,1fr);gap:2rem;padding-bottom:3rem}
+  .rail{position:sticky;top:3.4rem;align-self:start;padding-top:2.2rem;border-right:1px solid var(--line);min-height:calc(100vh - 3.4rem)}
+  .rail p{font-family:var(--mono);font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin:0 0 .6rem}
+  .rail nav{display:grid;gap:.05rem}
+  .rail a{font-size:.79rem;color:var(--dim);text-decoration:none;padding:.28rem .6rem;border-left:2px solid transparent}
+  .rail a:hover{color:var(--teal);border-left-color:var(--teal);background:var(--surface)}
+  .rail .note{margin-top:1.4rem;padding:.7rem .6rem 0 0;border-top:1px solid var(--line);font-size:.73rem;color:var(--faint);line-height:1.5}
+  main{min-width:0;padding-top:2rem}
+  /* hero */
+  .hero{padding-bottom:1.7rem;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin:0 0 .6rem}
+  h1{font-size:clamp(1.9rem,4vw,3.1rem);line-height:1.04;letter-spacing:-.035em;font-weight:700;margin:0;max-width:20ch;text-wrap:balance}
+  .lede{max-width:72ch;color:var(--dim);font-size:1.02rem;margin:1rem 0 0}
+  .lede strong{color:var(--ink)}
+  /* sections */
+  section{padding:2.1rem 0;border-bottom:1px solid var(--line);scroll-margin-top:3.6rem}
+  .sec-head{display:flex;align-items:baseline;gap:.7rem;margin-bottom:.4rem}
+  .num{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;color:var(--teal);white-space:nowrap}
+  h2{font-size:1.4rem;line-height:1.2;letter-spacing:-.02em;margin:0;font-weight:600;text-wrap:balance}
+  h3{font-size:1rem;margin:0 0 .3rem;font-weight:600}
+  .intro{max-width:80ch;color:var(--dim);font-size:.93rem;margin:.35rem 0 1rem}
+  p{margin:.5rem 0;max-width:80ch}
+  /* figures */
+  figure{margin:1rem 0 0}
+  .fig{background:var(--card);border:1px solid var(--line);padding:.9rem 1rem}
+  .fig-title{font-family:var(--mono);font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin:0 0 .7rem}
+  figcaption{font-size:.8rem;color:var(--dim);margin-top:.55rem;padding-top:.5rem;border-top:1px dashed var(--line);line-height:1.5}
+  figcaption strong{color:var(--ink)}
+  /* arbres */
+  .trees{display:grid;grid-template-columns:1fr 5.5rem 1fr;gap:.5rem;align-items:stretch}
+  .col{display:flex;flex-direction:column;gap:.5rem;min-width:0}
+  .lbl{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .node{border:1px solid var(--line);border-left:3px solid var(--line2);background:var(--surface);padding:.5rem .6rem;font-size:.8rem;line-height:1.35;min-width:0}
+  .node b{display:block;font-family:var(--mono);font-size:.76rem;font-weight:600;margin-bottom:.1rem}
+  .node span{display:block;font-family:var(--mono);font-size:.7rem;color:var(--dim);overflow-wrap:anywhere}
+  .node.read{border-left-color:var(--blue-line);background:var(--blue-soft)}
+  .node.frozen{border-left-color:var(--amber-line);background:var(--amber-soft)}
+  .node.write{border-left-color:var(--teal-line);background:var(--teal-soft)}
+  .node.dev{border-left-color:var(--line2);background:var(--card2)}
+  .arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;font-family:var(--mono);font-size:.63rem;color:var(--faint);text-align:center;line-height:1.3}
+  .arrow .g{font-size:1.05rem;color:var(--amber);line-height:1}
+  /* pipeline */
+  .pipe{display:flex;gap:0;overflow-x:auto;padding-bottom:.35rem;align-items:stretch}
+  .step{flex:0 0 8.6rem;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--teal-line);padding:.5rem .55rem;min-width:0}
+  .step b{display:block;font-family:var(--mono);font-size:.78rem;font-weight:600;margin-bottom:.15rem}
+  .step span{display:block;font-size:.73rem;color:var(--dim);line-height:1.4}
+  .step.human{border-top-color:var(--clay);border-style:dashed;background:var(--clay-soft)}
+  .step.gate{border-top-color:var(--amber-line);background:var(--amber-soft)}
+  .parrow{flex:0 0 2rem;display:flex;align-items:center;justify-content:center;color:var(--faint);font-family:var(--mono);font-size:.9rem}
+  /* tables */
+  .tw{overflow-x:auto;border:1px solid var(--line);background:var(--card);margin:.9rem 0 0}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:38rem}
+  caption{caption-side:top;text-align:left;font-size:.78rem;color:var(--faint);padding:.55rem .7rem;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;vertical-align:top;padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+  thead th{font-family:var(--mono);font-size:.69rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;background:var(--card2)}
+  tbody tr:last-child td{border-bottom:0}
+  td.mono{font-family:var(--mono);font-size:.79rem;white-space:nowrap}
+  /* measure families */
+  .fams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin:1rem 0 0}
+  .fam{border:1px solid var(--line);background:var(--card);padding:.7rem .8rem;min-width:0}
+  .fam .top{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.3rem}
+  .fam .c{font-family:var(--mono);font-size:1.25rem;color:var(--teal);line-height:1;font-variant-numeric:tabular-nums}
+  .fam h3{font-size:.85rem;margin:0}
+  .fam p{font-size:.79rem;color:var(--dim);margin:.15rem 0 0;line-height:1.45}
+  .fam p code{font-size:.78em}
+  .callout{border-left:3px solid var(--amber);background:var(--amber-soft);padding:.8rem 1rem;margin:1.1rem 0 0;font-size:.88rem;color:var(--dim)}
+  .callout strong{color:var(--ink)}
+  .callout.clay{border-left-color:var(--clay);background:var(--clay-soft)}
+  .callout code{background:color-mix(in srgb,var(--teal-soft) 70%,transparent)}
+  pre{margin:.8rem 0 0;background:var(--card2);border:1px solid var(--line);padding:.8rem .9rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem;line-height:1.7}
+  pre .c{color:var(--faint)}
+  pre .o{color:var(--teal)}
+  footer{padding:1.8rem 0 3rem;font-size:.86rem;color:var(--dim)}
+  footer h2{font-size:1.05rem;margin-bottom:.5rem}
+  footer ul{list-style:none;padding:0;margin:.5rem 0 0;display:grid;gap:.25rem}
+  footer li{font-family:var(--mono);font-size:.79rem;overflow-wrap:anywhere}
+  .sign{margin-top:1.4rem;padding-top:.8rem;border-top:1px solid var(--line);font-size:.8rem;color:var(--faint)}
+  @media (max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .rail{position:static;border-right:0;border-bottom:1px solid var(--line);padding:1rem 0;min-height:0;min-width:0}
+    .rail nav{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto;max-width:100%}
+    .fams{grid-template-columns:1fr}
+    .trees{grid-template-columns:1fr}
+    .arrow .g{transform:rotate(90deg)}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<header class="topbar">
+  <div class="wrap">
+    <p class="brand"><b>aidd</b>-device · architecture</p>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#contrainte">Le gel</a>
+      <a href="#positions">Positions</a>
+      <a href="#arbres">Arbres</a>
+      <a href="#commandes">Commandes</a>
+      <a href="#mesures">Mesures</a>
+      <a href="#plafond">Plafond</a>
+    </nav>
+    <span class="badge">rendu daté · 2026-11-10</span>
+  </div>
+</header>
+
+<div class="wrap shell">
+  <aside class="rail">
+    <p>Sommaire</p>
+    <nav aria-label="Sommaire détaillé">
+      <a href="#contrainte">01 · Le gel</a>
+      <a href="#positions">02 · Sept positions</a>
+      <a href="#arbres">03 · Qui écrit où</a>
+      <a href="#commandes">04 · Neuf commandes</a>
+      <a href="#mesures">05 · Vingt et une mesures</a>
+      <a href="#plafond">06 · Le plafond</a>
+      <a href="#verifier">07 · Vérifier</a>
+    </nav>
+    <p class="note">Vue du 2026-11-10, source <code>docs/ARCHITECTURE.md</code>. Un rendu ne fait pas
+      autorité : le foyer reste la page.</p>
+  </aside>
+
+  <main id="contenu">
+    <div class="hero">
+      <p class="eyebrow">Carte · état au 2026-11-10</p>
+      <h1>Une contrainte, et tout le reste en découle.</h1>
+      <p class="lede">
+        Le dispositif fait exécuter une modification du framework par une session ouverte par l'opérateur, et
+        nomme l'écart entre ce qu'elle annonce et ce qu'elle produit. Toute l'architecture vient d'une seule
+        règle : <strong>ce qui est attendu est haché et daté avant qu'aucune session ne soit ouverte</strong>.
+        Le reste n'est que la conséquence, jusqu'au plafond du verdict.
+      </p>
+    </div>
+
+    <section id="contrainte">
+      <div class="sec-head"><span class="num">01</span><h2>Le gel antérieur au run, et ce qu'il fabrique</h2></div>
+      <p class="intro">Un attendu écrit après avoir vu le produit n'est pas un attendu. Le gel scelle donc la
+        demande et l'attendu avant l'ouverture, et un fichier du cas qui bouge ensuite fait refuser le reçu
+        comme le jugement.</p>
+      <figure>
+        <div class="fig">
+          <p class="fig-title">La chaîne d'un run indépendant</p>
+          <div class="pipe">
+            <div class="step gate"><b>cas</b><span>demande et attendu écrits, origines clonées</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step gate"><b>porte</b><span>empreinte du gel, texte substitué, dossier autorisé</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step human"><b>ouvrir</b><span>le fil, ou la main de la personne</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step human"><b>la session</b><span>lit la révision, écrit dans travail</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step"><b>suite</b><span>faits, trace exportée, produit copié</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step"><b>fin</b><span>reçu, output du juge, rapport</span></div>
+            <div class="parrow" aria-hidden="true">→</div>
+            <div class="step"><b>la page</b><span>RESULTAT.md, soixante lignes</span></div>
+          </div>
+        </div>
+        <figcaption><strong>Une étape qui refuse arrête la chaîne.</strong> Les deux étapes en pointillé sont
+          celles où le geste humain intervient : le fil s'ouvre et le texte se colle, et rien ne l'atteste
+          sinon <code>faits.json</code>, qui dit seulement ce qui est déclaré. Quatre commandes ne figurent
+          pas dans cette chaîne, parce qu'elles ne sont pas sur le chemin minimal : <code>signer</code> ne
+          joue que pour un cas à <code>juge_seul</code>, <code>rapport</code> et <code>lire</code> relisent
+          après le reçu, et <code>tracer</code> appartient au run guidé, qui n'a pas de reçu.</figcaption>
+      </figure>
+      <div class="callout"><strong>Deux couches d'exécution.</strong> L'orchestrateur dit ce qui se dit et
+        dans quel ordre ; il n'ouvre aucun contrôle, appelle le harnais et recopie son refus tel quel. Le
+        harnais mesure et écrit les pièces : c'est lui qui gèle, contrôle, copie, reçoit, vérifie et compare.
+        Aucun des deux ne décide seul.</div>
+    </section>
+
+    <section id="positions">
+      <div class="sec-head"><span class="num">02</span><h2>Sept positions, définies par ce qu'elles ne voient pas</h2></div>
+      <p class="intro">La séparation est de contexte, pas de personne : relecteur, opérateur et juge peuvent
+        être la même main, mais chacune travaille sur des pièces différentes. C'est ce qui rend la question
+        « la session a-t-elle vu l'attendu ? » répondable.</p>
+      <div class="tw">
+        <table>
+          <caption>Les sept positions du dispositif. L'orchestrateur n'en est pas une : c'est la main de
+            l'opérateur, et il ne voit ni l'attendu ni la session.</caption>
+          <thead>
+            <tr><th>Position</th><th>Ce qu'elle fait</th><th>Ce qu'elle ne voit jamais</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">auteur de l'attendu</td><td>écrit la demande et l'attendu, fait geler l'empreinte</td><td>le produit</td></tr>
+            <tr><td class="mono">opérateur</td><td>gèle, passe la porte, ouvre, remet le texte, collecte, écrit le reçu, exporte la trace</td><td>rien du cas ; ce qu'il en dit reste <em>déclaré</em></td></tr>
+            <tr><td class="mono">session sous test</td><td>lit la révision sous test, écrit dans la copie du terrain</td><td><code>CASES/*.expected.json</code>, la page d'architecture, le journal</td></tr>
+            <tr><td class="mono">harnais</td><td>gèle, contrôle, copie, reçoit, vérifie, compare</td><td>aucune session : il n'en ouvre pas</td></tr>
+            <tr><td class="mono">rapport</td><td>lit le reçu, l'output, la trace, la signature de la promesse</td><td>aucun verdict nouveau : il recopie, sans relire les falsificateurs</td></tr>
+            <tr><td class="mono">page de décision</td><td>range chaque clause sous « tenu », « violé » ou « non jugé »</td><td>aucun geste inventé, aucune faute imputée sans la couche qui la porte</td></tr>
+            <tr><td class="mono">juge</td><td>lit le reçu seul, re-hache les pièces qu'il cite, écrit l'output</td><td>la session, et donc sa conduite</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout clay"><strong>Le mode guidé défait cette séparation, et le dit.</strong> Quand le
+        test se joue dans la conversation courante, l'opérateur et la session sont le même agent : il a lu
+        l'attendu avant de produire. Un <code>conforme</code> obtenu ainsi prouve la forme, les chemins et les
+        écritures, jamais que le skill seul produit le geste, et le reçu doit porter
+        <code>session_non_independante</code>.</div>
+    </section>
+
+    <section id="arbres">
+      <div class="sec-head"><span class="num">03</span><h2>Deux arbres lus, deux copies, un seul écrit</h2></div>
+      <p class="intro">Le gel enregistre quatre labels ; le dispositif est un cinquième arbre, et c'est le
+        seul qu'il écrit. La preuve que l'origine n'a pas bougé est une paire de relevés identiques, avant et
+        après le run.</p>
+      <figure>
+        <div class="fig">
+          <p class="fig-title">Où vit chaque arbre, et qui le touche</p>
+          <div class="trees">
+            <div class="col">
+              <span class="lbl">lus, jamais écrits</span>
+              <div class="node read"><b>framework-origin</b><span>~/projects/framework</span></div>
+              <div class="node read"><b>terrain</b><span>~/projects/audio-sync-tool</span></div>
+            </div>
+            <div class="arrow" aria-hidden="true">
+              <span class="g">→</span>
+              <span>copie<br>gelée</span>
+            </div>
+            <div class="col">
+              <span class="lbl">dérivés de la racine, un par cas</span>
+              <div class="node frozen"><b>revision-sous-test</b><span>&lt;racine&gt;/&lt;cas&gt;/framework-origin</span></div>
+              <div class="node write"><b>travail</b><span>&lt;racine&gt;/&lt;cas&gt;/terrain</span></div>
+            </div>
+          </div>
+          <div class="trees" style="margin-top:.7rem">
+            <div class="col">
+              <span class="lbl">le seul arbre que le dispositif écrit</span>
+              <div class="node dev"><b>aidd-device</b><span>~/projects/aidd-device</span></div>
+            </div>
+            <div class="arrow" aria-hidden="true"><span class="g">⇢</span><span>lit et hache</span></div>
+            <div class="col">
+              <span class="lbl">ce qu'il en tire</span>
+              <div class="node dev"><b>les pièces</b><span>gel, porte, faits, trace, reçu, page</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption><strong>La session écrit dans <code>travail</code> et nulle part ailleurs.</strong> La
+          racine est déclarée une seule fois au gel : c'est un fait de la machine, pas une propriété du cas.
+          Un déplacement redéclare la racine, il ne réécrit pas un cas gelé.</figcaption>
+      </figure>
+      <div class="callout"><strong>Ce que la frontière prouve, et ce qu'elle ne prouve pas.</strong> Elle
+        prouve l'absence de fuite entre les fichiers suivis de deux dépôts, en paires chemin plus contenu,
+        ni par le chemin seul ni par le contenu seul : deux dépôts portent chacun un <code>AGENTS.md</code>
+        et un <code>README.md</code> par convention. Elle ne prouve rien des artefacts non commités, ni de
+        l'intégrité pendant le run, sinon par une paire relevée à ce moment-là.</div>
+    </section>
+
+    <section id="commandes">
+      <div class="sec-head"><span class="num">04</span><h2>Neuf commandes, et trois gestes que rien n'atteste</h2></div>
+      <p class="intro">Chaque commande imprime son bloc avant de passer à la suivante. Une commande mal formée
+        sort en <code>2</code> sans rien écrire ; une étape qui refuse sort en <code>1</code> et arrête la
+        chaîne.</p>
+      <div class="tw">
+        <table>
+          <caption>Ce que chaque commande dérive, et ce qu'elle écrit. La personne ne fournit jamais ce que
+            la commande sait dériver.</caption>
+          <thead>
+            <tr><th>Commande</th><th>Ce qu'elle dérive</th><th>Ce qu'elle écrit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">cas</td><td>la demande, le squelette d'attendu, les origines et leurs clones</td><td>les deux pièces, le gel, l'espace de travail</td></tr>
+            <tr><td class="mono">porte</td><td>le texte substitué, l'empreinte du gel, le dossier autorisé</td><td><code>gate.json</code>, <code>texte-a-remettre.txt</code></td></tr>
+            <tr><td class="mono">ouvrir</td><td>le fil de la session, la réponse figée de chaque question</td><td>rien : elle imprime le fil</td></tr>
+            <tr><td class="mono">suite</td><td>les faits, l'export de la trace, le dernier message haché, la copie du produit</td><td><code>faits.json</code>, <code>trace/</code>, <code>raw/</code></td></tr>
+            <tr><td class="mono">fin</td><td>le verdict que la preuve autorise, les causes nommées, l'output du juge</td><td><code>receipt.json</code>, <code>output.json</code>, <code>RAPPORT.md</code>, <code>RESULTAT.md</code></td></tr>
+            <tr><td class="mono">signer</td><td>le reçu scellé, les empreintes des pièces nommées par le juge</td><td><code>promesse-signee.json</code>, à côté du reçu</td></tr>
+            <tr><td class="mono">rapport</td><td>le rapport et la page de décision, depuis le reçu et la lecture du cas</td><td><code>RAPPORT.md</code>, <code>RESULTAT.md</code></td></tr>
+            <tr><td class="mono">lire</td><td>rien : elle relit</td><td>rien</td></tr>
+            <tr><td class="mono">tracer</td><td>le client du fil, la session normalisée, le compte des lignes, le sha256 de l'export</td><td><code>trace/echange.jsonl</code>, <code>trace/fil.json</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout clay"><strong>Trois gestes restent humains, et aucun n'est attesté par une
+        pièce :</strong> ouvrir le fil au répertoire que <code>porte</code> imprime ; coller le texte sans le
+        retaper ; répondre par une des phrases figées du cas, jamais par une autre. C'est exactement ce
+        geste-là qui bloque aujourd'hui le premier run Freebuff : quatre fils ouverts, quatre refus, une
+        seule cause (voir le <a href="2026-11-10-050727-etat.html">dossier de situation</a>).</div>
+    </section>
+
+    <section id="mesures">
+      <div class="sec-head"><span class="num">05</span><h2>Vingt et une mesures, et un seul plafond</h2></div>
+      <p class="intro">Le reçu calcule vingt et une mesures pour tout run. Vingt les font mordre au plafond
+        <code>non concluant</code> ; une seule, <code>hors_produit</code>, interdit <code>conforme</code> sans
+        fermer le reste. Les familles disent ce que chacune surveille.</p>
+      <div class="fams">
+        <div class="fam">
+          <div class="top"><span class="c">7</span><h3>La séquence de la trace</h3></div>
+          <p>Un tableau rendu avant toute écriture, pas de produit né avant lui, aucune question suivie
+            d'une écriture sans tour <code>user</code>. Famille : <code>tableau_absent</code>,
+            <code>pause_non_tenue</code>, <code>question_sans_reponse</code>.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">2</span><h3>Le gel et la naissance</h3></div>
+          <p>Le produit n'est pas né avant le gel, et n'est pas identique à une empreinte antérieure. Un
+            fichier recopié d'ailleurs ne passe pas pour un produit.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">5</span><h3>Le cloisonnement</h3></div>
+          <p>Chaque lecture, chaque écriture, chaque chemin littéral du code d'un outil et chaque cible de
+            <code>shell</code> reste dans les racines que le cas déclare.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">3</span><h3>Le produit</h3></div>
+          <p>Il est complet, l'arbre de travail a bougé, et aucun chemin nouveau ne tombe hors du produit.
+            Une seule mesure de cette famille n'interdit pas <code>non concluant</code> :
+            <code>hors_produit</code>.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">2</span><h3>Le shell, lu</h3></div>
+          <p>Une commande mal formée est une faute de session ; une commande valide que le lecteur ne suit
+            pas est une limite d'instrument. Les deux portent un nom distinct.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">1</span><h3>La session terminale</h3></div>
+          <p>Le client publie son état final : une session morte sur une erreur ne reçoit pas de verdict.
+            Deux vocabulaires se lisent, <code>failed</code> et <code>error</code>.</p>
+        </div>
+        <div class="fam">
+          <div class="top"><span class="c">1</span><h3>Le réseau</h3></div>
+          <p>Un client réseau déclaré qui apparaît dans une commande mord quand le cas l'interdit. Un
+            attendu sans bloc <code>cloisonnement</code> est refusé, jamais remplacé par une constante.</p>
+        </div>
+      </div>
+      <div class="callout"><strong>Un produit absent n'est pas une ligne de la table :</strong> un manifeste
+        vide force <code>non concluant</code>, et le reçu porte <code>produit.absent</code>. Trois lectures
+        bornent en plus ce que le reçu sait : <code>etat_terminal_non_mesure</code>,
+        <code>completude_non_mesuree</code>, <code>cadre_non_delivre</code>. Elles nomment ce que la
+        déclaration du cas ne permet pas de compter, au lieu de le supposer.</div>
+    </section>
+
+    <section id="plafond">
+      <div class="sec-head"><span class="num">06</span><h2>Le plafond du verdict, ce que la mesure ne dit pas</h2></div>
+      <p class="intro">Le verdict suit la preuve, jamais l'inverse, et le plafond est structurel : un reçu
+        constate un écart dans un cadre déclaré, il ne mesure pas une intention.</p>
+      <div class="tw">
+        <table>
+          <caption>Ce qui est structurellement vrai, et ce qui reste une limite nommée.</caption>
+          <thead><tr><th>Ce qui tient</th><th>Ce qui reste une limite</th></tr></thead>
+          <tbody>
+            <tr><td>Les interdits du cas ne sont pas dits, ils sont rendus vrais : la porte refuse l'ouverture hors de l'espace gelé, la copie ne porte aucun <code>aidd_docs</code>, la collecte refuse un produit venu d'ailleurs.</td><td>Rien ne force l'opérateur à passer <code>--texte</code> : le contrôle du texte n'existe que si on le lui donne.</td></tr>
+            <tr><td>Aucune pensée n'est jugée : ce qui n'est pas dans la trace est une mesure absente, pas une faute.</td><td>Un manifeste recollé à la main après coup reste indiscernable d'un manifeste né ainsi.</td></tr>
+            <tr><td>Le cas ne nomme aucune machine : il écrit <code>$RACINE</code>, et le gel déclare ce qu'elle vaut.</td><td>Un artefact peut atterrir dans l'arbre de l'origine par la résolution d'un chemin relatif côté client ; la parade est d'écrire en absolu, la dérive est lue et non empêchée.</td></tr>
+            <tr><td>Un run guidé n'est pas un run indépendant, et il doit porter la limite déclarée.</td><td>Le client Freebuff n'a pas d'export brut : la mesure <code>code_hors_dossier</code> y reste vide, et le reçu le dit.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="verifier">
+      <div class="sec-head"><span class="num">07</span><h2>Vérifier cette lecture</h2></div>
+      <p class="intro">Les chiffres de cette page se rétablissent dans les pages foyers, et quelques-uns par
+        commande. Sorties observées le 2026-11-10.</p>
+<pre><code>grep -cE '^\| `[a-z_]+`' /dev/null
+awk '/^### 7.1/,/^### 7.2/' docs/ARCHITECTURE.md | grep -cE '^\| `[a-z_]+`'
+<span class="o">21</span>   <span class="c"># les vingt et une mesures du reçu, §7.1</span>
+
+grep -cE '^## ADR-' docs/DECISIONS.md
+<span class="o">99</span>
+
+grep -nE '^#{2,3} ' docs/PROTOCOLE.md
+<span class="c"># §2 porte les neuf commandes, §1 les deux modes, §5 les refus</span>
+
+bash docs/device/harness/banc-harnais.sh
+<span class="c"># attendu : 340/340 PASS. Le banc éprouve le harnais, pas la promesse d'un skill.</span>
+
+node docs/device/harness/liens.mjs
+<span class="o">exit 0</span>   <span class="c"># 0 lien mort, mais sur les seuls .md : cet outil ne lit aucun .html
+           # et ne vérifie aucune ancre #… . Cette page n'est pas couverte.</span></code></pre>
+    </section>
+
+    <footer>
+      <h2>Sources, au même endroit</h2>
+      <p>Rendu daté, pas foyer. Les faits de cette page se citent par <code>docs/ARCHITECTURE.md</code>, qui
+        fait autorité ; les gestes, par <code>docs/PROTOCOLE.md</code>. Les deux autres rendus du même jour :
+        <a href="2026-11-10-050727-etat.html">dossier de situation</a>,
+        <a href="2026-11-10-050727-runs.html">corpus des runs</a>.</p>
+      <ul>
+        <li>docs/ARCHITECTURE.md · §1 la contrainte, §2 les positions, §3 les arbres, §4 les couches, §7 les mesures, §8 les limites</li>
+        <li>docs/PROTOCOLE.md · §2 les neuf commandes, §3 les quatre blocs, §5 les refus</li>
+        <li>docs/BANC.md · les contrôles qui éprouvent le harnais</li>
+        <li>docs/DECISIONS.md · ADR-015, ADR-061, ADR-073, ADR-074, ADR-088, ADR-103, ADR-107</li>
+        <li>docs/trace.md · les séances qui ont établi les mesures citées</li>
+      </ul>
+      <p class="sign">Rendu du 2026-11-10. Aucune dépendance distante : aucune police téléchargée, aucun
+        script, aucun appel réseau. Le brief PAO est en tête de fichier.</p>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

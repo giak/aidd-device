@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aidd-device · dossier de situation, 2026-11-10</title>
+<meta name="description" content="Rendu daté du dispositif de test AIDD : ce qui est prouvé au 2026-10-26, l'écart (quatre fils Freebuff hors terrain, une seule cause), les dix points ouverts, et la prochaine décision.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2316323f'/%3E%3Cpath d='M14 20h36M14 32h24M14 44h30' stroke='%23b98a3c' stroke-width='4'/%3E%3Ccircle cx='47' cy='32' r='5' fill='%2393372a'/%3E%3C/svg%3E">
+<!--
+  Brief PAO, avant la première balise.
+  THÈSE : l'instrument mesure et se corrige en quelques heures ; un seul geste humain empêche le premier
+          reçu Freebuff, et c'est ce geste qu'il faut jouer, pas le dispositif qu'il faut refaire.
+  GENRE : dossier de situation, papier et serif, aucune dépendance distante.
+  LECTEUR : le porteur, seul, qui revient après une semaine d'absence.
+  MOUVEMENT : la thèse, puis ce qui est prouvé, puis l'écart, puis les points ouverts, puis la décision.
+  PREUVE : 36 reçus tous opencode, banc 340/340 en Séance 197, quatre fils refusés pour la même cause.
+  LIMITE : aucun reçu Freebuff n'existe ; banc non rejoué depuis la Séance 197 ; tous les chiffres sont
+          ceux du 2026-10-26, pas ceux de ce matin.
+  Un rendu n'est pas un foyer : il est la vue datée de DASHBOARD, de l'index des runs et du journal.
+-->
+<style>
+  :root{
+    --paper:#fbf9f3; --paper-2:#f3eee2; --card:#fffdf7;
+    --ink:#15181c; --ink-2:#2b2620; --muted:#5f594f; --faint:#8d8578;
+    --line:#d8d0bf; --line-strong:#b9ae99;
+    --navy:#16323f; --navy-2:#1e4353; --brass:#a5762c; --brass-2:#c9a25c;
+    --red:#93372a; --red-soft:#f5e5e0; --green:#356d50; --green-soft:#e6efe7;
+    --amber:#86591d; --amber-soft:#f6ecd9;
+    --serif:"Latin Modern Roman","TeX Gyre Pagella","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Latin Modern Sans","IBM Plex Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+    --mono:"Latin Modern Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+    --read:70ch; --gap:clamp(1.25rem,3vw,2.25rem);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12161a; --paper-2:#1a2026; --card:#171d22;
+      --ink:#ece9e1; --ink-2:#ded9cd; --muted:#a7a094; --faint:#857e72;
+      --line:#2c343b; --line-strong:#445056;
+      --navy:#9dbccb; --navy-2:#c3d6de; --brass:#d3a961; --brass-2:#e2c288;
+      --red:#e09284; --red-soft:#2b1d1a; --green:#8dc2a2; --green-soft:#172720;
+      --amber:#dbb277; --amber-soft:#2a2418;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{font-size:16px;scroll-behavior:smooth;background:var(--paper)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);font-size:1rem;line-height:1.62;
+    font-feature-settings:"kern" 1,"liga" 1;text-rendering:optimizeLegibility;
+    overflow-wrap:break-word;-webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      linear-gradient(rgba(22,50,63,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(22,50,63,.035) 1px,transparent 1px);
+    background-size:32px 32px;
+  }
+  a{color:var(--navy);text-decoration:underline;text-decoration-color:var(--brass);
+    text-decoration-thickness:.5px;text-underline-offset:3px}
+  a:hover{color:var(--red);text-decoration-color:var(--red)}
+  a:focus-visible,:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+  code,.mono{font-family:var(--mono);font-size:.88em;overflow-wrap:anywhere}
+  code{background:var(--paper-2);color:var(--ink-2);padding:0 .18em}
+  .skip{position:absolute;left:-9999px;top:0;padding:.7rem 1rem;background:var(--navy);color:var(--paper);z-index:9}
+  .skip:focus{left:1rem;top:1rem}
+  .wrap{max-width:74rem;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
+  /* masthead */
+  .masthead{background:var(--navy);color:#f6f1e4;border-bottom:3px solid var(--brass);border-top:5px solid var(--brass-2)}
+  @media (prefers-color-scheme:dark){.masthead{background:#0d1a21;color:#e9e3d4}}
+  .masthead .wrap{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;padding-top:.6rem;padding-bottom:.6rem}
+  .brand{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+  .brand b{color:var(--brass-2);font-weight:600}
+  .masthead nav{margin-left:auto;display:flex;gap:.15rem;flex-wrap:wrap}
+  .masthead nav a{color:#ded6c4;text-decoration:none;font-family:var(--sans);font-size:.76rem;padding:.25rem .5rem}
+  .masthead nav a:hover{color:#fff;background:rgba(255,255,255,.09)}
+  /* hero */
+  .hero{padding:clamp(2rem,5vw,3.6rem) 0 2rem;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--sans);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin:0 0 .8rem}
+  h1{font-size:clamp(2.4rem,5.4vw,4.1rem);line-height:1.02;letter-spacing:-.02em;font-weight:700;margin:0;max-width:22ch;text-wrap:balance}
+  .lede{max-width:var(--read);font-size:1.08rem;line-height:1.62;color:var(--muted);margin:1.1rem 0 0}
+  .lede strong{color:var(--ink);font-weight:700}
+  .meta{display:flex;gap:.4rem;flex-wrap:wrap;margin:1.4rem 0 0;padding:0;list-style:none}
+  .meta li{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;padding:.22rem .5rem;border:1px solid var(--line-strong);color:var(--muted)}
+  .meta li.bad{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+  .meta li.amy{border-color:var(--brass);color:var(--amber);background:var(--amber-soft)}
+  /* sections */
+  section{padding:clamp(1.8rem,4vw,2.8rem) 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .5rem}
+  .num{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;color:var(--brass);white-space:nowrap}
+  h2{font-family:var(--serif);font-size:clamp(1.35rem,2.4vw,1.85rem);line-height:1.2;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+  h3{font-size:1.02rem;line-height:1.3;margin:0 0 .3rem;font-weight:700}
+  .intro{max-width:var(--read);color:var(--muted);margin:.3rem 0 1.3rem;font-size:.98rem}
+  p{margin:.6rem 0;max-width:var(--read)}
+  .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:1.2rem 0 0}
+  .card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line-strong);padding:1rem 1.1rem;min-width:0}
+  .card.ok{border-top-color:var(--green)}
+  .card.bad{border-top-color:var(--red)}
+  .card.amy{border-top-color:var(--brass)}
+  .card .k{font-family:var(--mono);font-size:1.7rem;line-height:1;letter-spacing:-.02em;display:block;margin-bottom:.45rem;font-variant-numeric:tabular-nums}
+  .card.ok .k{color:var(--green)} .card.bad .k{color:var(--red)} .card.amy .k{color:var(--amber)}
+  .card .t{font-family:var(--sans);font-size:.82rem;font-weight:600;display:block;margin-bottom:.3rem}
+  .card p{font-family:var(--sans);font-size:.82rem;line-height:1.5;color:var(--muted);margin:0;max-width:none}
+  /* tables */
+  .tw{overflow-x:auto;margin:1.1rem 0 0;border:1px solid var(--line);background:var(--card)}
+  table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.84rem;min-width:36rem}
+  caption{caption-side:top;text-align:left;font-family:var(--sans);font-size:.78rem;color:var(--faint);padding:.55rem .7rem;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;vertical-align:top;padding:.55rem .7rem;border-bottom:1px solid var(--line)}
+  thead th{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-weight:600;background:var(--paper-2)}
+  tbody tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tag{font-family:var(--mono);font-size:.72rem;padding:.05rem .35rem;white-space:nowrap}
+  .tag.ok{background:var(--green-soft);color:var(--green)}
+  .tag.bad{background:var(--red-soft);color:var(--red)}
+  .tag.amy{background:var(--amber-soft);color:var(--amber)}
+  /* quote */
+  .quote{margin:1.2rem 0;border-left:3px solid var(--red);background:var(--red-soft);padding:.8rem 1rem;font-family:var(--mono);font-size:.78rem;line-height:1.55;overflow-wrap:anywhere}
+  .quote .lbl{display:block;font-family:var(--sans);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:.4rem}
+  .note{border-left:3px solid var(--brass);background:var(--paper-2);padding:.8rem 1rem;margin:1.2rem 0;font-size:.9rem;color:var(--muted)}
+  .note strong{color:var(--ink)}
+  /* open points */
+  .groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1.2rem 0 0}
+  .group{border:1px solid var(--line);background:var(--card);padding:.85rem 1rem;min-width:0}
+  .group h3{font-family:var(--sans);font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--brass);margin:0 0 .5rem}
+  .group ul{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+  .group li{font-family:var(--sans);font-size:.84rem;line-height:1.45;color:var(--muted);padding-left:1.9rem;position:relative}
+  .group li b{color:var(--ink);font-weight:600}
+  .group li .n{position:absolute;left:0;top:.05rem;font-family:var(--mono);font-size:.72rem;color:var(--brass);border:1px solid var(--line-strong);padding:0 .22rem}
+  /* decision */
+  .decide{border:1px solid var(--line-strong);border-top:4px solid var(--navy);background:var(--card);padding:1.1rem 1.2rem;margin:1.2rem 0 0}
+  .decide h3{margin-top:0}
+  .check{list-style:none;margin:.7rem 0 0;padding:0;display:grid;gap:.5rem}
+  .check li{font-family:var(--sans);font-size:.86rem;line-height:1.5;padding-left:1.6rem;position:relative;color:var(--muted)}
+  .check li::before{content:"☐";position:absolute;left:0;top:-.05rem;color:var(--navy);font-size:.95rem}
+  .check li b{color:var(--ink)}
+  /* verify */
+  pre{margin:.8rem 0 0;background:var(--paper-2);border:1px solid var(--line);padding:.8rem .9rem;overflow-x:auto;font-family:var(--mono);font-size:.78rem;line-height:1.65;color:var(--ink-2)}
+  pre .c{color:var(--faint)}
+  pre .o{color:var(--green)}
+  /* footer */
+  footer{padding:2rem 0 3rem;color:var(--muted);font-family:var(--sans);font-size:.84rem}
+  footer h2{font-size:1rem;margin-bottom:.6rem}
+  footer ul{list-style:none;margin:.4rem 0 0;padding:0;display:grid;gap:.28rem}
+  footer li{font-family:var(--mono);font-size:.76rem;overflow-wrap:anywhere}
+  .sign{margin-top:1.6rem;padding-top:.9rem;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+  @media (max-width:900px){
+    .cards{grid-template-columns:1fr}
+    .groups{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<header class="masthead">
+  <div class="wrap">
+    <p class="brand"><b>aidd</b>-device · rendus</p>
+    <nav aria-label="Sections">
+      <a href="#prouve">Ce qui est prouvé</a>
+      <a href="#ecart">L'écart</a>
+      <a href="#ouvert">Points ouverts</a>
+      <a href="#decision">Décision</a>
+      <a href="#verifier">Vérifier</a>
+    </nav>
+  </div>
+</header>
+
+<main id="contenu">
+  <div class="wrap">
+    <div class="hero">
+      <p class="eyebrow">Dossier de situation · 2026-11-10</p>
+      <h1>Tout avance, sauf un point de passage.</h1>
+      <p class="lede">
+        L'instrument de mesure converge : chaque échec récent est devenu une garde en quelques heures, et la
+        garde est éprouvée par un contrôle qui mord. Le premier geste humain du run Freebuff, lui, a échoué
+        quatre fois de suite de la même façon. <strong>Ce n'est pas un rond complet : c'est un gué à
+        franchir.</strong>
+      </p>
+      <ul class="meta">
+        <li>chiffres du 2026-10-26</li>
+        <li class="bad">aucun reçu Freebuff</li>
+        <li class="amy">banc non rejoué depuis la Séance 197</li>
+        <li>dernier commit 393a881 · 2026-10-25</li>
+      </ul>
+    </div>
+
+    <section id="prouve">
+      <div class="sec-head"><span class="num">01</span><h2>Ce qui est prouvé, et ce que chaque preuve ne dit pas</h2></div>
+      <p class="intro">Trois faits portent la situation. Aucun ne porte la promesse du produit, et c'est dit à
+        côté de chacun.</p>
+      <div class="cards">
+        <div class="card ok">
+          <span class="k">36</span>
+          <span class="t">runs clos par un reçu</span>
+          <p>Sur 53 runs ouverts, 68 %. Tous portent <code>client: opencode</code> : le corpus prouve la
+            mécanique du reçu, jamais le client qui compte.</p>
+        </div>
+        <div class="card ok">
+          <span class="k">340/340</span>
+          <span class="t">contrôles du banc</span>
+          <p>Dernier passage enregistré, Séance 197, non rejoué depuis. La valeur est un enregistrement,
+            pas un état du jour.</p>
+        </div>
+        <div class="card bad">
+          <span class="k">0 sur 4</span>
+          <span class="t">fils Freebuff acceptés</span>
+          <p>Quatre fils ouverts sur le cas jouet, quatre refus identiques : le projet ne porte aucune
+            source de dossier, donc <code>suite</code> ne peut pas nommer le produit.</p>
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <caption>Les mesures de la reprise, leur valeur et leur plafond. Sources : index généré des runs, journal, audit du 2026-10-26.</caption>
+          <thead>
+            <tr><th>Mesure</th><th class="num">Valeur</th><th>Ce qu'elle ne dit pas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Runs du corpus</td><td class="num">60</td><td>qu'un run soit lisible : 17 n'ont laissé qu'une porte, sans reçu</td></tr>
+            <tr><td>Reçus écrits</td><td class="num">36</td><td>qu'un reçu soit juste : 18 ne nomment aucune cause</td></tr>
+            <tr><td>Cas gelés</td><td class="num">16</td><td>qu'un cas ait été joué : plusieurs n'ont aucun run</td></tr>
+            <tr><td>Décisions consignées</td><td class="num">99</td><td>qu'une décision soit éprouvée : le banc en porte une partie</td></tr>
+            <tr><td>Liens des documents</td><td class="num">0 mort</td><td>qu'une ancre <code>#…</code> existe : elle n'est pas vérifiée, et les pages <code>.html</code> ne sont pas scannées du tout</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><strong>Le corpus est un instrument, pas un résultat.</strong> Il mesure la fidélité
+        du harnais à ses propres règles. Il ne mesure pas si un skill du framework tient sa promesse,
+        puisqu'aucun reçu ne vient d'une session ouverte par la personne dans le client qui compte.</div>
+    </section>
+
+    <section id="ecart">
+      <div class="sec-head"><span class="num">02</span><h2>L'écart : quatre fils, une seule cause</h2></div>
+      <p class="intro">Le geste attendu est simple : ouvrir un fil dans le projet du terrain gelé, coller le
+        texte, répondre. Quatre tentatives l'ont manqué de la même manière, et la cause est lue dans le
+        registre de l'application, pas supposée.</p>
+      <div class="tw">
+        <table>
+          <caption>Les quatre fils Freebuff du cas jouet, et ce que chacun a produit.</caption>
+          <thead>
+            <tr><th>Fil</th><th>Ce qu'il a produit</th><th>Où le produit a atterri</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">0d054e1d</td><td>texte reçu, réponse produite</td><td>à la racine du cas, hors <code>terrain/</code></td></tr>
+            <tr><td class="mono">e4fa2118</td><td>texte jamais collé</td><td>sur les skills de compte</td></tr>
+            <tr><td class="mono">c9a04ccb</td><td>texte et tableau justes</td><td><code>terrain/aidd_docs</code>, projet hors terrain</td></tr>
+            <tr><td class="mono">1a67a878</td><td>produit juste, réponse à 94 octets au lieu de 95</td><td><code>terrain/aidd_docs</code>, projet hors terrain</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="quote">
+        <span class="lbl">Le refus, identique quatre fois</span>
+        REFUS · faits : le fil ouvre /home/giak/.config/freebuff-desktop/local-projects/a35fecd8-…, le gel
+        nomme « travail » /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain · des
+        faits d'un run ouvert ailleurs nommeraient un produit que le gel ne couvre pas
+      </div>
+      <p><strong>La cause, lue dans <code>state.json</code> :</strong> les quatre projets sont nommés par le
+        chemin du terrain mais portent <code>sources: []</code>. Un projet d'application qui ouvre vraiment
+        un dossier porte une source de dossier, et le registre en montre cinq qui en portent une : la sonde
+        sait donc dire oui. Le blocage n'est pas une capacité manquante, c'est le geste d'acceptation.</p>
+      <div class="note"><strong>Ce que les deux tentatives ont appris, le 25 à 22:21.</strong> L'application
+        accepte le dossier : la boîte GTK navigue jusque dans <code>terrain</code>. Mais dans cette boîte,
+        <code>Return</code> dans le champ de saisie prend la première complétion, donc <code>.git</code>.
+        C'est <strong>Choisir</strong> qu'il faut cliquer une fois le dossier affiché. Le geste revient à la
+        personne, et il n'a pas été rejoué à l'aveugle une troisième version.</div>
+    </section>
+
+    <section id="ouvert">
+      <div class="sec-head"><span class="num">03</span><h2>Ce qui reste ouvert : dix points, quatre natures</h2></div>
+      <p class="intro">Vue condensée du <a href="../DASHBOARD.md">tableau de bord</a>, qui reste le foyer.
+        Les numéros sont les siens, pour qu'une séance datée puisse les citer.</p>
+      <div class="groups">
+        <div class="group">
+          <h3>Le geste et le client</h3>
+          <ul>
+            <li><span class="n">1</span><b>Le run Freebuff réel n'a jamais été ouvert.</b> Son critère de
+              clôture est périmé : gel du 21 et commandes d'avant l'orchestrateur.</li>
+            <li><span class="n">3</span><b><code>tracer</code> n'a exporté aucun fil Freebuff réel.</b> Les
+              fixtures prouvent l'adaptateur, pas ce fil.</li>
+            <li><span class="n">9</span><b>Le cas <code>03-shadow-areas</code> n'est ni fabriqué ni joué.</b>
+              Aucun reçu indépendant pour un skill AIDD.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h3>La mesure manquante</h3>
+          <ul>
+            <li><span class="n">4</span><b>L'indépendance n'est pas mesurée :</b> l'agent a lu l'attendu
+              avant de produire, et le run le déclare.</li>
+            <li><span class="n">6</span><b>Le contrôle négatif est à moitié fermé :</b> une phrase retournée
+              est signalée, mais aucun produit de ce contrôle n'a encore été jugé « écart » ; les cinq
+              écarts du corpus portent sur d'autres cas.</li>
+            <li><span class="n">11</span><b>Trois runs à <code>juge_seul</code> restent non signés</b>, et
+              rien ne prouve qu'un juge futur lira juste.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h3>La décision en attente</h3>
+          <ul>
+            <li><span class="n">5</span><b>Le headless est différé, pas tranché :</b> quota 402, corps 413,
+              modèle local trop lent.</li>
+            <li><span class="n">7</span><b><code>ECART.md</code> existe hors de toute pull request</b> du
+              framework.</li>
+            <li><span class="n">8</span><b>P5 ouverte :</b> le commit « debout » n'est pas arbitré, et le
+              frontmatter des skills attend un drift démontré.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h3>Le cas à rejouer</h3>
+          <ul>
+            <li><span class="n">2</span><b><code>10-task</code> n'a pas été rejoué avec le §5 bis</b> du
+              gabarit guidé : la grille ne cite aucun <code>seq</code> de sa trace.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="decision">
+      <div class="sec-head"><span class="num">04</span><h2>La prochaine décision n'est pas un run, c'est un geste</h2></div>
+      <p class="intro">Le plus petit pas du rapport du 26 est la sonde du registre : un seul essai du geste
+        d'import, puis <code>suite</code> et <code>fin</code> sur la porte déjà gelée. Le critère
+        d'acceptation est vérifiable, et il se lit avant le geste.</p>
+      <div class="decide">
+        <h3>Critère d'acceptation, écrit le 2026-10-25 à 22:21</h3>
+        <ul class="check">
+          <li><b>Un projet dont la clé est le chemin du terrain</b>, et dont <code>sources[0].kind</code>
+            vaut <code>folder</code>.</li>
+          <li><b>Un fil dont <code>threads.project_path</code></b> vaut ce chemin, dans une base sous
+            <code>projects/</code>.</li>
+          <li><b>Puis <code>suite --cas … --fil … --client freebuff</code></b> avec la conduite et le produit
+            nommés, et <code>fin</code> sur la porte <code>194204</code>.</li>
+          <li><b>Si la sonde échoue encore :</b> basculer sur le terrain du 15, déjà importé, et consigner la
+            limite en connaissance négative.</li>
+        </ul>
+      </div>
+      <p>Ce que ce pas coûte, et qu'il faut dire : une entrée de plus dans les projets récents de
+        l'application (le projet <code>.git</code> de la première tentative), aucune écriture dans les arbres
+        du cas, et un geste qui n'est pas rejouable par un agent.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="num">05</span><h2>Ce que cette page ne prouve pas</h2></div>
+      <ul class="check">
+        <li><b>Qu'un reçu Freebuff existe.</b> Il n'y en a aucun : les 36 reçus portent
+          <code>client: opencode</code>.</li>
+        <li><b>Que le banc passe.</b> Le dernier passage vaut 340/340, et il est daté de la Séance 197.</li>
+        <li><b>Que les chiffres soient ceux de ce matin.</b> Le dépôt s'est arrêté le 2026-10-25, et le
+          travail du 2026-10-26 n'est pas commité : ces chiffres sont ceux du 26.</li>
+        <li><b>Que la promesse du produit soit tenue.</b> Rien ici ne compare une promesse de skill à un
+          produit ; c'est la page de décision d'un run qui le fait.</li>
+      </ul>
+    </section>
+
+    <section id="verifier">
+      <div class="sec-head"><span class="num">06</span><h2>Vérifier cette lecture</h2></div>
+      <p class="intro">Chaque chiffre de cette page se rétablit par une commande, depuis la racine du dépôt.
+        Sorties observées le 2026-11-10.</p>
+<pre><code>node docs/device/harness/runs.mjs --index
+<span class="c"># index.md : 60 runs : 36 indépendants, 5 guidés, 17 avortés, 2 manuels.</span>
+<span class="o">exit 0</span>
+
+node docs/device/harness/runs.mjs --verifier
+<span class="c"># l'index généré concorde avec les dossiers</span>
+<span class="o">exit 0</span>
+
+git log -1 --pretty='%h %ad %s' --date=short
+<span class="c"># 393a881 2026-10-25 Consigner les contrôles de recevabilité…</span>
+
+grep -cE '^\| [0-9]+ \|' docs/DASHBOARD.md
+<span class="o">10</span>   <span class="c"># points ouverts : numéros 1 à 9 et 11, le 10 reste libre</span>
+
+node docs/device/harness/liens.mjs
+<span class="o">exit 0</span>   <span class="c"># 0 lien mort, mais sur les seuls .md : cet outil ne lit aucun .html
+            # et ne vérifie aucune ancre #… . Les liens de cette page ne sont
+            # donc pas couverts par cette ligne.</span>
+
+bash docs/device/harness/banc-harnais.sh
+<span class="c"># attendu : 340/340 PASS. Non rejoué depuis la Séance 197 :
+# le lancer ici établit un état du jour, et le documenter.</span></code></pre>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h2>Sources, au même endroit</h2>
+    <p>Cette page est un <strong>rendu daté</strong>, pas un foyer. Elle ne fait pas autorité : les faits se
+      citent par leur foyer, et une page périmée se périme par son nom. Les deux autres rendus du même
+      jour : <a href="2026-11-10-050727-architecture.html">architecture</a>,
+      <a href="2026-11-10-050727-runs.html">corpus des runs</a>.</p>
+    <ul>
+      <li>docs/DASHBOARD.md · les dix points ouverts</li>
+      <li>docs/device/runs/INDEX.md · le corpus, généré</li>
+      <li>docs/tasks/2026_10/2026-10-26-215541-audit-boucle-protocole/2026-10-26-215552-audit.md · le verdict de boucle et ses mesures</li>
+      <li>docs/trace.md · Séance 197 (le run d'une session morte), Séance 198 (l'audit et le geste)</li>
+      <li>docs/DECISIONS.md · ADR-103, ADR-106, ADR-107</li>
+      <li>docs/ARCHITECTURE.md · ce que le dispositif fait, et son plafond</li>
+    </ul>
+    <p class="sign">Rendu du 2026-11-10, établi sur les pièces du 2026-10-26. Aucune dépendance distante :
+      aucune police téléchargée, aucun script, aucun appel réseau. Le brief PAO est en tête de fichier.</p>
+  </div>
+</footer>
+</body>
+</html>

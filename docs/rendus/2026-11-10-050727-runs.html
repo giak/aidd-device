@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aidd-device · le corpus des runs, 2026-11-10</title>
+<meta name="description" content="Rendu daté du corpus : 60 runs, 36 reçus tous opencode, 6 conformes, 5 écarts, 25 non concluants dont 18 sans cause nommée, 17 avortés dont 4 de la même classe, et ce que chaque mode prouve.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%2314202b'/%3E%3Crect x='12' y='38' width='8' height='14' fill='%235fb8a5'/%3E%3Crect x='24' y='28' width='8' height='24' fill='%235fb8a5'/%3E%3Crect x='36' y='18' width='8' height='34' fill='%23cbd5cf'/%3E%3Crect x='48' y='44' width='8' height='8' fill='%23d99a4e'/%3E%3C/svg%3E">
+<!--
+  Brief PAO, avant la première balise.
+  THÈSE : le corpus prouve trente-six fois la mécanique du reçu, et zéro fois le client qui compte ; ce n'est
+          pas un défaut du corpus, c'est sa frontière.
+  GENRE : instrument, tableau dense et barres en CSS, mono pour les chiffres.
+  LECTEUR : celui qui doit savoir ce que 60 runs autorisent à conclure, avant de conclure.
+  MOUVEMENT : la distribution, puis les verdicts, puis les causes, puis les cohortes, puis les modes, puis
+          la boucle du geste.
+  PREUVE : INDEX.md généré par runs.mjs le 2026-10-26, et l'audit du même jour pour les cohortes.
+  LIMITE : 18 reçus ne nomment aucune cause ; 17 runs n'ont laissé aucun reçu ; aucun reçu ne vient de
+          Freebuff. Un rendu n'est pas un foyer : l'index généré l'est.
+-->
+<style>
+  :root{
+    --bg:#f4f4ef; --surface:#fbfbf6; --card:#ffffff; --card2:#eef0ea;
+    --ink:#131c22; --dim:#566268; --faint:#828d92;
+    --line:#d5dad6; --line2:#b7bfba;
+    --teal:#1f6f5c; --teal-soft:#e2efe9; --teal-line:#8dc0b0;
+    --amber:#9a6a15; --amber-soft:#f6eddb;
+    --clay:#a03f2c; --clay-soft:#f7e6e1;
+    --blue:#2c5b80; --blue-soft:#e4edf3;
+    --green:#2f6b48;
+    --sans:"IBM Plex Sans","Fira Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","Fira Code",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f1519; --surface:#151d22; --card:#182127; --card2:#1d272d;
+      --ink:#e8edef; --dim:#9fabb1; --faint:#7c888e;
+      --line:#29343a; --line2:#3a474d;
+      --teal:#6fc4ae; --teal-soft:#16302a; --teal-line:#3d6559;
+      --amber:#dcb273; --amber-soft:#2a2417;
+      --clay:#df9683; --clay-soft:#2d1f1b;
+      --blue:#9dbfd8; --blue-soft:#17262f;
+      --green:#8cc3a3;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{font-size:16px;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.58;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal);text-underline-offset:.16em}
+  a:focus-visible,:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+  code{font-family:var(--mono);font-size:.84em;background:var(--card2);padding:.05em .3em;overflow-wrap:anywhere}
+  .skip{position:absolute;left:-9999px;top:0;padding:.7rem 1rem;background:var(--teal);color:#fff;z-index:9}
+  .skip:focus{left:1rem;top:1rem}
+  .wrap{max-width:76rem;margin:0 auto;padding:0 clamp(1rem,3.4vw,2.4rem)}
+  .topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 93%,transparent);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+  .topbar .wrap{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding-top:.5rem;padding-bottom:.5rem}
+  .brand{font-family:var(--mono);font-size:.73rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0}
+  .brand b{color:var(--teal)}
+  .topnav{margin-left:auto;display:flex;gap:.1rem;flex-wrap:wrap}
+  .topnav a{font-size:.76rem;color:var(--dim);text-decoration:none;padding:.22rem .45rem}
+  .topnav a:hover{background:var(--surface);color:var(--teal)}
+  main{padding-top:2rem;padding-bottom:3rem}
+  /* hero */
+  .hero{padding-bottom:1.6rem;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin:0 0 .6rem}
+  h1{font-size:clamp(1.9rem,4vw,3rem);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:0;max-width:24ch;text-wrap:balance}
+  .lede{max-width:74ch;color:var(--dim);font-size:1rem;margin:.95rem 0 0}
+  .lede strong{color:var(--ink)}
+  .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem;margin:1.4rem 0 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line2);padding:.7rem .8rem;min-width:0}
+  .kpi.ok{border-top-color:var(--green)} .kpi.bad{border-top-color:var(--clay)} .kpi.amy{border-top-color:var(--amber)}
+  .kpi .v{font-family:var(--mono);font-size:1.55rem;line-height:1;display:block;font-variant-numeric:tabular-nums}
+  .kpi.ok .v{color:var(--green)} .kpi.bad .v{color:var(--clay)} .kpi.amy .v{color:var(--amber)}
+  .kpi .l{display:block;font-size:.75rem;color:var(--dim);margin-top:.3rem;line-height:1.35}
+  /* sections */
+  section{padding:1.9rem 0;border-bottom:1px solid var(--line);scroll-margin-top:3.4rem}
+  .sec-head{display:flex;align-items:baseline;gap:.7rem;margin-bottom:.35rem}
+  .num{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;color:var(--teal)}
+  h2{font-size:1.35rem;letter-spacing:-.02em;line-height:1.2;margin:0;font-weight:600;text-wrap:balance}
+  h3{font-size:.92rem;margin:0 0 .25rem;font-weight:600}
+  .intro{max-width:80ch;color:var(--dim);font-size:.92rem;margin:.3rem 0 1rem}
+  p{margin:.5rem 0;max-width:80ch}
+  /* barres */
+  .bars{display:grid;gap:.3rem;margin:1rem 0 0;max-width:48rem}
+  .bar{display:grid;grid-template-columns:11.5rem 1fr 2.6rem;align-items:center;gap:.6rem;font-size:.82rem}
+  .bar .name{font-family:var(--mono);font-size:.78rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .track{background:var(--card2);height:1.05rem;border:1px solid var(--line);position:relative}
+  .bar .fill{height:100%;background:var(--teal-line);display:block}
+  .bar.bad .fill{background:var(--clay)} .bar.amy .fill{background:var(--amber)} .bar.ok .fill{background:var(--green)}
+  .bar .val{font-family:var(--mono);font-size:.8rem;text-align:right;font-variant-numeric:tabular-nums}
+  .legend{display:flex;gap:.9rem;flex-wrap:wrap;margin:.9rem 0 0;padding:0;list-style:none;font-size:.76rem;color:var(--dim)}
+  .legend li{display:flex;align-items:center;gap:.35rem;font-family:var(--mono)}
+  .sw{width:.8rem;height:.55rem;display:inline-block;background:var(--teal-line)}
+  .sw.bad{background:var(--clay)} .sw.amy{background:var(--amber)} .sw.ok{background:var(--green)}
+  /* tables */
+  .tw{overflow-x:auto;border:1px solid var(--line);background:var(--card);margin:.9rem 0 0}
+  table{border-collapse:collapse;width:100%;font-size:.83rem;min-width:40rem}
+  caption{caption-side:top;text-align:left;font-size:.77rem;color:var(--faint);padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;vertical-align:top;padding:.48rem .7rem;border-bottom:1px solid var(--line)}
+  thead th{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);background:var(--card2);font-weight:600}
+  tbody tr:last-child td{border-bottom:0}
+  td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.mono{font-family:var(--mono);font-size:.79rem}
+  tr.total td{background:var(--card2);font-weight:600;border-top:2px solid var(--line2)}
+  .callout{border-left:3px solid var(--clay);background:var(--clay-soft);padding:.8rem 1rem;margin:1.1rem 0 0;font-size:.87rem;color:var(--dim)}
+  .callout strong{color:var(--ink)}
+  .callout.neutral{border-left-color:var(--teal);background:var(--teal-soft)}
+  .quote{margin:1rem 0 0;border-left:3px solid var(--clay);background:var(--clay-soft);padding:.7rem .9rem;font-family:var(--mono);font-size:.76rem;line-height:1.55;overflow-wrap:anywhere}
+  pre{margin:.8rem 0 0;background:var(--card2);border:1px solid var(--line);padding:.8rem .9rem;overflow-x:auto;font-family:var(--mono);font-size:.78rem;line-height:1.7}
+  pre .c{color:var(--faint)} pre .o{color:var(--green)}
+  footer{padding:1.8rem 0 0;font-size:.85rem;color:var(--dim)}
+  footer h2{font-size:1rem;margin-bottom:.4rem}
+  footer ul{list-style:none;padding:0;margin:.5rem 0 0;display:grid;gap:.25rem}
+  footer li{font-family:var(--mono);font-size:.78rem;overflow-wrap:anywhere}
+  .sign{margin-top:1.3rem;padding-top:.8rem;border-top:1px solid var(--line);font-size:.79rem;color:var(--faint)}
+  @media (max-width:900px){
+    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .bar{grid-template-columns:8rem 1fr 2.4rem}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<header class="topbar">
+  <div class="wrap">
+    <p class="brand"><b>aidd</b>-device · corpus des runs</p>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#distribution">Distribution</a>
+      <a href="#verdicts">Verdicts</a>
+      <a href="#causes">Causes</a>
+      <a href="#cohortes">Cohortes</a>
+      <a href="#modes">Modes</a>
+      <a href="#boucle">La boucle</a>
+    </nav>
+  </div>
+</header>
+
+<main id="contenu">
+  <div class="wrap">
+    <div class="hero">
+      <p class="eyebrow">Instrument · corpus arrêté au 2026-10-26</p>
+      <h1>Le corpus prouve la mécanique, jamais le client qui compte.</h1>
+      <p class="lede">
+        Soixante dossiers, trente-six reçus, tous rendus par le même client. Ce n'est pas un défaut du
+        corpus, c'est sa frontière : il mesure la fidélité du harnais à ses propres règles.
+        <strong>Il ne mesure pas encore ce que le dispositif existe pour mesurer.</strong>
+      </p>
+      <div class="kpis">
+        <div class="kpi"><span class="v">60</span><span class="l">dossiers de runs</span></div>
+        <div class="kpi ok"><span class="v">36</span><span class="l">reçus écrits, 68 % des runs ouverts</span></div>
+        <div class="kpi bad"><span class="v">17</span><span class="l">avortés, sans reçu</span></div>
+        <div class="kpi amy"><span class="v">18</span><span class="l">non concluants sans cause nommée</span></div>
+        <div class="kpi bad"><span class="v">0</span><span class="l">reçu Freebuff</span></div>
+      </div>
+    </div>
+
+    <section id="distribution">
+      <div class="sec-head"><span class="num">01</span><h2>La distribution : quatre modes, neuf états</h2></div>
+      <p class="intro">Les deux mesures ne se recoupent pas. Le mode dit comment le run a été ouvert ; l'état
+        dit ce qu'il en reste. Un avorté est un mode, pas un état : il n'a jamais eu de reçu.</p>
+      <h3>Par mode</h3>
+      <div class="bars">
+        <div class="bar"><span class="name">indépendant</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">36</span></div>
+        <div class="bar bad"><span class="name">avorté</span><span class="track"><span class="fill" style="width:47%"></span></span><span class="val">17</span></div>
+        <div class="bar amy"><span class="name">guidé</span><span class="track"><span class="fill" style="width:14%"></span></span><span class="val">5</span></div>
+        <div class="bar"><span class="name">manuel</span><span class="track"><span class="fill" style="width:6%"></span></span><span class="val">2</span></div>
+      </div>
+      <h3 style="margin-top:1.4rem">Par état du dossier</h3>
+      <div class="bars">
+        <div class="bar amy"><span class="name">non concluant, sans cause</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">18</span></div>
+        <div class="bar bad"><span class="name">sans reçu</span><span class="track"><span class="fill" style="width:94%"></span></span><span class="val">17</span></div>
+        <div class="bar ok"><span class="name">conforme</span><span class="track"><span class="fill" style="width:33%"></span></span><span class="val">6</span></div>
+        <div class="bar ok"><span class="name">forme tenue (guidé)</span><span class="track"><span class="fill" style="width:28%"></span></span><span class="val">5</span></div>
+        <div class="bar bad"><span class="name">écart</span><span class="track"><span class="fill" style="width:28%"></span></span><span class="val">5</span></div>
+        <div class="bar amy"><span class="name">non concluant, modèle</span><span class="track"><span class="fill" style="width:22%"></span></span><span class="val">4</span></div>
+        <div class="bar amy"><span class="name">non concluant, dispositif</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">2</span></div>
+        <div class="bar"><span class="name">non observé (manuel)</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">2</span></div>
+        <div class="bar amy"><span class="name">non concluant, dispositif et cas</span><span class="track"><span class="fill" style="width:6%"></span></span><span class="val">1</span></div>
+      </div>
+      <ul class="legend">
+        <li><span class="sw ok"></span> reçu favorable</li>
+        <li><span class="sw bad"></span> échec ou écart</li>
+        <li><span class="sw amy"></span> mesure incomplète</li>
+        <li><span class="sw"></span> neutre</li>
+      </ul>
+      <div class="callout neutral"><strong>La somme tient :</strong> 36 reçus (6 conformes, 5 écarts, 25 non
+        concluants) plus 5 guidés à forme tenue, plus 2 manuels non observés, plus 17 avortés font 60. Les
+        trois familles se recoupent sans trou, et c'est déjà une propriété mesurée.</div>
+    </section>
+
+    <section id="verdicts">
+      <div class="sec-head"><span class="num">02</span><h2>Ce que les verdicts autorisent à dire</h2></div>
+      <div class="tw">
+        <table>
+          <caption>Les verdicts du corpus et leur portée, au 2026-10-26.</caption>
+          <thead><tr><th>Verdict</th><th class="n">Nombre</th><th>Ce qu'il établit</th><th>Ce qu'il n'établit pas</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">conforme</td><td class="n">6</td><td>la promesse du cas a tenu, dans le cadre déclaré ; un des six est un verdict corrigé, lié à sa note</td><td>qu'un skill seul produise le geste, si le run était guidé</td></tr>
+            <tr><td class="mono">ecart</td><td class="n">5</td><td>un produit a été écrit et a manqué une clause</td><td>qu'un écart soit une faute du skill plutôt que de la conduite</td></tr>
+            <tr><td class="mono">non concluant</td><td class="n">25</td><td>qu'une mesure a mordu, et laquelle quand elle est nommée</td><td>quoi que ce soit sur la promesse : le plafond est structurel</td></tr>
+            <tr><td class="mono">forme tenue</td><td class="n">5</td><td>la forme d'un run guidé : chemins, écritures, grille</td><td>l'indépendance, que le run déclare perdue</td></tr>
+            <tr><td class="mono">non observé</td><td class="n">2</td><td>qu'un dossier a été ouvert puis laissé</td><td>rien : ces deux runs ne portent que le protocole antérieur</td></tr>
+            <tr><td class="mono">sans reçu</td><td class="n">17</td><td>qu'une porte a été passée, et rien de plus</td><td>qu'un run ait eu lieu : le fil n'a pas produit de pièce</td></tr>
+            <tr class="total"><td class="mono">total</td><td class="n">60</td><td colspan="2">dont 36 reçus, tous <code>client: opencode</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Un seul run guidé porte une trace exportée ; les quatre autres déclarent
+        <code>trace_absente</code>. Un run guidé sans trace prouve sa grille et ses chemins, pas la conduite
+        de la session, et la limite est écrite dans le dossier.</p>
+    </section>
+
+    <section id="causes">
+      <div class="sec-head"><span class="num">03</span><h2>Les causes : sept nommées sur vingt-cinq</h2></div>
+      <p class="intro">Depuis l'ADR-098, un « non concluant » nomme sa cause ou le reçu ne s'écrit pas. Les
+        reçus antérieurs au champ n'en portent aucune, et c'est cette dette qui se lit ici.</p>
+      <div class="bars">
+        <div class="bar amy"><span class="name">non nommée</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">18</span></div>
+        <div class="bar amy"><span class="name">modèle</span><span class="track"><span class="fill" style="width:22%"></span></span><span class="val">4</span></div>
+        <div class="bar amy"><span class="name">dispositif</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">2</span></div>
+        <div class="bar amy"><span class="name">dispositif et cas</span><span class="track"><span class="fill" style="width:6%"></span></span><span class="val">1</span></div>
+      </div>
+      <div class="callout"><strong>Ce que 18 causes absentes coûtent.</strong> Un non concluant sans cause ne
+        dit pas si la faute est au modèle, au cas, au dispositif ou au skill. Il ne se compare pas à un autre
+        non concluant, et il ne permet pas de choisir la garde qui le fermerait. C'est la raison pour
+        laquelle les échecs récents sont devenus des contrôles : le contrôle, lui, nomme ce qu'il éprouve.</div>
+    </section>
+
+    <section id="cohortes">
+      <div class="sec-head"><span class="num">04</span><h2>Les cohortes : le taux de clôture par période</h2></div>
+      <p class="intro">Mesure de l'audit du 2026-10-26, hors guidés et manuels : un run ouvert finit par un
+        reçu, ou il avorte. Le taux ne juge pas la qualité du reçu, seulement son existence.</p>
+      <div class="tw">
+        <table>
+          <caption>Cohortes du corpus, comptes de l'audit §2.1. Total : 36 reçus sur 53 runs ouverts.</caption>
+          <thead><tr><th>Période</th><th class="n">Reçus</th><th class="n">Avortés</th><th class="n">Taux</th><th>Lecture</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">10-15 → 10-21</td><td class="n">10</td><td class="n">2</td><td class="n">83 %</td><td>installation du harnais, échecs hétérogènes</td></tr>
+            <tr><td class="mono">10-22</td><td class="n">9</td><td class="n">6</td><td class="n">60 %</td><td>journée de mise au point du mode guidé</td></tr>
+            <tr><td class="mono">10-23</td><td class="n">1</td><td class="n">0</td><td class="n">100 %</td><td>peu de runs ouverts, aucun échec</td></tr>
+            <tr><td class="mono">10-24</td><td class="n">12</td><td class="n">5</td><td class="n">71 %</td><td>corrections de protocole au fil de l'eau</td></tr>
+            <tr><td class="mono">10-25</td><td class="n">4</td><td class="n">4</td><td class="n">50 %</td><td>les quatre avortés sont de la même classe</td></tr>
+            <tr class="total"><td class="mono">total</td><td class="n">36</td><td class="n">17</td><td class="n">68 %</td><td>l'instrument converge, le geste bloque</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Les quatre avortés du 25 sont tous le geste d'ouverture du fil Freebuff. Les treize plus anciens
+        sont hétérogènes, et le journal les nomme pour la plupart : quota du fournisseur, blocage de modèle,
+        délai, session sans question, cas remplacé, session morte tôt ou jamais ouverte. Un seul reste sans
+        cause écrite.</p>
+    </section>
+
+    <section id="modes">
+      <div class="sec-head"><span class="num">05</span><h2>Ce que chaque mode prouve, et ce qu'il ne prouve pas</h2></div>
+      <div class="tw">
+        <table>
+          <caption>Quatre modes, quatre portées. Le mode guidé défait la séparation des positions, et le paie
+            d'une limite déclarée.</caption>
+          <thead><tr><th>Mode</th><th>Comment il s'ouvre</th><th>Ce qu'il prouve</th><th>Sa limite, écrite dans la pièce</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">indépendant</td><td>la personne ouvre la session, colle le texte, répond</td><td>le geste complet, avec une session qui n'a pas vu l'attendu</td><td>rien ne l'atteste sinon <code>faits.json</code>, qui déclare</td></tr>
+            <tr><td class="mono">guidé</td><td>le test se joue dans la conversation courante</td><td>la forme : chemins, écritures, grille dérivée du skill</td><td><code>session_non_independante</code>, toujours portée</td></tr>
+            <tr><td class="mono">manuel</td><td>un dossier de run ouvert à la main</td><td>presque rien : ni reçu, ni trace</td><td><code>protocole_anterieur</code>, <code>run_non_observe</code></td></tr>
+            <tr><td class="mono">avorté</td><td>une porte passée, puis rien</td><td>qu'un départ a été gelé et qu'un geste a manqué</td><td>aucun reçu : le dossier garde <code>gate.json</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="boucle">
+      <div class="sec-head"><span class="num">06</span><h2>La boucle du geste : quatre fils, une cause</h2></div>
+      <p class="intro">Le seul point de passage qui boucle dans le corpus. Quatre fils Freebuff ouverts sur le
+        cas jouet, quatre refus identiques, et la cause lue dans le registre de l'application.</p>
+      <div class="tw">
+        <table>
+          <caption>Les quatre fils Freebuff du cas jouet, 2026-10-25.</caption>
+          <thead><tr><th>Fil</th><th class="n">Ouvert à</th><th>Ce qu'il a produit</th><th>Pièce</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0d054e1d</td><td class="n">17:21</td><td>produit écrit à la racine du cas, hors <code>terrain/</code></td><td>note du 17:27</td></tr>
+            <tr><td class="mono">e4fa2118</td><td class="n">17:32</td><td>texte jamais collé, produit sur les skills de compte</td><td>note du 17:53</td></tr>
+            <tr><td class="mono">c9a04ccb</td><td class="n">19:31</td><td>texte et tableau justes, projet hors terrain</td><td>note du 19:36</td></tr>
+            <tr><td class="mono">1a67a878</td><td class="n">19:38</td><td>produit juste, réponse à 94 octets au lieu de 95</td><td>note du 19:41</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="quote">REFUS · faits : le fil ouvre /home/giak/.config/freebuff-desktop/local-projects/a35fecd8-…,
+        le gel nomme « travail » /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain ·
+        des faits d'un run ouvert ailleurs nommeraient un produit que le gel ne couvre pas</div>
+      <p>Les quatre projets sont nommés par le chemin du terrain et portent <code>sources: []</code>. Cinq
+        projets du registre portent, eux, une source de dossier : la sonde sait donc dire oui. Le blocage est
+        le geste d'acceptation dans la boîte de dialogue, pas une capacité manquante. Le détail est dans le
+        <a href="2026-11-10-050727-etat.html">dossier de situation</a>.</p>
+    </section>
+
+    <section id="verifier">
+      <div class="sec-head"><span class="num">07</span><h2>Vérifier cette lecture</h2></div>
+      <p class="intro">Tous les comptes de cette page se rétablissent par une commande, depuis la racine du
+        dépôt. Sorties observées le 2026-11-10.</p>
+<pre><code>node docs/device/harness/runs.mjs --index
+<span class="c"># 60 runs : 36 indépendants, 5 guidés, 17 avortés, 2 manuels.</span>
+<span class="o">exit 0</span>
+
+awk -F'|' '/^\| 2026-/ {s=$6; gsub(/^ +| +$/,"",s); n[s]++} END {for (k in n) print n[k]"\t"k}' \
+  docs/device/runs/INDEX.md | sort -rn
+<span class="c"># 18  non concluant (causes : non nommées)
+# 17  sans reçu
+#  5  forme tenue
+#  5  ecart
+#  5  conforme
+#  4  non concluant (causes : modele)
+#  2  non observé
+#  2  non concluant (causes : dispositif)
+#  1  non concluant (causes : dispositif, cas)
+#  1  conforme (corrigé non concluant, lié à sa note)</span>
+
+node docs/device/harness/runs.mjs --verifier
+<span class="o">exit 0</span>   <span class="c"># l'index généré concorde avec les dossiers</span>
+
+node docs/device/harness/liens.mjs
+<span class="o">exit 0</span>   <span class="c"># 0 lien mort, mais sur les seuls .md : cet outil ne lit aucun .html
+           # et ne vérifie aucune ancre #… . Cette page n'est pas couverte.</span>
+
+bash docs/device/harness/banc-harnais.sh
+<span class="c"># attendu : 340/340 PASS, non rejoué depuis la Séance 197.</span></code></pre>
+    </section>
+
+    <footer>
+      <h2>Sources, au même endroit</h2>
+      <p>Rendu daté, pas foyer. Les comptes se citent par <code>docs/device/runs/INDEX.md</code>, qui est
+        généré, et les cohortes par l'audit du 2026-10-26. Les deux autres rendus du même jour :
+        <a href="2026-11-10-050727-etat.html">dossier de situation</a>,
+        <a href="2026-11-10-050727-architecture.html">architecture</a>.</p>
+      <ul>
+        <li>docs/device/runs/INDEX.md · les 60 dossiers, par mode, avec leurs pièces et leurs limites</li>
+        <li>docs/tasks/2026_10/2026-10-26-215541-audit-boucle-protocole/2026-10-26-215552-audit.md · §2.1 les cohortes, §2.2 la boucle du geste</li>
+        <li>docs/DASHBOARD.md · point 11, la promesse signée run par run</li>
+        <li>docs/DECISIONS.md · ADR-074 le mode guidé, ADR-098 la cause obligatoire, ADR-103 et ADR-107 l'état terminal</li>
+        <li>docs/trace.md · Séances 197 et 198</li>
+      </ul>
+      <p class="sign">Rendu du 2026-11-10, établi sur l'index régénéré le 2026-10-26. Aucune dépendance
+        distante : aucune police téléchargée, aucun script, aucun appel réseau. Le brief PAO est en tête de
+        fichier.</p>
+    </footer>
+  </div>
+</main>
+</body>
+</html>

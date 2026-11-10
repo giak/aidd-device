@@ -52,6 +52,18 @@ pour qu'un lien ancien ne meure pas. Une note ne s'édite pas, et ne compte pas 
 | [device/BANC](device/BANC.md) | [BANC](BANC.md), déplacé | 2026-10-23 |
 | [device/REPLAY](device/REPLAY.md) | [REPLAY](REPLAY.md), déplacé | 2026-10-23 |
 
+## 1 ter. Les rendus
+
+Un **rendu** est une vue datée d'un état, produite pour se lire d'un coup d'œil. Il ne fait pas autorité :
+chaque chiffre qu'il porte se cite par son foyer, il ne s'édite jamais, et il se régénère sous un nouveau
+nom quand l'état change.
+
+| Rendu | Ce qu'il montre | Foyers dont il est la vue |
+| --- | --- | --- |
+| [etat, 2026-11-10](rendus/2026-11-10-050727-etat.html) | ce qui est prouvé, l'écart des quatre fils, les dix points ouverts, la prochaine décision | [DASHBOARD](DASHBOARD.md), [journal](trace.md), audit du 2026-10-26 |
+| [architecture, 2026-11-10](rendus/2026-11-10-050727-architecture.html) | la contrainte du gel, les sept positions, les arbres, les neuf commandes, les vingt et une mesures | [ARCHITECTURE](ARCHITECTURE.md), [PROTOCOLE](PROTOCOLE.md) |
+| [corpus, 2026-11-10](rendus/2026-11-10-050727-runs.html) | les 60 runs, leurs verdicts, leurs causes, leurs cohortes, ce que chaque mode prouve | [index des runs](device/runs/INDEX.md), audit du 2026-10-26 §2 |
+
 ## 2. Comment naviguer
 
 - Une question se lit d'abord ici, puis dans le foyer qu'elle nomme. Jamais dans une page voisine qui la

@@ -1,8 +1,8 @@
 # aidd-device
 
-Le dispositif de test du framework AIDD : il fait exécuter une modification du framework par une session
-ouverte par l'opérateur, et nomme l'écart entre ce qu'elle annonce et ce qu'elle produit, de façon
-rejouable. Il garde de quoi refaire le départ, jamais la réponse.
+Le dispositif de test des skills du framework AIDD : il déclare ce qu'un skill est censé faire, le met en
+situation dans une session ouverte par l'opérateur, note ce qu'il produit et nomme l'écart entre les deux,
+de façon rejouable. Il garde de quoi refaire le départ, jamais la réponse.
 
 ## Par où entrer
 

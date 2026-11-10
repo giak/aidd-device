@@ -3514,3 +3514,106 @@ plan-simple, test-analyse, shadow-areas-design —, les seuls dont un reçu `con
 collecté ; `etalonner` passe sur les quatre, et les deux références du cas jouet ont été écrites à la main
 puis remplacées par la dérivation. Falsificateur : une dérivation qui garde une référence conforme mesurée
 `ecart` · une dérivation qui écrase un étalon sans `derive_de` · un chemin de référence préfixé deux fois.
+
+## ADR-111 — L'objet du dispositif est un skill, et l'intention déclarée est la référence (2026-11-10)
+
+**Contexte.** [VISION](VISION.md) disait l'objet « une modification du framework », et les pages du
+dispositif ont fini par mesurer leurs propres artefacts : gel, reçu, journal, grille, limites. Le
+2026-11-10, un run guidé de `04-fact-check` a rendu `forme tenue` parce que le produit portait les renvois
+et les chemins attendus, alors que le skill n'avait pas fait ce qu'il déclare (ligne de cache absente,
+entrées `## Sources` compressées). La personne a posé la question que le dispositif aurait dû rendre
+inutile : « le skill a-t-il produit ce qu'il est censé faire ? ». Trois rectifications ont suivi, la
+dernière rendant `forme non tenue`.
+
+**Options** : garder « une modification du framework » (rejeté : c'est l'occasion du test, pas son objet) ·
+juger la conformité des pièces au protocole (rejeté : cela mesure le dispositif, pas le skill) · déclarer
+l'intention du skill, le mettre en situation, comparer le produit à cette intention (choisi).
+
+**Décision.** La boucle a quatre temps, dans cet ordre : l'**intention**, ce que le skill est censé faire,
+est déclarée avant le run ; le skill est **mis en situation** (une révision sous test, un terrain) ; il
+**tourne** ; ce qu'il **produit** est noté tel quel ; le produit est **comparé** à l'intention, et l'écart
+nommé est le résultat. La référence est l'intention déclarée avant, jamais la forme des pièces laissées. Un
+run guidé compare au produit attendu qu'il a déclaré avant de jouer ; l'antériorité non gelée reste une
+limite nommée ([ADR-074](DECISIONS.md), [ADR-082](DECISIONS.md)).
+
+**Conséquences.** [VISION](VISION.md) passe en 0.3 : « Le projet en une phrase » dit la boucle, une section
+nomme la dérive guettée, et deux non-objectifs s'ajoutent : pas un vérificateur de formulaires, pas un
+dispositif qui se mesure lui-même. Un run dont la référence n'est pas une intention déclarée avant lui mesure
+autre chose, et doit le dire. Les contrôles du banc restent ce qu'ils sont : la preuve que le harnais
+accepte, jamais qu'un skill a fait son travail.
+
+**Ce que ce n'est pas** : une réécriture du protocole, ni un mode nouveau, ni une preuve d'indépendance. Les
+formes du journal et du reçu restent utiles ; elles cessent d'être le but.
+
+**Falsificateur** : un verdict rendu sur la forme des pièces sans comparaison au produit de l'intention · une
+intention écrite après le produit et présentée comme référence · un run dont la référence est un gabarit.
+
+**Rectification (2026-11-10).** La règle cesse d'être un voeu : `runs.mjs` refuse désormais un run guidé
+consigné à partir de ce jour qui ne porte pas `intention` et `comparaison`, refuse une comparaison
+incomplète, refuse une `forme tenue` dont une clause dit `violé`, et refuse une `forme non tenue` sans
+clause violée. Les cinq runs guidés antérieurs gardent leur journal : l'instrument ne réclame pas
+rétroactivement un champ qu'une décision postérieure crée. L'antériorité de l'intention reste **déclarée**,
+jamais mesurée : deux horodatages écrits à la main ne prouvent aucun ordre. Contrôles 343 à 345.
+
+## ADR-112 — L'installation se déclare, le gel la mesure (2026-11-10)
+
+**Contexte.** La [VISION](VISION.md) fait de l'installation le deuxième temps de la boucle, et le protocole
+ne mesurait rien. La porte vérifiait le `HEAD` et le `porcelain` du terrain, ce qui ne dit rien des fichiers
+qu'une installation laisse et que git ignore. Le 2026-11-10, AIDD a été installé dans le terrain de
+`plan-simple` (archive `opencode-flat` 5.13.0, 466 fichiers sous `.opencode/` et `opencode.json`, `sha256`
+`1d71f6a0…`), et la déclaration écrite pour l'éprouver n'était relue par aucune commande.
+
+**Options** : une commande `installer` qui copie le framework dans le projet (rejeté : elle réimplémenterait
+l'installeur du framework, et mesurerait le nôtre) · croire une déclaration sans la confronter (rejeté : une
+déclaration non vérifiée n'est pas une preuve) · déclarer les fichiers de l'installation dans un fichier de
+cas, les hacher au gel et les relire à la porte (choisi).
+
+**Décision.** `CASES/<cas>.installation.json` porte `{geste: {par, le, preuve}, fichiers: [chemins relatifs
+au terrain]}`. `freeze` la mesure : il refuse une déclaration illisible, vide, sans `geste.preuve`, un chemin
+absolu ou hors de l'arbre `travail`, un fichier absent ou qui n'est pas un fichier ; il écrit
+`installation: {arbre, revision, fichiers: [{chemin, sha256, taille}]}` ; la déclaration entre dans
+`fichiers` avec le rôle `installation` ; les lignes `installation\t<chemin>\t<sha256>` et
+`installation-revision\t<revision>` entrent dans l'empreinte de façon **conditionnelle**. `preflight` relit
+chaque fichier déclaré dans l'espace de travail, refuse un fichier absent ou changé, et écrit dans
+`gate.json` la révision, l'empreinte de l'installation et le compte des fichiers.
+
+**Conséquences.** Les seize gels antérieurs gardent leur empreinte à l'octet près : sans champ, aucune ligne
+d'installation. Un gel qui porte le champ ne peut plus ni le perdre ni le réécrire sans que la recalculée
+diffère. Le terrain de `plan-simple` est re-gelé avec son installation mesurée (empreinte `20251079`).
+Contrôles 351 à 355, banc à 355.
+
+**Ce que ce n'est pas** : une preuve que l'installation vient de l'installeur officiel d'AIDD, ni qu'elle
+fonctionne, ni que la session s'en est servie. Le geste reste déclaré, et le dit.
+
+**Falsificateur** : un gel dont le champ `installation` se réécrit sans que la porte refuse · une porte qui
+accepte un terrain dont un fichier déclaré a changé · une empreinte antérieure qui change alors que le cas ne
+déclare rien.
+
+## ADR-113 — La remise à zéro est un geste documenté, pas une commande (2026-11-10)
+
+**Contexte.** La [VISION](VISION.md) fait de la remise à zéro le temps qui empêche de mesurer un état
+mélangé : entre deux passages, le projet revient à un AIDD fraîchement installé. Le
+[PROTOCOLE](PROTOCOLE.md) ne nommait pas ce geste, alors que la porte refusait déjà un espace de travail qui
+n'est plus celui du gel : la garde existait, le remède n'était écrit nulle part.
+
+**Options** : une commande `remettre` qui joue le geste et écrit `remise.json` (rejeté : une commande et ses
+contrôles pour un geste dont la porte vérifie déjà le résultat) · laisser le geste implicite (rejeté : un
+temps de la boucle sans nom, la même dérive que l'installation avant l'[ADR-112](DECISIONS.md)) · documenter
+le geste et prouver le refus qu'il évite (choisi).
+
+**Décision.** Le PROTOCOLE nomme la remise à zéro : `git reset --hard <tête gelée>`, `git clean -fd`,
+réinstallation d'AIDD depuis la révision mesurée, puis `preflight`. Aucune commande nouvelle : la porte
+re-hache le cas, compare `HEAD` et `porcelain` à l'état gelé et relit l'installation déclarée. Le `clean`
+retire aussi l'installation, qui n'est pas suivie : c'est pourquoi le geste se termine par la réinstallation,
+sinon la porte refuse un terrain que le gel ne décrit plus.
+
+**Conséquences.** Contrôles 356 et 357 : le geste complet rend la porte verte ; le `clean` sans
+réinstallation la fait refuser (« l'espace de travail n'est plus celui du gel »). Banc à 357. Trois temps de
+la VISION ont maintenant leur instrument, et deux d'entre eux n'ont coûté aucune commande.
+
+**Ce que ce n'est pas** : une preuve qu'un passage précédent n'a rien laissé hors du terrain (les runs vivent
+dans `runs/`), ni une remise à zéro des bases ou des caches du client. Le geste est humain, et la porte ne
+l'atteste pas : elle atteste seulement l'état où il aboutit.
+
+**Falsificateur** : un terrain remis comme le PROTOCOLE le dit que la porte refuse encore · un terrain dont un
+fichier déclaré manque que la porte accepterait.

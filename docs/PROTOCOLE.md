@@ -17,16 +17,17 @@ aucune commande ; le [guide du test](guide/guide-du-test-de-bout-en-bout.md) l'a
 Les refus ne sont pas recopiés ici depuis le code : le texte d'un refus vient du harnais, tel quel, et il
 change là où il est écrit ([ADR-038](DECISIONS.md)).
 
-**En une phrase.** Une personne dit « test ça » sur un skill, et l'orchestrateur la conduit jusqu'à un
-reçu, un verdict, et la phrase qui dit ce que le verdict atteste, ou jusqu'à un journal de run guidé quand
-le test se joue dans la conversation courante.
+**En une phrase.** Une personne dit « test ça » sur un skill : le test déclare ce que ce skill est censé
+faire, le met en situation, note ce qu'il produit et compare le produit à cette intention ; l'orchestrateur
+la conduit jusqu'à un reçu, un verdict, et la phrase qui dit ce que le verdict atteste, ou jusqu'à un
+journal de run guidé quand le test se joue dans la conversation courante ([ADR-111](DECISIONS.md)).
 
 ## 1. Deux modes, et ce que chacun prouve
 
 | Mode | Ce qu'il laisse | Ce qu'il prouve | Ce qu'il ne prouve pas |
 | --- | --- | --- | --- |
 | **indépendant** | gel, porte, trace, produit, reçu, verdict | la chaîne complète, sur une session qui n'a pas lu l'attendu | la justesse du skill, ni celle du produit |
-| **guidé** | présentation validée, produit attendu validé, `run.json` et son `run-guide.md` sous `docs/device/runs/`, trace machine | la forme, les chemins, les écritures, les traces | l'indépendance : l'agent qui produit a lu l'attendu ([ADR-074](DECISIONS.md)) |
+| **guidé** | présentation validée, produit attendu validé, `run.json` et son `run-guide.md` sous `docs/device/runs/`, trace machine | la comparaison du produit à l'intention déclarée, la forme, les chemins, les écritures | l'indépendance : l'agent qui produit a lu l'attendu ([ADR-074](DECISIONS.md)) |
 
 Le mode guidé est le défaut depuis le 2026-10-22 : le test se joue dans la **conversation courante**, sans
 headless, sans second fil, sans modèle à choisir. Il ne passe ni par `cas`, ni par `porte`, ni par `fin` :
@@ -36,6 +37,9 @@ l'indexe. `run.json` nomme facultativement son fil (`"fil": "<identifiant>"`, ou
 un `--fil` différent de celui que le run déclare, et `runs.mjs` refuse une `trace/fil.json` qui nomme un
 autre fil que `run.json`. Un run sans `fil` reste valide, et `tracer` n'écrit jamais dans `run.json` : le
 fichier est la déclaration de l'auteur, la trace est sa pièce.
+Un guidé consigné à partir du 2026-11-10 déclare aussi son `intention` (ce que le skill est censé faire) et
+sa `comparaison` (clause par clause, ce que le produit fait contre elle, `tenu` ou `violé`) : `runs.mjs`
+refuse un guidé sans comparaison, et une `forme tenue` dont une comparaison dit `violé` ([ADR-111](DECISIONS.md)).
 
 Deux règles tiennent sa grille ([ADR-082](DECISIONS.md)). Elle porte une ligne par action déclarée par le
 `SKILL.md` lu sous la révision sous test, puis les quatre familles de l'[ADR-073](DECISIONS.md) et la borne du
@@ -218,6 +222,23 @@ passés du même cas, avec leurs réserves ; un cas jamais mesuré reçoit « au
 déjà là, pour qu'un rapport ne reste pas à côté d'un reçu neuf, et `rapport` refuse d'écraser sans
 `--remplacer`.
 
+### L'installation déclarée
+
+Depuis le 2026-11-10, un cas peut déclarer l'installation qu'il suppose dans son terrain :
+`CASES/<cas>.installation.json`, `{geste: {par, le, preuve}, fichiers: [chemins relatifs au terrain]}`. Le
+geste est une déclaration humaine, citée comme telle ; les fichiers, non. `freeze` les hache et écrit dans le
+gel `installation: {arbre, revision, fichiers}`, dont les lignes entrent dans l'empreinte du gel ; `preflight`
+les relit dans l'espace de travail et refuse un fichier absent ou changé depuis le gel. Un cas sans
+déclaration garde son gel et son empreinte à l'octet près ([ADR-112](DECISIONS.md), contrôles 351 à 355 du
+[banc](BANC.md)).
+### La remise à zéro entre deux passages
+
+Entre deux passages, le terrain revient à l'état gelé : `git -C <terrain> reset --hard <tête gelée du gel>`,
+puis `git -C <terrain> clean -fd`. Le `clean` retire aussi l'installation, qui n'est pas suivie : le geste se
+termine donc par la réinstallation d'AIDD depuis la révision mesurée, puis par `preflight`, qui re-hache le
+cas, compare `HEAD` et `porcelain` à l'état gelé et relit l'installation déclarée. Aucune commande ne fait ce
+geste à la place : la porte en vérifie déjà le résultat ([ADR-113](DECISIONS.md), contrôles 356 et 357 du
+[banc](BANC.md)).
 ## 3. Les quatre blocs
 
 Le contrat est exact ([ADR-040](DECISIONS.md)) : quatre formes, six lignes au plus chacune, `▸` compris,
@@ -336,6 +357,9 @@ session par `opencode session export` dans le répertoire `travail` du gel, et `
   ([ADR-090](DECISIONS.md)), et un juge doit signer un `conforme`. Un `ecart` signé par un juge recopie
   la branche qu'il nomme, jamais la preuve qu'elle mord : ni l'identité du juge, ni la fidélité de sa
   lecture, ni la confrontation avec le produit ne sont vérifiées ([ADR-100](DECISIONS.md)).
+- **L'intention n'est pas mesurée** : elle est déclarée avant le run, et sa comparaison est écrite par le
+  joueur. `runs.mjs` rend les deux champs obligatoires et refuse une `forme tenue` contredite par une clause
+  violée ; il ne juge pas la comparaison ([ADR-111](DECISIONS.md)).
 - **Que la porte n'a pas été sautée** : elle est forgeable, et le reçu ne mesure pas l'ordre porte/session.
 - **Un run sans session** : les contrôles du banc traversent la chaîne sur des fixtures ; un `conforme` de
   banc prouve que le harnais l'accepte, jamais qu'un run le mériterait.

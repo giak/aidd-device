@@ -34,6 +34,8 @@ question: Quelle page répond à quelle question ?
 | [CASES/](device/CASES/) | quelles demandes, quels attendus, quels gels ? | preuve | vivant |
 | [runs/](device/runs/) | quelles pièces un run a-t-il laissées ? | preuve | vivant |
 | [runs/INDEX](device/runs/INDEX.md) | quels runs, par mode, et quelles limites ? | preuve | vivant |
+| [device/](device/README.md) | que porte le dossier device, et où lire chacune de ses pièces ? | carte | vivant |
+| [runs/](device/runs/README.md) | qu’est-ce qu’un dossier de run, et à quoi se fier ? | manuel | vivant |
 | [README](../README.md) | comment entrer dans ce dépôt ? | entrée | vivant |
 
 ## 1 bis. Les notes

@@ -1,0 +1,3 @@
+You work in the repository at /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/terrain; that checkout is "this repository".
+Read the mini playbook at /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin/PLAYBOOK.md and apply it to this repository, which has no notes yet.
+Apart from that one file, stay inside the terrain checkout: never list or read /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/origine/, /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/framework-origin/, the case folder itself, its parent, its siblings, or anything above /home/giak/projects/aidd-device-work/2026-10-18-085308-cas-jouet/.

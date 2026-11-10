@@ -1,6 +1,6 @@
 <!-- généré par runs.mjs — ne pas éditer -->
 
-57 runs : 36 indépendants, 5 guidés, 14 avortés, 2 manuels.
+60 runs : 36 indépendants, 5 guidés, 17 avortés, 2 manuels.
 
 | Run | Date | Mode | Cas / skill | Statut ou verdict | Limites | Pièces |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -61,3 +61,6 @@
 | 2026-10-25-040729-f9ba2118-plan-simple-cadre | 2026-10-25 | indépendant | plan-simple-cadre | non concluant (causes : dispositif) | 12, reçu | RAPPORT.md, faits.json, gate.json, output.json, promesse-signee.json, receipt.json, texte-a-remettre.txt, trace/ |
 | 2026-10-25-102320-27fb38ab-6053028 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
 | 2026-10-25-173022-87a38ffc-de83e13 | 2026-10-25 | indépendant | 2026-10-18-085308-cas-jouet | non concluant (causes : dispositif) | 10, reçu | 2026-10-25-175331-fil-freebuff-ecarte.md, RAPPORT.md, RESULTAT.md, faits.json, gate.json, output.json, receipt.json, texte-a-remettre.txt, trace/ |
+| 2026-10-25-192849-87a38ffc-8a4ca25 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
+| 2026-10-25-193711-87a38ffc-70ca7d0 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |
+| 2026-10-25-194204-87a38ffc-9150802 | 2026-10-25 | avorté | sans reçu | sans reçu | 0, aucune | gate.json, texte-a-remettre.txt |

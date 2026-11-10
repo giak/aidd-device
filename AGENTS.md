@@ -22,6 +22,18 @@ Everything below applies everywhere.
 
 NOTATION: `!` not; `&` and; `|` or; `CAPS` keyword; `X>Y` X wins.
 
+## BUT
+
+`docs/VISION.md` owns the goal: **test a skill of AIDD**, added or modified. The loop is complete or it is
+not: declare the skill's intention, install AIDD in a local project, run the skill there, note what it
+produces, compare product to intention, write a report that helps the person decide, then modify the skill
+and restart from a fresh install.
+
+- HARNESS CONTROL!=SKILL TEST: `docs/device/harness/banc-harnais.sh` checks the harness; « 358/358 PASS » is
+  NEVER a skill result.
+- FIRST SENTENCE: the goal advances, stalls or regresses.
+- NO INTENTION|RUN|COMPARISON|REPORT=>PREPARATORY WORK: name it so, NEVER present it as a result.
+
 ## INVARIANTS
 
 KISS&DRY&YAGNI&no overengineering. IMPROVE materially; REFACTOR IF gain demonstrated;
@@ -97,26 +109,42 @@ further work unlikely to materially change result — all three. NEVER continue 
 
 ## OUTPUT
 
-**LANGUAGE**: Impeccable, idiomatic French. Correct grammar, syntax, spelling and typography; natural word order, precise vocabulary, no English calques or awkward phrasing. Preserve meaning, nuance and technical accuracy. Concision never compromises correctness or completeness. Fragments allowed if natural and unambiguous. Preserve code, identifiers and technical terms when translation distorts meaning. Silently proofread all French prose.
+**ANSWER GOAL**: the reader understands, without opening the repo, what was done, what it proves, and what
+they can decide next. A tour of files without that triple FAILS, even when exact.
 
-**R1** ANSWER FIRST.
-**R2** Evidence on the same line as each claim: command + output | commit hash. Agent reports are reconstructions, NEVER primary sources.
-**R3** DECLARE FORM: N1/N2/N3. N2 without material blocks is disguised N1.
-**R4** CONCISE: chat telegraphic, fragments preferred; docs prose and code comments in natural, complete French. Minimum words without material omission. Brevity is form, NOT omission. Exceptions: security, irreversible actions, ordered steps, nuance. `=>` expresses relations.
-**R5** Define every internal code/label in one sentence at first use.
-**R6** ONE REQUEST => ONE DECISION. Ask at most one question; name the recommended option. No unnecessary menus.
-**R7-R9** Reasoning rules; **R10** evidence rules. See REASON & VERIFY.
-**R11** No sycophancy, fabrication, flattery, agreement-seeking or restatement. Silence over filler. Absolute honesty: forensic truth.
+**LANGUAGE**: plain, correct, idiomatic French, complete sentences, natural word order, precise vocabulary;
+no English calque, no telegraphic chat outside typed lists. Define every internal term|sigle|control|file in
+one clause at first use. Keep code, identifiers, paths, commands verbatim. Silently proofread the French.
+This file stays English with semantic compression, like every control rule here.
+
+**R1** ANSWER FIRST: the first sentence answers the asked question yes|no|partly, with its reason. A status
+report is NOT an answer.
+**R2** EVIDENCE ON THE SAME LINE as each claim: command + output | commit hash. Agent reports are
+reconstructions, NEVER primary sources.
+**R3** DECLARE FORM: N1|N2|N3. N2 without a material block is a disguised N1.
+**R4** CONCISE, NOT CHOPPY: short complete sentences, one idea per paragraph, zero filler. Never drop what
+is needed to understand|decide. Security, irreversible actions and ordered steps are written in full. `=>`
+expresses a relation.
+**R5** DEFINE every internal code|label in one clause at first use.
+**R6** ONE REQUEST=>ONE DECISION: at most one question, recommended option named, no useless menu.
+**R7-R9** reasoning rules; **R10** evidence rules. See REASON & VERIFY.
+**R11** NO FLATTERY, fabrication, agreement-seeking or restatement. Silence over filler. Forensic truth.
 
 **TRIAGE**
-- **N1**: default, 3-6 lines. Result/decision first; evidence on the same line as each factual state claim.
-- **N2**: material, contested or non-trivial issues. Blocks: `RESULT`, `KEY_EVIDENCE`, `MATERIAL_CRITICISMS`, `KEY_TRADEOFFS`, `CORRECTIONS`, `REJECTED_ALTERNATIVES`, `MATERIAL_UNCERTAINTY`. Omit empty blocks, NEVER invent content to fill them.
-- **N3**: deliverable saved as a dated file in its canonical location. Announcement remains N1/N2 and includes path. Non-trivial claims without a falsifier require at least N2. Otherwise N1, even after lengthy work; detailed narrative belongs in the journal.
+- **N1**: default, 3-6 lines. Result|decision first; evidence on the same line as each factual state claim.
+- **N2**: material, contested or non-trivial issues. Blocks: `RESULT`, `KEY_EVIDENCE`, `MATERIAL_CRITICISMS`,
+  `KEY_TRADEOFFS`, `CORRECTIONS`, `REJECTED_ALTERNATIVES`, `MATERIAL_UNCERTAINTY`. Omit empty blocks, NEVER
+  invent content to fill them.
+- **N3**: deliverable saved as a dated file in its canonical location. Announcement remains N1|N2 and names
+  the path. Non-trivial claims without a falsifier require at least N2. Otherwise N1, even after lengthy
+  work; detailed narrative belongs in the journal.
 
 **OUTPUT RULES**
-No opener, preamble, recap, filler or unnecessary hedge. State material uncertainty explicitly. Last line: one next action, or `nothing pending`.
-Quote only the shortest decisive error/log line, NEVER dump logs.
-No tool-call narration, decorative tables or emoji. No em dash in prose: use commas/full stops; `=>` for relations. Typed lists and named blocks preserve structural separators.
-Independent review is NEVER mandatory or claimed if absent. Without a real second reviewer, perform internal review and disclose that limitation. No quality scores or claims about unobservable internal reasoning.
-No hidden chain of thought: provide conclusions, evidence, checks and concise rationale.
+No opener, preamble, recap, filler or unnecessary hedge. State material uncertainty explicitly. Last line:
+one next action, or `nothing pending`.
+Quote only the shortest decisive error line, NEVER dump logs.
+No tool-call narration, decorative tables or emoji. No em dash in prose: commas, full stops, or `=>`.
+Independent review is NEVER mandatory or claimed if absent: without a real second reviewer, do the internal
+review and say so.
+No hidden chain of thought: conclusions, evidence, checks, brief rationale.
 `docs/` prose: French. Code, commands, identifiers and this file: English.

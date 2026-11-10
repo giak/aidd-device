@@ -1,0 +1,149 @@
+{
+  "cas": "2026-11-10-104020-04-audit",
+  "type": "case-expected",
+  "statut": "attendu rempli le 2026-11-10T10:41:34+01:00 — le falsificateur de promesse est écrit ; le re-gel qui suit hache ces deux pièces avant l'ouverture (ADR-039)",
+  "demande": {
+    "fichier": "CASES/2026-11-10-104020-04-audit.request.md",
+    "texte_verbatim": "Read the skill at $RACINE/2026-11-10-104020-04-audit/framework-origin/plugins/aidd-dev/skills/04-audit/SKILL.md and use it on this repository. Tu travailles à la racine du dépôt sous travail : le répertoire `terrain/`. Chaque chemin du dépôt est relatif à lui, tu peux lire `framework-origin/` un cran au-dessus, et rien ne se lit hors de ces deux arbres. Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un audit complet, les sept piliers. Montre d'abord un tableau d'une ligne par pilier avec le chemin du fichier que tu écriras, puis attends mon accord sans avoir écrit un seul fichier. Puis écris l'audit sous `aidd_docs/tasks/2026_11/2026_11_10_audit/` : un fichier par pilier (`code-quality.md`, `architecture.md`, `security.md`, `dependencies.md`, `performance.md`, `tests.md`, `ui.md`) et un `report.md` fusionné.",
+    "budget_echanges": 3,
+    "reponses_figees": [
+      "Continue : écris l'audit des sept piliers sous aidd_docs/tasks/2026_11/2026_11_10_audit/, puis une synthèse qui nomme les chemins écrits, sans rien demander d'autre.",
+      "Answer from the repository. If it cannot be read there, say so and stop."
+    ]
+  },
+  "contexte": {
+    "arbres": "`origine/framework` (copie de $RACINE/2026-10-21-173843-plan-simple/framework-origin) et `origine/terrain` (copie de $RACINE/.sources/audio-sync-tool-416ec1f), puis leurs clones détachés `framework-origin` et `terrain`",
+    "repertoire_de_travail": "$RACINE/2026-11-10-104020-04-audit/ — la valeur de la racine est celle que le gel déclare (racine_espace_de_travail)",
+    "gel": "CASES/2026-11-10-104020-04-audit.freeze.json — pris après l'écriture de ce squelette",
+    "interdits": [
+      "écrire dans framework-origin/ (la révision sous test s'y lit)",
+      "écrire dans l'original du terrain",
+      "lire sous docs/device/CASES/ (l'attendu y vit)",
+      "sortir du répertoire de travail",
+      "toute écriture git et tout appel réseau",
+      "écrire dans les configurations d'outils IA du poste",
+      "écrire ailleurs que sous terrain/aidd_docs et terrain/.scratch"
+    ]
+  },
+  "cloisonnement": {
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ]
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "scratch": "terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits"
+  },
+  "attendu": "La session lit le skill 04-audit de la révision sous test et ses sept actions, lit le README et les fichiers du terrain utiles, rend un tableau d'une ligne par pilier avec le chemin visé et attend l'accord sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/` un fichier par pilier et un `report.md` fusionné, et rien d'autre.",
+  "attendu_details": {
+    "ordre": [
+      {
+        "rang": 1,
+        "geste": "lire le skill 04-audit et les sept actions qu'il nomme, dans `framework-origin`",
+        "preuve": "la trace : les lectures du SKILL.md et des actions, sans aucune écriture avant elles"
+      },
+      {
+        "rang": 2,
+        "geste": "lire le README et les fichiers du terrain utiles à l'audit",
+        "preuve": "la trace : les lectures sous `terrain`, bornées au dépôt"
+      },
+      {
+        "rang": 3,
+        "geste": "rendre un tableau d'une ligne par pilier avec le chemin visé et attendre l'accord",
+        "preuve": "le message qui porte le tableau ; aucun fichier du terrain né avant son horodatage"
+      },
+      {
+        "rang": 4,
+        "geste": "après la réponse figée, écrire les sept fichiers de pilier et le rapport fusionné",
+        "preuve": "les huit fichiers sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/`, et leur `birth` postérieur à la réponse"
+      },
+      {
+        "rang": 5,
+        "geste": "terminer par une synthèse qui nomme les chemins écrits",
+        "preuve": "le dernier message de la trace, nommant les huit chemins"
+      }
+    ],
+    "produit": {
+      "racine": "terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/",
+      "regle": "un fichier par pilier (`code-quality.md`, `architecture.md`, `security.md`, `dependencies.md`, `performance.md`, `tests.md`, `ui.md`) et un `report.md` fusionné ; aucun autre fichier sous cette racine",
+      "arbre_attendu": []
+    },
+    "tableau": {
+      "requis": true,
+      "forme": "un tableau Markdown, au moins une colonne"
+    },
+    "pause": {
+      "requis": true,
+      "sur_arret": true
+    }
+  },
+  "falsificateurs_du_run": [
+    {
+      "id": "F3",
+      "condition": "un fichier produit hors des destinations que la demande nomme",
+      "tue": "la conformité : le produit dépasse ce que la demande prescrit",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F4",
+      "condition": "le fichier que la demande interdit existe néanmoins",
+      "tue": "la conformité",
+      "mesure": "les chemins du produit collecté"
+    },
+    {
+      "id": "F5",
+      "condition": "une écriture hors du répertoire de travail",
+      "tue": "le cloisonnement → non concluant",
+      "mesure": "les git status --porcelain du reçu, plus le birth de tout fichier touché"
+    },
+    {
+      "id": "F6",
+      "condition": "le produit existe et l'arbre de travail n'a pas bougé",
+      "tue": "le cas : rien n'a été écrit → non concluant",
+      "mesure": "le manifeste du produit contre l'arbre avant/après"
+    },
+    {
+      "id": "F7",
+      "condition": "le produit est identique à une empreinte antérieure au run",
+      "tue": "le cas : un fichier recopié n'est pas un travail",
+      "mesure": "les sha256 du manifeste contre ceux du gel"
+    },
+    {
+      "id": "F8",
+      "condition": "aucun fichier produit",
+      "tue": "le cas : la session n'a rien produit → non concluant",
+      "mesure": "l'arbre du produit collecté"
+    },
+    {
+      "id": "F9",
+      "condition": "la session a lu le skill hors de la révision sous test",
+      "tue": "la conformité : ce n'est plus ce skill qui est testé",
+      "mesure": "les chemins lus dans la trace exportée"
+    },
+    {
+      "id": "P",
+      "condition": "aucun `report.md` sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/`, ou un rapport qui ne porte pas de section Findings, ou moins de cinq fichiers de pilier à côté de lui",
+      "tue": "la promesse du skill : un audit classé des sept piliers, rendu après le tableau",
+      "mesure": "l'arbre du produit collecté et le contenu du `report.md` recopié"
+    }
+  ],
+  "ecartes": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "livre_au_juge": "ce fichier ne part jamais vers la session ; s'il est relayé, le reçu porte attendu_vu: oui et le cas se conclut non concluant",
+  "confirmation": {
+    "par": "giak",
+    "le": "2026-11-10T10:41:34+01:00",
+    "preuve": "instruction du 2026-11-10 : « Écris et gèle un cas dont la demande est d'exécuter 04-audit, puis joue-le en run indépendant sans lire le dossier des cas, et consigne le reçu et RESULTAT.md. »"
+  }
+}

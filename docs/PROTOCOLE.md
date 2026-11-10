@@ -40,6 +40,12 @@ fichier est la déclaration de l'auteur, la trace est sa pièce.
 Un guidé consigné à partir du 2026-11-10 déclare aussi son `intention` (ce que le skill est censé faire) et
 sa `comparaison` (clause par clause, ce que le produit fait contre elle, `tenu` ou `violé`) : `runs.mjs`
 refuse un guidé sans comparaison, et une `forme tenue` dont une comparaison dit `violé` ([ADR-111](DECISIONS.md)).
+Un guidé peut en plus être **signé clause par clause** par un second relecteur : `signature.json`, à côté de
+`run.json`, porte `{juge, quand, rubrique, motif, clauses: [{clause, etat, preuve}]}`. `runs.mjs` exige que les
+clauses signées soient exactement celles de `comparaison`, et n accepte le statut `forme tenue signée` que si
+toutes sont `tenu` ; une clause signée `violé` interdit ce statut. La signature est une déclaration d un
+relecteur nommé, pas une mesure : ni son identité ni la fidélité de sa lecture ne sont vérifiées
+([ADR-116](DECISIONS.md)).
 
 Deux règles tiennent sa grille ([ADR-082](DECISIONS.md)). Elle porte une ligne par action déclarée par le
 `SKILL.md` lu sous la révision sous test, puis les quatre familles de l'[ADR-073](DECISIONS.md) et la borne du
@@ -228,7 +234,11 @@ Depuis le 2026-11-10, un cas peut déclarer l'installation qu'il suppose dans so
 `CASES/<cas>.installation.json`, `{geste: {par, le, preuve}, fichiers: [chemins relatifs au terrain]}`. Le
 geste est une déclaration humaine, citée comme telle ; les fichiers, non. `freeze` les hache et écrit dans le
 gel `installation: {arbre, revision, fichiers}`, dont les lignes entrent dans l'empreinte du gel ; `preflight`
-les relit dans l'espace de travail et refuse un fichier absent ou changé depuis le gel. Un cas sans
+les relit dans l'espace de travail et refuse un fichier absent ou changé depuis le gel. La révision que la
+porte écrit dans `gate.installation` est celle du gel, recopiée telle quelle et jamais remesurée : c'est la
+révision que le gel a vue, pas celle que le disque porterait. Et la garantie porte sur les fichiers déclarés,
+jamais sur l'installation entière : `plan-simple` en déclare trois pour 465 fichiers installés à la révision
+`fe48de12`, donc un fichier non déclaré peut changer sans que la porte le voie. Un cas sans
 déclaration garde son gel et son empreinte à l'octet près ([ADR-112](DECISIONS.md), contrôles 351 à 355 du
 [banc](BANC.md)).
 ### La remise à zéro entre deux passages

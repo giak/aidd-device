@@ -803,6 +803,7 @@ process.exit(a1===b1 && a2===b2 && a1===attendu('revision-sous-test') && a2===at
 controle "120 le script refuse un bac déjà peuplé" 0 refus-nomme 1 "REFUS" bash "$JS" "$JT"
 
 cp "$REPO/docs/device/CASES/$JOUET.request.md" "$REPO/docs/device/CASES/$JOUET.expected.json" "$REPO/docs/device/CASES/$JOUET.lecture.json" "$B/jouet/cases/"
+
 controle "121 freeze du jouet, empreinte committée, refs vides" 0 node -e "
 const {execFileSync}=require('child_process'),fs=require('fs');
 execFileSync('node',['$H','freeze','--case','$JOUET','--cases','$B/jouet/cases','--racine','$JB',
@@ -2495,6 +2496,11 @@ const serveur = http.createServer((req, res) => {
         // ADR-101 : une question sous mise en forme demande autant qu'une question nue.
         if (n === 1) poserTexte("**Would you like to proceed with the implementation plan?**");
         else idleAt = tick();
+      } else if (mode === "texte-arret-declare") {
+        // ADR-115 : une demande en prose sans `?`, comme celle du rejeu du 2026-11-10, et un cas qui
+        // declare que cet arret est sa pause.
+        if (n === 1) poserTexte("Je n'écris rien avant ton accord. Confirme et je lance l'audit complet.");
+        else idleAt = tick();
       } else if (mode === "texte-exces") {
         poserTexte("Question " + n + " ?");
       } else if (mode === "texte-bloc") {
@@ -2604,6 +2610,17 @@ if (mode === "accepter") {
   if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
   if (!sortie.includes("texte, question")) raisons.push("le bloc ne nomme pas la question jouée en texte");
   if (!sortie.includes("1 question(s)")) raisons.push("le bloc ne compte pas la question jouée");
+} else if (mode === "texte-arret-declare") {
+  // ADR-115 : sans `?`, un arret declare fait jouer la reponse figee, et le bloc le nomme.
+  if (code !== 0) raisons.push("exit " + code + " au lieu de 0 : " + sortie.split("\n")[0]);
+  if (prompts.length !== 2) raisons.push(prompts.length + " message(s) envoyé(s), 2 attendus");
+  else {
+    if (prompts[0] !== texte) raisons.push("le premier message n'est pas le texte de la porte, octet pour octet");
+    if (prompts[1] !== figees[0]) raisons.push("le second message n'est pas la réponse figée du cas");
+  }
+  if (answers.length !== 0) raisons.push(answers.length + " réponse(s) au formulaire, 0 attendue");
+  if (!sortie.includes("arrêt déclaré")) raisons.push("le bloc ne nomme pas l'arrêt déclaré");
+  if (!sortie.includes("1 question(s)")) raisons.push("le bloc ne compte pas la question jouée");
 } else if (mode === "texte-exces") {
   if (code !== 1) raisons.push("exit " + code + " au lieu de 1 : " + sortie.split("\n")[0]);
   if (!sortie.includes("n'en fige que 2")) raisons.push("le refus ne nomme pas les deux réponses figées : " + sortie.split("\n")[0]);
@@ -2624,6 +2641,7 @@ if (mode === "accepter") {
   if (!sortie.includes("sans question")) raisons.push("le refus ne dit pas la session arrêtée sans question");
   if (!sortie.includes("suite --fil ses_banc")) raisons.push("le refus ne dit pas comment reprendre : " + sortie.split("\n")[0]);
   if (!sortie.includes("Scope : le démarrage")) raisons.push("le refus ne cite pas la dernière ligne");
+  if (!sortie.includes("pause.sur_arret: true")) raisons.push("le refus ne nomme pas la déclaration qui jouerait cet arrêt : " + sortie.split("\n")[0]);
 } else if (mode === "texte-pause-false") {
   // ADR-093 : le cas ne declare aucune pause ; une session qui s'arrete sur un texte sans question
   // est sa cloture normale, zero question jouee, et le bloc le dit.
@@ -2679,6 +2697,15 @@ cp -a "$O/run" "$B/pause293/run"
 node -e "const fs=require('fs');const p='$B/pause293/cases/cas-test.expected.json';const a=JSON.parse(fs.readFileSync(p,'utf8'));a.attendu_details.pause={requis:false};fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n')"
 controle "293 ouvrir, cas sans pause, zéro question" 0 node "$O/faux-serveur.mjs" "$B/detail.293" texte-pause-false "$B/pause293/run" cas-test "$B/pause293/cases" "$ORCH"
 controle "294 refus, question sur un cas sans pause" 0 node "$O/faux-serveur.mjs" "$B/detail.294" question-pause-false "$B/pause293/run" cas-test "$B/pause293/cases" "$ORCH"
+# 358 : ADR-115 — un cas qui declare `pause.sur_arret: true` joue sa reponse figee sur un arret en prose.
+# Meme porte, meme texte, meme serveur que 293 ; seule la declaration change. 266 eprouve le refus nomme
+# du cas qui ne la declare pas.
+rm -rf "$B/pause358"
+mkdir -p "$B/pause358"
+cp -a "$O/cases" "$B/pause358/cases"
+cp -a "$O/run" "$B/pause358/run"
+node -e "const fs=require('fs');const p='$B/pause358/cases/cas-test.expected.json';const a=JSON.parse(fs.readFileSync(p,'utf8'));a.attendu_details.pause={requis:true,sur_arret:true};fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n')"
+controle "358 ouvrir, arrêt déclaré joué comme la pause" 0 node "$O/faux-serveur.mjs" "$B/detail.358" texte-arret-declare "$B/pause358/run" cas-test "$B/pause358/cases" "$ORCH"
 cat > "$O/delai.mjs" <<'JS'
 // ADR-077 : le refus de delai nomme le fil, sinon la reprise n'a pas d'identifiant. Le banc lit le
 // texte du code plutot que d'attendre une minute : le controle 266 eprouve le comportement voisin.
@@ -5698,6 +5725,7 @@ const sql = [
   "create table messages(thread_id text, seq integer, role text, ts integer, parts_json text);",
   `insert into threads values('fb-erreur','${q(terrain)}','local','','','codebuff','m-banc',${t0},'error',${t0 + 1000});`,
   `insert into messages values('fb-erreur',1,'user',${t0},'[{"kind":"text","text":"banc, la demande"}]');`,
+
 ].join("\n");
 const ddl = lancer("sqlite3", [base, sql]);
 if (ddl.code !== 0) raisons.push(`la base du bac ne s'écrit pas : ${ligne(ddl)}`);
@@ -5919,6 +5947,70 @@ inst_gel r357 >/dev/null 2>&1 || { echo "ARRET — le gel de 357"; exit 2; }
 git -C "$B/r357/cas-test/terrain" clean -fdq
 controle "357 clean sans reinstallation, la porte refuse" 0 refus-nomme 1 "n'est plus celui du gel" node "$H" preflight --case cas-test --cases "$B/r357/cases" --run "$B/r357/run" --repertoire "$B/r357/cas-test/terrain"
 rm -f "$JROOT/framework-origin/COPIE-FRONTIERE.md"
+
+# 359-362 : la signature clause par clause d'un guide (ADR-116). Un second relecteur nomme, dans
+# signature.json, chaque clause de la comparaison ; runs.mjs refuse un statut signe sans piece, une signature
+# partielle, et une clause signee violee sous un statut de forme tenue.
+GS="$B/guide-signature"
+rm -rf "$GS"
+guide_bac() { # nom — un guide minimal, sa comparaison, et sa piece de signature
+  local r="$GS/$1/2026-11-10-210000-banc"
+  mkdir -p "$r"
+  printf '# run guide du banc\n' > "$r/run-guide.md"
+  cat > "$r/run.json" <<'JSON'
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue signée",
+  "skill": { "nom": "banc", "chemin": "plugins/banc/skills/x", "revision": "fe48de12" },
+  "terrain": { "chemin": "/tmp/banc/terrain", "tete": "416ec1f", "porcelain": "vide" },
+  "fil": null,
+  "conduite": "agent",
+  "rapport_le": "2026-11-10T20:00:00+01:00",
+  "consigne_le": "2026-11-10T20:00:00+01:00",
+  "pertinence": { "comme_preuve_du_skill": false, "raison": "session_non_independante" },
+  "limites": [ { "code": "session_non_independante", "effet": "banc", "detail": "ADR-074" } ],
+  "pieces": ["run-guide.md", "signature.json"],
+  "verdict": null,
+  "intention": "banc : signer chaque clause du guide",
+  "comparaison": [
+    { "clause": "clause A", "produit": "produit A", "etat": "tenu" },
+    { "clause": "clause B", "produit": "produit B", "etat": "tenu" }
+  ]
+}
+JSON
+  cat > "$r/signature.json" <<'JSON'
+{
+  "type": "signature-guide",
+  "juge": "banc-relecteur",
+  "quand": "2026-11-10T20:01:00+01:00",
+  "rubrique": "forme du produit",
+  "motif": "banc : la pause se lit dans le journal, pas dans une trace machine",
+  "clauses": [
+    { "clause": "clause A", "etat": "tenu", "preuve": "run-guide.md §4" },
+    { "clause": "clause B", "etat": "tenu", "preuve": "run-guide.md §5" }
+  ]
+}
+JSON
+}
+guide_bac ok
+guide_bac sans
+rm -f "$GS/sans/2026-11-10-210000-banc/signature.json"
+guide_bac partielle
+node -e 'const fs=require("fs");const p=process.argv[1];const s=JSON.parse(fs.readFileSync(p,"utf8"));s.clauses=s.clauses.slice(0,1);fs.writeFileSync(p,JSON.stringify(s,null,2)+"\n")' "$GS/partielle/2026-11-10-210000-banc/signature.json"
+guide_bac violee
+node -e 'const fs=require("fs");const p=process.argv[1];const s=JSON.parse(fs.readFileSync(p,"utf8"));s.clauses[1].etat="violé";fs.writeFileSync(p,JSON.stringify(s,null,2)+"\n")' "$GS/violee/2026-11-10-210000-banc/signature.json"
+for d in ok sans partielle violee; do node "$RUNS" --index --runs "$GS/$d" >/dev/null 2>&1; done
+controle "359 runs, un guide signe clause par clause" 0 node -e "
+const {execFileSync}=require('child_process'),fs=require('fs'),path=require('path');
+const r='$GS/ok';
+const run=(a)=>{try{return {c:0,o:execFileSync('node',['$RUNS',...a],{encoding:'utf8',stdio:['ignore','pipe','pipe']})}}catch(e){return {c:e.status,o:String(e.stdout||'')+String(e.stderr||'')}}};
+const v=run(['--verifier','--runs',r]); if(v.c!==0) process.exit(1);
+const t=fs.readFileSync(path.join(r,'INDEX.md'),'utf8');
+process.exit(t.includes('forme tenue signée (signature : banc-relecteur, 2 clause(s))')?0:1)"
+controle "360 runs, un statut signe sans signature" 0 refus-nomme 1 "sans signature.json" node "$RUNS" --verifier --runs "$GS/sans"
+controle "361 runs, une signature partielle" 0 refus-nomme 1 "signature incomplète" node "$RUNS" --verifier --runs "$GS/partielle"
+controle "362 runs, une clause signee violee sous forme tenue" 0 refus-nomme 1 "le relecteur contredit l'auteur" node "$RUNS" --verifier --runs "$GS/violee"
 
 echo
 echo "$PASS/$TOTAL PASS"

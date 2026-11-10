@@ -1,0 +1,75 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": {
+    "nom": "04-fact-check",
+    "chemin": "plugins/aidd-refine/skills/04-fact-check",
+    "revision": "feadf291"
+  },
+  "terrain": {
+    "chemin": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/2026-11-10-100124-fact-check-passage-2/terrain",
+    "tete": "416ec1f",
+    "porcelain": "vide au départ et à l'arrivée (clone neuf, 0 ligne)"
+  },
+  "fil": null,
+  "conduite": "agent",
+  "rapport_le": "2026-11-10T10:15:23+01:00",
+  "consigne_le": "2026-11-10T10:15:23+01:00",
+  "pertinence": {
+    "comme_preuve_du_skill": false,
+    "raison": "session_non_independante"
+  },
+  "limites": [
+    {
+      "code": "session_non_independante",
+      "effet": "non pertinent comme preuve d'indépendance, ni comme preuve d'un effet de la correction",
+      "detail": "ADR-074 ; l'agent a lu le produit attendu du passage 1 (huit affirmations, treize emplacements) avant de produire"
+    },
+    {
+      "code": "attendu_non_gele",
+      "effet": "l'antériorité de l'attendu n'est pas prouvée",
+      "detail": "le §3 vit dans run-guide.md, écrit après le tour qui valide l'épreuve, sans gel"
+    },
+    {
+      "code": "trace_absente",
+      "effet": "la trace machine du run manque",
+      "detail": "aucun export de ce fil ; la grille du §6 est remplie à la main, actions 01 et 02 non observées"
+    }
+  ],
+  "pieces": ["run-guide.md"],
+  "verdict": null,
+  "intention": "Extraire les affirmations vérifiables d'un texte, les résoudre par la cascade du moins cher au plus cher, et rendre un texte réécrit où chaque affirmation confirmée porte un renvoi vers une source réelle, sans mécanique interne et sans affirmation supprimée.",
+  "comparaison": [
+    {
+      "clause": "chaque affirmation vérifiée porte un renvoi vers une source réelle",
+      "produit": "treize renvois, treize emplacements relevés un par un sur le terrain",
+      "etat": "tenu"
+    },
+    {
+      "clause": "aucune affirmation du texte d'origine n'est supprimée",
+      "produit": "paragraphe identique mot pour mot, renvois retirés ; seuls les marqueurs ajoutés",
+      "etat": "tenu"
+    },
+    {
+      "clause": "l'indécidable est borné, jamais affirmé",
+      "produit": "aucune affirmation indécise ; le bloc Unverified est omis comme la règle l'exige",
+      "etat": "tenu"
+    },
+    {
+      "clause": "une ligne de proposition de cache dès qu'un fait vérifié est stable",
+      "produit": "une ligne, nommant les trois versions épinglées, avec une recommandation",
+      "etat": "tenu"
+    },
+    {
+      "clause": "une entrée Sources numérotée par source",
+      "produit": "treize entrées pour treize emplacements, aucune n'en porte deux",
+      "etat": "tenu"
+    },
+    {
+      "clause": "aucune mécanique interne dans le rapport",
+      "produit": "0 mot interdit dans le bloc produit",
+      "etat": "tenu"
+    }
+  ]
+}

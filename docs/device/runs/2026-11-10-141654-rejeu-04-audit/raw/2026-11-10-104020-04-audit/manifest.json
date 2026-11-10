@@ -1,0 +1,77 @@
+{
+  "cas": "2026-11-10-104020-04-audit",
+  "run": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-141654-rejeu-04-audit",
+  "role": "produit",
+  "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit",
+  "arbre_de_travail": {
+    "label": "travail",
+    "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain"
+  },
+  "collecte_le": "2026-11-10T14:54:42+01:00",
+  "fichiers": [
+    {
+      "chemin": "architecture.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/architecture.md",
+      "sha256": "1c5c680c826beeceb3ecfd21d0a480b292f675423b6a1438d4907da07cb696bb",
+      "taille": 1781,
+      "birth": "2026-11-10 14:53:43.260570991 +0100",
+      "birth_epoch": 1794318823
+    },
+    {
+      "chemin": "code-quality.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/code-quality.md",
+      "sha256": "aa5c9b48594c40bba3fd8cf27e1881491279175bb39f9455fc7fe6291ad03657",
+      "taille": 2230,
+      "birth": "2026-11-10 14:53:40.187453840 +0100",
+      "birth_epoch": 1794318820
+    },
+    {
+      "chemin": "dependencies.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/dependencies.md",
+      "sha256": "b99dc5343b334001a668e3135d4c15348652f52cfbaa4aece1f39d8690eb2ae3",
+      "taille": 1674,
+      "birth": "2026-11-10 14:53:52.598927256 +0100",
+      "birth_epoch": 1794318832
+    },
+    {
+      "chemin": "performance.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/performance.md",
+      "sha256": "8932f8401c1fb916e1a1b01bac67415a65c8cef241e5f5daf1742e56bba69d1a",
+      "taille": 1396,
+      "birth": "2026-11-10 14:53:55.764048100 +0100",
+      "birth_epoch": 1794318835
+    },
+    {
+      "chemin": "report.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/report.md",
+      "sha256": "b26ff0b9e454557c14358e3f2bce1b8899f696770369302660b383a6344abda6",
+      "taille": 6847,
+      "birth": "2026-11-10 14:54:17.585882504 +0100",
+      "birth_epoch": 1794318857
+    },
+    {
+      "chemin": "security.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/security.md",
+      "sha256": "727ed0a40e01f17d47b89a07331bf596d6d371a24e52fe4cd1746b6852d75b47",
+      "taille": 1956,
+      "birth": "2026-11-10 14:53:47.705740526 +0100",
+      "birth_epoch": 1794318827
+    },
+    {
+      "chemin": "tests.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/tests.md",
+      "sha256": "6b3517c7f9e8cd2c9c5187314cb39a28b2927d65a7c7eddce9210e059b916795",
+      "taille": 1535,
+      "birth": "2026-11-10 14:54:00.348223206 +0100",
+      "birth_epoch": 1794318840
+    },
+    {
+      "chemin": "ui.md",
+      "source": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/ui.md",
+      "sha256": "a54d67be0b61416e18758c8f02b4f83f51cd2d05435f59282bcd206004f672da",
+      "taille": 1607,
+      "birth": "2026-11-10 14:54:06.381453810 +0100",
+      "birth_epoch": 1794318846
+    }
+  ]
+}

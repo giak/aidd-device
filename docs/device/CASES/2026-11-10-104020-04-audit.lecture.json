@@ -1,0 +1,14 @@
+{
+  "cas": "2026-11-10-104020-04-audit",
+  "type": "case-lecture",
+  "statut": "Déclare, rang par rang, la mesure que la page de décision attend du reçu (ADR-061). Hors du gel : ce fichier ne change ni l'attendu ni l'empreinte (ADR-032).",
+  "depot": "audio-sync-tool sous `terrain/`, et la révision sous test sous `framework-origin/`",
+  "gestes": [
+    { "geste": "lire le skill 04-audit et ses sept actions", "rang": 1, "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "skills/04-audit/SKILL.md" }] },
+    { "geste": "lire le README du terrain", "rang": 2, "assertions": [{ "type": "trace_outil", "outil": "read", "chemin_contient": "terrain/README.md" }] },
+    { "geste": "rendre un tableau par pilier et attendre l'accord", "rang": 3, "assertions": [{ "type": "falsificateur_vide", "nom": "ecriture_avant_tableau" }, { "type": "falsificateur_vide", "nom": "question_sans_reponse" }] },
+    { "geste": "écrire les sept fichiers de pilier et le rapport fusionné", "rang": 4, "assertions": [{ "type": "produit", "chemin_exact": "report.md" }] },
+    { "geste": "terminer par une synthèse qui nomme les chemins", "rang": 5, "assertions": [{ "type": "trace_texte", "role": "assistant", "contient": "report.md" }] },
+    { "geste": "rester dans le cadre, sans réseau", "assertions": [{ "type": "falsificateur_vide", "nom": "lecture_hors_dossier" }, { "type": "falsificateur_vide", "nom": "reseau" }] }
+  ]
+}

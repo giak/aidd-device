@@ -1,15 +1,15 @@
 {
   "cas": "2026-10-21-173843-plan-simple",
   "confirmation": {
-    "par": "giak",
-    "le": "2026-11-10T07:43:50+01:00",
-    "preuve": "instruction du 2026-11-10 : installer AIDD depuis fe48de12 pour que le terrain porte la revision mesuree"
+    "par": "personne",
+    "le": "2026-11-10T18:01:12+01:00",
+    "preuve": "pause.sur_arret declaree apres coup, sur la trace 2026-10-21-174102-bee028f8-96cd02d (fil ses_ea0dc7495ffepe5ZHcDFCdS3QU, seq 23)"
   },
   "racine_espace_de_travail": "/home/giak/projects/aidd-device-work",
-  "gele_le": "2026-11-10T07:43:50.994019210+0100",
-  "gele_le_epoch": 1794293030,
-  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --ref-root /home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/framework-origin --ref plugins/aidd-dev/skills/01-plan/SKILL.md --ref plugins/aidd-dev/skills/01-plan/actions/01-gather.md --ref plugins/aidd-dev/skills/01-plan/actions/02-explore.md --ref plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md --ref plugins/aidd-dev/skills/01-plan/actions/04-plan.md --ref plugins/aidd-dev/skills/01-plan/assets/plan-template.md --ref plugins/aidd-dev/skills/01-plan/assets/phase-template.md --ref plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md --ref plugins/aidd-dev/skills/01-plan/references/plan-status.md --confirme-par giak --confirme-preuve \"instruction du 2026-11-10 : installer AIDD depuis fe48de12 pour que le terrain porte la revision mesuree\"",
-  "empreinte": "7e7fe3e2c744f7e2f45c3bf07fb4cf6e6893c762f736f0601d66763af11a74b9",
+  "gele_le": "2026-11-10T18:01:12.911931185+0100",
+  "gele_le_epoch": 1794330072,
+  "commande": "/home/giak/projects/aidd-device/docs/device/harness/run.mjs freeze --case 2026-10-21-173843-plan-simple --cases docs/device/CASES --refreeze --racine /home/giak/projects/aidd-device-work --arbre framework-origin=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework --arbre terrain=/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/terrain --confirme-par personne --confirme-preuve \"pause.sur_arret declaree apres coup, sur la trace 2026-10-21-174102-bee028f8-96cd02d (fil ses_ea0dc7495ffepe5ZHcDFCdS3QU, seq 23)\"",
+  "empreinte": "75d9c32fba3a66a381d4160a5b168766833025ecdf2dcb13a04a737be867828d",
   "installation": {
     "arbre": "travail",
     "revision": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
@@ -43,8 +43,8 @@
     {
       "role": "attendu",
       "chemin": "docs/device/CASES/2026-10-21-173843-plan-simple.expected.json",
-      "sha256": "00b6b53174462b2263819f4d8bdd132e080901a6511f6f72d3372320e7b0833e",
-      "taille": 6519,
+      "sha256": "92f9fa677e90e9a6d818b96ac77167cca3afc2b2b2bb6c18069915a2858a4764",
+      "taille": 6855,
       "birth": "2026-10-21 17:38:55.098143517 +0200",
       "birth_epoch": 1792597135
     },
@@ -73,80 +73,7 @@
       "birth_epoch": 1792597135
     }
   ],
-  "references": [
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/SKILL.md",
-      "sha256": "c4fdeb50739a23e8296539007c6340aad0a564734e6e03e100a9ee436a6c57c5",
-      "taille": 2073,
-      "birth": "2026-10-21 17:38:54.948358196 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/actions/01-gather.md",
-      "sha256": "03e6ffb62a69af0b311c42738d705a1f8a675ec4c1992e06b8e1c60448cfd9d1",
-      "taille": 980,
-      "birth": "2026-10-21 17:38:54.948412209 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/actions/02-explore.md",
-      "sha256": "0fdc22ff4784e69f7c6ef17f6f0b3f413446dd1e2a758ccb9e7d60ccf03bc228",
-      "taille": 1011,
-      "birth": "2026-10-21 17:38:54.948412209 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/actions/03-wireframe.md",
-      "sha256": "54dd5723b0319d6524f5d5741672da8765dc0560ca7fc5370785030f247fd31e",
-      "taille": 870,
-      "birth": "2026-10-21 17:38:54.948454130 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/actions/04-plan.md",
-      "sha256": "912ce23eef8d7011a30b8dba0066301f43bbc4954388d46536da8487443c50e9",
-      "taille": 2676,
-      "birth": "2026-10-21 17:38:54.948454130 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/assets/plan-template.md",
-      "sha256": "d0964cf1e59b4d360b8a6bbcd882bb9c06adfbab8894f3a3ef11ab98914c90c6",
-      "taille": 946,
-      "birth": "2026-10-21 17:38:54.948454130 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/assets/phase-template.md",
-      "sha256": "66cefc387eea9bf7178cb6c750ce892dc6b5926405ad83489895792716a053bb",
-      "taille": 1783,
-      "birth": "2026-10-21 17:38:54.948454130 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/references/wireframe-conventions.md",
-      "sha256": "9b937da7bdc009f990735458fd490a13af8d75290d81dbe3a92c7ee1e635e136",
-      "taille": 1308,
-      "birth": "2026-10-21 17:38:54.948589950 +0200",
-      "birth_epoch": 1792597134
-    },
-    {
-      "arbre": "revision-sous-test",
-      "chemin": "plugins/aidd-dev/skills/01-plan/references/plan-status.md",
-      "sha256": "a0e75bba2c9adab70a4922c3d76e93c81a1af32914d469e357dd5d246a60d65d",
-      "taille": 2006,
-      "birth": "2026-10-21 17:38:54.948589950 +0200",
-      "birth_epoch": 1792597134
-    }
-  ],
+  "references": [],
   "arbres": [
     {
       "label": "framework-origin",

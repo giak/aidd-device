@@ -969,10 +969,17 @@ async function commandeOuvrir(argv) {
   // n'attend pas se refuse. Un cas antérieur, sans ce bloc, garde le comportement d'avant (requis).
   const pauseDeclaree = (attendu.attendu_details || {}).pause;
   const pauseRequise = !(pauseDeclaree && typeof pauseDeclaree === "object" && pauseDeclaree.requis === false);
+  // ADR-115 : un modèle demande souvent la suite en prose, sans `?`. Le cas peut déclarer que tout arrêt
+  // est sa pause (`pause.sur_arret: true`) ; sans cette déclaration, la règle reste la fin par `?`.
+  const surArretBrut = pauseDeclaree && typeof pauseDeclaree === "object" ? pauseDeclaree.sur_arret : undefined;
 
   let code = 0;
   let serveur = null;
   try {
+    if (surArretBrut !== undefined && typeof surArretBrut !== "boolean") {
+      throw new Refus(`l'attendu de ${cas} déclare pause.sur_arret « ${JSON.stringify(surArretBrut)} » — un booléen, ou rien ; une déclaration qui ne dit rien ne s'interprète pas`);
+    }
+    const surArret = surArretBrut === true;
     const porte = join(run, "gate.json");
     if (!existsSync(porte)) throw new Refus(`aucune porte ${porte} — une session s'ouvre après preflight, jamais avant`);
     const gate = JSON.parse(readFileSync(porte, "utf8"));
@@ -1066,7 +1073,19 @@ async function commandeOuvrir(argv) {
           // normale. Le texte n'est donc plus un refus dès la première réponse jouée.
           // ADR-093 : un cas qui ne déclare aucune pause se clôt sans question, même après zéro réponse.
           if (!pauseRequise || jouees.length > 0) break;
-          throw new Refus(`la session ${fil} s'est arrêtée sans question après ${jouees.length} réponse(s) jouée(s) : dernière ligne « ${uneLigne(texte.ligne).slice(0, 80)} » — réponds à la main, puis « suite --fil ${fil} » ; le run n'est pas un succès à zéro question`);
+          // ADR-115 : une demande rendue en prose ne finit pas toujours par `?`. Un cas qui déclare
+          // `pause.sur_arret: true` tient cet arrêt pour sa pause et reçoit sa réponse figée.
+          if (surArret) {
+            if (jouees.length >= reponses.length) {
+              throw new Refus(`la session ${fil} s'est arrêtée sur un arrêt déclaré et ${cas} n'a plus de réponse figée à jouer (${reponses.length}) — la suivante se fige dans l'attendu, jamais à la volée`);
+            }
+            const indice = jouees.length;
+            reference = await envoyerTexte(api, fil, motDePasse, reponses[indice]);
+            dejaRepondu = texte.id;
+            jouees.push({ reponse: reponses[indice], choix: ["arrêt déclaré"], forme: "arret", question: texte.ligne });
+            continue;
+          }
+          throw new Refus(`la session ${fil} s'est arrêtée sans question après ${jouees.length} réponse(s) jouée(s) : dernière ligne « ${uneLigne(texte.ligne).slice(0, 80)} » — elle ne finit pas par « ? » et ${cas} ne déclare pas pause.sur_arret: true (ADR-115) ; déclare-le pour jouer cet arrêt, ou réponds à la main, puis « suite --fil ${fil} » ; le run n'est pas un succès à zéro question`);
         }
         if (!pauseRequise) {
           throw new Refus(`la session a posé une question « ${uneLigne(texte.ligne).slice(0, 80)} » alors que ${cas} déclare pause.requis: false — le cas n'en attend aucune`);
@@ -1098,7 +1117,10 @@ async function commandeOuvrir(argv) {
     });
     ecrit([
       "Les réponses envoyées, dans l'ordre (le cas joue la pause, la personne ne la joue plus) :",
-      ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.forme === "texte" ? `texte, question « ${uneLigne(j.question).slice(0, 60)} »` : j.choix.join(", ")}`),
+      ...jouees.map((j, i) => `  ${i + 1}. ${uneLigne(j.reponse).slice(0, 90)} => ${j.forme === "texte"
+        ? `texte, question « ${uneLigne(j.question).slice(0, 60)} »`
+        : j.forme === "arret" ? `arrêt déclaré, dernière ligne « ${uneLigne(j.question).slice(0, 60)} »`
+        : j.choix.join(", ")}`),
       "",
       "Ce que ouvrir n'atteste pas : qui a conduit le run. suite le déclare par --conduite agent|humain, et le reçu le recopie sans le vérifier.",
       "",

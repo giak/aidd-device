@@ -13,7 +13,7 @@ const DEPOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DEFAUT = join(DEPOT, "docs/device/runs");
 const ENTETE = "<!-- généré par runs.mjs — ne pas éditer -->";
 const MODES = ["guide", "manuel"];
-const STATUTS = ["forme tenue", "forme non tenue", "non observé"];
+const STATUTS = ["forme tenue", "forme tenue signée", "forme non tenue", "non observé"];
 const VERDICTS = ["conforme", "ecart", "non concluant"];
 const CORRECTION = "correction.json";
 // ADR-111 : le jour où un run guidé doit déclarer son intention et sa comparaison. Avant, un journal ne
@@ -21,6 +21,7 @@ const CORRECTION = "correction.json";
 // postérieure crée.
 const EXIGE_INTENTION = Date.parse("2026-11-10T00:00:00+01:00");
 const ETATS_COMPARAISON = ["tenu", "violé"];
+const SIGNATURE = "signature.json";
 const CODES = new Set([
   "session_non_independante", "trace_absente", "terrain_non_propre", "attendu_non_gele",
   "revision_non_consignee", "run_non_observe", "protocole_anterieur",
@@ -65,7 +66,7 @@ if (!existsSync(runs) || !statSync(runs).isDirectory()) {
 function validerRun(nom, r, dir) {
   if (r.type !== "run") refuse(`${nom} : run.json n'a pas type « run » — un run.json se reconnaît à son type`);
   if (!MODES.includes(r.mode)) refuse(`${nom} : mode « ${r.mode} » hors domaine — guide ou manuel`);
-  if (!STATUTS.includes(r.statut)) refuse(`${nom} a un statut hors des trois — forme tenue, forme non tenue, non observé`);
+  if (!STATUTS.includes(r.statut)) refuse(`${nom} a un statut hors des quatre — forme tenue, forme tenue signée, forme non tenue, non observé`);
   if (r.verdict !== null) refuse(`${nom} : run.json porte un verdict — un guidé n'atteste pas ce qu'il n'a pas`);
   if (!["agent", "humain"].includes(r.conduite)) refuse(`${nom} : conduite « ${r.conduite} » hors domaine — agent ou humain`);
   if (!iso(r.rapport_le) || !iso(r.consigne_le)) refuse(`${nom} : rapport_le ou consigne_le n'est pas ISO 8601`);
@@ -152,6 +153,58 @@ function validerRun(nom, r, dir) {
       refuse(`${nom} : forme non tenue sans comparaison violée — un écart se nomme`);
     }
   }
+  // ADR-116 : une signature clause par clause, écrite par un second relecteur nommé. Elle est validée pour sa
+  // forme et sa couverture ; ni l'identité du relecteur ni la fidélité de sa lecture ne sont vérifiées.
+  const cheminSignature = join(dir, SIGNATURE);
+  const aSignature = existsSync(cheminSignature);
+  if (aSignature && r.mode !== "guide") {
+    refuse(`${nom} : ${SIGNATURE} hors d'un guidé — un reçu a sa promesse signée, un guidé a sa signature`);
+  }
+  if (aSignature) {
+    let s;
+    try {
+      s = JSON.parse(readFileSync(cheminSignature, "utf8"));
+    } catch {
+      refuse(`${nom} : ${SIGNATURE} illisible — une signature se lit ou se refuse`);
+    }
+    if (!s || typeof s !== "object" || Array.isArray(s)) refuse(`${nom} : ${SIGNATURE} n'est pas un objet`);
+    if (s.type !== "signature-guide") refuse(`${nom} : ${SIGNATURE} sans type « signature-guide »`);
+    for (const champ of ["juge", "rubrique", "motif"]) {
+      if (!texte(s[champ])) refuse(`${nom} : signature sans ${champ} — une signature se nomme et se motive`);
+    }
+    if (!iso(s.quand) || s.quand === null) refuse(`${nom} : signature sans quand ISO 8601`);
+    if (!Array.isArray(r.comparaison) || r.comparaison.length === 0) {
+      refuse(`${nom} : signature sans comparaison — elle signe quoi ?`);
+    }
+    if (!Array.isArray(s.clauses) || s.clauses.length === 0) {
+      refuse(`${nom} : signature sans clauses — elle signe quoi ?`);
+    }
+    for (const [i, c] of s.clauses.entries()) {
+      if (!c || !texte(c.clause) || !texte(c.preuve) || !ETATS_COMPARAISON.includes(c.etat)) {
+        refuse(`${nom} : clause signée ${i + 1} incomplète — clause, preuve et etat (tenu ou violé)`);
+      }
+    }
+    if (!r.pieces.includes(SIGNATURE)) refuse(`${nom} : ${SIGNATURE} existe et pieces ne le cite pas`);
+    const aSigner = r.comparaison.map((c) => c.clause.trim());
+    const signees = s.clauses.map((c) => c.clause.trim());
+    const manquantes = aSigner.filter((c) => !signees.includes(c));
+    if (manquantes.length) {
+      refuse(`${nom} : signature incomplète — ${manquantes.length} clause(s) non signée(s), la première : ${manquantes[0]}`);
+    }
+    const enTrop = signees.filter((c) => !aSigner.includes(c));
+    if (enTrop.length) refuse(`${nom} : signature d'une clause absente de la comparaison : ${enTrop[0]}`);
+    const violes = s.clauses.filter((c) => c.etat === "violé").map((c) => c.clause);
+    if (r.statut !== "forme non tenue" && violes.length) {
+      refuse(`${nom} : ${r.statut} avec une clause signée violée — le relecteur contredit l'auteur`);
+    }
+    if (r.statut === "forme non tenue" && !violes.length) {
+      refuse(`${nom} : forme non tenue signée sans clause violée — un écart se nomme`);
+    }
+    r.signature_lue = { juge: s.juge.trim(), clauses: s.clauses.length };
+  }
+  if (r.statut === "forme tenue signée" && !aSignature) {
+    refuse(`${nom} : forme tenue signée sans ${SIGNATURE} — rien ne la signe`);
+  }
   for (const p of r.pieces) {
     if (!existsSync(join(dir, p))) refuse(`${nom} cite une pièce absente : ${p}`);
   }
@@ -170,7 +223,7 @@ function ficheRun(nom, r) {
     date: nom.slice(0, 10),
     mode: r.mode,
     cas: r.skill ? r.skill.nom : "inconnu",
-    statut: r.statut,
+    statut: r.signature_lue ? `${r.statut} (signature : ${r.signature_lue.juge}, ${r.signature_lue.clauses} clause(s))` : r.statut,
     limites: `${codes.length}, ${codes.join(", ")}`,
     pieces: r.pieces.join(", "),
   };

@@ -1,0 +1,43 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.2.5 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e3a609e42ffe7IxJh3321usDUZ",
+    "modele": "opencode/beam-free",
+    "ouverte_par": "buffy (agent)",
+    "ouverte_le": "2026-11-10T14:21:59+01:00",
+    "etat_terminal": {
+      "outcome": "succeeded",
+      "seq": 94,
+      "ts": "2026-11-10T14:54:19+01:00",
+      "erreur": null,
+      "declare": "succeeded"
+    }
+  },
+  "horodatage_debut": "2026-11-10T14:22:00+01:00",
+  "horodatage_fin": "2026-11-10T14:54:42+01:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+  "trace": {
+    "source": "opencode 2.2.5 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-141654-rejeu-04-audit/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-141654-rejeu-04-audit/trace/export-brut.json",
+    "commande": "opencode session export ses_e3a609e42ffe7IxJh3321usDUZ"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "buffy (agent)",
+    "quand": "2026-11-10T14:54:42+01:00"
+  },
+  "dernier_message": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-141654-rejeu-04-audit/raw/2026-11-10-104020-04-audit/last-message.md",
+    "sha256": "bc54bfa61b7763f28f132eb4f1a75631d30052f4ed942db84cad17f01f002ec2",
+    "seq": 93,
+    "ts": 1794318857629
+  }
+}

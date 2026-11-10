@@ -11667,3 +11667,239 @@ skill.
 
 **Mémoires.** `5091a944-3927-44a7-b6ad-519fd065956d` — les quatre ouvertures, les deux refus cités, les
 empreintes égales et les fichiers ignorés.
+
+## Séance 219 — le second passage guidé de 04-fact-check, sur une révision modifiée du skill (2026-11-10)
+
+**Objectif.** Jouer le deuxième passage d'un même skill, avec une révision modifiée et la même intention,
+pour que deux passages soient comparables, et consigner le run.
+
+**Fait.** Geste `corriger` après le passage 1, preuve : `actions/03-report.md:20` disait « one numbered entry
+per source », ce qui a laissé `[3]` et `[8]` porter cinq emplacements, et `:22` déclenchait la ligne de cache
+sur un fait « stable » sans dire ce qui qualifie. Révision `feadf291` d'un clone de `fe48de12`, deux fichiers,
+quatre lignes : une entrée par emplacement cité, un déclencheur nommé (chemin du dépôt ou version épinglée),
+le gabarit aligné. Terrain : clone neuf de `audio-sync-tool`, tête `416ec1f`, porcelain vide. Le run
+`docs/device/runs/2026-11-10-101523-guide-04-fact-check` porte les six clauses du passage 1, à l'identique,
+et un produit qui les tient toutes.
+
+**Vérifié.** `sans renvois = original : true` (le paragraphe, marqueurs retirés, est le texte d'origine mot
+pour mot) ; `renvois : 13` ; `entrées Sources : 13`, une par emplacement ; `lignes de cache : 1` ; mot interdit
+dans le produit : `false` ; les treize emplacements relevés un par un sur le terrain ; porcelain du terrain
+`0` ligne, tête `416ec1f` ; `runs.mjs --index` puis `--verifier` → `0` ; `liens.mjs` → `0` ; l'index porte la
+ligne du run, statut `forme tenue`, trois limites.
+
+**Dérives signalées.** Aucune sur la forme. Une limite matérielle, dite deux fois (journal et `run.json`) :
+l'agent a lu le produit attendu du passage 1, qui nomme les huit affirmations et les treize emplacements,
+donc `session_non_independante` vaut ici pour l'indépendance et pour la causalité : le produit tient la forme,
+il ne prouve pas que le skill la produise seul, ni que la correction en soit la cause.
+
+**Limites.** Un seul tour `user` suit la présentation (« il faut faire un RUN complet sur un skill ») et aucun
+ne suit le §3, écrit après lui : l'étape 3 reste `non observé`, comme au passage 1, et la grille du §6 laisse
+les actions 01 et 02 `non observé` faute de trace machine (`trace_absente`).
+
+**Prochaines étapes.** La série a deux passages comparables : la campagne peut s'écrire, et la comparaison
+des deux produits est le premier fait qu'elle ordonnera.
+
+**Mémoires.** `45a1806c-3805-408d-a093-babe731a8c95` — la révision `feadf291`, les cinq sorties de vérification, la confusion déclarée.
+
+## Séance 220 — un skill jamais exercé, 04-audit, sept piliers en entier (2026-11-10)
+
+**Objectif.** Jouer un skill que la série n'avait jamais touché, de bout en bout, pour voir si la boucle tient
+hors de `04-fact-check`, et consigner le run.
+
+**Fait.** Skill `plugins/aidd-dev/skills/04-audit`, révision `fe48de12`, neuf fichiers (un `SKILL.md`, sept
+actions, un gabarit). Terrain : le clone neuf de `audio-sync-tool`, tête `416ec1f`, 307 fichiers. Produit :
+huit fichiers sous `aidd_docs/tasks/2026_11/2026_11_10_audit/`, sept de pilier et `report.md` fusionné, dix
+trouvailles, une critique : `app.py:772`, `/copy` crée `dst_dir` et copie sans `is_path_allowed` quand
+`app.py:614` et `app.py:1010` gardent leurs routes sœurs. Run
+`docs/device/runs/2026-11-10-103200-guide-04-audit`, statut `forme tenue`, sept clauses tenues.
+
+**Vérifié.** Vingt et une sections, trois par fichier et sept fichiers ; dix lignes de trouvaille dans les
+piliers comme dans le rapport fusionné, six colonnes chacune ; les seize emplacements cités relus sur le
+terrain ; `git diff` → 0 ligne et porcelain `?? aidd_docs/` seul ; `runs.mjs --index` → 0 (63 runs, huit
+guidés), `--verifier` → 0, `liens.mjs` → 0 ; le banc, plus bas.
+
+**Dérives signalées.** Une seule, et elle est dans le déroulé : l'ordre de l'opérateur ouvre le tour, donc la
+présentation de l'épreuve n'a pas eu lieu avant lui et les étapes 2 et 3 restent `non observé`. La portée, elle,
+vient de la demande (« run complet » nomme les sept piliers), et aucune portée n'a été choisie en silence.
+
+**Limites.** `session_non_independante`, `attendu_non_gele`, `trace_absente` ; l'attendu du §3 ne nomme pas les
+trouvailles, donc la comparaison porte sur la forme et la couverture, jamais sur le contenu ; aucun scanner de
+CVE, aucun profiler, aucun rapport de couverture, aucune passe d'accessibilité à l'exécution, donc la liste des
+trouvailles n'est pas close et le classement reste un jugement.
+
+**Prochaines étapes.** Un run indépendant sur un skill, avec un cas dont la demande est le skill lui-même :
+ce passage montre que `04-audit` produit la forme attendue en guidé, rien de plus.
+
+## Séance 221 — premier cas dont la demande est un skill, reçu non concluant (2026-11-10)
+
+**Objectif.** Écrire et geler un cas dont la demande est d'exécuter `04-audit`, puis le jouer en indépendant,
+pour obtenir un reçu au lieu d'un statut de forme.
+
+**Fait.** Cas `2026-11-10-104020-04-audit` fabriqué par `cas` : révision `fe48de12`, terrain `audio-sync-tool`
+tête `416ec1f`, deux origines et leurs clones sous `$RACINE/2026-11-10-104020-04-audit/`. Demande : lire le
+skill, rendre un tableau par pilier, attendre l'accord, puis écrire les sept fichiers de pilier et `report.md`
+sous `aidd_docs/tasks/2026_11/2026_11_10_audit/`. Attendu rempli, promesse `P` écrite, confirmation citée,
+re-gel `f2b05782`, porte passée (`gate.json`), deux réponses figées. Deux sessions ouvertes par `ouvrir` :
+`ses_e3b29a19…` sans modèle, puis `ses_e3b27b149…` sur `ollama/huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7` ;
+toutes deux `outcome: failed`, 0 jeton, coût 0, aucune question, aucun fichier écrit dans le terrain.
+
+**Vérifié.** `suite` puis `suite --reprendre --sans-reponse --sans-produit` → 0, `faits.json` et
+`trace/echange.jsonl` écrits, dernier texte d'assistant absent, `provider.invalid-request 404` au seq 3 ;
+`fin --sans-reponse` → reçu `non concluant`, cause `dispositif` ; `rapport` → `RAPPORT.md` et `RESULTAT.md`.
+
+**Dérives signalées.** Le run ne mesure rien : ce n'est pas un échec du skill, c'est un client qui n'a pas
+rendu de réponse. La cause nommée est `dispositif`, et la page de décision ne laisse aucune clause au skill.
+
+**Limites.** Le modèle choisi venait d'un `opencode models` local dont le serveur a refusé la requête en 404 ;
+aucun essai n'a été fait avec un fournisseur distant, faute de clé vérifiée. Le cas n'a donc pas encore été
+joué une seule fois de bout en bout.
+
+**Prochaines étapes.** Choisir un modèle que le serveur accepte, puis rejouer dans un nouveau run : le cas, son
+gel et sa porte sont prêts.
+
+## Séance 222 — 04-audit rejoué sur la tête neuve du framework (2026-11-10)
+
+**Objectif.** Rejouer `2026-11-10-104020-04-audit` sur la version neuve de `framework-origin`, avec un modèle
+que le serveur accepte, et obtenir un reçu.
+
+**Fait.** La copie `origine/framework` a été remplacée par un clone de la tête `1dede7ad7` (fusion de
+`upstream/main`, `v5.13.0` ancêtre), `origine/terrain` reste `416ec1f` ; re-gel `fd18fa2c`. La porte du run
+`2026-11-10-141654-rejeu-04-audit` est passée. `ouvrir` a lancé `opencode/beam-free` : la session a lu le dépôt,
+rendu la pause en prose sans question détectable, et `ouvrir` a refusé de jouer la réponse figée. La première
+réponse du cas a été envoyée à la main dans le fil `ses_e3a609e42ffe7IxJh3321usDUZ` (94 messages), qui a alors
+écrit les huit fichiers sous `aidd_docs/tasks/2026_11/2026_11_10_audit/`.
+
+**Vérifié.** `suite` → huit fichiers copiés verbatim sous `raw/` ; `fin` → reçu `non concluant`, cause `modele` ;
+`rapport` → `RAPPORT.md` et `RESULTAT.md` ; `runs.mjs --index` → 65 runs, `--verifier` → 0, `liens.mjs` → 0,
+banc → 357/357 PASS.
+
+**Dérives signalées.** Trois falsificateurs ont mordu et plafonnent le verdict : commande shell hors du cadre
+déclaré (seq 19), commande shell écrivant hors du produit (seq 66, `package.json` et `package-lock.json`
+modifiés avant l'accord), commande shell mal formée (seq 65). La pause n'a pas été jouée par le harnais, et la
+réponse figée a été envoyée par la personne.
+
+**Limites.** Le run porte sur `opencode/beam-free`, pas sur le modèle que la promesse du skill suppose ; la
+révision sous test est la tête de fusion `1dede7ad7`, pas l'étiquette `v5.13.0` ; le produit n'est donc jugé ni
+sur la qualité de son audit, ni sur la promesse `P`.
+
+**Prochaines étapes.** Faire poser une vraie question par la session (le harnais ne joue que celles qu'il
+détecte), et vérifier si les écritures hors produit viennent du modèle ou d'un outil qu'il a lancé.
+
+## Séance 223 — l'ADR-114 fixe le défaut guidé et l'exception headless gratuite (2026-11-10)
+
+**Objectif.** Trancher par une ADR la question que le rejeu de `04-audit` avait laissée ouverte : quel transport
+pour un test, et quel modèle quand l'indépendance est exigée.
+
+**Fait.** Deux faits ont borné le choix. Freebuff n'expose pas de transport non interactif : `freebuff -p` rend
+`error: unknown option '-p'`, l'issue #947 est ouverte depuis le 2026-08-06, et la PR #1477, qui accepte un
+prompt initial, écrit « This is deliberately not a headless mode » ; ses conditions d'utilisation, effectives le
+2026-11-12, interdisent bots, scripts et agents autonomes pour opérer ses produits. Mesuré le même jour : `opencode
+run --model opencode/deepseek-v4.1-flash-free` rend `OK` avec `exit 0` sur un compte sans solde, quand le même
+identifiant sans `-free` rend `Error: Insufficient balance`. L'ADR-114 en tire trois règles : le test se joue par
+défaut dans la session Freebuff (conduite `agent`, run guidé, `session_non_independante` déclarée) ; le headless
+n'est qu'une exception, sur la CLI opencode et sur un identifiant à suffixe `-free` ; une pause non jouée par
+`ouvrir` plafonne le run à `non concluant`. Le tableau de bord, point 5, dit désormais que le headless est nommé
+et non joué.
+
+**Vérifié.** `liens.mjs` → `0` mort sur 240 fichiers et 1 726 liens hors code ; banc `357/357 PASS` ; l'ADR-114
+cite les ADR-043, 071 et 074, qui existent.
+
+**Dérives signalées.** Le rejeu du 10 novembre n'a pas échoué sur le modèle : `opencode/beam-free` a tourné à
+coût 0 et écrit les huit fichiers. Il a échoué sur `ouvrir`, qui n'a pas reconnu une pause rendue en prose, et sur
+une `lecture.json` dont le chemin se lisait déjà relatif à la racine du produit. Changer de moteur ne corrige ni
+l'un ni l'autre.
+
+**Limites.** La route gratuite d'opencode n'est pas stable : elle a rendu `provider.free-limit`, statut 429, le
+2026-10-25, sans texte d'assistant. Son quota n'est pas mesuré, et la variation d'exécution n'est pas quantifiée.
+Aucun run n'a encore emprunté l'exception : l'ADR nomme un transport, elle ne prouve pas qu'il tient.
+
+**Prochaines étapes.** Réparer la détection de pause, puis rejouer un cas exigeant l'indépendance sur
+`opencode/deepseek-v4.1-flash-free` pour mesurer la route gratuite.
+
+## Séance 224 — la pause en prose est jouée ou refusée nommément (ADR-115, 2026-11-10)
+
+**Objectif.** Réparer la détection de pause d'`ouvrir` : une demande rendue en prose, sans `?`, doit être jouée
+quand le cas le déclare, et refusée en nommant ce qui manque sinon, puis le prouver.
+
+**Fait.** Le rejeu du rejeu a nommé le défaut : le fil `ses_e3a609e42ffe7IxJh3321usDUZ` a fini son tour sur
+« Je n'écris rien avant ton accord. Confirme et je lance l'audit complet. » (`trace/echange.jsonl`, seq 73), une
+demande sans `?`, et `ouvrir` a refusé en disant « s'est arrêtée sans question ». L'ADR-115 ajoute
+`attendu_details.pause.sur_arret` : déclaré vrai, l'arrêt reçoit la réponse figée, `ouvrir` l'enregistre sous la
+forme `arret` et cite la ligne ; non déclaré, le refus nomme la ligne, l'absence de `?`, le champ qui jouerait cet
+arrêt et la reprise `suite --fil`. Une valeur non booléenne est refusée. Le banc gagne le contrôle 358, qui rejoue
+la phrase exacte du fil, et le 266 exige désormais le nom du champ dans le refus.
+
+**Vérifié.** `node --check` sur `orchestrer.mjs` → `0` ; banc `358/358 PASS`, contrôle 358 et 266 compris ;
+`liens.mjs` → `0` mort sur 240 fichiers.
+
+**Limites.** La preuve est le banc, pas une session vivante : le terrain de `04-audit` n'est plus celui du gel, et
+un rejeu réel réécrirait le produit avant que la pause ne se constate. `sur_arret` reste une déclaration de cas :
+`ouvrir` ne mesure pas que le modèle demandait, il applique ce que le cas a écrit.
+
+**Prochaines étapes.** Re-geler `04-audit` avec `pause.sur_arret: true`, remettre le terrain à zéro, et rejouer
+une session pour voir la pause jouée par le harnais, plus la réponse figée envoyée à la main.
+
+## Séance 225 — la pause en prose jouée par le harnais, sur le cas 04-audit (2026-11-10)
+
+**Objectif.** Re-geler `2026-11-10-104020-04-audit` avec `pause.sur_arret`, remettre son terrain à zéro et rejouer une session pour
+voir la pause jouée par `ouvrir`, non par la personne.
+
+**Fait.** Re-gel `422bdfa71c97`
+après remise à zéro du terrain (`reset --hard 416ec1fa`, `clean -fd`, `porcelain` vide), porte passée, puis
+`ouvrir --modele opencode/deepseek-v4.1-flash-free --delai 10`. La session `ses_e39a8a44affea7oDzrN68XVYeH` a fini son premier tour sur
+« Dis-moi « go » (et si le point 1 est autorisé) et j'écris les 8 fichiers. », une demande sans `?` ; un message `user` est arrivé 0.448 s après
+l'`idle` (2026-11-10T16:44:27.530Z), et son texte est identique, octet pour octet, à la réponse figée du cas.
+
+**Vérifié.** 59 message(s) dans l'export, 1 `idle` ; la pause est citée ci-dessus, et le message joué
+porte le texte figé à l identique. Terrain au retour :
+`porcelain` vide.
+
+**Limites.** `ouvrir` a refusé ensuite : « la session ses_e39a8a44affea7oDzrN68XVYeH n'est pas devenue inactive en 10 min ». Le second tour
+écrivait encore quand le délai a expiré, donc aucun `suite`, aucun reçu, et le run reste ouvert. La session a été
+interrompue avec le serveur ; ses messages survivent dans l'export, pas son tour.
+
+**Prochaines étapes.** Rejouer avec un délai plus large (le modèle gratuit est lent : 8 min
+entre la pause et le dernier message), ou nommer `quota_gratuit` et `delai_depasse` comme limites du run.
+
+## Séance 226 — `pause.sur_arret` déclaré sur les cas qui ont demandé la suite en prose (2026-11-10)
+
+**Objectif.** Ajouter `attendu_details.pause.sur_arret` aux cas dont une session a déjà demandé la suite en
+prose, en citant le fil et le `seq`, et seulement sur pièces.
+
+**Fait.** Balayage des dossiers de run : 46 portent `gate.json`, `faits.json` et `trace/echange.jsonl`. Pour
+chacun, la première réponse figée du cas a été retrouvée comme tour `user` de la trace, puis le texte assistant
+qui la précède a été lu. Six cas montraient une pause qui ne finit pas par `?` **et** demande une décision :
+
+| cas | fil | seq du message de pause | état |
+| --- | --- | --- | --- |
+| `2026-10-21-173843-plan-simple` | `ses_ea0dc7495ffepe5ZHcDFCdS3QU` | 23 | déclaré, re-gelé `75d9c32fba3a` |
+| `2026-10-18-085308-cas-jouet` | `ses_ea564a976ffevcpzB4aY03ELBF` | 5 | demande réelle, déclaration différée |
+| `2026-10-24-173346-defect-slugify-racine` | `ses_e9172f594ffeENKf4yCJfjYoE7` | 9 | bloqué, terrain hors gel |
+| `2026-10-24-213712-defect-racine-terrain` | `ses_e9094d672ffegmmTMH9S6Y972u` | 4 | bloqué, terrain hors gel |
+| `plan-simple-cadre` | `ses_e8ef8c48bffe40DX0frc2ogIhb` | 26 | bloqué, terrain hors gel |
+| `2026-10-22-092005-spike-annees` | `ses_e9c66ce0affeOJ0l4T6KzM6X8Z` | 18 | faux positif (métadonnées `parents:` / `source:`), laissé au commit |
+
+`plan-simple` porte désormais `pause: {requis, sur_arret, preuve: {fil, seq, seq_reponse, run, ligne}}` : fil
+`ses_ea0dc7495ffepe5ZHcDFCdS3QU`, seq 23, réponse figée en seq 24, run `2026-10-21-174102-bee028f8-96cd02d`,
+ligne « Le reste du plan (moteur, phases, tests) découle de ces trois réponses. ».
+
+**Le cas jouet, différé.** Sa session demande bien la suite (« Please confirm this list and specify which file
+you'd like to write to next. », fil `ses_ea564a976ffevcpzB4aY03ELBF`, seq 5). Mais c'est la pièce de référence
+du banc : six fixtures synthétiques y écrivent sans tour de personne et deviendraient non conformes. Un essai de
+mise en cohérence de ces six points a fait tomber le banc de 358 à 319 contrôles verts ; il a été annulé, et
+`cas-jouet.expected.json` comme `.freeze.json` sont revenus au commit. Déclarer ce cas demande une révision
+cohérente des fixtures, pas une retouche isolée.
+
+**Les trois cas bloqués.** Leur terrain porte `?? aidd_docs/` alors que leur gel porte `[]` : re-geler figerait
+un terrain sale. Ils demandent d'abord la remise à zéro du terrain (ADR-113), puis le re-gel.
+
+**Vérifié.** Banc `banc-harnais.sh` : 358/358 PASS, code 0. Liens `liens.mjs` : 0 mort. Porte de `plan-simple` :
+`preflight ok`, gel `75d9c32fba3a` re-haché, HEAD 416ec1f. `git status --porcelain` du dépôt : 23 entrées,
+aucune dans les cas différés ou bloqués.
+
+**Limites.** Le balayage juge sur un motif lexical appliqué aux trois dernières lignes du message ; il a produit
+un faux positif sur six, corrigé à la main. Le cas jouet reste non déclaré malgré une demande réelle : le banc
+ne peut pas encore porter sa pause.
+
+**Prochaines étapes.** Réviser les fixtures du banc pour qu'elles jouent la pause, puis déclarer `cas-jouet` ;
+remettre à zéro les trois terrains bloqués, puis les déclarer.

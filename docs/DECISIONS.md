@@ -3617,3 +3617,117 @@ l'atteste pas : elle atteste seulement l'état où il aboutit.
 
 **Falsificateur** : un terrain remis comme le PROTOCOLE le dit que la porte refuse encore · un terrain dont un
 fichier déclaré manque que la porte accepterait.
+
+## ADR-114 — Le test se joue dans la session Freebuff, le headless est une exception sur un modèle gratuit (2026-11-10)
+
+**Contexte.** Le 2026-11-10, le rejeu du cas `04-audit` a tourné en headless sur `opencode/beam-free` : coût 0,
+huit fichiers écrits, verdict `non concluant`. Ce qui l'a plafonné n'était pas le modèle mais le dispositif :
+`ouvrir` n'a pas reconnu la pause rendue en prose, donc la réponse figée a été envoyée à la main ; et
+`lecture.json` déclarait `aidd_docs/tasks/2026_11/2026_11_10_audit/report.md` alors que l'assertion se lit
+relative à la racine du produit, ce qui a noté `violé` une clause tenue. Le même jour, la personne a posé la
+contrainte : les tests se font avec Freebuff, à coût zéro, soit la session courante ; si le headless revient,
+il prend DeepSeek V4.1 Flash. Deux faits bornent ce choix. Freebuff n'expose pas de transport non interactif :
+`freebuff -p` rend `error: unknown option '-p'` (issue #947, ouverte depuis le 2026-08-06), et la PR #1477, qui
+accepte un prompt initial, écrit elle-même « This is deliberately not a headless mode ». Ses conditions
+d'utilisation, effectives le 2026-11-12, interdisent « Use a bot, script, macro, headless browser, autonomous
+agent, or similar automation to operate our products or submit requests » et réservent l'accès gratuit à un
+usage « individual, human-directed ». Côté opencode, mesuré le 2026-11-10 : `opencode run --model
+opencode/deepseek-v4.1-flash-free` rend `OK` avec `exit 0` sur un compte sans solde, quand le même identifiant
+sans `-free` rend `Error: Insufficient balance` ; cette route gratuite avait rendu `provider.free-limit`, statut
+429, le 2026-10-25, sans texte d'assistant.
+
+**Options** : automatiser Freebuff (rejeté : le contrat l'interdit, le produit n'expose aucune surface
+programmable, et un pont par l'OAuth d'appareil ferait d'un usage humain un usage automatisé) · garder le
+headless opencode sans contrainte de modèle (rejeté : les essais du 2026-10-22 ont échoué sur quota 402
+OpenRouter et 413 Groq, et un identifiant sans `-free` demande un solde) · jouer par défaut dans la session
+Freebuff, et nommer un transport unique pour l'exception (choisi).
+
+**Décision.** Deux régimes, un par défaut.
+
+1. **Par défaut, le test se joue dans la conversation courante**, côté Freebuff : conduite `agent`
+   ([ADR-071](DECISIONS.md)), run guidé, limite `session_non_independante` déclarée. Aucun pont vers Freebuff
+   n'est construit : ni TUI piloté, ni OAuth d'appareil appelé par un script, ni SDK. Freebuff reste ce que le
+   dispositif en fait déjà : un sujet de test et une source de trace lue en `-readonly` dans `desktop-v2.db`
+   ([ADR-043](DECISIONS.md)).
+2. **Par exception, quand un cas exige l'indépendance** au sens de l'[ADR-074](DECISIONS.md), le seul transport
+   est la CLI opencode, et le modèle est un identifiant dont le suffixe est `-free`. Un identifiant sans
+   suffixe est refusé : il demande un solde, et un run facturé n'est pas un run à coût zéro. Le run déclare son
+   modèle et son régime gratuit dans ses faits ; un `provider.free-limit` devient la limite `quota_gratuit` et
+   le reçu reste `non concluant`, cause `modele`, jamais un verdict sur le skill.
+3. **Une exception n'est recevable que si la pause est jouée** par `ouvrir`, ou refusée nommément. Une réponse
+   figée envoyée à la main fait du run une démonstration : la limite `pause_non_jouee` se déclare, et le
+   verdict plafonne à `non concluant`.
+
+**Conséquences.** L'[ADR-074](DECISIONS.md) n'est pas réécrite : elle garde le défaut et sa portée bornée.
+Cette page nomme le transport de son exception et le modèle qui la rend gratuite. Le headless ne redevient pas
+un défaut par cette page : un cas qui l'exige doit le déclarer, et le transport est alors unique.
+
+**Ce que ce n'est pas** : un quatrième verdict ; une preuve d'indépendance pour un run guidé ; une garantie que
+la route gratuite d'opencode est stable, puisqu'elle a rendu 429 le 2026-10-25 ; une autorisation d'automatiser
+Freebuff, sous aucune forme.
+
+**Falsificateur** : un pont headless vers Freebuff présenté comme le run d'un cas · un run déclaré à coût zéro
+dont le modèle n'a pas le suffixe `-free` · un `provider.free-limit` compté comme `ecart` ou `conforme` d'un
+skill · un run dont la réponse figée a été envoyée à la main et qui porte un verdict sur le skill.
+
+## ADR-115 — Un arrêt déclaré par le cas est une pause, et le refus nomme ce qui manque (2026-11-10)
+
+**Contexte.** Le 2026-11-10, le rejeu de `04-audit` a rendu une pause que `ouvrir` n'a pas reconnue. Le fil
+`ses_e3a609e42ffe7IxJh3321usDUZ` a fini son tour sur « Je n'écris rien avant ton accord. Confirme et je lance
+l'audit complet. » (`docs/device/runs/2026-11-10-141654-rejeu-04-audit/trace/echange.jsonl`, seq 73) : une
+demande en prose, sans `?`. La règle mécanique de l'[ADR-077](DECISIONS.md), étendue par l'[ADR-101](DECISIONS.md)
+à la mise en forme, lit la dernière ligne non vide hors bloc et exige qu'elle finisse par `?` ; elle n'a rien vu,
+et `ouvrir` a refusé en disant « s'est arrêtée sans question ». La réponse figée a été envoyée à la main, et le
+run a perdu sa mesure. Le défaut était déjà nommé le 2026-10-23 (brainstorm `consolider-le-protocole`, §1) et le
+2026-10-25 (note du run `173022`).
+
+**Options** : élargir la règle à toute ligne qui contient une demande (rejeté : une liste de formules se devine
+et se périme, et un arrêt normal serait pris pour une pause) · jouer la réponse figée à tout arrêt (rejeté : un
+run fini recevrait une réponse qui relance le modèle, et l'ADR-077 perdrait son garde-fou) · laisser le cas
+déclarer que son arrêt est la pause, et nommer le refus quand il ne le déclare pas (choisi).
+
+**Décision.** `attendu_details.pause` accepte `sur_arret: true`. Quand la session devient inactive sur un texte
+dont la dernière ligne ne finit pas par `?`, et qu'aucune réponse figée n'a encore été jouée, un cas qui déclare
+`sur_arret: true` reçoit sa réponse figée comme sur une question : `ouvrir` l'enregistre sous la forme `arret`,
+cite la ligne et le dit dans son bloc. Une réponse déjà jouée reste une clôture ([ADR-089](DECISIONS.md)), et un
+cas sans pause ne reçoit rien ([ADR-093](DECISIONS.md)). Sans la déclaration, `ouvrir` refuse, et le refus
+**nomme** la ligne, l'absence de `?`, le champ `pause.sur_arret: true` qui jouerait cet arrêt, et la reprise
+`suite --fil`. Une valeur non booléenne se refuse au lieu de s'interpréter. Le défaut reste la fin par `?` :
+aucun cas existant ne change de comportement.
+
+**Conséquences.** Contrôles 358 et 266 du [banc](BANC.md) : le 358 joue la phrase exacte du rejeu sur un cas qui
+déclare le champ, le 266 exige désormais que le refus nomme `pause.sur_arret: true`. Banc à 358.
+
+**Ce que ce n'est pas** : une lecture de l'intention du modèle ; une permission de jouer une réponse sur un arrêt
+quelconque ; une réécriture des ADR-077, 089 et 093, qui gardent leur règle. `sur_arret` est une déclaration de
+cas, pas une mesure : elle dit ce que l'auteur attend, et `ouvrir` ne prouve pas que le modèle demandait.
+
+**Falsificateur** : un cas sans `sur_arret` dont l'arrêt reçoit une réponse figée · un arrêt déclaré dont le bloc
+ne cite pas la ligne · un `sur_arret` non booléen accepté · une réponse jouée sur un arrêt déclaré alors que le
+cas n'en fige plus.
+
+## ADR-116 — Une signature clause par clause pour le run guidé (2026-11-10)
+
+**Contexte.** Le run guidé du 2026-11-10-200210 a rendu `forme tenue` avec cinq clauses `tenu`, mais ces
+cinq lignes étaient écrites par l'agent qui avait produit le rapport. Le mode indépendant a un juge nommé et
+`promesse-signee.json` ; le guidé n'avait aucune pièce de second regard, donc son meilleur statut ne pouvait
+pas dépasser la forme des pièces.
+
+**Options** : laisser la comparaison auto-déclarée (rejeté : c'est le défaut mesuré) · rendre le guidé
+indépendant (rejeté : ADR-074 le borne, et un second fil coûte un modèle) · ajouter une pièce de signature
+nommée, validée pour sa forme et sa couverture, sans prétendre à une mesure (choisi).
+
+**Décision.** Un guidé peut porter `signature.json` : `{type: "signature-guide", juge, quand, rubrique,
+motif, clauses: [{clause, etat, preuve}]}`. `runs.mjs` exige que les clauses signées soient exactement
+celles de `comparaison`, refuse une signature incomplète ou qui nomme une clause absente, et n'accepte le
+statut `forme tenue signée` que si toutes les clauses sont `tenu`. Une clause signée `violé` interdit ce
+statut. La signature est une déclaration d'un relecteur nommé, jamais une mesure : l'identité du relecteur et
+la fidélité de sa lecture ne sont pas vérifiées.
+
+**Conséquences.** Un guidé signé se distingue d'un guidé auto-déclaré dans `INDEX.md`. Quatre contrôles
+(359 à 362) éprouvent l'acceptation et les trois refus. La limite d'indépendance reste entière : un relecteur
+peut être le même modèle, et la signature le dit dans son `motif`.
+
+**Falsificateur** : un `forme tenue signée` accepté sans `signature.json` · une signature qui ne couvre
+qu'une partie des clauses · une signature contredisant la comparaison sans refus · une signature présentée
+comme une mesure d'indépendance.

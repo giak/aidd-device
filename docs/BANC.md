@@ -1,6 +1,6 @@
 ---
 name: BANC — le banc du harnais
-description: Les 357 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
+description: Les 362 contrôles qui éprouvent les refus et les acceptations de run.mjs, du contrôle de liens, de l'orchestrateur, du rapport technique et de la page utilisateur, où ils vivent, comment les lancer, ce qu'ils touchent et ce qu'ils ne prouvent pas
 type: banc
 status: in-progress
 question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
@@ -136,6 +136,11 @@ question: Quels contrôles éprouvent le harnais, et que prouvent-ils ?
 > `suite` sans `--sans-reponse` sur une trace sans texte d'assistant. **334** éprouve la **page d'une session
 > morte avant toute réponse** : le même bac copié, sa page ne juge aucune clause du skill, et le mutant qui
 > retire la règle rend la faute au skill sur un tableau que la session n'a jamais eu l'occasion de rendre.
+
+> V0.81 — 2026-11-10 : **358** contrôles ; 358 éprouve l'**arrêt déclaré comme pause** (ADR-115) : un cas qui déclare `pause.sur_arret: true` reçoit sa réponse figée quand la session s'arrête sur une demande en prose, sans `?`, et le 266 exige que le refus, sur un cas qui ne le déclare pas, nomme le champ, la ligne et la reprise.
+> V0.82 — 2026-11-10 : **362** contrôles ; 359 à 362 éprouvent la signature clause par clause d'un run
+> guidé et le statut « forme tenue signée » (ADR-116) : une signature complète acceptée, un statut signé sans
+> pièce refusé, une signature partielle refusée, une clause signée violée refusée sous un statut de forme tenue.
 
 > V0.80 — 2026-11-10 : **357** contrôles ; 356 et 357 éprouvent la **remise à zéro** (ADR-113) : le geste documenté (reset --hard sur la tête gelée, clean -fd, réinstallation des fichiers déclarés) rend la porte verte, et le clean seul la fait refuser.
 
@@ -552,6 +557,7 @@ une panne d'outil se voir dans un `FAIL`.
 | Contrôles | Ce qu'ils éprouvent | Livre |
 | --- | --- | --- |
 | 351 à 355 | **l'installation déclarée** (ADR-112) : un cas nomme dans `CASES/<cas>.installation.json` les fichiers que l'installation laisse dans le terrain, et le gel les mesure au lieu de les croire. Le 351 gèle un bac qui déclare `.aidd/installation.json` et la porte l'accepte ; le 352 retire le fichier et exige un refus du gel qui dit « absent du terrain » ; le 353 modifie le fichier après le gel et exige le refus de la porte, empreintes nommées ; le 354 réécrit le `sha256` du champ `installation` et exige « ne concorde pas avec lui-même » ; le 355 gèle le même bac sans déclaration, vérifie qu'aucun champ n'apparaît, que l'empreinte diffère de celle du 351 et que la porte passe. Les cinq tournent sous `$B`, jamais dans les quatre arbres | ADR-112 |
+| 358 | **l'arrêt déclaré comme pause** (ADR-115) : quand la session s'arrête sur une demande en prose qui ne finit pas par `?` — la phrase du rejeu du 2026-11-10, « Confirme et je lance l'audit complet. » —, un cas qui déclare `pause.sur_arret: true` reçoit sa réponse figée comme sur une question, et `ouvrir` cite la ligne en nommant l'arrêt déclaré. Le contrôle rejoue le même serveur factice et la même porte que 254 ; le 266 exige, sur un cas qui ne déclare pas le champ, un refus qui le nomme avec la ligne et la reprise `suite --fil` | ADR-115 |
 | 356 à 357 | **la remise à zéro** (ADR-113) : le terrain revient à l'état gelé par `git reset --hard <tête gelée>`, `git clean -fd`, réinstallation des fichiers déclarés, puis la porte. Le 356 part d'un bac gelé, ajoute une dérive (un fichier suivi modifié, un rebut non suivi), joue le geste et exige la porte verte ; le 357 joue le `clean` sans réinstallation et exige « n'est plus celui du gel », parce que l'installation non suivie a disparu | ADR-113 |
 | 343 à 345 | **l'intention et la comparaison d'un run guidé** (ADR-111) : un guidé consigné à partir du 2026-11-10 déclare ce que le skill est censé faire (`intention`) et, clause par clause, ce que le produit fait contre elle (`comparaison` : `clause`, `produit`, `etat` `tenu` ou `violé`). Le 343 vérifie qu'un guidé qui porte les deux passe ; le 344 les retire et exige un refus qui nomme l'intention manquante ; le 345 force `forme tenue` sur une comparaison qui dit `violé` et exige le refus. L'antériorité de l'intention reste **déclarée**, jamais mesurée : deux horodatages écrits à la main ne prouvent aucun ordre | ADR-111 |
 | 341 à 342 | **l'étalon des cas** (ADR-110) : `etalonner` relit le contrat de produit du cas (`produit.arbre_attendu`, `produit.racine`) et l'applique à deux produits de référence déclarés dans `CASES/<cas>.etalon.json`, sans aucune session. Les deux références sont **dérivées** d'un produit réellement collecté (`--derive-de <run>`, reçu `conforme`) : `reel` le recopie verbatim, `reel-hors-racine` le même plus un `HORS-RACINE.md` à la racine de référence. Le 341 exige que le cas jouet accepte l'un et refuse l'autre ; le 342 retire ce `HORS-RACINE.md` d'une copie des cas sous `$B` et exige un refus qui nomme la référence, l'issue attendue et l'issue mesurée. Un étalon sans une référence de chaque issue est refusé : une seule référence ne prouve aucune discrimination | ADR-110 |

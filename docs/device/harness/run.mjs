@@ -1084,7 +1084,9 @@ function cmdPreflight(a) {
       }
       return { chemin: f.chemin, sha256 };
     });
-    installationMesuree = { revision: gel.installation.revision, empreinte: empreinteInstallation(gel.installation), fichiers: fichiers.length };
+    // La révision est celle du gel, recopiée telle quelle : la porte ne la remesure pas, et le nom du champ
+    // dans la porte le dit.
+    installationMesuree = { revision_gelee: gel.installation.revision, empreinte: empreinteInstallation(gel.installation), fichiers: fichiers.length };
   }
 
   // The text handed to the session is the case's §5 with $RACINE substituted: the case stays
@@ -1128,7 +1130,9 @@ function cmdPreflight(a) {
   console.log(
     `preflight ok — ${cas} : ouverture autorisée dans ${declare} (HEAD ${mesure.head}, porcelain ${mesure.porcelain.length} ligne(s)) ; ` +
       `gel ${String(gel.empreinte).slice(0, 8)} re-haché, ${gelVerifie.fichiers} fichier(s) du cas et ${gelVerifie.references} référence(s)` +
-      (installationMesuree ? ` ; installation ${installationMesuree.fichiers} fichier(s), révision ${String(installationMesuree.revision).slice(0, 8)}` : "") +
+      (installationMesuree
+        ? ` ; installation ${installationMesuree.fichiers} fichier(s) déclarés, révision gelée ${String(installationMesuree.revision_gelee).slice(0, 8)} ; la garantie porte sur ces fichiers, pas sur l'installation entière`
+        : "") +
       (texte ? ` ; texte ${texte.sha256.slice(0, 8)} (${texte.octets} octets) conforme au §5 substitué` : "") +
       ` ; porte ${display(gatePath)}`,
   );

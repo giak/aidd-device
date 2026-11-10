@@ -72,6 +72,17 @@
       "racine": "terrain/aidd_docs/",
       "regle": "un dossier `tasks/<yyyy_mm>/<yyyy_mm_dd>_<slug>/` contenant `plan.md` et un `phase-<n>.md` par phase ; aucun autre fichier sous cette racine",
       "arbre_attendu": []
+    },
+    "pause": {
+      "requis": true,
+      "sur_arret": true,
+      "preuve": {
+        "fil": "ses_ea0dc7495ffepe5ZHcDFCdS3QU",
+        "seq": 23,
+        "seq_reponse": 24,
+        "run": "2026-10-21-174102-bee028f8-96cd02d",
+        "ligne": "Le reste du plan (moteur, phases, tests) découle de ces trois réponses."
+      }
     }
   },
   "falsificateurs_du_run": [

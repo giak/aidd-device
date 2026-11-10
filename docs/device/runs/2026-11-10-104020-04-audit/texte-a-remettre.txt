@@ -1,0 +1,5 @@
+Read the skill at /home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/framework-origin/plugins/aidd-dev/skills/04-audit/SKILL.md and use it on this repository.
+Tu travailles à la racine du dépôt sous travail : le répertoire `terrain/`. Chaque chemin du dépôt est relatif à lui, tu peux lire `framework-origin/` un cran au-dessus, et rien ne se lit hors de ces deux arbres.
+Ce dépôt est audio-sync-tool, l'outil local de synchronisation musicale décrit par son README ; il attend un audit complet, les sept piliers.
+Montre d'abord un tableau d'une ligne par pilier avec le chemin du fichier que tu écriras, puis attends mon accord sans avoir écrit un seul fichier.
+Puis écris l'audit sous `aidd_docs/tasks/2026_11/2026_11_10_audit/` : un fichier par pilier (`code-quality.md`, `architecture.md`, `security.md`, `dependencies.md`, `performance.md`, `tests.md`, `ui.md`) et un `report.md` fusionné.

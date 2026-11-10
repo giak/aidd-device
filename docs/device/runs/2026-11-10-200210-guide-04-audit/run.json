@@ -1,0 +1,72 @@
+{
+  "type": "run",
+  "mode": "guide",
+  "statut": "forme tenue",
+  "skill": {
+    "nom": "04-audit",
+    "chemin": "plugins/aidd-dev/skills/04-audit",
+    "revision": "fe48de12"
+  },
+  "terrain": {
+    "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "tete": "416ec1f",
+    "porcelain": "vide au départ (git status --porcelain sans ligne)"
+  },
+  "fil": null,
+  "conduite": "agent",
+  "rapport_le": "2026-11-10T20:02:10+01:00",
+  "consigne_le": "2026-11-10T20:02:10+01:00",
+  "pertinence": {
+    "comme_preuve_du_skill": false,
+    "raison": "session_non_independante"
+  },
+  "limites": [
+    {
+      "code": "session_non_independante",
+      "effet": "non pertinent comme preuve d'indépendance",
+      "detail": "ADR-074 : l'agent a lu l'attendu, la page et le tableau avant de produire"
+    },
+    {
+      "code": "attendu_non_gele",
+      "effet": "l'antériorité de l'attendu n'est pas prouvée",
+      "detail": "le produit attendu vit dans le §3 de run-guide.md, écrit après la présentation validée, sans gel"
+    },
+    {
+      "code": "trace_absente",
+      "effet": "la trace machine du run manque",
+      "detail": "aucun fil consigné pour cette conversation ; la grille du §4 est remplie à la main, sur les messages de la conversation"
+    }
+  ],
+  "pieces": [
+    "run-guide.md"
+  ],
+  "verdict": null,
+  "intention": "Auditer un dépôt en lecture seule sur sept piliers et rendre un rapport classé : un fichier par pilier sous aidd_docs/tasks/<yyyy_mm>/<yyyy_mm_dd>_audit/, un report.md fusionné, chaque ligne portant sévérité, pilier, fichier:ligne, correctif et effort, et rien d'autre sous cette racine.",
+  "comparaison": [
+    {
+      "clause": "lire le skill 04-audit et les sept actions qu'il nomme, dans framework-origin",
+      "produit": "SKILL.md et les sept fichiers d'actions lus sous fe48de12 avant la première écriture, avec le gabarit assets/audit-template.md",
+      "etat": "tenu"
+    },
+    {
+      "clause": "lire le README et les fichiers du terrain utiles à l'audit",
+      "produit": "README.md, app.py, analysis.py, nml.py, package.json, requirements.txt, ci.yml, vitest.config.js, templates/index.html et docs/refactoring lus ; mesures grep, wc et ast",
+      "etat": "tenu"
+    },
+    {
+      "clause": "rendre un tableau d'une ligne par pilier avec le chemin visé et attendre l'accord sans avoir écrit un seul fichier",
+      "produit": "tableau de huit lignes avant toute écriture, accord reçu en tour utilisateur, aucun fichier avant cet accord",
+      "etat": "tenu"
+    },
+    {
+      "clause": "après la réponse figée, écrire les sept fichiers de pilier et le rapport fusionné",
+      "produit": "huit fichiers sous terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/, 35 constats, sections Findings, Top actions et Coverage dans chacun",
+      "etat": "tenu"
+    },
+    {
+      "clause": "terminer par une synthèse qui nomme les chemins écrits",
+      "produit": "dernier message nommant la racine et les huit fichiers, avec leurs empreintes sha256",
+      "etat": "tenu"
+    }
+  ]
+}

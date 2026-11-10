@@ -1,0 +1,41 @@
+{
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.2.5 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e3b27b149ffePcRvILKxi9E4pg",
+    "modele": "ollama/huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7",
+    "ouverte_par": "buffy (agent)",
+    "ouverte_le": "2026-11-10T10:44:32+01:00",
+    "etat_terminal": {
+      "outcome": "failed",
+      "seq": 3,
+      "ts": "2026-11-10T10:44:33+01:00",
+      "erreur": {
+        "type": "provider.invalid-request",
+        "message": "model 'huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7' not found",
+        "statut": 404
+      },
+      "declare": "failed"
+    }
+  },
+  "horodatage_debut": "2026-11-10T10:44:33+01:00",
+  "horodatage_fin": "2026-11-10T10:47:18+01:00",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+  "trace": {
+    "source": "opencode 2.2.5 (CLI export, store /home/giak/.local/share/opencode)",
+    "client": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-104020-04-audit/trace/echange.jsonl",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-104020-04-audit/trace/export-brut.json",
+    "commande": "opencode session export ses_e3b27b149ffePcRvILKxi9E4pg"
+  },
+  "cloisonnement": {
+    "attendu_vu": "non"
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "buffy (agent)",
+    "quand": "2026-11-10T10:47:18+01:00"
+  }
+}

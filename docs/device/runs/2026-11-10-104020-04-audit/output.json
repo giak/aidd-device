@@ -1,0 +1,35 @@
+{
+  "cas": "2026-11-10-104020-04-audit",
+  "attendu": "La session lit le skill 04-audit de la révision sous test et ses sept actions, lit le README et les fichiers du terrain utiles, rend un tableau d'une ligne par pilier avec le chemin visé et attend l'accord sans avoir écrit un seul fichier, puis écrit sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/` un fichier par pilier et un `report.md` fusionné, et rien d'autre.",
+  "produit_brut": "docs/device/runs/2026-11-10-104020-04-audit/raw/2026-11-10-104020-04-audit",
+  "difference": "aucune : la session s'est arrêtée sur provider.invalid-request 404 au seq 3, sans texte d'assistant ; aucun produit n'existe et rien n'est mesuré",
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif"
+  ],
+  "limites": "non évaluable",
+  "ecarte_comme_non_testable": [
+    {
+      "attendu": "le contenu du produit est juste",
+      "critere": "le contenu ne se juge pas ici : le cas mesure l'ordre des gestes et les destinations, jamais la justesse du texte"
+    }
+  ],
+  "verification": null,
+  "promesse": {
+    "mode": "juge_seul",
+    "condition": "aucun `report.md` sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/`, ou un rapport qui ne porte pas de section Findings, ou moins de cinq fichiers de pilier à côté de lui",
+    "juge": null,
+    "rubrique": null,
+    "morsure": null
+  },
+  "phrase": "Aucune clause n'est mesurée : le client n'a rendu aucune réponse, donc ce run ne dit rien du skill 04-audit.",
+  "gel_verifie": {
+    "le": "2026-11-10T10:48:26+01:00",
+    "empreinte": "f2b05782820ffd4747fda7c4c6383666876b3e1b05f6015302b6e65c8ce85721",
+    "fichiers": 2,
+    "references": 0,
+    "installation": 0
+  },
+  "juge_le": "2026-11-10T10:48:26+01:00",
+  "depuis_le_recu": "docs/device/runs/2026-11-10-104020-04-audit/receipt.json"
+}

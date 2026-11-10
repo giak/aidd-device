@@ -1,0 +1,359 @@
+{
+  "cas": "2026-11-10-104020-04-audit",
+  "recu_ecrit_le": "2026-11-10T10:48:26+01:00",
+  "session": {
+    "outil": "opencode",
+    "application": "opencode 2.2.5 (/home/giak/.opencode/bin/opencode, agent build)",
+    "identifiant": "ses_e3b27b149ffePcRvILKxi9E4pg",
+    "modele": "ollama/huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7",
+    "ouverte_par": "buffy (agent)",
+    "ouverte_le": "2026-11-10T10:44:32+01:00"
+  },
+  "session_verifiee": {
+    "outil": "opencode",
+    "store": "/home/giak/.local/share/opencode",
+    "fil": "ses_e3b27b149ffePcRvILKxi9E4pg",
+    "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "modele": "ollama/huihui_ai/Qwen3.6-abliterated:35b-Claude-4.7",
+    "ouverte_le": "2026-11-10T10:44:32+01:00",
+    "premier_message": "2026-11-10T10:44:33+01:00"
+  },
+  "demande": {
+    "chemin": "docs/device/CASES/2026-11-10-104020-04-audit.request.md",
+    "sha256": "a8e6e3831a347345d1b154ebdd671cffc40a59fd4385562b96c31a2b4971fb8b",
+    "gel": "/home/giak/projects/aidd-device/docs/device/CASES/2026-11-10-104020-04-audit.freeze.json",
+    "empreinte_gel": "f2b05782820ffd4747fda7c4c6383666876b3e1b05f6015302b6e65c8ce85721",
+    "gele_le": "2026-11-10T10:42:12.807030562+0100"
+  },
+  "gel_verifie": {
+    "le": "2026-11-10T10:48:26+01:00",
+    "empreinte": "f2b05782820ffd4747fda7c4c6383666876b3e1b05f6015302b6e65c8ce85721",
+    "fichiers": 2,
+    "references": 0,
+    "installation": 0
+  },
+  "framework_rev": "fe48de12",
+  "framework_rev_arbre": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/framework",
+  "terrain_rev": "416ec1f",
+  "terrain_rev_arbre": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/terrain",
+  "repertoire_de_travail": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+  "horodatage_debut": "2026-11-10T10:44:33+01:00",
+  "horodatage_fin": "2026-11-10T10:47:18+01:00",
+  "trace": {
+    "client": "opencode",
+    "source": "opencode 2.2.5 (CLI export, store /home/giak/.local/share/opencode)",
+    "chemin_exporte": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-104020-04-audit/trace/echange.jsonl",
+    "commande": "opencode session export ses_e3b27b149ffePcRvILKxi9E4pg",
+    "store": "/home/giak/.local/share/opencode",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "export_brut": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-104020-04-audit/trace/export-brut.json"
+  },
+  "trace_lue": {
+    "lignes": 1,
+    "lignes_dans_la_fenetre": 1,
+    "sans_horodatage": 0,
+    "illisibles": 0,
+    "sha256": "6cde5c7eba515905a106a867c822009dc8f3a52afd39a25147a02dde03ce7381",
+    "rejoue_le": "2026-11-10T10:48:26+01:00"
+  },
+  "trace_verifiee": {
+    "outil": "opencode",
+    "commande": "opencode session export ses_e3b27b149ffePcRvILKxi9E4pg",
+    "cwd": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "sha256": "6cde5c7eba515905a106a867c822009dc8f3a52afd39a25147a02dde03ce7381",
+    "brut_sha256": "455c6e878fc54b513bdeabcc94d1342aa7b5874c37deff95640f5cb5514a41cd",
+    "rejoue_le": "2026-11-10T10:48:26+01:00"
+  },
+  "tableau": {
+    "forme": "text/assistant, >=3 lignes, 2e ligne séparatrice, >=1 colonne",
+    "present": false,
+    "index": null,
+    "seq": null,
+    "ts": null,
+    "lignes": 0,
+    "colonnes": 0,
+    "requis": true
+  },
+  "pause": {
+    "requise": true,
+    "formulaire": "libre",
+    "mesuree": false,
+    "seq_reponse": null,
+    "seq_ecriture": null,
+    "outil_ecriture": null,
+    "attente_ms": null
+  },
+  "echanges": {
+    "budget": 3,
+    "utilises": 1,
+    "epuise_par": null
+  },
+  "porte": {
+    "chemin": "/home/giak/projects/aidd-device/docs/device/runs/2026-11-10-104020-04-audit/gate.json",
+    "sha256": "5e35dbd4300bf0df91a2316f9fad68302852f691e5e5c5e8358d3d2c9b275081",
+    "cas": "2026-11-10-104020-04-audit",
+    "passe_le": "2026-11-10T10:42:13.019248594+0100",
+    "passe_le_epoch": 1794303733,
+    "repertoire": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+    "gel_empreinte": "f2b05782820ffd4747fda7c4c6383666876b3e1b05f6015302b6e65c8ce85721",
+    "gele_le_epoch": 1794303732,
+    "arbre": {
+      "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+      "head": "416ec1f",
+      "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+      "porcelain": []
+    },
+    "texte_sha256": "6473afc0aeb57d7a46d3ff5d061d0e66e326282f546697efd9f91227d9aa875a"
+  },
+  "arbres": {
+    "avant": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      }
+    ],
+    "apres": [
+      {
+        "label": "framework-origin",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/framework",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-10-21-173843-plan-simple/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "terrain",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/audio-sync-tool"
+          }
+        ],
+        "refs_distants": [
+          "origin/main",
+          "origin/test/aidd-installation"
+        ]
+      },
+      {
+        "label": "revision-sous-test",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/framework-origin",
+        "head": "fe48de12",
+        "head_complet": "fe48de12a8b615ec4c456b63945b7e9dfc7835ca",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/framework"
+          }
+        ],
+        "refs_distants": [
+          "origin/feat/protocole-de-test-aidd"
+        ]
+      },
+      {
+        "label": "travail",
+        "chemin": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+        "head": "416ec1f",
+        "head_complet": "416ec1fa08b7c8cabb8dedb4d5fd0eec37a5afde",
+        "porcelain": [],
+        "remotes": [
+          {
+            "nom": "origin",
+            "url": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/origine/terrain"
+          }
+        ],
+        "refs_distants": [
+          "origin/test/aidd-installation"
+        ]
+      }
+    ]
+  },
+  "produit": {
+    "absent": true,
+    "chemins": [],
+    "fichiers": [],
+    "verifie": {
+      "fichiers": 0,
+      "manifeste_sha256": "049acc764fc4419b8eeaeda1545353b976bfe75c9956da4d0fe3225ece701bbf"
+    }
+  },
+  "annexe": null,
+  "cloisonnement": {
+    "attendu_vu": "non",
+    "attendu_vu_mesure": {
+      "etat": "non",
+      "seq": null,
+      "chemin": null,
+      "motif": null
+    },
+    "lecture": {
+      "autorisees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "resolues": [
+        "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain",
+        "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/framework-origin"
+      ],
+      "racine_du_cas": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit"
+    },
+    "ecriture": {
+      "autorisees": [
+        "terrain/aidd_docs"
+      ],
+      "resolues": [
+        "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/aidd_docs"
+      ],
+      "scratch": "terrain/.scratch",
+      "scratch_resolu": "/home/giak/projects/aidd-device-work/2026-11-10-104020-04-audit/terrain/.scratch"
+    },
+    "reseau": "interdit",
+    "fichiers_de_contexte": "interdits",
+    "delivre": {
+      "racines_jugees": [
+        "terrain",
+        "framework-origin"
+      ],
+      "racines_absentes": [],
+      "racine_du_cas_nommee": true,
+      "gestes_hors_cadre": 0,
+      "gestes_non_imputes": 0
+    }
+  },
+  "conduite": {
+    "mode": "agent",
+    "qui": "buffy (agent)",
+    "quand": "2026-11-10T10:47:18+01:00"
+  },
+  "promesse": {
+    "mode": "juge_seul",
+    "declaree_par": "falsificateurs_du_run.P",
+    "condition": "aucun `report.md` sous `terrain/aidd_docs/tasks/2026_11/2026_11_10_audit/`, ou un rapport qui ne porte pas de section Findings, ou moins de cinq fichiers de pilier à côté de lui",
+    "mesure": null,
+    "juge": null,
+    "raison": "la promesse est énoncée, mais aucune mesure ne l'éprouve : `compare` doit nommer le juge et sa rubrique",
+    "rubrique": null,
+    "morsure": null
+  },
+  "falsificateurs": {
+    "birth_anterieur_au_gel": [],
+    "arbre_de_travail_inchange": false,
+    "produit_identique_a_une_empreinte_anterieure": [],
+    "trace_sans_echange_dans_la_fenetre": false,
+    "produit_incomplet": [],
+    "session_terminale_en_erreur": [
+      {
+        "outcome": "failed",
+        "type": "provider.invalid-request",
+        "statut": 404,
+        "seq": 3
+      }
+    ],
+    "tableau_absent": true,
+    "ecriture_avant_tableau": [],
+    "produit_ne_avant_le_tableau": [],
+    "question_sans_reponse": [],
+    "question_en_formulaire": [],
+    "pause_non_tenue": [],
+    "lecture_hors_dossier": [],
+    "ecriture_hors_dossier": [],
+    "code_hors_dossier": [],
+    "shell_hors_dossier": [],
+    "shell_ecriture_hors_produit": [],
+    "shell_invalide": [],
+    "shell_non_interpretable": [],
+    "reseau": [],
+    "hors_produit": []
+  },
+  "verdict": "non concluant",
+  "causes": [
+    "dispositif"
+  ],
+  "limites": [
+    "la conduite (agent) est déclarée par « buffy (agent) » : le reçu ne prouve pas qui a répondu, et un run conduit par un agent n'est ni une faute ni un mérite (ADR-071)",
+    "le cas limite l'écriture à terrain/aidd_docs et à son scratch terrain/.scratch ; ce reçu compare les chemins nommés par les outils d'écriture, les cibles littérales des commandes shell et les chemins nouveaux du porcelain, pas les effets d'un binaire opaque (cloisonnement.ecriture, ADR-063)",
+    "le scratch terrain/.scratch est lisible et scriptible, jamais compté comme produit ; il est collecté sous annexe/<cas>/ et le reçu le vérifie (ADR-067)",
+    "le cas déclare un scratch, mais le run n'a aucune annexe collectée : les scripts et les sorties qu'il cite ne sont pas dans le reçu (ADR-067)",
+    "dernier_message_non_atteste : faits.json ne porte pas le champ dernier_message — le reçu ne peut pas rattacher `raw/<cas>/last-message.md` à la trace, et le juge lit un texte que rien n'atteste (ADR-065)",
+    "le cas interdit le réseau ; les clients déclarés sont curl, wget, nc, ssh, git fetch/push/clone, npm install et pip install — un client non listé n'est pas mesuré (cloisonnement.reseau)",
+    "le cas interdit les fichiers de contexte ; le reçu ne reconnaît que les noms déclarés — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md (cloisonnement.fichiers_de_contexte)",
+    "la promesse du cas n'est pas mesurée mécaniquement : elle relève d'un juge, que `compare` doit nommer avec sa rubrique pour `conforme` — le reçu ne vérifie ni l'identité du juge ni sa lecture (audit du 2026-10-24, D2, D3)",
+    "la pause est mesurée comme un tour `user` entre l'ouverture et la première écriture nommée : sa durée est l'intervalle entre la part précédente et ce tour, jamais une attente humaine, un accord donné sans tour n'est pas vu, et une écriture faite par une commande shell ne la clôt pas (ADR-069, ADR-078)",
+    "la session n'a rien produit : le produit est sa sortie brute (§9)",
+    "la session s'est terminée sur une erreur : outcome « failed », provider.invalid-request, statut 404 (seq 3) — un run tronqué n'a pas de verdict à recevoir (ADR-103)",
+    "la trace ne porte aucun tableau rendu par la session (§5, F2)"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-18-085308-cas-jouet",
+  "type": "case-etalon",
+  "statut": "dérivé le 2026-11-10T05:56:05+01:00 d'un produit réellement collecté — aucune référence écrite à la main",
+  "contrat": "attendu_details.produit : racine terrain/aidd_docs/, arbre_attendu [\"aidd_docs/NOTES.md\"]",
+  "derive_de": {
+    "run": "docs/device/runs/2026-10-20-222845-50664060-3d0db46",
+    "verdict": "conforme",
+    "manifeste_sha256": "17bc10ff3a9dae0779926c28fd32e24f98fda3ec6f419f848f4dee88f06a1e03",
+    "fichiers": 1
+  },
+  "dossiers": "chaque dossier se résout contre le dossier des cas (--cases), jamais contre le dépôt",
+  "references": [
+    {
+      "nom": "reel",
+      "dossier": "etalons/2026-10-18-085308-cas-jouet/reel",
+      "attendu": "conforme",
+      "note": "le produit collecté de docs/device/runs/2026-10-20-222845-50664060-3d0db46, verbatim"
+    },
+    {
+      "nom": "reel-hors-racine",
+      "dossier": "etalons/2026-10-18-085308-cas-jouet/reel-hors-racine",
+      "attendu": "ecart",
+      "note": "le même produit, plus HORS-RACINE.md à la racine de référence, hors de produit.racine"
+    }
+  ]
+}

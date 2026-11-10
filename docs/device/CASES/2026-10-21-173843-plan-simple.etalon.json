@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-21-173843-plan-simple",
+  "type": "case-etalon",
+  "statut": "dérivé le 2026-11-10T05:56:05+01:00 d'un produit réellement collecté — aucune référence écrite à la main",
+  "contrat": "attendu_details.produit : racine terrain/aidd_docs/, arbre_attendu []",
+  "derive_de": {
+    "run": "docs/device/runs/2026-10-21-234646-bee028f8-d88d78c",
+    "verdict": "conforme",
+    "manifeste_sha256": "761b21531e1987079f85307a9e08078d0355c0076891e4d137b416a728d27959",
+    "fichiers": 4
+  },
+  "dossiers": "chaque dossier se résout contre le dossier des cas (--cases), jamais contre le dépôt",
+  "references": [
+    {
+      "nom": "reel",
+      "dossier": "etalons/2026-10-21-173843-plan-simple/reel",
+      "attendu": "conforme",
+      "note": "le produit collecté de docs/device/runs/2026-10-21-234646-bee028f8-d88d78c, verbatim"
+    },
+    {
+      "nom": "reel-hors-racine",
+      "dossier": "etalons/2026-10-21-173843-plan-simple/reel-hors-racine",
+      "attendu": "ecart",
+      "note": "le même produit, plus HORS-RACINE.md à la racine de référence, hors de produit.racine"
+    }
+  ]
+}

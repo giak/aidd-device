@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-24-055310-shadow-areas-design",
+  "type": "case-etalon",
+  "statut": "dérivé le 2026-11-10T05:56:24+01:00 d'un produit réellement collecté — aucune référence écrite à la main",
+  "contrat": "attendu_details.produit : racine terrain/docs/superpowers/specs/2026-08-01-carte-visite-v2-design-shadow-report.md, arbre_attendu [\"docs/superpowers/specs/2026-08-01-carte-visite-v2-design-shadow-report.md\"]",
+  "derive_de": {
+    "run": "docs/device/runs/2026-10-24-120532-5b1e2724-6b24ca8",
+    "verdict": "conforme",
+    "manifeste_sha256": "703881efccc17a3f7c85b7b5c8bbad4905d5f74f7caf802e16db4728c040a151",
+    "fichiers": 1
+  },
+  "dossiers": "chaque dossier se résout contre le dossier des cas (--cases), jamais contre le dépôt",
+  "references": [
+    {
+      "nom": "reel",
+      "dossier": "etalons/2026-10-24-055310-shadow-areas-design/reel",
+      "attendu": "conforme",
+      "note": "le produit collecté de docs/device/runs/2026-10-24-120532-5b1e2724-6b24ca8, verbatim"
+    },
+    {
+      "nom": "reel-hors-racine",
+      "dossier": "etalons/2026-10-24-055310-shadow-areas-design/reel-hors-racine",
+      "attendu": "ecart",
+      "note": "le même produit, plus HORS-RACINE.md à la racine de référence, hors de produit.racine"
+    }
+  ]
+}

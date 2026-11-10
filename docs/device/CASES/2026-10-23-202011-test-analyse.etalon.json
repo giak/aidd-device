@@ -1,0 +1,27 @@
+{
+  "cas": "2026-10-23-202011-test-analyse",
+  "type": "case-etalon",
+  "statut": "dérivé le 2026-11-10T05:56:05+01:00 d'un produit réellement collecté — aucune référence écrite à la main",
+  "contrat": "attendu_details.produit : racine terrain/test_skill_analysis.py, arbre_attendu [\"test_skill_analysis.py\"]",
+  "derive_de": {
+    "run": "docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test",
+    "verdict": "conforme",
+    "manifeste_sha256": "3a56e597390ba5cb1e5348e28aef6b4d6605678aecc2ea36a6cd7c805addbc00",
+    "fichiers": 1
+  },
+  "dossiers": "chaque dossier se résout contre le dossier des cas (--cases), jamais contre le dépôt",
+  "references": [
+    {
+      "nom": "reel",
+      "dossier": "etalons/2026-10-23-202011-test-analyse/reel",
+      "attendu": "conforme",
+      "note": "le produit collecté de docs/device/runs/2026-10-24-045529-9c8fd81c-rejeu-06-test, verbatim"
+    },
+    {
+      "nom": "reel-hors-racine",
+      "dossier": "etalons/2026-10-23-202011-test-analyse/reel-hors-racine",
+      "attendu": "ecart",
+      "note": "le même produit, plus HORS-RACINE.md à la racine de référence, hors de produit.racine"
+    }
+  ]
+}

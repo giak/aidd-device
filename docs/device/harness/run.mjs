@@ -221,6 +221,23 @@ const USAGE = `usage: run.mjs <commande> [options]
            sans pièce. Un cas sans bloc verification est refusé : rien à vérifier
            (spec du 2026-10-23 21:18, C7 ; ADR-087)
 
+  etalonner --case <id> [--cases <dir>] [--derive-de <run>]
+           lit CASES/<case>.etalon.json et applique le contrat de produit du cas à deux
+           produits de référence : l'un que le cas doit accepter (« conforme »), l'autre
+           qu'il doit refuser (« ecart »). Les fichiers de chaque référence sont lus, et
+           deux règles du cas sont nommées quand elles mordent : une entrée de
+           attendu_details.produit.arbre_attendu absente (ce que collect refuse), un
+           fichier hors de produit.racine (ce que le reçu compte comme hors produit).
+           Aucune session, aucune écriture : l'étalon dit si le cas sait dire non avant
+           qu'on l'emploie sur un skill (ADR-110). Un cas sans étalon, ou un étalon sans
+           une référence de chaque issue, est refusé — une seule référence ne prouve
+           aucune discrimination. --derive-de <run> écrit les deux références depuis le
+           produit réellement collecté d'un run que le reçu a conclu « conforme » : la
+           référence conforme le recopie verbatim, la référence fautive ajoute un fichier
+           à la racine de référence, hors de produit.racine. Une dérivation dont l'une des
+           deux références ne donne pas l'issue attendue est refusée sans rien laisser ;
+           un étalon écrit à la main n'est jamais écrasé
+
   prérequis (déclarés ici, sondés au démarrage ; un refus nomme l'outil, la commande, l'usage et le remède) :
     git --version                  toutes les commandes — les quatre arbres, leur porcelain
     date --iso-8601=seconds        toutes les commandes — geler, collecter, recevoir, juger
@@ -3854,6 +3871,209 @@ function lancerVerification(commande, cwd, delai, env) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// etalonner — le cas sait-il dire non ? (ADR-110)
+// ---------------------------------------------------------------------------
+// Deux produits de référence par cas : l'un que le contrat de produit du cas doit accepter, l'autre
+// qu'il doit refuser. Aucune session. Les deux règles se relisent dans les déclarations que `collect`
+// et le reçu lisent déjà : `produit.arbre_attendu` (un fichier déclaré et absent refuse la collecte)
+// et `produit.racine` (un fichier hors de cette racine est hors du produit). L'étalon ne rejoue ni
+// `collect` ni le reçu, et ne le prétend pas : il dit si un cas qui accepterait les deux produits ne
+// mesurerait rien.
+function fichiersSous(racine, prefixe = "") {
+  const sortie = [];
+  for (const e of readdirSync(join(racine, prefixe), { withFileTypes: true })) {
+    const rel = prefixe === "" ? e.name : `${prefixe}/${e.name}`;
+    if (e.isDirectory()) sortie.push(...fichiersSous(racine, rel));
+    else if (e.isFile()) sortie.push(rel);
+  }
+  return sortie.sort();
+}
+// `produit.racine` nomme l'arbre (`terrain/aidd_docs/`) et `arbre_attendu` le chemin dans cet arbre
+// (`aidd_docs/NOTES.md`) : la même dérivation que le gel (D7), sans quoi les deux ne se compareraient pas.
+const sansArbre = (p) => p.replace(/^[^/]+\//, "").replace(/\/+$/, "");
+function contratProduit(fichiers, produit) {
+  const racine = typeof produit.racine === "string" ? sansArbre(produit.racine) : null;
+  // Une entrée qui contient une espace ou un `<` est une règle de prose (`<bank>`, « un fichier par
+  // ligne »), pas un chemin : la même exclusion que `collect`.
+  const attendus = (Array.isArray(produit.arbre_attendu) ? produit.arbre_attendu : [])
+    .filter((p) => typeof p === "string" && !p.includes(" ") && !p.includes("<"))
+    .map((p) => p.replace(/^\.\//, ""));
+  const hors = racine === null ? null : fichiers.filter((f) => !estDans(f, racine));
+  const manquants = attendus.filter((p) => !fichiers.includes(p));
+  return { racine, attendus, hors, manquants };
+}
+// La dérivation : deux références tirées du produit réellement collecté d'un run conclu `conforme`, au
+// lieu de fichiers écrits à la main. La référence conforme le recopie verbatim ; la référence fautive
+// ajoute un fichier à la racine de référence, hors de `produit.racine`. La dérivation mesure ses deux
+// références avant de garder quoi que ce soit : un étalon dont une référence ne donne pas l'issue
+// attendue est effacé et refusé, plutôt que laissé sur le disque comme une preuve qui ne prouve rien.
+function deriverEtalon(a, cas, casesDir, produit) {
+  const runDir = resolve(a.required("derive-de"));
+  const recu = lireJson(join(runDir, "receipt.json"), "etalonner");
+  if (!recu) refuse(`etalonner : aucun reçu sous ${display(runDir)} — une référence se dérive d'un run qui en a un`);
+  if (recu.cas !== cas) {
+    refuse(`etalonner : le reçu de ${display(runDir)} traite « ${recu.cas} », l'étalon porte « ${cas} » — un produit d'un autre cas ne sert pas de référence`);
+  }
+  if (recu.verdict !== "conforme") {
+    refuse(`etalonner : le reçu de ${display(runDir)} conclut « ${recu.verdict} » — une référence conforme se dérive d'un produit qu'un reçu a conclu conforme, sans quoi l'étalon accepte un produit que le dispositif a refusé`);
+  }
+  if (typeof produit.racine !== "string") {
+    refuse(`etalonner : le cas ${cas} ne déclare pas produit.racine — un fichier ajouté ne sortirait d'aucun arbre, et la référence fautive ne mordrait pas`);
+  }
+  const raw = join(runDir, "raw", cas);
+  const manifeste = lireJson(join(raw, "manifest.json"), "etalonner");
+  if (!manifeste || !Array.isArray(manifeste.fichiers) || manifeste.fichiers.length === 0) {
+    refuse(`etalonner : aucun manifeste avec fichiers sous ${display(raw)} — le produit d'un run se lit là, et rien ne le fabrique`);
+  }
+  const etalonPath = join(casesDir, `${cas}.etalon.json`);
+  const ancien = lireJson(etalonPath, "etalonner");
+  if (ancien && typeof ancien.derive_de !== "object") {
+    refuse(`etalonner : l'étalon ${display(etalonPath)} a été écrit à la main — une dérivation ne l'écrase pas ; le retirer d'abord, ou garder ses références`);
+  }
+  const base = join(casesDir, "etalons", cas);
+  rmSync(base, { recursive: true, force: true });
+  const conformeDir = join(base, "reel");
+  const ecartDir = join(base, "reel-hors-racine");
+  // Le manifeste compte ses chemins depuis la racine collectée (`aidd_docs`, ou le fichier produit),
+  // et l'étalon les compte depuis le terrain : c'est le terrain que `produit.racine` et `arbre_attendu`
+  // décrivent. Le préfixe se déduit de la seule déclaration du cas — une racine de dossier préfixe, une
+  // racine de fichier ne préfixe pas —, jamais du nom d'un dossier du client.
+  // Une racine de dossier (`terrain/aidd_docs/`) préfixe par elle-même ; une racine de fichier
+  // (`terrain/docs/specs/x.md`) préfixe par son dossier, puisque le manifeste compte depuis là.
+  const sans = sansArbre(produit.racine);
+  const dossierProduit = produit.racine.endsWith("/") ? sans : posix.dirname(sans);
+  const prefixe = dossierProduit === "" || dossierProduit === "." ? "" : `${dossierProduit}/`;
+  const fichiers = [];
+  for (const f of manifeste.fichiers) {
+    const chemin = f?.chemin;
+    if (typeof chemin !== "string" || chemin.trim() === "" || isAbsolute(chemin) || chemin.split(/[\\/]/).includes("..")) {
+      rmSync(base, { recursive: true, force: true });
+      refuse(`etalonner : le manifeste porte ${JSON.stringify(chemin ?? null)}, attendu un chemin relatif qui reste sous raw/${cas}`);
+    }
+    const src = join(raw, chemin);
+    if (!existsSync(src) || !statSync(src).isFile()) {
+      rmSync(base, { recursive: true, force: true });
+      refuse(`etalonner : ${display(src)} est au manifeste et absent du disque — une référence ne se dérive pas d'un produit incomplet`);
+    }
+    const ref = prefixe + chemin;
+    for (const dest of [conformeDir, ecartDir]) {
+      mkdirSync(dirname(join(dest, ref)), { recursive: true });
+      cpSync(src, join(dest, ref), { force: true });
+    }
+    fichiers.push(ref);
+  }
+  writeFileSync(
+    join(ecartDir, "HORS-RACINE.md"),
+    "# Hors du produit déclaré\n\nCe fichier est ajouté par la dérivation de l'étalon, à la racine de la référence :\n" +
+      "il ne vit pas sous l'arbre que `produit.racine` nomme, et le contrat du cas doit le refuser.\n",
+  );
+  const mesures = [
+    { nom: "reel", dossier: conformeDir, attendu: "conforme" },
+    { nom: "reel-hors-racine", dossier: ecartDir, attendu: "ecart" },
+  ].map((r) => {
+    const mesure = contratProduit(fichiersSous(r.dossier), produit);
+    const morsures = [];
+    if (mesure.manquants.length) morsures.push(`attendu absent : ${mesure.manquants.join(", ")}`);
+    if (mesure.hors && mesure.hors.length) morsures.push(`hors de ${mesure.racine}/ : ${mesure.hors.join(", ")}`);
+    return { ...r, issue: morsures.length ? "ecart" : "conforme", morsures };
+  });
+  const fautive = mesures.find((m) => m.issue !== m.attendu);
+  if (fautive) {
+    rmSync(base, { recursive: true, force: true });
+    refuse(
+      `etalonner : la référence « ${fautive.nom} » rend ${fautive.issue}, attendu ${fautive.attendu} — ` +
+        `${fautive.morsures.length ? fautive.morsures.join(" ; ") : "aucune règle du contrat ne mord"} ; la dérivation ne garde pas un étalon qui ne mesure rien`,
+    );
+  }
+  writeJson(etalonPath, {
+    cas,
+    type: "case-etalon",
+    statut: `dérivé le ${localIso()} d'un produit réellement collecté — aucune référence écrite à la main`,
+    contrat: `attendu_details.produit : racine ${produit.racine}, arbre_attendu ${JSON.stringify(produit.arbre_attendu ?? [])}`,
+    derive_de: {
+      run: display(runDir),
+      verdict: recu.verdict,
+      manifeste_sha256: sha256File(join(raw, "manifest.json")),
+      fichiers: fichiers.length,
+    },
+    dossiers: "chaque dossier se résout contre le dossier des cas (--cases), jamais contre le dépôt",
+    references: [
+      { nom: "reel", dossier: `etalons/${cas}/reel`, attendu: "conforme", note: `le produit collecté de ${display(runDir)}, verbatim` },
+      {
+        nom: "reel-hors-racine",
+        dossier: `etalons/${cas}/reel-hors-racine`,
+        attendu: "ecart",
+        note: "le même produit, plus HORS-RACINE.md à la racine de référence, hors de produit.racine",
+      },
+    ],
+  });
+  const lignes = [
+    `▸ ÉTALON DÉRIVÉ — ${cas}`,
+    `  source              : ${display(runDir)} (reçu ${recu.verdict}), ${fichiers.length} fichier(s)`,
+    ...mesures.map((m) => `  ${m.nom.padEnd(18)}: ${m.issue === m.attendu ? "ok" : "non"}, attendu ${m.attendu}, mesuré ${m.issue}`),
+    `  écrit               : ${display(etalonPath)}`,
+    "",
+  ];
+  console.log(lignes.join("\n"));
+  process.exit(0);
+}
+
+function cmdEtalonner(a) {
+  const cas = a.required("case");
+  const casesDir = casesDirOf(a);
+  const attendu = lireJson(join(casesDir, `${cas}.expected.json`), "etalonner");
+  if (!attendu) refuse(`etalonner : aucun attendu pour ${cas} — l'étalon lit le contrat de produit du cas, et rien ne le fabrique`);
+  const produit = attendu?.attendu_details?.produit ?? {};
+  if (typeof produit.racine !== "string" && !(Array.isArray(produit.arbre_attendu) && produit.arbre_attendu.length)) {
+    refuse(`etalonner : le cas ${cas} ne déclare ni produit.racine ni arbre_attendu — sans contrat de produit, il n'y a rien à étalonner`);
+  }
+  if (a.has("derive-de")) deriverEtalon(a, cas, casesDir, produit);
+  const etalonPath = join(casesDir, `${cas}.etalon.json`);
+  const etalon = lireJson(etalonPath, "etalonner");
+  if (!etalon) refuse(`etalonner : aucun étalon ${display(etalonPath)} — un cas sans référence ne prouve pas qu'il sait refuser`);
+  const refs = Array.isArray(etalon.references) ? etalon.references : [];
+  const conformes = refs.filter((r) => r && r.attendu === "conforme");
+  const ecarts = refs.filter((r) => r && r.attendu === "ecart");
+  if (refs.length !== 2 || conformes.length !== 1 || ecarts.length !== 1) {
+    refuse(
+      `etalonner : l'étalon de ${cas} porte ${refs.length} référence(s), dont ${conformes.length} « conforme » et ` +
+        `${ecarts.length} « ecart » — deux références, une de chaque, ou l'étalon ne prouve pas que le cas sait dire oui et non`,
+    );
+  }
+  const lignes = [`▸ ÉTALON — ${cas} : 2 références, aucun produit de session`];
+  const fautes = [];
+  for (const r of refs) {
+    const nom = typeof r.nom === "string" && r.nom !== "" ? r.nom : "(sans nom)";
+    if (typeof r.dossier !== "string" || r.dossier.trim() === "") { fautes.push(`${nom} : aucun dossier`); continue; }
+    // Le dossier se résout contre `--cases`, pas contre le dépôt : un étalon recopié sous un bac lit
+    // les références de sa copie, sans quoi une mutation du bac ne mesurerait rien.
+    const dossier = resolve(casesDir, r.dossier);
+    if (!existsSync(dossier) || !statSync(dossier).isDirectory()) { fautes.push(`${nom} : ${display(dossier)} n'est pas un répertoire`); continue; }
+    const fichiers = fichiersSous(dossier);
+    const mesure = contratProduit(fichiers, produit);
+    const morsures = [];
+    if (mesure.manquants.length) morsures.push(`attendu absent : ${mesure.manquants.join(", ")}`);
+    if (mesure.hors && mesure.hors.length) morsures.push(`hors de ${mesure.racine}/ : ${mesure.hors.join(", ")}`);
+    const mesureVerdict = morsures.length ? "ecart" : "conforme";
+    lignes.push(`  ${nom.padEnd(14)}: ${fichiers.length} fichier(s), attendu ${r.attendu}, mesuré ${mesureVerdict}`);
+    if (morsures.length) lignes.push(`    ce qui mord   : ${morsures.join(" ; ")}`);
+    if (mesureVerdict !== r.attendu) {
+      fautes.push(`${nom} : attendu ${r.attendu}, mesuré ${mesureVerdict} — ${morsures.length ? morsures.join(" ; ") : "aucune règle du contrat ne mord"}`);
+    }
+  }
+  lignes.push(
+    `  ce que ça veut dire : ${fautes.length ? "le cas ne dit pas ce que l'étalon attend, et ne mesure donc pas ce qu'il prétend" : "le contrat de produit du cas accepte l'un et refuse l'autre"}`,
+    "",
+  );
+  console.log(lignes.join("\n"));
+  if (fautes.length) {
+    for (const f of fautes) console.error(`REFUS — etalonner : ${f}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 function cmdVerifier(a) {
   const runDir = resolve(a.required("run"));
   const cas = a.required("case");
@@ -4218,7 +4438,7 @@ function cmdCompare(a) {
   console.log(`compare ok — ${cas} : verdict ${verdict}, limites « ${limites} » ; ${display(outPath)}`);
 }
 
-const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare, texte: cmdTexte, verifier: cmdVerifier };
+const COMMANDS = { freeze: cmdFreeze, preflight: cmdPreflight, collect: cmdCollect, faits: cmdFaits, receipt: cmdReceipt, compare: cmdCompare, texte: cmdTexte, verifier: cmdVerifier, etalonner: cmdEtalonner };
 const a = parseArgs(process.argv.slice(2));
 if (a.cmd === "help" || a.cmd === "--help" || a.has("help")) {
   console.log(USAGE);
